@@ -1,0 +1,16 @@
+/**
+ * See <a href="http://jquery.com">http://jquery.com</a>.
+ * @name $
+ * @class
+ * See the jQuery Library  (<a href="http://jquery.com">http://jquery.com</a>) for full details.  This just
+ * documents the function and classes that are added to jQuery by this plug-in.
+ */
+
+/**
+ * See <a href="http://jquery.com">http://jquery.com</a>
+ * @name fn
+ * @class
+ * See the jQuery Library  (<a href="http://jquery.com">http://jquery.com</a>) for full details.  This just
+ * documents the function and classes that are added to jQuery by this plug-in.
+ * @memberOf $
+ */

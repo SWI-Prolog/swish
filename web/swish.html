@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<!--
+This is a static page that creates SWISH.  The default Prolog server generates this
+page dynamically as index.html.
+  -->
+<html>
+  <head>
+    <title>SWISH 2.0 page</title>
+    <link rel="stylesheet" href="css/swish.css">
+    <script data-main="js/swish" src="bower_components/requirejs/require.js"></script>
+  </head>
+  <body>
+        <header class="navbar navbar-default">
+            <div class="container pull-left">
+                <div class="navbar-header">
+                    <a href="/" class="pengine-logo">&nbsp;</a>
+                    <a href="/" class="swish-logo">&nbsp;</a>
+                </div>
+                <nav id="navbar"></nav>
+            </div>
+        </header>
+<div id="content" class="container">
+  <div class="tile horizontal" data-split="60%">
+    <div class="prolog-editor"></div>
+    <div class="tile vertical" data-split="70%">
+      <div class="prolog-runners"></div>
+      <div class="prolog-query"></div>
+    </div>
+  </div>
+</div>
+  </body>
+</html>

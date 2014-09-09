@@ -1,0 +1,94 @@
+<!doctype html>
+
+<title>CodeMirror: Prolog mode</title>
+<meta charset="utf-8"/>
+<link rel=stylesheet href="../../doc/docs.css">
+
+<link rel="stylesheet" href="../../lib/codemirror.css">
+<link rel="stylesheet" href="../../theme/prolog.css">
+<script src="../../lib/codemirror.js"></script>
+<script src="../../addon/edit/matchbrackets.js"></script>
+<script src="prolog.js"></script>
+<style type="text/css">.CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black;}</style>
+<div id=nav>
+  <a href="http://codemirror.net"><img id=logo src="../../doc/logo.png"></a>
+
+  <ul>
+    <li><a href="../../index.html">Home</a>
+    <li><a href="../../doc/manual.html">Manual</a>
+    <li><a href="https://github.com/marijnh/codemirror">Code</a>
+  </ul>
+  <ul>
+    <li><a href="../index.html">Language modes</a>
+    <li><a class=active href="#">Prolog</a>
+  </ul>
+</div>
+
+<article>
+<h2>Prolog mode</h2>
+<form><textarea id="code" name="code">
+:- use_module(library(clpfd)).
+
+% Example by Markus Triska, taken from the
+% SWI-Prolog manual.
+
+sudoku(Rows) :-
+    length(Rows, 9), maplist(length_(9), Rows),
+    append(Rows, Vs), Vs ins 1..9,
+    maplist(all_distinct, Rows),
+    transpose(Rows, Columns),
+    maplist(all_distinct, Columns),
+    Rows = [A,B,C,D,E,F,G,H,I],
+    blocks(A, B, C), blocks(D, E, F), blocks(G, H, I).
+
+length_(L, Ls) :- length(Ls, L).
+
+blocks([], [], []).
+blocks([A,B,C|Bs1], [D,E,F|Bs2], [G,H,I|Bs3]) :-
+    all_distinct([A,B,C,D,E,F,G,H,I]),
+    blocks(Bs1, Bs2, Bs3).
+
+problem(1, [[_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,3,_,8,5],
+            [_,_,1,_,2,_,_,_,_],
+            [_,_,_,5,_,7,_,_,_],
+            [_,_,4,_,_,_,1,_,_],
+            [_,9,_,_,_,_,_,_,_],
+            [5,_,_,_,_,_,_,7,3],
+            [_,_,2,_,1,_,_,_,_],
+            [_,_,_,_,4,_,_,_,9]]).
+
+
+/** Examples
+
+problem(1, Rows), time(sudoku(Rows)), maplist(writeln, Rows).
+*/
+</textarea></form>
+
+    <script>
+      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        theme: "prolog",
+        prologKeys: true
+      });
+    </script>
+
+    <p><strong>MIME types defined:</strong> <code>text/x-prolog</code>.</p>
+
+    <p>
+The Prolog mode aims at smart indentation and basic coloring. As the
+Prolog language lacks reserved words, its syntax may be extended using
+opertor declarations and terms can, depending on their context, be
+either data, goals or code, meaningful coloring of Prolog code requires
+deep analysis of the entire file and its imported depedencies.
+    </p>
+    <p>
+Enhanced coloring is provided by means of an addon that relies on
+support from a Prolog HTTP server which analyses the code and returns a
+sequence of semantically annotated tokens.  Below is a screenshot of
+the result, showing the same code as above.
+    </p>
+
+<div style="text-alignment:center"><img src="prolog-enhanced.png"></div>
+  </article>

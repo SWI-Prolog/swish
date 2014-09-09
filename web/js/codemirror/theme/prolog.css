@@ -1,0 +1,70 @@
+.cm-s-prolog span.cm-number	       {color: #000;}
+.cm-s-prolog span.cm-neg-number	       {color: #000;}
+.cm-s-prolog span.cm-atom	       {color: #762;}
+.cm-s-prolog span.cm-qatom	       {color: #008;}
+.cm-s-prolog span.cm-string	       {color: #008; font-style: italic;}
+.cm-s-prolog span.cm-bqstring	       {color: #040; font-style: italic;}
+.cm-s-prolog span.cm-codes	       {color: #040; font-style: italic;}
+.cm-s-prolog span.cm-chars	       {color: #040; font-style: italic;}
+.cm-s-prolog span.cm-functor	       {color: #000; font-style: italic;}
+.cm-s-prolog span.cm-tag	       {color: #000; font-weight: bold;}
+.cm-s-prolog span.cm-key	       {color: #000; font-weight: bold;}
+.cm-s-prolog span.cm-qq_content        {color: #900;}
+.cm-s-prolog span.cm-qq_open,
+.cm-s-prolog span.cm-qq_sep,
+.cm-s-prolog span.cm-qq_close          {color: blue; font-weight: bold;}
+.cm-s-prolog span.cm-qq_type           {font-weight: bold;}
+.cm-s-prolog span.cm-comment	       {color: #060; font-style: italic; line-height: 1em;}
+.cm-s-prolog span.cm-comment_string    {color: #060; font-style: italic; line-height: 1em;}
+.cm-s-prolog span.cm-var	       {color: #800;} /* Normal variable */
+.cm-s-prolog span.cm-var-2	       {color: #888;} /* _Var */
+.cm-s-prolog span.cm-anon	       {color: #800;} /* _ */
+.cm-s-prolog span.cm-singleton	       {color: #800; font-weight: bold;} /* Singleton */
+.cm-s-prolog span.cm-identifier	       {font-weight: bold;}
+.cm-s-prolog span.cm-module	       {color: #549;}
+.cm-s-prolog span.cm-head_exported     {color: blue; font-weight: bold;}
+.cm-s-prolog span.cm-head_unreferenced {color: red; font-weight: bold;}
+.cm-s-prolog span.cm-head_built_in     {background: orange; font-weight: bold;}
+.cm-s-prolog span.cm-head_iso          {background: orange; font-weight: bold;}
+.cm-s-prolog span.cm-head_hook         {color: blue; text-decoration: underline;}
+.cm-s-prolog span.cm-head_extern       {color: blue; font-weight: bold;}
+.cm-s-prolog span.cm-head_public       {color: #016300; font-weight: bold;}
+.cm-s-prolog span.cm-head	       {font-weight: bold;}
+.cm-s-prolog span.cm-goal_built_in     {color: blue;}
+.cm-s-prolog span.cm-goal_imported     {color: blue;}
+.cm-s-prolog span.cm-goal_autoload     {color: #008;}
+.cm-s-prolog span.cm-goal_undefined    {color: red;}
+.cm-s-prolog span.cm-goal_dynamic      {color: #f0f;} /*magenta*/
+.cm-s-prolog span.cm-goal_thread_local {color: #f0f; text-decoration: underline;}
+.cm-s-prolog span.cm-goal_recursion    {text-decoration: underline;}
+.cm-s-prolog span.cm-meta	       {color: blue;}
+.cm-s-prolog span.cm-op_type	       {color: blue;}
+.cm-s-prolog span.cm-file_no_depends   {color: blue; text-decoration: underline; background: #fcd}
+.cm-s-prolog span.cm-file	       {color: blue; text-decoration: underline;}
+.cm-s-prolog span.cm-nofile	       {color: red;}
+.cm-s-prolog span.cm-option_name       {color: #3434ba;}
+.cm-s-prolog span.cm-no_option_name    {color: red;}
+.cm-s-prolog span.cm-flag_name         {color: blue;}
+.cm-s-prolog span.cm-no_flag_name      {color: red;}
+.cm-s-prolog span.cm-error             {background-color: #fa0;}
+.cm-s-prolog span.cm-link	       {color: #762;}
+.cm-s-prolog span.cm-expanded	       {color: blue; text-decoration: underline;}
+/* xpce */
+.cm-s-prolog span.cm-xpce_method         {font-weight: bold;}
+.cm-s-prolog span.cm-xpce_class_built_in {color: blue;}
+.cm-s-prolog span.cm-xpce_class_lib      {color: blue; font-style: italic;}
+.cm-s-prolog span.cm-xpce_class_user     {color: #000; font-style: italic;}
+.cm-s-prolog span.cm-xpce_class_undef    {color: #000; font-style: italic;}
+/* debug synchronization */
+.cm-s-prolog span.cm-outofsync         {border: 1px dotted red;}
+
+/* library(http/html_write) */
+.cm-s-prolog span.cm-html		       {color: #909; font-weight: bold;}
+.cm-s-prolog span.cm-entity		       {color: #909;}
+.cm-s-prolog span.cm-html_attribute	       {color: #909;}
+.cm-s-prolog span.cm-sgml_attr_function	       {color: blue;}
+.cm-s-prolog span.cm-http_location_for_id      {font-weight: bold;}
+.cm-s-prolog span.cm-http_no_location_for_id   {color: red; font-weight: bold;}
+
+/* Other elements */
+.cm-jumped {background: yellow;}

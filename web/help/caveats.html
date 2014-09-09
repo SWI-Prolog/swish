@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+  <title>Caveats of the web version of SWI-Prolog</title>
+  </head>
+  <body>
+<h4>Table of Contents</h4>
+                <ul>
+                    <li><a href="#sandboxing">Sandboxing</a></li>
+                    <li><a href="#io">Input and output</a></li>
+		</ul>
+
+<h4 id="sandboxing">Sandboxing</h4>
+<p>
+SWISH cannot provide unrestricted access to Prolog because Prolog gives
+unrestricted access to the operating system.  Therefore, SWISH examines
+each goal on safety before execution.  This process unfolds the call-tree
+and verifies all called predicates against a whitelist.  It fails on three
+occasions:
+</p>
+
+  <ul>
+    <li>If insufficient information is available to decide what
+        will be called.  E.g., <code>?- read(X), call(X).</code>
+	Such errors are raised as <em>instantiation errors</em>.
+    <li>If a predicate is found that is not whitelisted.  Such
+        errors are raised as <em>permission errors</em>
+    <li>If a called predicate is not defined.  Such errors are
+        raised as <em>existence errors</em>
+  </ul>
+
+<p>
+If any of the above happens, the error is printed, along with
+a chain of intermediate goals that should help finding the culprit.
+Note that the whitelist is incomplete, i.e., there are many
+predicates that can be considered safe that are not on the list.
+Please report such omissions as bugs.
+</p>
+		<h4 id="io">Input and output</h4>
+<p>
+Normal read and write do not work in the web environment.  A number
+of normal Prolog predicates are redefined to provide basic I/O.  Other
+I/O predicate are either not whitelisted or send their output to the
+server's console.
+</p>
+
+  <ul>
+    <li>read/1
+    <li>write/1, writeq/1, print/1, write_canonical/1, write_term/2,
+        portray_clause/1
+    <li>format/1, format/2
+    <li>message_hook/3, redirecting all system messages.
+  </ul>
+
+</body>
+</html>

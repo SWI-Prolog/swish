@@ -1,0 +1,11 @@
+{ "opts": {
+      "destination": "./doc/",
+      "//template": "/usr/local/lib/node_modules/jaguarjs-jsdoc",
+      "tutorials": "./tutorials/"
+  },
+  "plugins": [ "plugins/markdown" ],
+  "markdown": {
+      "parser": "gfm",
+      "hardwrap": true
+  }
+}

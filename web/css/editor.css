@@ -1,0 +1,29 @@
+@import url("../bower_components/codemirror/lib/codemirror.css");
+@import url("../bower_components/codemirror/addon/hint/show-hint.css");
+@import url("../js/codemirror/theme/prolog.css");
+
+.prolog-editor, .CodeMirror { height: 100%; }
+.CodeMirror pre.CodeMirror-placeholder { color: #999; }
+
+.CodeMirror .source-msg.error {
+  color: red;
+  border-left: 2px solid red;
+}
+
+.CodeMirror .source-msg {
+  border-left: 2px solid #000;
+  padding: 0px 5px;
+  background-color: #ddd;
+  cursor: hand; cursor: pointer;
+}
+
+.CodeMirror .source-msg > span {
+  color: #888;
+  font-weight: bold;
+  border: 1px solid #bbb;
+}
+
+.CodeMirror .source-msg:hover > span {
+  color: #f00;
+}
+

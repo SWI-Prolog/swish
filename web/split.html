@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+    <title>SWISH 2.0 page</title>
+
+    <link rel="stylesheet" href="bower_components/jquery-ui/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="bower_components/jquery.splitter/css/jquery.splitter.css">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="swish.css">
+
+    <script data-main="swish" src="bower_components/requirejs/require.js"></script>
+  </head>
+  <body>
+        <header class="navbar navbar-default">
+            <div class="container pull-left">
+                <div class="navbar-header">
+                    <a href="/"><img style="position:absolute;top:4px;left:4px;" src="logo.png"></a>
+                    <a href="/" style="margin-left:30px;font-size:24px" class="navbar-brand">&nbsp;<b><span style="color:darkblue">SWI</span><span style="color:maroon">SH</span></b></a>
+                </div>
+                <nav id="navbar"></nav>
+            </div>
+        </header>
+<div id="content" class="container">
+<div id="1" class="splittable">
+Split <span class="ident">1</span>
+      <button onclick="splitPaneFromButton(this, 'below')">below</button>
+      <button onclick="splitPaneFromButton(this, 'right')">right</button>
+      <button onclick="splitPaneFromButton(this, 'above')">above</button>
+      <button onclick="splitPaneFromButton(this, 'left')">left</button>
+<button type="button" class="close" data-dismiss="alert">&times;</button>
+</div>
+</div>
+  </body>
+</html>

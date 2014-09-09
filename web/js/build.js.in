@@ -1,0 +1,12 @@
+// Run using
+//
+//    r.js -o build.js
+//
+// Keep this in sync with swish.js.  There must be another way to do this ...
+
+({ baseURL: ".",
+   @CONFIG@
+
+   name: "swish",
+   out: "swish-min.js"
+})

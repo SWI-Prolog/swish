@@ -1,0 +1,16 @@
+{ "name": "swish",
+  "version":"0.0.1",
+  "main":"dist/swish.js",
+  "ignore":
+  [ ".gitignore"
+  ],
+  "dependencies":
+  { "jquery": "*",
+    "jquery-ui": "*",
+    "jquery.splitter": "*",
+    "bootstrap": "*",
+    "laconic": "*",
+    "requirejs": "*",
+    "codemirror": "*"
+  }
+}

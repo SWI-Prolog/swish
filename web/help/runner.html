@@ -1,0 +1,83 @@
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+  <title>Running a query</title>
+  </head>
+  <body>
+
+<style>
+table.runner-states {
+  border: 1px solid #ccc;
+  width: 90%;
+  margin: auto;
+}
+table.runner-states th {
+  font-style:italic;
+  white-space:nowrap;
+  padding-right:2em;
+  padding-left:5px;
+  vertical-align:top;
+}
+table.runner-states tr:nth-child(even) {
+  background-color: #eee;
+}
+table.runner-states tr.group th {
+  color: #fff;
+  background-color: #aaa;
+  text-align: center;
+}
+</style>
+
+<h4>Keyboard shortcuts</h4>
+
+  <table class="runner-states">
+  <tr><th>";", &lt;space&gt;</th><td>Next</td>
+  <tr><th>".", &lt;Enter&gt;</th><td>Stop</td>
+  <tr><th>"a", &lt;Esc&gt;</th><td>Stop or abort</td>
+  <tr><th>&lt;Del&gt;</th><td>Close</td>
+  <tr><th>&lt;F1&gt;</th><td>Help (this page)</td>
+  </table>
+
+<h4>Running states</h4>
+
+  <table class="runner-states">
+  <tr class="group"><th colspan="2">Living states</th>
+  <tr><th>Running</th><td>
+  The query has been sent to the server and is being executed.  This
+  state is indicated by the rotating icon.
+  </td>
+  <tr><th>Wait next</th><td>
+  The query succeeded with a <i>choice point</i> and waits for the
+  user, providing the options <b>Next</b> (give me another answer)
+  and <b>Stop</b> (I'm happy and I don't want any more anwers).
+  </td>
+  <tr><th>Wait input</th><td>
+  The query called read/1 and waits for user input.  The runner shows
+  an input element.  The user must type a valid Prolog term and press
+  <b>Enter</b>.
+  </td>
+  <tr class="group"><th colspan="2">Completed (dead) states</th>
+  <tr><th>True</th><td>
+  The query succeeded and there are no more answers.
+  </td>
+  <tr><th>False</th><td>
+  The query failed.
+  </td>
+  <tr><th>Error</th><td>
+  The query terminated due to a runtime error (exception).
+  </td>
+  <tr><th>Stopped</th><td>
+  The user selected <b>Stop</b>
+  </td>
+  <tr><th>Aborted</th><td>
+  The query was aborted by the user.
+  </td>
+  </table>
+
+<hr>
+<p>
+Note that at maximum, three queries can be open at the same time.
+
+</body>
+</html>

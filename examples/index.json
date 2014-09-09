@@ -1,0 +1,17 @@
+// list of examples, represented as a JSON list
+
+[
+{ "file":"kb.pl",		  "title":"Knowledge bases" },
+{ "file":"movies.pl",		  "title":"Movie database" },
+{ "file":"lists.pl",		  "title":"Lists" },
+{ "file":"io.pl",		  "title":"Read and write" },
+{ "file":"database.pl",		  "title":"Assert and retract" },
+{ "file":"grammar.pl",		  "title":"DCG grammar" },
+{ "file":"eliza.pl",		  "title":"Eliza" },
+{ "file":"expert-system.pl",	  "title":"Expert system" },
+{ "file":"queens.pl",		  "title":"Queens (traditional)" },
+{ "file":"clpfd-queens.pl",	  "title":"Queens (clp(fd))" },
+{ "file":"clpfd-sudoku.pl",	  "title":"Sudoku (clp(fd))" },
+{ "file":"knights_and_knaves.pl", "title":"Knights and Knaves (clp(b))" },
+{ "file":"japanese.pl",		  "title":"Japanese source" },
+]

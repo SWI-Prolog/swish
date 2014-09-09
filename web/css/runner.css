@@ -1,0 +1,134 @@
+div.prolog-runners {
+  width: 100%; height: 100%;
+  background-image: url("../icons/owl_25_years.png");
+  background-size: 90%;
+  background-repeat: no-repeat;
+  background-position: 35% 50%;
+  overflow: auto;
+}
+
+div.prolog-runner {
+  margin: 2px 5px;		/* top/bottom,left/right */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+div.prolog-runner:focus {
+  outline: none;
+}
+
+div.prolog-runner.iconic > div.runner-results { display: none; }
+
+div.runner-title {
+  padding: 0px 5px 2px;
+  border-radius: 5px;
+}
+
+div.prolog-runner:focus div.runner-title {
+  border: 2px solid #000;
+}
+
+div.runner-results {
+  padding: 2px 0px 2px 5px;
+  background-color: #fff;
+}
+
+div.answer.even { background-color: #eee; }
+div.answer.odd  { background-color: #fff; }
+div.response    { font-style: italic; color: blue; font-size: 90%;
+		  margin-left: 10%;
+		  background-color: #eee;
+		  border: 1px solid #ccc;
+		  border-radius: 5px;
+		  padding: 0px 5px;
+		}
+span.prolog-true  { font-weight: bold; }
+span.prolog-false { font-weight: bold; color: red;}
+
+span.runner-state {
+  position: relative;
+  top: 5px;
+  width:  1.5em;
+  height: 1.5em;
+  margin-right: 5px;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  display: inline-block;
+}
+
+div.runners-menu {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  z-index: 2000;
+}
+
+div.runners-menu button.dropdown-toggle {
+  background: none repeat scroll 0 0 transparent;
+  border: 0 none;
+  cursor: pointer;
+  padding: 0;
+  color: #000;
+  float: right;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  opacity: 0.2;
+}
+
+div.runner-title button.dropdown-toggle {
+  background: none repeat scroll 0 0 transparent;
+  border: 0 none;
+  cursor: pointer;
+  padding: 0;
+}
+
+div.runner-title > button {
+  background: none repeat scroll 0 0 transparent;
+  border: 0 none;
+  cursor: pointer;
+  padding: 0;
+  color: #000;
+  float: right;
+  font-size: 21px;
+  font-weight: bold;
+  line-height: 1;
+  opacity: 0.2;
+  text-shadow: 0 1px 0 #fff;
+  margin-left: 5px;
+}
+
+div.runners-menu button.dropdown-toggle:hover,
+div.runner-title > button:hover {
+  opacity: 0.8;
+}
+
+span.runner-state.idle,
+span.runner-state.wait-next,
+span.runner-state.wait-input { background-image: url("../icons/logo.png");    }
+span.runner-state.running    { background-image: url("../icons/running.gif"); }
+span.runner-state.true,
+span.runner-state.stopped,
+span.runner-state.false      { background-image: url("../icons/dead.png");    }
+span.runner-state.error,
+span.runner-state.aborted    { background-image: url("../icons/error.png");   }
+
+div.controller.running    > div.running    { display:block; }
+div.controller.wait-next  > div.wait-next  { display:block; }
+div.controller.wait-input > div.wait-input { display:block; }
+div.controller > div                       { display:none;  }
+
+div.wait-input button { float: right; box-sizing: border-box; }
+div.wait-input span   { display: block; overflow: hidden; }
+div.wait-input input  { width: 100%; box-sizing: border-box; }
+
+/* print-message output */
+
+pre.prolog-message {
+  white-space: pre-wrap;
+  padding: 5px 2px;
+}
+
+pre.msg-informational { color: #060; font-style: italic; }
+pre.msg-warning       { color: red; }
+pre.msg-error         { color: red; font-weight: bold}

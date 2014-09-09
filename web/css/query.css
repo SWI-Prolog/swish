@@ -1,0 +1,5 @@
+div.prolog-query   { height: 100%; padding: 5px; background-color: #eee; }
+table.prolog-query { width: 100%; height: 100%; }
+table.prolog-query .buttons-right { text-align: right; }
+table.prolog-query textarea.query { width: 100%; height: 100%; box-sizing: border-box; }
+table.prolog-query .prolog-prompt { vertical-align: top; font-weight: bold; }

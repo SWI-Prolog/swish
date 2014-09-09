@@ -1,0 +1,24 @@
+.fold             {display:none;}
+.pl-ellipsis      {color:blue; text-decoration:underline;}
+.pl-functor:hover {color:blue; text-decoration:underline;}
+.pl-infix:hover   {color:blue; text-decoration:underline;}
+
+/* just to make elements more visible
+.pl-var{color:pink;}
+.pl-curl{color:yellow;}
+.pl-compound{color:green;}
+.pl-functor{color:magenta;}
+.pl-list{color:grey;}
+.pl-var-tail{color:yellow;}
+.pl-nonvar-tail{color:yellow;}
+.pl-prefix{color:violet;}
+.pl-postfix{color:violet;}
+.pl-infix{color:violet;}
+.pl-dict{color:brown;}
+.pl-tag{color:yellow;}
+.pl-key{color:yellow;}
+.pl-atom{color:red;}
+.pl-string{color:yellow;}
+.pl-int{color:black;}
+.pl-float{color:yellow;}
+*/

@@ -1,0 +1,19 @@
+@import url("pane.css");
+@import url("editor.css");
+@import url("query.css");
+@import url("runner.css");
+@import url("term.css");
+@import url("../bower_components/jquery-ui/themes/smoothness/jquery-ui.css");
+@import url("../bower_components/jquery.splitter/css/jquery.splitter.css");
+@import url("../bower_components/bootstrap/dist/css/bootstrap.css");
+
+/* Logos */
+
+a.pengine-logo {
+  position:absolute;
+  top:4px;
+  left:4px;
+  width: 42px;
+  height: 42px;
+  background-image: url("../icons/logo.png");
+}
