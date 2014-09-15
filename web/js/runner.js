@@ -310,7 +310,7 @@ define([ "config", "jquery", "answer", "laconic" ],
 	    runner: elem,
 	    application: "swish",
 	    src: query.source,
-	    destroy: true,
+	    destroy: false,
 	    format: 'json-html',
 	    oncreate: handleCreate,
 	    onsuccess: handleSuccess,
@@ -532,6 +532,8 @@ define([ "config", "jquery", "answer", "laconic" ],
        } else if ( state == "wait-input" ) {
 	 this.find("input").focus();
        }
+       if ( !aliveState(state) )
+	 data.prolog.destroy();
      }
      RS(this).prologRunners('scrollToBottom');
      return this;
