@@ -245,6 +245,8 @@ define([ "config", "jquery", "answer", "laconic" ],
 				ev.preventDefault();
 				elem.prologRunner('respond', s);
 				return false;		/* prevent bubbling */
+			      } else if ( ev.key != "Esc" ) {
+				ev.stopPropagation();   /* prevent bubbling */
 			      }
 			    });
 	    $(btn).on("click", function() {
