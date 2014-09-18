@@ -38,7 +38,18 @@
 /** <module> SWISH login management
 
 This module provides basic login and  password management facilities for
-SWISH.
+SWISH.  You can create an authenticated SWISH server by
+
+  1. Loading this library
+  2. Add one or more users to the passwd file using swish_add_user/3
+
+     ==
+     ?- swish_add_user("Bob", "Bob's secret", []).
+     ==
+
+As a result, trying to create the  first pengine (e.g., using _|Run!|_),
+the server will challenge the user.  The   logged  in  user is available
+through pengine_user/1.
 */
 
 :- dynamic
@@ -61,7 +72,7 @@ pengines:authentication_hook(_Request, _Application, _User) :-
 %	Add a new user to the SWISH password file.
 
 swish_add_user(User, Passwd, Fields) :-
-	phrase("$1$", E, _),
+	phrase("$1$", E, _),		% use Unix MD5 hashes
 	crypt(Passwd, E),
 	string_codes(Hash, E),
 
