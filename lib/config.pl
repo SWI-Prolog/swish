@@ -27,62 +27,60 @@
     the GNU General Public License.
 */
 
-:- module(swish_app,
-	  [
-	  ]).
-:- use_module(library(pengines)).
+:- module(swish_config, []).
 :- use_module(library(http/http_dispatch)).
-:- use_module(library(http/http_server_files)).
 :- use_module(library(http/http_json)).
 
-:- use_module(lib/config, []).
-:- use_module(lib/page, []).
-:- use_module(lib/storage).
-:- use_module(lib/examples).
-:- use_module(lib/help).
+:- http_handler(swish('config.json'), http_server_config, []).
 
+/** <module> Make HTTP locations known to JSON code
+*/
 
 		 /*******************************
-		 *	       PATHS		*
+		 *	       CONFIG		*
 		 *******************************/
 
-user:file_search_path(swish_web, swish(web)).
+%%	http_server_config(+Request)
+%
+%	Emit a configuration object  to   the  client.  Currently serves
+%	http.locations, which is an object that maps HTTP handler ids to
+%	HTTP locations for each declared handler   that  has an explicit
+%	id(ID) property.
 
-set_swish_path :-
-	absolute_file_name(swish('swish.pl'), _,
-			   [file_errors(fail), access(read)]), !.
-set_swish_path :-
-	prolog_load_context(directory, Dir),
-	asserta(user:file_search_path(swish, Dir)).
+http_server_config(_Request) :-
+	http_locations(JSON),
+	reply_json(json{ http: json{ locations:JSON
+				   }
+		       }).
 
-:- set_swish_path.
+http_locations(JSON) :-
+	findall(ID-Path,
+		( http_current_handler(Path, _:_, Options),
+		  memberchk(id(ID), Options)
+		), Pairs),
+	keysort(Pairs, Sorted),
+	remove_duplicate_ids(Sorted, Cleaned),
+	dict_pairs(JSON, json, Cleaned).
 
-http:location(swish, root(swish), []).
+remove_duplicate_ids([], []).
+remove_duplicate_ids([Id-Path1,Id-Path2|T], [Id-Path1|Cleaned]) :- !,
+	same_ids(T, Id, T1, Paths),
+	print_message(warning, http(duplicate_handlers(Id, [Path1,Path2|Paths]))),
+	remove_duplicate_ids(T1, Cleaned).
+remove_duplicate_ids([H|T0], [H|T]) :-
+	remove_duplicate_ids(T0, T).
 
-
-		 /*******************************
-		 *	   HTTP HANDLERS	*
-		 *******************************/
-
-:- http_handler(swish(.), serve_files_in_directory(swish_web), [prefix]).
-:- http_handler(/, http_redirect(moved_temporary, swish('index.html')), [priority(-100)]).
-
-
-                 /*******************************
-                 *   CREATE SWISH APPLICATION   *
-                 *******************************/
+same_ids([], _, [], []).
+same_ids([Id-Path|T0], Id, T, [Path|TP]) :- !,
+	same_ids(T0, Id, T, TP).
+same_ids(T, _, T, []).
 
 :- multifile
-	pengines:prepare_module/3.
+	prolog:message//1.
 
-:- pengine_application(swish).
-:- use_module(swish:library(pengines_io)).
-pengines:prepare_module(Module, swish, _Options) :-
-	pengines_io:pengine_bind_io_to_html(Module).
+prolog:message(http(duplicate_handlers(Id, Paths))) -->
+	[ 'Duplicate HTTP handler IDs: "~w"'-[Id] ],
+	paths(Paths).
 
-% Libraries that are nice to have in SWISH, but cannot be loaded
-% because they use directives that are considered unsafe.  We load
-% them here, so they only need to be imported, which is just fine.
-
-:- use_module(library(clpfd), []).
-:- use_module(library(clpb), []).
+paths([]) --> [].
+paths([H|T]) --> [ '\t~q'-[H], nl ], paths(T).
