@@ -119,9 +119,13 @@ swish_logos -->
 	swish_logo.
 
 pengine_logo -->
-	html(a([href(/), class('pengine-logo')], &(nbsp))).
+	{ http_absolute_location(root(.), HREF, [])
+	},
+	html(a([href(HREF), class('pengine-logo')], &(nbsp))).
 swish_logo -->
-	html(a([href(/), class('swish-logo')], &(nbsp))).
+	{ http_absolute_location(swish(.), HREF, [])
+	},
+	html(a([href(HREF), class('swish-logo')], &(nbsp))).
 
 %%	swish_content(+Options)//
 %
