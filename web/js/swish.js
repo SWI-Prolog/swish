@@ -65,7 +65,7 @@ $(function() {
 		 *******************************/
 
 var newProgram = "% Your program goes here\n\n\n\n"+
-		 "/** Examples\n\n\n"+
+		 "/** <examples>\n\n\n"+
 		 "*/";
 
 
