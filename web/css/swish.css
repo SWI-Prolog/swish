@@ -16,4 +16,5 @@ a.pengine-logo {
   width: 42px;
   height: 42px;
   background-image: url("../icons/logo.png");
+  background-size: 100%;
 }
