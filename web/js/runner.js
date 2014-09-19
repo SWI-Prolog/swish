@@ -338,7 +338,8 @@ define([ "config", "jquery", "answer", "laconic" ],
      * @param {Answer} answer pengine response in `json-html`
      */
     renderAnswer: function(answer) {
-      var even = (++this.answers % 2 == 0);
+      var data = this.data('prologRunner');
+      var even = (++data.answers % 2 == 0);
       var div = $.el.div({class:"answer "+(even ? "even" : "odd")});
 
       addAnswer(this, div);
