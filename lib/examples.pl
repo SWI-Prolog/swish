@@ -57,7 +57,10 @@ list_examples(_Request) :-
 	http_link_to_id(swish_example, [], HREF),
 	findall(Index,
 		absolute_file_name(swish_examples('index.json'), Index,
-				   [ access(read), file_errors(fail) ]),
+				   [ access(read),
+				     file_errors(fail),
+				     solutions(all)
+				   ]),
 		Indexes),
 	maplist(index_json(HREF), Indexes, JSON),
 	append(JSON, AllExamples),
