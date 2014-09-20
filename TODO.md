@@ -20,6 +20,9 @@
 ## Editor
 
   - Add server extensions to CodeMirror
+  - Advanced completion.  This seems possible.  See e.g.,
+    - https://groups.google.com/forum/#!topic/codemirror/9OvD5cMz_uA
+    - can we do menu-based completions?
 
 ## Query handling
 
