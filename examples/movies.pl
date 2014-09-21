@@ -1,5 +1,5 @@
 /* Here's a first version of a set of exercises for practising the querying
-of a simple Prolog database, in this case a movie database (see below).  
+of a simple Prolog database, in this case a movie database (see below).
 Modified from exercises found on the web. Not sure who first made them.  */
 
 
@@ -28,16 +28,15 @@ Part 2: Add rules to the database to do the following,
 
 /** <examples> (Remove these if you want to give the exercises to students!)
 
-    movie(american_beauty, Y).
-    movie(M, 2000).
-    movie(M, Y), Y < 2000.
-    movie(M, Y), Y > 1999.
-    actor(M1, A, _), actor(M2, A, _), M1 @> M2.
-    actress(M, scarlett_johansson, _), director(M, D).
-    actor(_, A, _), director(_, A).
-    (actor(_, A, _) ; actress(_, A, _)), director(_, A).
-    actor(M, john_goodman, _), actor(M, jeff_bridges, _).
-
+?- movie(american_beauty, Y).
+?- movie(M, 2000).
+?- movie(M, Y), Y < 2000.
+?- movie(M, Y), Y > 1999.
+?- actor(M1, A, _), actor(M2, A, _), M1 @> M2.
+?- actress(M, scarlett_johansson, _), director(M, D).
+?- actor(_, A, _), director(_, A).
+?- (actor(_, A, _) ; actress(_, A, _)), director(_, A).
+?- actor(M, john_goodman, _), actor(M, jeff_bridges, _).
 */
 
 /* DATABASE
@@ -49,12 +48,12 @@ Part 2: Add rules to the database to do the following,
 
 */
 
-:- discontiguous 
-        movie/2, 
-        director/2, 
-        actor/3, 
+:- discontiguous
+        movie/2,
+        director/2,
+        actor/3,
         actress/3.
-    
+
 movie(american_beauty, 1999).
 director(american_beauty, sam_mendes).
 actor(american_beauty, kevin_spacey, lester_burnham).
@@ -94,7 +93,7 @@ actor(american_beauty, dennis_anderson, mr_smiley_s_manager).
 actor(american_beauty, matthew_kimbrough, firing_range_attendant).
 actress(american_beauty, erin_cathryn_strubbe, young_jane_burnham).
 actress(american_beauty, elaine_corral_kendall, newscaster).
- 
+
 movie(anna, 1987).
 director(anna, yurek_bogayevicz).
 actress(anna, sally_kirkland, anna).
@@ -131,7 +130,7 @@ actor(anna, larry_attile, czech_demonstrator_3).
 actress(anna, sofia_coppola, noodle).
 actor(anna, theo_mayes, dancing_dishwasher).
 actress(anna, nina_port, dancing_dishwasher).
- 
+
 movie(barton_fink, 1991).
 director(barton_fink, ethan_coen).
 director(barton_fink, joel_coen).
@@ -160,7 +159,7 @@ actor(barton_fink, johnny_judkins, sailor).
 actress(barton_fink, jana_marie_hupp, uso_girl).
 actress(barton_fink, isabelle_townsend, beauty).
 actor(barton_fink, william_preston_robertson, voice).
- 
+
 movie(the_big_lebowski, 1998).
 director(the_big_lebowski, joel_coen).
 actor(the_big_lebowski, jeff_bridges, jeffrey_lebowski__the_dude).
@@ -208,7 +207,7 @@ actress(the_big_lebowski, asia_carrera, sherry_in_logjammin).
 actress(the_big_lebowski, kiva_dawson, dancer).
 actress(the_big_lebowski, robin_jones, checker_at_ralph_s).
 actor(the_big_lebowski, paris_themmen, '').
- 
+
 movie(blade_runner, 1997).
 director(blade_runner, joseph_d_kucan).
 actor(blade_runner, martin_azarow, dino_klein).
@@ -269,7 +268,7 @@ actress(blade_runner, sandra_wang, additional_voices).
 actor(blade_runner, marc_worden, baker).
 actress(blade_runner, sean_young, rachael).
 actor(blade_runner, joe_tippy_zeoli, officer_grayford).
- 
+
 movie(blood_simple, 1984).
 director(blood_simple, ethan_coen).
 director(blood_simple, joel_coen).
@@ -290,7 +289,7 @@ actress(blood_simple, nancy_finger, girl_on_overlook).
 actor(blood_simple, william_preston_robertson, radio_evangelist).
 actress(blood_simple, holly_hunter, helene_trend).
 actor(blood_simple, barry_sonnenfeld, marty_s_vomiting).
- 
+
 movie(the_cotton_club, 1984).
 director(the_cotton_club, francis_ford_coppola).
 actor(the_cotton_club, richard_gere, michael_dixie_dwyer).
@@ -437,7 +436,7 @@ actor(the_cotton_club, mark_margolis, gunman_sooting_cage_s_character).
 actor(the_cotton_club, kirk_taylor, cotton_club_waiter).
 actor(the_cotton_club, stan_tracy, legs_diamond_s_bodyguard).
 actor(the_cotton_club, rick_washburn, hitman).
- 
+
 movie(cq, 2001).
 director(cq, roman_coppola).
 actor(cq, jeremy_davies, paul).
@@ -496,7 +495,7 @@ actor(cq, christophe_chrompin, jealous_boyfriend).
 actor(cq, romain_duris, hippie_filmmaker).
 actor(cq, chris_anthony, second_assistant_director).
 actor(cq, dean_tavoularis, man_at_screening).
- 
+
 movie(crimewave, 1985).
 director(crimewave, sam_raimi).
 actress(crimewave, louise_lasser, helene_trend).
@@ -535,7 +534,7 @@ actor(crimewave, dennis_chaitlin, fat_waiter).
 actor(crimewave, joel_coen, reporter_at_execution).
 actress(crimewave, julie_harris, '').
 actor(crimewave, dan_nelson, waiter).
- 
+
 movie(down_from_the_mountain, 2000).
 director(down_from_the_mountain, nick_doob).
 director(down_from_the_mountain, chris_hegedus).
@@ -583,7 +582,7 @@ actor(down_from_the_mountain, tim_blake_nelson, himself).
 actor(down_from_the_mountain, billy_bob_thornton, audience_member).
 actor(down_from_the_mountain, wes_motley, audience_member).
 actress(down_from_the_mountain, tamara_trexler, audience_member).
- 
+
 movie(fargo, 1996).
 director(fargo, ethan_coen).
 director(fargo, joel_coen).
@@ -627,7 +626,7 @@ actor(fargo, john_bandemer, bismarck_cop_2).
 actor(fargo, don_wescott, bark_beetle_narrator).
 actor(fargo, bruce_campbell, soap_opera_actor).
 actor(fargo, clifford_nelson, heavyset_man_in_bar).
- 
+
 movie(the_firm, 1993).
 director(the_firm, sydney_pollack).
 actor(the_firm, tom_cruise, mitch_mcdeere).
@@ -695,7 +694,7 @@ actress(the_firm, julia_hayes, girl_in_bar).
 actor(the_firm, tom_mccrory, associate).
 actor(the_firm, paul_sorvino, tommie_morolto).
 actor(the_firm, joe_viterelli, joey_morolto).
- 
+
 movie(frankenweenie, 1984).
 director(frankenweenie, tim_burton).
 actress(frankenweenie, shelley_duvall, susan_frankenstein).
@@ -710,7 +709,7 @@ actor(frankenweenie, paul_c_scott, mike_anderson).
 actress(frankenweenie, helen_boll, mrs_curtis).
 actor(frankenweenie, sparky, sparky).
 actor(frankenweenie, rusty_james, raymond).
- 
+
 movie(ghost_busters, 1984).
 director(ghost_busters, ivan_reitman).
 actor(ghost_busters, bill_murray, dr_peter_venkman).
@@ -776,7 +775,7 @@ actor(ghost_busters, harrison_ray, terror_dog).
 actor(ghost_busters, ivan_reitman, zuul_slimer).
 actor(ghost_busters, mario_todisco, prisoner).
 actor(ghost_busters, bill_walton, himself).
- 
+
 movie(girl_with_a_pearl_earring, 2003).
 director(girl_with_a_pearl_earring, peter_webber).
 actor(girl_with_a_pearl_earring, colin_firth, johannes_vermeer).
@@ -811,7 +810,7 @@ actor(girl_with_a_pearl_earring, joe_reavis, servant_2).
 actor(girl_with_a_pearl_earring, martin_serene, sergeant).
 actor(girl_with_a_pearl_earring, chris_kelly, gay_blade).
 actor(girl_with_a_pearl_earring, leslie_woodhall, neighbour).
- 
+
 movie(the_godfather, 1972).
 director(the_godfather, francis_ford_coppola).
 actor(the_godfather, marlon_brando, don_vito_corleone).
@@ -872,7 +871,7 @@ actor(the_godfather, gabriele_torrei, enzo_robutti_the_baker).
 actor(the_godfather, nick_vallelonga, wedding_party_guest).
 actor(the_godfather, ed_vantura, wedding_guest).
 actor(the_godfather, matthew_vlahakis, clemenza_s_son_pushing_toy_car_in_driveway).
- 
+
 movie(the_godfather_part_ii, 1974).
 director(the_godfather_part_ii, francis_ford_coppola).
 actor(the_godfather_part_ii, al_pacino, don_michael_corleone).
@@ -953,7 +952,7 @@ actress(the_godfather_part_ii, connie_mason, extra).
 actor(the_godfather_part_ii, john_megna, young_hyman_roth).
 actor(the_godfather_part_ii, frank_pesce, extra).
 actress(the_godfather_part_ii, filomena_spagnuolo, extra_in_little_italy).
- 
+
 movie(the_godfather_part_iii, 1990).
 director(the_godfather_part_iii, francis_ford_coppola).
 actor(the_godfather_part_iii, al_pacino, don_michael_corleone).
@@ -1037,7 +1036,7 @@ actor(the_godfather_part_iii, andrea_girolami, extra).
 actress(the_godfather_part_iii, simonetta_stefanelli, apollonia_vitelli_corleone).
 actor(the_godfather_part_iii, lee_strasberg, hyman_roth_stukowski).
 actor(the_godfather_part_iii, f_x_vitolo, pasquale).
- 
+
 movie(groundhog_day, 1993).
 director(groundhog_day, harold_ramis).
 actor(groundhog_day, bill_murray, phil_connors).
@@ -1097,11 +1096,11 @@ actor(groundhog_day, grady_hutt, '').
 actress(groundhog_day, regina_prokop, polka_dancer).
 actor(groundhog_day, daniel_riggs, bachelor).
 actor(groundhog_day, paul_terrien, groundhog_official).
- 
+
 movie(hail_caesar, 2006).
 director(hail_caesar, ethan_coen).
 director(hail_caesar, joel_coen).
- 
+
 movie(hearts_of_darkness_a_filmmaker_s_apocalypse, 1991).
 director(hearts_of_darkness_a_filmmaker_s_apocalypse, fax_bahr).
 director(hearts_of_darkness_a_filmmaker_s_apocalypse, eleanor_coppola).
@@ -1126,7 +1125,7 @@ actor(hearts_of_darkness_a_filmmaker_s_apocalypse, george_lucas, himself).
 actor(hearts_of_darkness_a_filmmaker_s_apocalypse, martin_sheen, himself).
 actor(hearts_of_darkness_a_filmmaker_s_apocalypse, g_d_spradlin, himself).
 actor(hearts_of_darkness_a_filmmaker_s_apocalypse, orson_welles, himself_from_1938_radio_broadcast).
- 
+
 movie(the_hudsucker_proxy, 1994).
 director(the_hudsucker_proxy, ethan_coen).
 director(the_hudsucker_proxy, joel_coen).
@@ -1211,7 +1210,7 @@ actor(the_hudsucker_proxy, roderick_peeples, new_year_s_mob).
 actress(the_hudsucker_proxy, cynthia_baker, new_year_s_mob).
 actor(the_hudsucker_proxy, jack_rooney, man_at_merchandise_mart).
 actor(the_hudsucker_proxy, keith_schrader, businessman).
- 
+
 movie(inside_monkey_zetterland, 1992).
 director(inside_monkey_zetterland, jefery_levy).
 actor(inside_monkey_zetterland, steve_antin, monkey_zetterland).
@@ -1233,7 +1232,7 @@ actor(inside_monkey_zetterland, lance_loud, psychiatrist).
 actor(inside_monkey_zetterland, chris_nash, police_officer).
 actress(inside_monkey_zetterland, vivian_schilling, network_producer).
 actress(inside_monkey_zetterland, blair_tefkin, brent_s_assistant).
- 
+
 movie(intolerable_cruelty, 2003).
 director(intolerable_cruelty, ethan_coen).
 director(intolerable_cruelty, joel_coen).
@@ -1287,7 +1286,7 @@ actress(intolerable_cruelty, barbara_kerr_condon, herb_myerson_s_private_nurse).
 actor(intolerable_cruelty, jason_de_hoyos, gardener).
 actor(intolerable_cruelty, larry_vigus, lawyer).
 actress(intolerable_cruelty, susan_yeagley, tart_1).
- 
+
 movie(the_ladykillers, 2004).
 director(the_ladykillers, ethan_coen).
 director(the_ladykillers, joel_coen).
@@ -1329,7 +1328,7 @@ actress(the_ladykillers, mi_mi_green_fann, church_voice).
 actor(the_ladykillers, maurice_watson, othar).
 actor(the_ladykillers, bruce_campbell, humane_society_worker).
 actor(the_ladykillers, michael_dotson, angry_football_fan).
- 
+
 movie(lick_the_star, 1998).
 director(lick_the_star, sofia_coppola).
 actress(lick_the_star, christina_turley, kate).
@@ -1347,7 +1346,7 @@ actress(lick_the_star, hilary_fleming, taco_girl).
 actress(lick_the_star, eleanor_cummings, sixth_grader_p_e_victim).
 actor(lick_the_star, anthony_desimone, snack_counter_victim).
 actor(lick_the_star, aron_acord, sexy_boy).
- 
+
 movie(lost_in_translation, 2003).
 director(lost_in_translation, sofia_coppola).
 actress(lost_in_translation, scarlett_johansson, charlotte).
@@ -1401,7 +1400,7 @@ actor(lost_in_translation, georg_o_p_eschert, german_hotel_guest).
 actor(lost_in_translation, mark_willms, carl_west).
 actress(lost_in_translation, lisle_wilkerson, sexy_businesswoman).
 actress(lost_in_translation, nancy_steiner, lydia_harris).
- 
+
 movie(the_man_who_wasn_t_there, 2001).
 director(the_man_who_wasn_t_there, ethan_coen).
 director(the_man_who_wasn_t_there, joel_coen).
@@ -1464,7 +1463,7 @@ actor(the_man_who_wasn_t_there, john_michael_higgins, emergency_room_physician).
 actress(the_man_who_wasn_t_there, monika_malmrose, crying_girl).
 actor(the_man_who_wasn_t_there, peter_schrum, truck_driver).
 actor(the_man_who_wasn_t_there, max_thayer, witness).
- 
+
 movie(marie_antoinette, 2006).
 director(marie_antoinette, sofia_coppola).
 actress(marie_antoinette, kirsten_dunst, marie_antoinette).
@@ -1502,7 +1501,7 @@ actor(marie_antoinette, victor_loukianenko, le_valet_de_marie_antoinette).
 actor(marie_antoinette, rapha_l_neal, garden_page).
 actress(marie_antoinette, mary_nighy, '').
 actor(marie_antoinette, al_weaver, '').
- 
+
 movie(miller_s_crossing, 1990).
 director(miller_s_crossing, ethan_coen).
 director(miller_s_crossing, joel_coen).
@@ -1549,7 +1548,7 @@ actor(miller_s_crossing, joey_ancona, boxer).
 actor(miller_s_crossing, bill_raye, boxer).
 actor(miller_s_crossing, william_preston_robertson, voice).
 actress(miller_s_crossing, frances_mcdormand, mayor_s_secretary).
- 
+
 movie(mission_impossible, 1996).
 director(mission_impossible, brian_de_palma).
 actor(mission_impossible, tom_cruise, ethan_hunt).
@@ -1603,10 +1602,10 @@ actor(mission_impossible, keith_campbell, fireman).
 actor(mission_impossible, michael_cella, student).
 actor(mission_impossible, emilio_estevez, jack_harmon).
 actor(mission_impossible, john_knoll, passenger_on_train_in_tunnel).
- 
+
 movie(no_country_for_old_men, 2007).
 director(no_country_for_old_men, joel_coen).
- 
+
 movie(o_brother_where_art_thou, 2000).
 director(o_brother_where_art_thou, ethan_coen).
 director(o_brother_where_art_thou, joel_coen).
@@ -1660,7 +1659,7 @@ actor(o_brother_where_art_thou, jerry_douglas, dobro_player).
 actor(o_brother_where_art_thou, christopher_francis, kkk_member).
 actor(o_brother_where_art_thou, geoffrey_gould, head_of_mob).
 actor(o_brother_where_art_thou, nathaniel_lee_jr, ice_boy_on_the_right_straw_hat).
- 
+
 movie(the_outsiders, 1983).
 director(the_outsiders, francis_ford_coppola).
 actor(the_outsiders, matt_dillon, dallas_dally_winston).
@@ -1689,7 +1688,7 @@ actor(the_outsiders, john_meier, paul).
 actor(the_outsiders, ed_jackson, motorcycle_cop).
 actor(the_outsiders, daniel_r_suhart, orderly).
 actress(the_outsiders, heather_langenkamp, '').
- 
+
 movie(paris_je_t_aime, 2006).
 director(paris_je_t_aime, olivier_assayas).
 director(paris_je_t_aime, fr_d_ric_auburtin).
@@ -1738,7 +1737,7 @@ actor(paris_je_t_aime, nick_nolte, vincent_segment_17th_arrondissement).
 actress(paris_je_t_aime, ludivine_sagnier, claire_segment_17th_arrondissement).
 actor(paris_je_t_aime, seydou_boro, hassan_segment_19th_arrondissement).
 actress(paris_je_t_aime, a_ssa_ma_ga, sophie_segment_19th_arrondissement).
- 
+
 movie(peggy_sue_got_married, 1986).
 director(peggy_sue_got_married, francis_ford_coppola).
 actress(peggy_sue_got_married, kathleen_turner, peggy_sue_kelcher_peggy_sue_bodell).
@@ -1793,7 +1792,7 @@ actress(peggy_sue_got_married, mary_leichtling, reunion_receptionist).
 actress(peggy_sue_got_married, cynthia_brian, reunion_woman_2).
 actor(peggy_sue_got_married, michael_x_martin, '').
 actress(peggy_sue_got_married, mary_mitchel, '').
- 
+
 movie(raising_arizona, 1987).
 director(raising_arizona, ethan_coen).
 director(raising_arizona, joel_coen).
@@ -1855,7 +1854,7 @@ actor(raising_arizona, david_schneider, arizona_quint).
 actor(raising_arizona, michael_stewart, arizona_quint).
 actor(raising_arizona, william_preston_robertson, amazing_voice).
 actor(raising_arizona, ron_francis_cobert, reporter_1).
- 
+
 movie(rumble_fish, 1983).
 director(rumble_fish, francis_ford_coppola).
 actor(rumble_fish, matt_dillon, rusty_james).
@@ -1888,7 +1887,7 @@ actress(rumble_fish, karen_parker, lake_girl_3).
 actress(rumble_fish, sussannah_darcy, lake_girl_4).
 actress(rumble_fish, kristi_somers, lake_girl_5).
 actress(rumble_fish, heather_langenkamp, '').
- 
+
 movie(spies_like_us, 1985).
 director(spies_like_us, john_landis).
 actor(spies_like_us, chevy_chase, emmett_fitz_hume).
@@ -1946,7 +1945,7 @@ actress(spies_like_us, erin_folsey, teenage_girl).
 actor(spies_like_us, bob_swaim, special_forces_commander).
 actor(spies_like_us, edwin_newman, himself).
 actress(spies_like_us, nancy_gair, student).
- 
+
 movie(star_wars_episode_i__the_phantom_menace, 1999).
 director(star_wars_episode_i__the_phantom_menace, george_lucas).
 actor(star_wars_episode_i__the_phantom_menace, liam_neeson, qui_gon_jinn).
@@ -2039,7 +2038,7 @@ actor(star_wars_episode_i__the_phantom_menace, danny_wagner, mawhonic).
 actor(star_wars_episode_i__the_phantom_menace, dwayne_williams, naboo_courier).
 actor(star_wars_episode_i__the_phantom_menace, matthew_wood, bib_fortuna_voice_of_ody_mandrell).
 actor(star_wars_episode_i__the_phantom_menace, bob_woods, naboo_courier).
- 
+
 movie(torrance_rises, 1999).
 director(torrance_rises, lance_bangs).
 director(torrance_rises, spike_jonze).
@@ -2075,7 +2074,7 @@ actor(torrance_rises, will_smith, will_smith).
 actor(torrance_rises, frank_stancati, himself).
 actor(torrance_rises, tim_szczepanski, himself).
 actress(torrance_rises, michelle_weber, herself).
- 
+
 movie(the_usual_suspects, 1995).
 director(the_usual_suspects, bryan_singer).
 actor(the_usual_suspects, stephen_baldwin, michael_mcmanus).
@@ -2114,7 +2113,7 @@ actor(the_usual_suspects, john_gillespie, '').
 actor(the_usual_suspects, peter_greene, redfoot_the_fence).
 actor(the_usual_suspects, christopher_mcquarrie, interrogation_cop).
 actor(the_usual_suspects, scott_b_morgan, keyser_s_ze_in_flashback).
- 
+
 movie(the_virgin_suicides, 1999).
 director(the_virgin_suicides, sofia_coppola).
 actor(the_virgin_suicides, james_woods, mr_lisbon).
@@ -2182,7 +2181,7 @@ actor(the_virgin_suicides, derek_boyes, football_grieving_teacher).
 actor(the_virgin_suicides, john_buchan, john_lydia_s_boss).
 actress(the_virgin_suicides, mandy_lee_jones, student).
 actor(the_virgin_suicides, giovanni_ribisi, narrator).
- 
+
 movie(an_american_rhapsody, 2001).
 director(an_american_rhapsody, va_g_rdos).
 actress(an_american_rhapsody, scarlett_johansson, suzanne_sandor_at_15).
@@ -2225,7 +2224,7 @@ actress(an_american_rhapsody, zsuzsa_sz_ger, woman_2_at_market).
 actor(an_american_rhapsody, andras_banlaki, '').
 actress(an_american_rhapsody, va_g_rdos, suzanne_sandor_in_family_picture_age_6).
 actor(an_american_rhapsody, peter_janosi, german_customs_officer).
- 
+
 movie(the_black_dahlia, 2006).
 director(the_black_dahlia, brian_de_palma).
 actor(the_black_dahlia, josh_hartnett, ofcr_dwight_bucky_bleichert).
@@ -2261,7 +2260,7 @@ actor(the_black_dahlia, pepe_serna, '').
 actress(the_black_dahlia, fiona_shaw, '').
 actor(the_black_dahlia, joey_slotnick, '').
 actor(the_black_dahlia, mike_starr, russ_millard).
- 
+
 movie(fall, 1997).
 director(fall, eric_schaeffer).
 actor(fall, eric_schaeffer, michael).
@@ -2284,7 +2283,7 @@ actor(fall, amaury_nolasco, waiter).
 actor(fall, marc_sebastian, popparazi).
 actor(fall, evan_thompson, priest).
 actor(fall, larry_weiss, paparazzi).
- 
+
 movie(eight_legged_freaks, 2002).
 director(eight_legged_freaks, ellory_elkayem).
 actor(eight_legged_freaks, david_arquette, chris_mccormick).
@@ -2311,7 +2310,7 @@ actor(eight_legged_freaks, john_ennis, cop_1).
 actor(eight_legged_freaks, ryan_c_benson, cop_2).
 actor(eight_legged_freaks, bruiser, himself).
 actor(eight_legged_freaks, tom_noonan, joshua_taft).
- 
+
 movie(ghost_world, 2000).
 director(ghost_world, terry_zwigoff).
 actress(ghost_world, thora_birch, enid).
@@ -2386,7 +2385,7 @@ actor(ghost_world, larry_parker, orange_colored_sky_bassist_graduation_band).
 actor(ghost_world, greg_wendell_reid, yuppie_1).
 actress(ghost_world, michelle_marie_white, mom_in_convenience_store).
 actor(ghost_world, peter_yarrow, himself).
- 
+
 movie(a_good_woman, 2004).
 director(a_good_woman, mike_barker).
 actress(a_good_woman, helen_hunt, mrs_erlynne).
@@ -2412,7 +2411,7 @@ actress(a_good_woman, daniela_stanga, dress_shop_owner).
 actress(a_good_woman, arianna_mansi, stella_s_maid_1).
 actress(a_good_woman, camilla_bertocci, stella_s_maid_2).
 actress(a_good_woman, nichola_aigner, mrs_gowper).
- 
+
 movie(if_lucy_fell, 1996).
 director(if_lucy_fell, eric_schaeffer).
 actress(if_lucy_fell, sarah_jessica_parker, lucy_ackerman).
@@ -2439,7 +2438,7 @@ actor(if_lucy_fell, peter_walker, bag_man).
 actor(if_lucy_fell, bradley_jenkel, neighbor).
 actor(if_lucy_fell, brian_keane, man_in_gallery).
 actress(if_lucy_fell, amanda_kravat, woman_in_park).
- 
+
 movie(home_alone_3, 1997).
 director(home_alone_3, raja_gosnell).
 actor(home_alone_3, alex_d_linz, alex_pruitt).
@@ -2475,7 +2474,7 @@ actress(home_alone_3, sarah_godshaw, latchkey_girl).
 actor(home_alone_3, andy_john_g_kalkounos, police_officer_1).
 actor(home_alone_3, zachary_lee, johnny_allen).
 actress(home_alone_3, kelly_ann_marquart, girl_on_sidewalk).
- 
+
 movie(the_horse_whisperer, 1998).
 director(the_horse_whisperer, robert_redford).
 actor(the_horse_whisperer, robert_redford, tom_booker).
@@ -2515,7 +2514,7 @@ actress(the_horse_whisperer, gloria_lynne_henry, member_of_magazine_staff).
 actor(the_horse_whisperer, lance_r_jones, ranch_hand).
 actor(the_horse_whisperer, donnie_saylor, rugged_cowboy).
 actor(the_horse_whisperer, george_strait, himself).
- 
+
 movie(in_good_company, 2004).
 director(in_good_company, paul_weitz).
 actor(in_good_company, dennis_quaid, dan_foreman).
@@ -2568,7 +2567,7 @@ actor(in_good_company, malcolm_mcdowell, teddy_k__globecom_ceo).
 actor(in_good_company, scott_sahadi, moving_man).
 actress(in_good_company, loretta_shenosky, kalb_s_assistant).
 actor(in_good_company, trevor_stynes, man_on_street).
- 
+
 movie(just_cause, 1995).
 director(just_cause, arne_glimcher).
 actor(just_cause, sean_connery, paul_armstrong).
@@ -2627,7 +2626,7 @@ actor(just_cause, patrick_fullerton, reporter).
 actor(just_cause, jody_millard, prison_guard).
 actor(just_cause, michael_sassano, courtroom_observer).
 actor(just_cause, rene_teboe, man_in_bus_terminal).
- 
+
 movie(the_island, 2005).
 director(the_island, michael_bay).
 actor(the_island, ewan_mcgregor, lincoln_six_echo_tom_lincoln).
@@ -2706,7 +2705,7 @@ actress(the_island, jennifer_secord, patron).
 actor(the_island, mckay_stewart, falling_building_dodger).
 actor(the_island, skyler_stone, sarah_jordan_s_husband).
 actor(the_island, richard_john_walters, agnate).
- 
+
 movie(a_love_song_for_bobby_long, 2004).
 director(a_love_song_for_bobby_long, shainee_gabel).
 actor(a_love_song_for_bobby_long, john_travolta, bobby_long).
@@ -2733,7 +2732,7 @@ actor(a_love_song_for_bobby_long, nick_loren, merchant).
 actress(a_love_song_for_bobby_long, brooke_allen, sandy).
 actor(a_love_song_for_bobby_long, sal_sapienza, jazz_club_patron).
 actor(a_love_song_for_bobby_long, doc_whitney, alcoholic).
- 
+
 movie(manny__lo, 1996).
 director(manny__lo, lisa_krueger).
 actress(manny__lo, mary_kay_place, elaine).
@@ -2764,7 +2763,7 @@ actor(manny__lo, mark_palmieri, golf_course_cop).
 actor(manny__lo, paul_guilfoyle, country_house_owner).
 actor(manny__lo, tony_arnaud, sheriff).
 actor(manny__lo, nicholas_lent, lo_s_baby).
- 
+
 movie(match_point, 2005).
 director(match_point, woody_allen).
 actress(match_point, scarlett_johansson, nola_rice).
@@ -2783,7 +2782,7 @@ actor(match_point, steve_pemberton, di_parry).
 actress(match_point, miranda_raison, heather).
 actor(match_point, colin_salmon, '').
 actress(match_point, zoe_telford, samantha).
- 
+
 movie(my_brother_the_pig, 1999).
 director(my_brother_the_pig, erik_fleming).
 actor(my_brother_the_pig, nick_fuoco, george_caldwell).
@@ -2803,7 +2802,7 @@ actress(my_brother_the_pig, dee_ann_johnston, tourist_mom).
 actor(my_brother_the_pig, marco_rodriguez, eduardo).
 actor(my_brother_the_pig, rob_johnston, taxi_driver).
 actor(my_brother_the_pig, dee_bradley_baker, pig_george).
- 
+
 movie(north, 1994).
 director(north, rob_reiner).
 actor(north, elijah_wood, north).
@@ -2918,7 +2917,7 @@ actor(north, brother_douglas, new_york_city_pimp).
 actor(north, nick_taylor, newsman).
 actor(north, jim_great_elk_waters, eskimo_father).
 actor(north, michael_werckle, amish_boy).
- 
+
 movie(the_perfect_score, 2004).
 director(the_perfect_score, brian_robbins).
 actress(the_perfect_score, erika_christensen, anna_ross).
@@ -2960,7 +2959,7 @@ actor(the_perfect_score, john_shaw, ets_man).
 actor(the_perfect_score, jamie_yochlowitz, man_in_jail).
 actor(the_perfect_score, rob_boyce, guard).
 actor(the_perfect_score, paul_campbell, guy_in_truck).
- 
+
 movie(the_spongebob_squarepants_movie, 2004).
 director(the_spongebob_squarepants_movie, stephen_hillenburg).
 actor(the_spongebob_squarepants_movie, tom_kenny, spongebob_narrator_gary_clay_tough_fish_2_twin_2_houston_voice).
@@ -3011,7 +3010,7 @@ actor(the_spongebob_squarepants_movie, neil_ross, cyclops).
 actor(the_spongebob_squarepants_movie, stephen_hillenburg, parrot).
 actor(the_spongebob_squarepants_movie, michael_patrick_bell, fisherman).
 actor(the_spongebob_squarepants_movie, jim_wise, goofy_goober_rock_singer).
- 
+
 movie(untitled_woody_allen_fall_project_2006, 2006).
 director(untitled_woody_allen_fall_project_2006, woody_allen).
 actor(untitled_woody_allen_fall_project_2006, woody_allen, '').
@@ -3023,7 +3022,7 @@ actor(untitled_woody_allen_fall_project_2006, kevin_mcnally, mike_tinsley).
 actor(untitled_woody_allen_fall_project_2006, ian_mcshane, '').
 actor(untitled_woody_allen_fall_project_2006, james_nesbitt, '').
 actor(untitled_woody_allen_fall_project_2006, colin_salmon, '').
- 
+
 movie(a_view_from_the_bridge, 2006).
 actress(a_view_from_the_bridge, scarlett_johansson, catherine).
 actor(a_view_from_the_bridge, anthony_lapaglia, eddie_carbone).
