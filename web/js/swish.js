@@ -121,6 +121,7 @@ $("#navbar").navbar({
       menuBroadcast("clearMessages");
     }
   },
+  "Examples": populateExamples,
   "Help":
   { "About ...": function() {
       menuBroadcast("help", {file:"about.html"});
