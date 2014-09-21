@@ -123,7 +123,10 @@ $("#navbar").navbar({
   },
   "Help":
   { "About ...": function() {
-      menuBroadcast("help", {file:"about.html", notagain:"about"});
+      menuBroadcast("help", {file:"about.html"});
+    },
+    "Beware! ...": function() {
+      menuBroadcast("help", {file:"warning.html"});
     },
     "Help topics": "--",
     "Help ...": function() {
