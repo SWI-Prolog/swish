@@ -121,20 +121,16 @@ $("#navbar").navbar({
       menuBroadcast("clearMessages");
     }
   },
-  "Examples": populateExamples,
-  "Tools":
-  {
-  },
   "Help":
   { "About ...": function() {
-      menuBroadcast("help", "about.html");
+      menuBroadcast("help", {file:"about.html", notagain:"about"});
     },
     "Help topics": "--",
     "Help ...": function() {
-      menuBroadcast("help", "help.html");
+      menuBroadcast("help", {file:"help.html"});
     },
     "Caveats ...": function() {
-      menuBroadcast("help", "caveats.html");
+      menuBroadcast("help", {file:"caveats.html"});
     }
   }
 });
@@ -248,6 +244,7 @@ var query  = $(".prolog-query").queryEditor(
   });
 
 loadHashSource();
+menuBroadcast("help", {file:"warning.html", notagain:"warning"});
 
 $('body').on("click", "button.close-pane", function() {
   closePane($(this).parent());
