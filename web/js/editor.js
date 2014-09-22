@@ -94,7 +94,7 @@ define([ "cm/lib/codemirror",
 	  elem.on("source", function(ev, src) {
 	    elem.prologEditor('setSource', src.data);
 	    if ( src.file ) {
-	      if ( !window.location.hash.contains("&togetherjs=") )
+	      if ( window.location.hash.indexOf("&togetherjs=") < 0 )
 		window.location.hash = src.file;
 	      data.file = src.file;
 	    } else {
