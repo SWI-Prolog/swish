@@ -7,56 +7,101 @@
 <body>
 <h4>Table of Contents</h4>
   <ul>
-    <li><a href="#motivation">Motivation</a></li>
-    <li><a href="#exampls">Examples</a></li>
-    <li><a href="#time_limit">Time limit</a></li>
-    <li><a href="#known_issues">Known issues</a></li>
-    <li><a href="#technology">Technology</a></li>
-    <li><a href="#source_code">Source code</a></li>
+    <li><a href="#help-basics">Basic operation</a></li>
+    <li><a href="#help-examples">Embedding examples in the program text</a></li>
+    <li><a href="#help-share">Save or share your program</a></li>
+    <li><a href="#help-preload">Preload SWISH with data</a></li>
   </ul>
 
-<h4 id="motivation">Motivation</h4>
-                <p>
-                    <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> is inspired by web-based tools such as <a target="_blank" href="http://jsfiddle.net/">JSFIDDLE</a> in that it allows you to develop a program and then share it with others on the Web. However, lacking both debugger and profiler, <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> is far from a full-fledged IDE for Prolog, and to avoid compromising the server it does not allow you to execute "dangerous" predicates such as predicates reading and writing files. (It does however allow you to use predicates such as <code>read/1</code> and <code>write/1</code> but they will only read from and write to your web browser.)
-                </p>
-                <p>
-                    <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> might be useful in an educational setting. If you are a teacher, you may want to tell your students to share with you the solutions to exercises by sending you a link to <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> loaded with their solutions ready to run.
-                </p>
-                <p>
-                    Yes, and talking to SWI-Prolog from an iPad or maybe even a smartphone should also work, although it has not been extensively tested yet.
-                </p>
-                <h4 id="exampls">Examples</h4>
-                <p>
-                    If you include example goals inside comments as shown below, they will be used to populate the example menu and make the first goal show in the Goal input field.
-                </p>
-                <pre style="font-size:80%">
-/** Examples
+<h4 id="help-basics">Basic operation</h4>
+<p>
+Prolog is about running a <i>query</i> against a <i>program</i>. The
+<i>query</i> goes into the bottom-left editor and the <i>program</i>
+into the left editor.  The program can be empty, executing queries
+against the <i>built-in</i> predicates of Prolog.  For example:
 
-loves(X, mia).
-jealous(X, Y).
+<pre style="font-size:80%">
+?- format("Hello world!~n").</pre>
+
+<p>
+A query can be executed by hitting <code>RETURN</code> if the query
+is complete and the caret is behind the '.' that terminates the query
+or by using the <b>Run!</b> button.  At this moment, the following happens:
+
+<ol>
+  <li>The interface creates a <em>runner</em> in the top-right window
+      that controls the execution of the query.
+  <li>The runner collects the text from the top-left editor (if any)
+      and the query and sends this to the server, which creates a <a target="_blank"
+      href="http://www.swi-prolog.org/pldoc/man?section=pengines">Pengine</a>
+      (<i>Prolog Engine</i>).
+  <li>The Pengine compiles the program into a temporary private module.
+  <li>The Pengine assesses whether executing the query can compromise
+      the query.  If this fails, an error is displated.  See
+      the help topic <b>Caveats ...</b> for details.
+  <li>If the query is considered safe, it executes the query and
+      communicates with the <em>runner</em>
+      about the results using JSON messages.  The <em>runner</em>
+      interaction is described in the help topic <b>Runner ...</b>
+</ol>
+
+<p>
+Note that <b>you do not have to save your program to execute it</b>.  If
+your are not satisfied with the answer to a query, you can simply
+edit the program and use the <b>Run!</b> again.  The new query is
+executed in a completely new environment.  In particular, data that
+you asserted in a previous query is not available in the next.
+
+<h4 id="help-examples">Embedding examples in the program text</h4>
+<p>
+If you include example goals inside comments as shown below,
+they will be used to populate the example menu and make the
+first goal show in the Goal input field.
+</p>
+<pre style="font-size:80%">
+/** &lt;examples&gt;
+
+?- loves(X, mia).
+?- jealous(X, Y).
 
 */</pre>
-                <h4 id="time_limit">Time limit</h4>
-                <p>
-                    When you click the First button, your goal will be allowed to execute on the server for 300 seconds before aborting and returning with a message stating that the time limit has been exceeded.
-                </p>
-                <h4 id="known_issues">Known issues</h4>
-                <p>
-                <ul>
-                    <li><span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> works fine in Safari, Firefox and Chrome. I have not tested it in Internet Explorer, so I don't know if it works there.
-                    </li>
-                    <li>The syntax highlighting of Prolog source code as provided by the <a target="_blank" href="http://ace.ajax.org/">ACE editor</a> is slightly off sometimes. The relevant file is <a target="_blank" href="/vendor/src-noconflict/mode-prolog.js">here</a>. Please send a copy to <a target="_blank" href="mailto:torbjorn.lager@gmail.com">me</a> if you are able to fix any of the highlighting issues.
-                    </li>
-                </ul>
-                <h4 id="technology">Technology</h4>
-                <p>
-                    <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> is implemented in a combination of Prolog, HTML, CSS and JavaScript. The only framework used is <a target="_blank" href="http://getbootstrap.com/">Bootstrap</a> and the choice of editor landed on the very capable <a target="_blank" href="http://ace.ajax.org/">ACE editor</a>. The server serves static HTML, CSS and JavaScript code only, none of that is dynamically generated on the server. Instead, to create behaviour, the main traffic between server and client consists of the JSON responses from the server guiding the transformation of the browser's DOM on the client side.
-                </p>
 
-                <h4 id="source_code">Source code</h4>
-                <p>
-                    The source code for <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> is available in the Pengine distribution on <a target="_blank" href="https://github.com/SWI-Prolog/pengines">GitHub</a>.
-                </p>
+<h4 id="help-share">Save or share your program</h4>
+<p>
+If you use <b>File/Save</b>, the server will save your program in a file
+with a unique random name and add this name to the URL displayed in the
+browser's address bar. You can later come back to this source by going
+to this URL. You can also sent the URL to a friend and let him or her
+have a look at your program.  Anyone can save the program, but the last
+one wins.  In the future, we will add versioning.
+
+<p>
+Using <b>File/Collaborate ...</b>, you create a
+<a target="_blank" href="https://togetherjs.com/">TogetherJS</a> session
+that provides shared editing, chat and voice communication.
+
+<h4 id="help-preload">Preload SWISH with data</h4>
+<p>
+You can make <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
+start with a loaded program using the URL <code>http://swish.swi-prolog.org/</code> and
+providing parameters:
+
+  <dl>
+  <dt>code<dd>
+  Either the concrete code or a URL from which the code will be downloaded.
+  </dd>
+  <dt>background<dd>
+  As <code>code</code>, but this part of the code will not be visible in
+  the editor.
+  </dd>
+  <dt>examples<dd>
+  As the above described examples comment block.
+  </dd>
+  <dt>q<dd>
+  The initial query to load into the query window.
+  </dd>
+  </dl>
+
 </body>
 </html>
 

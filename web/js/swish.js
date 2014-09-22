@@ -129,16 +129,23 @@ $("#navbar").navbar({
   { "About ...": function() {
       menuBroadcast("help", {file:"about.html"});
     },
-    "Beware! ...": function() {
-      menuBroadcast("help", {file:"warning.html"});
-    },
-    "Help topics": "--",
+    "Topics": "--",
     "Help ...": function() {
       menuBroadcast("help", {file:"help.html"});
     },
+    "Runner ...": function() {
+      menuBroadcast("help", {file:"runner.html"});
+    },
+    "Background": "--",
+    "Beware! ...": function() {
+      menuBroadcast("help", {file:"warning.html"});
+    },
     "Caveats ...": function() {
       menuBroadcast("help", {file:"caveats.html"});
-    }
+    },
+    "Background ...": function() {
+      menuBroadcast("help", {file:"background.html"});
+    },
   }
 });
 

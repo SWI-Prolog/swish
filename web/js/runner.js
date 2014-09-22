@@ -465,7 +465,7 @@ define([ "config", "jquery", "answer", "laconic" ],
      * Provide help on running a query
      */
      help: function() {
-       $(".swish-event-receiver").trigger("help", "runner.html");
+       $(".swish-event-receiver").trigger("help", {file:"runner.html"});
      },
 
     /**
