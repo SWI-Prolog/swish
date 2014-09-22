@@ -38,6 +38,9 @@ require.config({
     },
     splitter:
     { deps:["jquery"]
+    },
+    laconic:
+    { deps:["jquery"]
     }
   }
 }); //require.config
