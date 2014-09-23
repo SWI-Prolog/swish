@@ -42,6 +42,9 @@
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
+:- if(exists_source(library(http/http_ssl_plugin))).
+:- use_module(library(http/http_ssl_plugin)).
+:- endif.
 :- use_module(library(debug)).
 :- use_module(library(time)).
 :- use_module(library(option)).
@@ -213,7 +216,9 @@ download_source(HREF, Source, Options) :-
 	catch(call_with_time_limit(
 		  TMO,
 		  setup_call_cleanup(
-		      http_open(HREF, In, []),
+		      http_open(HREF, In,
+				[ cert_verify_hook(ssl_verify)
+				]),
 		      read_source(In, MaxLen, Source, Options),
 		      close(In))),
 	      E, load_error(E, Source)).
@@ -241,6 +246,18 @@ read_source(In, MaxLen, Source, Options) :-
 load_error(E, Source) :-
 	message_to_string(E, String),
 	format(string(Source), '%ERROR: ~s~n', [String]).
+
+:- public ssl_verify/5.
+
+%%	ssl_verify(+SSL, +ProblemCert, +AllCerts, +FirstCert, +Error)
+%
+%	Currently we accept  all  certificates.   We  organise  our  own
+%	security using SHA1 signatures, so  we   do  not  care about the
+%	source of the data.
+
+ssl_verify(_SSL,
+	   _ProblemCertificate, _AllCertificates, _FirstCertificate,
+	   _Error).
 
 
 		 /*******************************

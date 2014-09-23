@@ -30,10 +30,11 @@
 :- module(swish_app,
 	  [
 	  ]).
-:- use_module(library(pengines)).
+:- use_module(library(pengines), []).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_server_files)).
-:- use_module(library(http/http_json)).
+:- use_module(library(http/http_path)).
+:- use_module(library(option)).
 
 :- use_module(lib/config, []).
 :- use_module(lib/page, []).
@@ -72,7 +73,25 @@ swish_config:config(show_beware, true).
 		 *******************************/
 
 :- http_handler(swish(.), serve_files_in_directory(swish_web), [prefix]).
-:- http_handler(/, http_redirect(moved_temporary, swish('index.html')), [priority(-100)]).
+:- http_handler(/, moved_with_params(swish('index.html')), [priority(-100)]).
+
+%%	moved_with_params(+Target, +Request) is det.
+%
+%	Issue an HTTP moved_temporary  to   Target,  but  preserving the
+%	query and fragment.  This allows using the root as redirection.
+
+moved_with_params(Spec, Request) :-
+	http_absolute_location(Spec, Location, []),
+	option(request_uri(Req), Request),
+	(   (   sub_atom(Req, _, _, A0, '?')
+	    ;	sub_atom(Req, _, _, A0, '#')
+	    )
+	->  A is A0+1,
+	    sub_string(Req, _, A, 0, After),
+	    string_concat(Location, After, NewLoc),
+	    http_redirect(moved_temporary, NewLoc, Request)
+	;   http_redirect(moved_temporary, Location, Request)
+	).
 
 
                  /*******************************

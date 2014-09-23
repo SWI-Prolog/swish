@@ -84,7 +84,7 @@ that provides shared editing, chat and voice communication.
 <p>
 You can make <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
 start with a loaded program using the URL <code>http://swish.swi-prolog.org/</code> and
-providing parameters:
+providing the parameters below.  The URL accepts both `GET` and `POST` requests.
 
   <dl>
   <dt>code<dd>
@@ -98,9 +98,15 @@ providing parameters:
   As the above described examples comment block.
   </dd>
   <dt>q<dd>
-  The initial query to load into the query window.
+  The initial query to load into the query window.  Note that the following
+  characters need to be escaped: '#', '&' and the space.
   </dd>
   </dl>
+
+<p>The URL below opens <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> on a file from GitHub with a default query.
+
+<pre>
+http:http://swish.swi-prolog.org/?code=https://github.com/SWI-Prolog/swipl-devel/raw/master/demo/likes.pl&amp;q=likes(sam,Food)</pre>
 
 </body>
 </html>
