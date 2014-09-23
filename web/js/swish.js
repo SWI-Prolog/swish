@@ -43,11 +43,11 @@ require.config({
   }
 }); //require.config
 
-require(["jquery", "jswish"],
-	function($, swish) {
+require(["jquery", "config", "jswish"],
+	function($, config, swish) {
 
 $(function() {
-  $("body").swish();
+  $("body").swish(config.swish||{});
 }); //$();
 
 }); // require

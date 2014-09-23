@@ -49,8 +49,10 @@
 
 http_server_config(_Request) :-
 	http_locations(JSON),
+	swish_config(SWISHConfig),
 	reply_json(json{ http: json{ locations:JSON
-				   }
+				   },
+			 swish: SWISHConfig
 		       }).
 
 http_locations(JSON) :-
@@ -74,6 +76,27 @@ same_ids([], _, [], []).
 same_ids([Id-Path|T0], Id, T, [Path|TP]) :- !,
 	same_ids(T0, Id, T, TP).
 same_ids(T, _, T, []).
+
+
+%%	swish_config(-Config:dict) is det.
+%
+%	Obtain name-value pairs from swish_config:config/2
+
+swish_config(Config) :-
+	findall(Key-Value, config(Key, Value), Pairs),
+	dict_pairs(Config, json, Pairs).
+
+%%	config(-Key, -Value) is nondet.
+%
+%	Define a name/value pair that will end   up  in the SWISH config
+%	object (see =web/js/config.js=)
+
+:- multifile config/2.
+
+
+		 /*******************************
+		 *	      MESSAGES		*
+		 *******************************/
 
 :- multifile
 	prolog:message//1.

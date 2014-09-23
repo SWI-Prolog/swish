@@ -59,6 +59,13 @@ set_swish_path :-
 
 http:location(swish, root(swish), []).
 
+		 /*******************************
+		 *	      CONFIG		*
+		 *******************************/
+
+:- multifile swish_config:config/2.
+
+swish_config:config(show_beware, true).
 
 		 /*******************************
 		 *	   HTTP HANDLERS	*
