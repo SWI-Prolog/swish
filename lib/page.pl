@@ -126,7 +126,7 @@ pengine_logo -->
 	},
 	html(a([href(HREF), class('pengine-logo')], &(nbsp))).
 swish_logo -->
-	{ http_absolute_location(swish(.), HREF, [])
+	{ http_absolute_location(swish('index.html'), HREF, [])
 	},
 	html(a([href(HREF), class('swish-logo')], &(nbsp))).
 
