@@ -89,11 +89,16 @@ define([ "jquery",
      * contain one SWISH application and swish is normally initialised
      * on the body.  This might change.
      * @example $("body").swish();
+     * {Object} options
+     * {Boolean} options.show_beware If `true`, show a dialogue box
+     * telling this is a limited version.
      */
     _init: function(options) {
       swishLogo();
       setupModal();
       setupPanes();
+
+      options = options||{};
 
       return this.each(function() {
 	var elem = $(this);
@@ -110,9 +115,29 @@ define([ "jquery",
 	  });
 
 	elem.swish('loadHashSource');
+	if ( options.show_beware )
+	  menuBroadcast("help", {file:"beware.html", notagain:"beware"});
 
 	elem.data(pluginName, data);	/* store with element */
       });
+    },
+
+    /**
+     * Trigger a global event in SWISH.  Currently defined events are:
+     *
+     *   - `help`        -- show a modal help window
+     *   - `source`      -- load a new source
+     *   - `saveProgram` -- save the current program
+     *
+     * This method triggers all elements of class
+     * `swish-event-receiver`.
+     *
+     * @param {String} name is the name of the trigger.
+     * @param {Object|null} data provides additional data for the event.
+     */
+    trigger: function(name, data) {
+      menuBroadcast(name, data);
+      return this;
     },
 
     /**
