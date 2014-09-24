@@ -69,7 +69,7 @@ define([ "jquery",
 	},
 	"Background": "--",
 	"Beware! ...": function() {
-	  menuBroadcast("help", {file:"warning.html"});
+	  menuBroadcast("help", {file:"beware.html"});
 	},
 	"Caveats ...": function() {
 	  menuBroadcast("help", {file:"caveats.html"});
