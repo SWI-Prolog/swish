@@ -95,7 +95,9 @@ request_file(Request, File, Path) :-
 	option(path_info(PathInfo), Request),
 	atom_concat(/, File, PathInfo),
 	http_safe_file(File, []),
-	absolute_file_name(web_storage(File), Path, [access(read)]).
+	catch(absolute_file_name(web_storage(File), Path, [access(read)]),
+	      error(existence_error(source_sink, _), _),
+	      http_404([], Request)).
 
 storage_url(File, HREF) :-
 	http_absolute_uri(root(storage/File), HREF).
