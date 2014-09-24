@@ -27,7 +27,8 @@ Who owns the zebra and who drinks water?
 
 
 houses(Solution) :-
-	template(Solution),                                                 %  1
+	% each house is represented as: h(Nationality, Pet, Cigarette, Drink, Color)
+	length(Solution, 5),                                                %  1
 	member(h(english, _, _, _, red), Solution),                         %  2
 	member(h(spanish, dog, _, _, _), Solution),                         %  3
 	member(h(_, _, _, coffee, green), Solution),                        %  4
@@ -44,14 +45,6 @@ houses(Solution) :-
 	next(h(norwegian, _, _, _, _), h(_, _, _, _, blue), Solution),      % 15
 	member(h(_, _, _, water, _), Solution),		% one of them drinks water
 	member(h(_, zebra, _, _, _), Solution).		% one of them owns a zebra
-
-% h(Nationality, Pet, Cigarette, Drink, Color)
-template([ h(_, _, _, _, _),
-	   h(_, _, _, _, _),
-	   h(_, _, _, _, _),
-	   h(_, _, _, _, _),
-	   h(_, _, _, _, _)
-	 ]).
 
 next(A, B, [A, B, _, _, _]).
 next(B, C, [_, B, C, _, _]).
