@@ -27,6 +27,9 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 	elem.on("help", function(ev, data) {
 	  elem.swishModal('showHelp', data);
 	});
+	elem.on("error", function(ev, data) {
+	  elem.swishModal('show', data);
+	});
       });
     },
 

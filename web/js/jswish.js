@@ -240,6 +240,13 @@ define([ "jquery",
 				   file: file,   /* associate with file */
 				   data: data    /* the content */
 				 });
+		 },
+		 error: function(jqXHR, textStatus) {
+		   menuBroadcast("error",
+				 { title: "Download failed",
+				   body: $("<div class='error'>")
+				           .html(jqXHR.responseText)
+				 });
 		 }
 	       });
       }
