@@ -13,6 +13,7 @@ min:	swish-min.js
 
 swish-min.js:	build.js $(JS)
 	r.js -o build.js
+	gzip -k $@
 
 build.js: $(MAIN) build.js.in
 	swipl mkjsbuild.pl $(MAIN) build.js.in
@@ -21,4 +22,4 @@ require.js: ../bower_components/requirejs/require.js
 	cp -p $< $@
 
 clean:
-	rm -f require.js swish-min.js
+	rm -f require.js swish-min.js swish-min.js.gz
