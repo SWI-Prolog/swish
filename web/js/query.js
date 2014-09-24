@@ -167,7 +167,7 @@ define([ "jquery", "laconic", "editor" ],
       q = $.trim(q);
 
       if ( !q ) {
-	$(".swish-event-receiver").trigger("help", "query.html");
+	$(".swish-event-receiver").trigger("help", {file:"query.html"});
 	return this;
       }
       $(".swish-event-receiver").trigger("clearMessages");
