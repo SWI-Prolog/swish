@@ -1,4 +1,4 @@
-%%  houses(-Solution) is det.
+%%  houses(-Solution)
 %   @param  Solution is a list with the solution to the puzzle.
 %   @author Folklore attributes this puzzle to Einstein
 %   @see http://en.wikipedia.org/wiki/Zebra_Puzzle
