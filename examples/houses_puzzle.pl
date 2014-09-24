@@ -1,5 +1,5 @@
 %%  houses(-Solution)
-%   @param  Solution is a list with the solution to the puzzle.
+%   @param  Solution is a list of houses that satisfy all constraints.
 %   @author Folklore attributes this puzzle to Einstein
 %   @see http://en.wikipedia.org/wiki/Zebra_Puzzle
 
@@ -55,4 +55,9 @@ next(A, B, Ls) :-
 /** <examples>
 
 ?- houses(Solution), maplist(writeln, Solution), nl.
+
+?- setof(Nat, Hs^Cig^Drink^Col^(houses(Hs),member(h(Nat,zebra,Cig,Drink,Col), Hs)), [ZebraOwner]).
+
+?- setof(Nat, Hs^Pet^Cig^Col^(houses(Hs),member(h(Nat,Pet,Cig,water,Col), Hs)), [WaterDrinker]).
+
 */
