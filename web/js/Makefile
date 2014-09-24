@@ -1,4 +1,5 @@
-JS=editor.js navbar.js answer.js pane.js query.js runner.js swish.js config.js
+JS=editor.js navbar.js answer.js pane.js query.js runner.js swish.js \
+   config.js jswish.js
 JQ=jquery.jsdoc
 CONF=conf.json
 MAIN=swish.js
