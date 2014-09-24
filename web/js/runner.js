@@ -446,18 +446,20 @@ define([ "config", "jquery", "answer", "laconic" ],
      * remove the runner from its container.
      */
     close: function() {
-      var runners = RS(this);
+      if ( this.length ) {
+	var runners = RS(this);
 
-      this.each(function() {
-	var elem = $(this);
-	var data = elem.data('prologRunner');
+	this.each(function() {
+	  var elem = $(this);
+	  var data = elem.data('prologRunner');
 
-	if ( elem.prologRunner('alive') )
-	  data.prolog.destroy();
-      });
-      this.remove();
+	  if ( elem.prologRunner('alive') )
+	    data.prolog.destroy();
+	});
+	this.remove();
 
-      runners.prologRunners('scrollToBottom', true);
+	runners.prologRunners('scrollToBottom', true);
+      }
       return this;
     },
 
