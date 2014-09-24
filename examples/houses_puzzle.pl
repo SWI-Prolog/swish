@@ -27,8 +27,8 @@ Who owns the zebra and who drinks water?
 
 
 houses(Hs) :-
-        % each house in the list Hs of houses is represented as:
-        %      h(Nationality, Pet, Cigarette, Drink, Color)
+	% each house in the list Hs of houses is represented as:
+	%      h(Nationality, Pet, Cigarette, Drink, Color)
 	length(Hs, 5),                                            %  1
 	member(h(english,_,_,_,red), Hs),                         %  2
 	member(h(spanish,dog,_,_,_), Hs),                         %  3
@@ -48,9 +48,9 @@ houses(Hs) :-
 	member(h(_,zebra,_,_,_), Hs).		% one of them owns a zebra
 
 next(A, B, Ls) :-
-        nth0(IA, Ls, A),
-        nth0(IB, Ls, B),
-        abs(IA - IB) =:= 1.
+	nth0(IA, Ls, A),
+	nth0(IB, Ls, B),
+	abs(IA - IB) =:= 1.
 
 /** <examples>
 
