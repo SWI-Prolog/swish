@@ -46,11 +46,10 @@ houses(Solution) :-
 	member(h(_, _, _, water, _), Solution),		% one of them drinks water
 	member(h(_, zebra, _, _, _), Solution).		% one of them owns a zebra
 
-next(A, B, [A, B, _, _, _]).
-next(B, C, [_, B, C, _, _]).
-next(C, D, [_, _, C, D, _]).
-next(D, E, [_, _, _, D, E]).
-
+next(A, B, Ls) :-
+        nth0(IA, Ls, A),
+        nth0(IB, Ls, B),
+        abs(IA - IB) =:= 1.
 
 /** <examples>
 
