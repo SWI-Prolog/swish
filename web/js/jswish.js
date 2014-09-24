@@ -234,6 +234,7 @@ define([ "jquery",
       if ( file ) {
 	$.ajax({ url: config.http.locations.web_storage + "/" + file,
 		 dataType: "text",
+		 cache: false,		/* too aggressive on e.g. Safari */
 		 success: function(data) {
 		   menuBroadcast("source",
 				 { type: "hash", /* indicate reason */
