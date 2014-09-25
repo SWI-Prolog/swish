@@ -47,10 +47,8 @@ houses(Hs) :-
 	member(h(_,_,_,water,_), Hs),		% one of them drinks water
 	member(h(_,zebra,_,_,_), Hs).		% one of them owns a zebra
 
-next(A, B, Ls) :-
-	nth0(IA, Ls, A),
-	nth0(IB, Ls, B),
-	abs(IA - IB) =:= 1.
+next(A, B, Ls) :- nextto(A, B, Ls).
+next(A, B, Ls) :- nextto(B, A, Ls).
 
 /** <examples>
 
