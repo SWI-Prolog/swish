@@ -178,7 +178,7 @@ define([ "cm/lib/codemirror",
 	       success: function(reply) {
 		 options.url = reply.url;
 		 options.file = reply.file;
-		 window.location.hash = reply.file;
+		 updateHistory(reply);
 	       },
 	       error: function() {
 		 alert("Failed to save document");
@@ -310,6 +310,26 @@ define([ "cm/lib/codemirror",
       return exlist;
     }
   }; // methods
+
+  function updateHistory(reply) {
+    var cpath = window.location.pathname;
+
+    if ( cpath != reply.url ) {
+      window.history.pushState({location:reply.url},
+			       "",
+			       reply.url);
+      document.title = "SWISH -- "+reply.file;
+    }
+  }
+
+  window.onpopstate = function(e) {
+    if ( e.state ) {
+      if ( e.state.location ) {
+	window.location =  e.state.location;
+      }
+    } else
+      window.location.reload(true);
+  }
 
   /**
    * The prologEditor jQuery plugin converts a `<div>` into an code
