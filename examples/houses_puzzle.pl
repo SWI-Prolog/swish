@@ -47,8 +47,8 @@ houses(Hs) :-
 	member(h(_,_,_,water,_), Hs),		% one of them drinks water
 	member(h(_,zebra,_,_,_), Hs).		% one of them owns a zebra
 
-next(A, B, Ls) :- nextto(A, B, Ls).
-next(A, B, Ls) :- nextto(B, A, Ls).
+next(A, B, Ls) :- append(_, [A,B|_], Ls).
+next(A, B, Ls) :- append(_, [B,A|_], Ls).
 
 /** <examples>
 
