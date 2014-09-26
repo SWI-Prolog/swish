@@ -41,6 +41,26 @@
 
 /** <module> Store files on behalve of web clients
 
+The file store needs to deal with versioning and meta-data.  Some
+options:
+
+  - Use git.  That gets us versioning for free.  We can store the
+    meta-data in the commit message.  The drawback is that
+    the history is joined over all files, which causes locking
+    issues and makes it hard to delete files.
+
+  - Use content blobs (as GIT) and keep the meta-data in a BDB
+    database.
+
+      - Store by hash and type.
+      - Nodes:
+        - content
+	- commit holding
+	  - name: name of the content
+	  - previous: previous commit hash
+	  - content: content
+	  - time: time
+	  - user
 */
 
 :- setting(directory, atom, storage, 'The directory for storing files.').
