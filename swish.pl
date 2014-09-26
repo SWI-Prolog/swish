@@ -47,6 +47,9 @@
 		 *******************************/
 
 user:file_search_path(swish_web, swish(web)).
+user:file_search_path(js,        swish_web(js)).
+user:file_search_path(css,       swish_web(css)).
+user:file_search_path(icons,     swish_web(icons)).
 
 set_swish_path :-
 	absolute_file_name(swish('swish.pl'), _,
@@ -57,7 +60,7 @@ set_swish_path :-
 
 :- set_swish_path.
 
-http:location(swish, root(swish), []).
+http:location(swish, root(.), [priority(-100)]).
 
 		 /*******************************
 		 *	      CONFIG		*
@@ -70,31 +73,6 @@ http:location(swish, root(swish), []).
 swish_config:config(show_beware, true).
 swish_config:source_alias(example).
 swish_config:source_alias(p).
-
-
-		 /*******************************
-		 *	   HTTP HANDLERS	*
-		 *******************************/
-
-:- http_handler(/, moved_with_params(swish(.)), [priority(-100)]).
-
-%%	moved_with_params(+Target, +Request) is det.
-%
-%	Issue an HTTP moved_temporary  to   Target,  but  preserving the
-%	query and fragment.  This allows using the root as redirection.
-
-moved_with_params(Spec, Request) :-
-	http_absolute_location(Spec, Location, []),
-	option(request_uri(Req), Request),
-	(   (   sub_atom(Req, _, _, A0, '?')
-	    ;	sub_atom(Req, _, _, A0, '#')
-	    )
-	->  A is A0+1,
-	    sub_string(Req, _, A, 0, After),
-	    string_concat(Location, After, NewLoc),
-	    http_redirect(moved_temporary, NewLoc, Request)
-	;   http_redirect(moved_temporary, Location, Request)
-	).
 
 
                  /*******************************
