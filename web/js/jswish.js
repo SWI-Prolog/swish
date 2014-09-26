@@ -112,9 +112,8 @@ define([ "jquery",
           { source:   function() { return elem.swish('prologSource'); },
 	    examples: elem.swish('examples'),
 	    runner:   data.runner,
-	  });
+	  }).trigger("source");
 
-	elem.swish('loadHashSource');
 	if ( options.show_beware )
 	  menuBroadcast("help", {file:"beware.html", notagain:"beware"});
 
@@ -213,46 +212,6 @@ define([ "jquery",
 	return $().prologEditor('getExamples', text, false);
       else
 	return function() { return $(".prolog-editor").prologEditor('getExamples'); };
-    },
-
-    /**
-     * Deal with the #fragment.  If this includes `&togetherjs=`, start
-     * TogetherJS.  Otherwise, as the server for the file identified by
-     * _fragment_.
-     */
-    loadHashSource: function() {
-      var file  = window.location.hash.slice(1);
-      var parts = file.split("&togetherjs=");
-
-      if ( parts.length == 2 ) {
-	file = parts[0];
-	require([ "https://togetherjs.com/togetherjs-min.js"
-		],
-		function() { });
-      }
-
-      if ( file ) {
-	$.ajax({ url: config.http.locations.web_storage + "/" + file,
-		 dataType: "text",
-		 cache: false,		/* too aggressive on e.g. Safari */
-		 success: function(data) {
-		   menuBroadcast("source",
-				 { type: "hash", /* indicate reason */
-				   file: file,   /* associate with file */
-				   data: data    /* the content */
-				 });
-		 },
-		 error: function(jqXHR, textStatus) {
-		   menuBroadcast("error",
-				 { title: "Download failed",
-				   body: $("<div class='error'>")
-				           .html(jqXHR.responseText)
-				 });
-		 }
-	       });
-      }
-
-      return this;
     },
 
     /**
