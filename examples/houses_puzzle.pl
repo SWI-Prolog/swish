@@ -25,6 +25,14 @@
 Who owns the zebra and who drinks water?
 */
 
+zebra_owner(Owner) :-
+	houses(Hs),
+	member(h(Owner,zebra,_,_,_), Hs).
+
+water_drinker(Drinker) :-
+	houses(Hs),
+	member(h(Drinker,_,_,water,_), Hs).
+
 
 houses(Hs) :-
 	% each house in the list Hs of houses is represented as:
@@ -52,10 +60,10 @@ next(A, B, Ls) :- append(_, [B,A|_], Ls).
 
 /** <examples>
 
+?- zebra_owner(Owner).
+
+?- water_drinker(Drinker).
+
 ?- houses(Solution), maplist(writeln, Solution), nl.
-
-?- setof(Nat, Hs^Cig^Drink^Col^(houses(Hs),member(h(Nat,zebra,Cig,Drink,Col), Hs)), [ZebraOwner]).
-
-?- setof(Nat, Hs^Pet^Cig^Col^(houses(Hs),member(h(Nat,Pet,Cig,water,Col), Hs)), [WaterDrinker]).
 
 */
