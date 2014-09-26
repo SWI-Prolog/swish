@@ -33,7 +33,7 @@ var config = { http:
 	       }
 	     };
 
-$.ajax("config.json",
+$.ajax("swish_config.json",
        { dataType: "json",
 	 async: false,
 	 success: function(data) {

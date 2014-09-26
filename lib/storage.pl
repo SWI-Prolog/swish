@@ -31,13 +31,15 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
-:- use_module(library(http/http_path)).
 :- use_module(library(http/http_client)).
 :- use_module(library(settings)).
 :- use_module(library(random)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
 :- use_module(library(filesex)).
+
+:- use_module(page).
+:- use_module(config).
 
 /** <module> Store files on behalve of web clients
 
@@ -65,11 +67,11 @@ options:
 
 :- setting(directory, atom, storage, 'The directory for storing files.').
 
+user:file_search_path(p, web_storage(.)).
 user:file_search_path(web_storage, Dir) :-
 	setting(directory, Dir).
-user:file_search_path(web_storage, swish_examples(.)).
 
-:- http_handler(root(storage), web_storage, [ id(web_storage), prefix ]).
+:- http_handler(swish(p), web_storage, [ id(web_storage), prefix ]).
 
 %%	web_storage(+Request) is det.
 %
@@ -83,8 +85,13 @@ web_storage(Request) :-
 	storage(Method, Request).
 
 storage(get, Request) :-
-	request_file(Request, _File, Path),
-	http_reply_file(Path, [unsafe(true)], Request).
+	http_parameters(Request,
+			[ format(Format, [ oneof([swish,raw]),
+					   default(swish),
+					   description('How to render')
+					 ])
+			]),
+	storage_get(Request, Format).
 storage(post, Request) :-
 	http_parameters(Request,
 			[   data(Data, [default(''),
@@ -120,7 +127,26 @@ request_file(Request, File, Path) :-
 	      http_404([], Request)).
 
 storage_url(File, HREF) :-
-	http_absolute_uri(root(storage/File), HREF).
+	http_link_to_id(web_storage, path_postfix(File), HREF).
+
+%%	storage_get(+Request, +Format) is det.
+
+storage_get(Request, swish) :-
+	swish_reply_config(Request), !.
+storage_get(Request, swish) :- !,
+	request_file(Request, _File, Path),
+	load_string(Path, Code),
+	swish_reply([code(Code)], Request).
+storage_get(Request, _) :-
+	request_file(Request, _File, Path),
+	http_reply_file(Path, [unsafe(true)], Request).
+
+
+load_string(File, Data) :-
+	setup_call_cleanup(
+	    open(File, read, S, [encoding(utf8)]),
+	    read_string(S, _, Data),
+	    close(S)).
 
 save_string(File, Data) :-
 	setup_call_cleanup(

@@ -28,7 +28,8 @@
 */
 
 :- module(swish_page,
-	  [ swish_page//1,			% +Options
+	  [ swish_reply/2,			% +Options, +Request
+	    swish_page//1,			% +Options
 
 	    swish_navbar//1,			% +Options
 	    swish_content//1,			% +Options
@@ -48,6 +49,7 @@
 :- use_module(library(debug)).
 :- use_module(library(time)).
 :- use_module(library(option)).
+:- use_module(config).
 
 /** <module> Provide the SWISH application as Prolog HTML component
 
@@ -56,12 +58,13 @@ grammer rules. This allows for server-side   generated  pages to include
 swish or parts of swish easily into a page.
 */
 
-:- http_handler(swish(.), swish, [id(swish), prefix]).
+:- http_handler(swish(.), swish_reply([]), [id(swish), prefix]).
 
 :- multifile
-	swish_config:source_alias/1.
+	swish_config:source_alias/1,
+	swish_config:reply_page/1.
 
-%%	swish(+Request)
+%%	swish_reply(+Options, +Request)
 %
 %	HTTP handler to reply the  default   SWISH  page.  Processes the
 %	following parameters:
@@ -77,9 +80,11 @@ swish or parts of swish easily into a page.
 %	  - q(Query)
 %	  Use Query as the initial query.
 
-swish(Request) :-
+swish_reply(_, Request) :-
 	serve_resource(Request), !.
-swish(Request) :-
+swish_reply(_, Request) :-
+	swish_reply_config(Request), !.
+swish_reply(SwishOptions, Request) :-
 	Params = [ code(_,	 [optional(true)]),
 		   background(_, [optional(true)]),
 		   examples(_,   [optional(true)]),
@@ -87,10 +92,15 @@ swish(Request) :-
 		 ],
 	http_parameters(Request, Params),
 	params_options(Params, Options0),
-	source_option(Request, Options0, Options),
-	reply_html_page(swish(main),
-			title('SWISH -- SWI-Prolog for SHaring'),
-			\swish_page(Options)).
+	merge_options(Options0, SwishOptions, Options1),
+	source_option(Request, Options1, Options),
+	(   swish_config:reply_page(Options)
+	->  true
+	;   reply_html_page(
+		swish(main),
+		title('SWISH -- SWI-Prolog for SHaring'),
+		\swish_page(Options))
+	).
 
 params_options([], []).
 params_options([H0|T0], [H|T]) :-
@@ -150,7 +160,6 @@ resource_prefix('help/').
 resource_prefix('icons/').
 resource_prefix('js/').
 resource_prefix('bower_components/').
-
 
 %%	swish_page(+Options)//
 %

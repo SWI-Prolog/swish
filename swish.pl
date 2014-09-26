@@ -70,6 +70,7 @@ http:location(swish, root(swish), []).
 
 swish_config:config(show_beware, true).
 swish_config:source_alias(example).
+swish_config:source_alias(p).
 
 
 		 /*******************************

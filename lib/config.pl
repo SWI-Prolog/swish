@@ -27,11 +27,12 @@
     the GNU General Public License.
 */
 
-:- module(swish_config, []).
+:- module(swish_config,
+	  [ swish_reply_config/1
+	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
-
-:- http_handler(swish('config.json'), http_server_config, []).
+:- use_module(library(option)).
 
 /** <module> Make HTTP locations known to JSON code
 */
@@ -40,14 +41,14 @@
 		 *	       CONFIG		*
 		 *******************************/
 
-%%	http_server_config(+Request)
+%%	swish_reply_config(+Request) is semidet.
 %
-%	Emit a configuration object  to   the  client.  Currently serves
-%	http.locations, which is an object that maps HTTP handler ids to
-%	HTTP locations for each declared handler   that  has an explicit
-%	id(ID) property.
+%	Emit a configuration object to the client if the client requests
+%	for '.../swish_config.json', regardless  of   the  path  prefix.
 
-http_server_config(_Request) :-
+swish_reply_config(Request) :-
+	option(path(Path), Request),
+	file_base_name(Path, 'swish_config.json'),
 	http_locations(JSON),
 	swish_config(SWISHConfig),
 	reply_json(json{ http: json{ locations:JSON
