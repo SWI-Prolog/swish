@@ -145,16 +145,7 @@ define([ "jquery",
      */
     openExampleFunction: function(ex) {
       return function() {
-	$.ajax(ex.href,
-	       { dataType: "text",
-		 success: function(data) {
-		   menuBroadcast("source",
-				 { type: "example",
-				   file: ex.file,
-				   data: data
-				 });
-		 }
-	       });
+	window.location = ex.href;
       };
     },
 

@@ -93,14 +93,6 @@ define([ "cm/lib/codemirror",
 	  elem.addClass("swish-event-receiver"); /* do this anyway? */
 	  elem.on("source", function(ev, src) {
 	    elem.prologEditor('setSource', src.data);
-	    if ( src.file ) {
-	      if ( window.location.hash.indexOf("&togetherjs=") < 0 )
-		window.location.hash = src.file;
-	      data.file = src.file;
-	    } else {
-	      window.location.hash = "";
-	      delete data.file;
-	    }
 	  });
 	  elem.on("saveProgram", function(ev, data) {
 	    elem.prologEditor('save');

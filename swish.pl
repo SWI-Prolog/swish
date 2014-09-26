@@ -48,7 +48,6 @@
 		 *******************************/
 
 user:file_search_path(swish_web, swish(web)).
-user:file_search_path(ex,        swish_examples(.)).
 
 set_swish_path :-
 	absolute_file_name(swish('swish.pl'), _,
@@ -70,7 +69,7 @@ http:location(swish, root(swish), []).
 	swish_config:source_alias/1.
 
 swish_config:config(show_beware, true).
-swish_config:source_alias(ex).
+swish_config:source_alias(example).
 
 
 		 /*******************************

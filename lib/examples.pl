@@ -29,9 +29,9 @@
 
 :- module(swish_examples, []).
 :- use_module(library(http/http_dispatch)).
-:- use_module(library(http/http_server_files)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/json)).
+:- use_module(library(http/http_path)).
 :- use_module(library(filesex)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
@@ -39,11 +39,8 @@
 /** <module> Serve example files
 */
 
-user:file_search_path(swish_examples, swish(examples)).
+user:file_search_path(example, swish(examples)).
 
-:- http_handler(swish(example),
-		serve_files_in_directory(swish_examples),
-		[prefix, id(swish_example)]).
 :- http_handler(swish(list_examples),
 		list_examples, [id(swish_examples)]).
 
@@ -54,9 +51,9 @@ user:file_search_path(swish_examples, swish(examples)).
 %	a file swish_examples('index.json').
 
 list_examples(_Request) :-
-	http_link_to_id(swish_example, [], HREF),
+	http_absolute_location(swish(example), HREF, []),
 	findall(Index,
-		absolute_file_name(swish_examples('index.json'), Index,
+		absolute_file_name(example('index.json'), Index,
 				   [ access(read),
 				     file_errors(fail),
 				     solutions(all)
