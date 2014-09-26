@@ -56,7 +56,10 @@ grammer rules. This allows for server-side   generated  pages to include
 swish or parts of swish easily into a page.
 */
 
-:- http_handler(swish('index.html'), swish, [id(swish)]).
+:- http_handler(swish(.), swish, [id(swish), prefix]).
+
+:- multifile
+	swish_config:source_alias/1.
 
 %%	swish(+Request)
 %
@@ -75,13 +78,16 @@ swish or parts of swish easily into a page.
 %	  Use Query as the initial query.
 
 swish(Request) :-
+	serve_resource(Request), !.
+swish(Request) :-
 	Params = [ code(_,	 [optional(true)]),
 		   background(_, [optional(true)]),
 		   examples(_,   [optional(true)]),
 		   q(_,          [optional(true)])
 		 ],
 	http_parameters(Request, Params),
-	params_options(Params, Options),
+	params_options(Params, Options0),
+	source_option(Request, Options0, Options),
 	reply_html_page(swish(main),
 			title('SWISH -- SWI-Prolog for SHaring'),
 			\swish_page(Options)).
@@ -94,6 +100,56 @@ params_options([H0|T0], [H|T]) :-
 	params_options(T0, T).
 params_options([_|T0], T) :-
 	params_options(T0, T).
+
+
+%%	source_option(+Request, +Options0, -Options)
+%
+%	If the data was requested  as   '/Alias/File',  reply using file
+%	Alias(File).
+
+source_option(_Request, Options, Options) :-
+	option(code(_), Options), !.
+source_option(Request, Options0, Options) :-
+	option(path_info(Info), Request),
+	Info \== 'index.html', !,	% Backward compatibility
+	(   source_data(Info, String)
+	->  Options = [code(String)|Options0]
+	;   http_404([], Request)
+	).
+source_option(_, Options, Options).
+
+source_data(Info, Code) :-
+	sub_atom(Info, B, _, A, /),
+	sub_atom(Info, 0, B, _, Alias),
+	sub_atom(Info, _, A, 0, File),
+	catch(swish_config:source_alias(Alias), E,
+	      (print_message(warning, E), fail)),
+	Spec =.. [Alias,File],
+	http_safe_file(Spec, []),
+	absolute_file_name(Spec, Path,
+			   [ access(read),
+			     file_errors(fail)
+			   ]),
+	setup_call_cleanup(
+	    open(Path, read, In, [encoding(utf8)]),
+	    read_string(In, _, Code),
+	    close(In)).
+
+%%	serve_resource(+Request) is semidet.
+%
+%	Serve /swish/Resource files.
+
+serve_resource(Request) :-
+	option(path_info(Info), Request),
+	resource_prefix(Prefix),
+	sub_atom(Info, 0, _, _, Prefix), !,
+	http_reply_file(swish_web(Info), [], Request).
+
+resource_prefix('css/').
+resource_prefix('help/').
+resource_prefix('icons/').
+resource_prefix('js/').
+resource_prefix('bower_components/').
 
 
 %%	swish_page(+Options)//
@@ -280,9 +336,10 @@ swish_css --> html_post(head, \include_swish_css).
 include_swish_js -->
 	{ swish_resource(js, JS),
 	  swish_resource(rjs, RJS),
-	  http_absolute_location(swish(js/JS), SwishJS, [])
+	  http_absolute_location(swish(js/JS), SwishJS, []),
+	  http_absolute_location(swish(RJS),   SwishRJS, [])
 	},
-	html(script([ src(RJS),
+	html(script([ src(SwishRJS),
 		      'data-main'(SwishJS)
 		    ], [])).
 
@@ -309,3 +366,4 @@ alt(css, 'swish.css',     swish_web('css/swish.css')).
 alt(rjs, 'js/require.js', swish_web('js/require.js')) :-
 	\+ debugging(nominified).
 alt(rjs, 'bower_components/requirejs/require.js', -).
+

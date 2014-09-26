@@ -30,7 +30,7 @@
 :- module(swish_app,
 	  [
 	  ]).
-:- use_module(library(pengines), []).
+:- use_module(library(pengines)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_server_files)).
 :- use_module(library(http/http_path)).
@@ -48,6 +48,7 @@
 		 *******************************/
 
 user:file_search_path(swish_web, swish(web)).
+user:file_search_path(ex,        swish_examples(.)).
 
 set_swish_path :-
 	absolute_file_name(swish('swish.pl'), _,
@@ -64,16 +65,19 @@ http:location(swish, root(swish), []).
 		 *	      CONFIG		*
 		 *******************************/
 
-:- multifile swish_config:config/2.
+:- multifile
+	swish_config:config/2,
+	swish_config:source_alias/1.
 
 swish_config:config(show_beware, true).
+swish_config:source_alias(ex).
+
 
 		 /*******************************
 		 *	   HTTP HANDLERS	*
 		 *******************************/
 
-:- http_handler(swish(.), serve_files_in_directory(swish_web), [prefix]).
-:- http_handler(/, moved_with_params(swish('index.html')), [priority(-100)]).
+:- http_handler(/, moved_with_params(swish(.)), [priority(-100)]).
 
 %%	moved_with_params(+Target, +Request) is det.
 %
