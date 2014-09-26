@@ -63,3 +63,6 @@ _not_ see exactly the same UI for cooperation.  What about
     - Save under content hash?  Would mean that `Back' actually goes back
       a version!  Provide meta-information (who, previous).
     - Use GIT?  We have most of that!
+
+  - Get rid of # urls.  See
+    http://stackoverflow.com/questions/824349/modify-the-url-without-reloading-the-page
