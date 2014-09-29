@@ -28,17 +28,17 @@
 */
 
 :- module(gitty,
-	  [ gitty_head/3,			% +Store, ?Name, ?Hash
-	    gitty_create/5,			% +Store, +Name, +Data, +Meta, -Commit
-	    gitty_update/5,			% +Store, +Name, +Data, +Meta, -Commit
-	    gitty_commit/3,			% +Store, +Name, -Meta
-	    gitty_data/4,			% +Store, +Name, -Data, -Meta
-	    gitty_history/4,			% +Store, +Name, +Max, -History
-	    gitty_scan/1,			% +Store
-	    gitty_hash/2,			% +Store, ?Hash
+	  [ gitty_file/3,		% +Store, ?Name, ?Hash
+	    gitty_create/5,		% +Store, +Name, +Data, +Meta, -Commit
+	    gitty_update/5,		% +Store, +Name, +Data, +Meta, -Commit
+	    gitty_commit/3,		% +Store, +Name, -Meta
+	    gitty_data/4,		% +Store, +Name, -Data, -Meta
+	    gitty_history/4,		% +Store, +Name, +Max, -History
+	    gitty_scan/1,		% +Store
+	    gitty_hash/2,		% +Store, ?Hash
 
-	    data_diff/3,			% +String1, +String2, -Diff
-	    udiff_string/2			% +Diff, -String
+	    data_diff/3,		% +String1, +String2, -Diff
+	    udiff_string/2		% +Diff, -String
 	  ]).
 :- use_module(library(zlib)).
 :- use_module(library(filesex)).
@@ -48,6 +48,26 @@
 :- use_module(library(dcg/basics)).
 
 /** <module> Single-file GIT like version system
+
+This library provides a first implementation  of a lightweight versioned
+file store with dynamic meta-data. The   store  is partly modelled after
+GIT. Like GIT, it uses  a  content-based   store.  In  fact,  the stored
+objects are compatible  with  GIT.  Unlike   GIT  though,  there  are no
+_trees_.  Each  entry  (file)  has  its  own  history.  Each  commit  is
+associated  with  a  dict  that  can  carry  aribitrary  meta-data.  The
+following fields are reserved for gitties bookkeeping:
+
+  - name:Name
+  Name of the entry (file)
+  - time:TimeStamp
+  Float representing when the object was added to the store
+  - data:Hash
+  Object hash of the contents
+  - previous:Hash
+  Hash of the previous commit.
+
+The key =commit= is reserved and returned   as  part of the meta-data of
+the newly created (gitty_create/5) or updated object (gitty_update/5).
 */
 
 :- dynamic
@@ -57,11 +77,12 @@
 	head/3,
 	store/1.
 
-%%	gitty_head(+Store, ?Head, ?Hash) is nondet.
+%%	gitty_file(+Store, ?File, ?Head) is nondet.
 %
-%	True when Head is an existing head pointing to Hash
+%	True when File entry in the  gitty   store  and Head is the HEAD
+%	revision.
 
-gitty_head(Store, Head, Hash) :-
+gitty_file(Store, Head, Hash) :-
 	gitty_scan(Store),
 	head(Store, Head, Hash).
 
@@ -245,11 +266,21 @@ read_hdr(_, _, []).
 
 %%	gitty_scan(+Store) is det.
 %
-%	Scan gitty store for heads
+%	Scan gitty store for files (entries),   filling  head/3. This is
+%	performed lazily at first access to the store.
+%
+%	@tdb	Possibly we need to maintain a cached version of this
+%		index to avoid having to open all objects of the gitty
+%		store.
 
 gitty_scan(Store) :-
-	head(Store, _, _), !.
+	store(Store), !.
 gitty_scan(Store) :-
+	with_mutex(gitty, gitty_scan_sync(Store)).
+
+gitty_scan_sync(Store) :-
+	store(Store), !.
+gitty_scan_sync(Store) :-
 	(   gitty_hash(Store, Hash),
 	    load_object(Store, Hash, Data, commit, _Size),
 	    term_string(Meta, Data, []),
@@ -262,7 +293,7 @@ gitty_scan(Store) :-
 	    ;	assertz(head(Store, Meta.name, Hash))
 	    ),
 	    fail
-	;   true
+	;   assertz(store(Store))
 	).
 
 
@@ -308,6 +339,20 @@ hash_file(Store, Hash, Path) :-
 		 /*******************************
 		 *	       DIFF		*
 		 *******************************/
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Attempt at a built-in diff utility. Doing   it in Prolog may seem weird,
+but is good for tasting  ones  own   dog  food.  In  addition, it avoids
+temporary files and relatively expensive fork()  calls. As it turns out,
+implementing an efficient LCS (Longest  Common   Sequence)  in Prolog is
+rather hard. We'll leave the  code  for   reference,  but  might  seek a
+different solution for the real thing.  Options are:
+
+  - Use external diff after all
+  - Add a proper Prolog implementation of LCS
+  - Add LCS in C.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 
 %%	data_diff(+Data1, +Data2, -UDiff) is det.
 %

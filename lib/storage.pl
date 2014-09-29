@@ -119,7 +119,7 @@ storage(delete, Request) :-
 request_file(Request, Dir, File) :-
 	option(path_info(PathInfo), Request),
 	atom_concat(/, File, PathInfo),
-	(   gitty_head(Dir, File, _Hash)
+	(   gitty_file(Dir, File, _Hash)
 	->  true
 	;   http_404([], Request)
 	).
