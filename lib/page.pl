@@ -217,12 +217,29 @@ swish_content(Options) -->
 		   \examples(Options)
 		 ])).
 
+%%	source(+Options)//
+%
+%	Associate the source with the SWISH   page. The source itself is
+%	stored  in  the  textarea  from  which  CodeMirror  is  created.
+%	Options:
+%
+%	  - code(+String)
+%	  Initial code of the source editor
+%	  - file(+File)
+%	  If present and code(String) is present, also associate the
+%	  editor with the given file.  See storage.pl.
+
 source(Options) -->
 	{ option(code(Spec), Options), !,
-	  download_source(Spec, Source, Options)
+	  download_source(Spec, Source, Options),
+	  (   option(file(File), Options)
+	  ->  Extra = ['data-file'(File)]
+	  ;   Extra = []
+	  )
 	},
 	html(textarea([ class([source,prolog]),
 			style('display:none')
+		      | Extra
 		      ],
 		      Source)).
 source(_) --> [].

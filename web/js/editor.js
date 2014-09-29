@@ -78,14 +78,20 @@ define([ "cm/lib/codemirror",
 	if ( !options.role == "query" )
 	  options.continueComments = "Enter";
 
-	if ( !(ta=elem.children("textarea")[0]) ) {
+	if ( (ta=elem.children("textarea")[0]) ) {
+	  var file = $(ta).attr("data-file");
+
+	  if ( file )
+	    data.file = file;
+	} else {
 	  ta = $.el.textarea({placeholder:options.placeholder},
 			     elem.text());
 	  elem.append(ta);
 	}
 
-	data.cm   = CodeMirror.fromTextArea(ta, options);
-	data.role = options.role;
+	data.cm              = CodeMirror.fromTextArea(ta, options);
+	data.cleanGeneration = data.cm.changeGeneration();
+	data.role            = options.role;
 
 	elem.data(pluginName, data);
 
