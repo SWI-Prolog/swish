@@ -66,3 +66,4 @@ _not_ see exactly the same UI for cooperation.  What about
 
   - Get rid of # urls.  See
     http://stackoverflow.com/questions/824349/modify-the-url-without-reloading-the-page
+    http://www.csse.monash.edu.au/~lloyd/tildeAlgDS/Dynamic/Hirsch/
