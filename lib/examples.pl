@@ -39,7 +39,14 @@
 /** <module> Serve example files
 */
 
+:- multifile
+	user:file_search_path/2,
+	swish_config:source_alias/1.
+
+% make example(File) find the example data
 user:file_search_path(example, swish(examples)).
+% make SWISH serve /example/File as example(File).
+swish_config:source_alias(example).
 
 :- http_handler(swish(list_examples),
 		list_examples, [id(swish_examples)]).

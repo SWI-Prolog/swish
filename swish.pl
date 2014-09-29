@@ -71,8 +71,6 @@ http:location(swish, root(.), [priority(-100)]).
 	swish_config:source_alias/1.
 
 swish_config:config(show_beware, true).
-swish_config:source_alias(example).
-swish_config:source_alias(p).
 
 
                  /*******************************

@@ -54,10 +54,6 @@ their own version.
 
 :- setting(directory, atom, storage, 'The directory for storing files.').
 
-user:file_search_path(p, web_storage(.)).
-user:file_search_path(web_storage, Dir) :-
-	setting(directory, Dir).
-
 :- http_handler(swish(p), web_storage, [ id(web_storage), prefix ]).
 
 %%	web_storage(+Request) is det.
