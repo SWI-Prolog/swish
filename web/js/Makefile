@@ -13,7 +13,7 @@ min:	swish-min.js
 
 swish-min.js:	build.js $(JS)
 	r.js -o build.js
-	gzip -k $@
+	gzip -fk $@
 
 build.js: $(MAIN) build.js.in
 	swipl mkjsbuild.pl $(MAIN) build.js.in
