@@ -28,9 +28,11 @@
 */
 
 :- module(gitty,
-	  [ gitty_create/4,			% +Store, +Name, +Data, +Meta
-	    gitty_update/4,			% +Store, +Name, +Data, +Meta
-	    gitty_fetch/4,			% +Store, +Name, -Data, -Meta
+	  [ gitty_head/3,			% +Store, ?Name, ?Hash
+	    gitty_create/5,			% +Store, +Name, +Data, +Meta, -Commit
+	    gitty_update/5,			% +Store, +Name, +Data, +Meta, -Commit
+	    gitty_commit/3,			% +Store, +Name, -Meta
+	    gitty_data/4,			% +Store, +Name, -Data, -Meta
 	    gitty_history/4,			% +Store, +Name, +Max, -History
 	    gitty_scan/1,			% +Store
 	    gitty_hash/2,			% +Store, ?Hash
@@ -49,26 +51,39 @@
 */
 
 :- dynamic
-	head/3.					% Store, Name, Hash
+	head/3,				% Store, Name, Hash
+	store/1.			% Store
+:- volatile
+	head/3,
+	store/1.
 
-%%	gitty_create(+Store, +Name, +Data, +Meta) is det.
+%%	gitty_head(+Store, ?Head, ?Hash) is nondet.
+%
+%	True when Head is an existing head pointing to Hash
+
+gitty_head(Store, Head, Hash) :-
+	gitty_scan(Store),
+	head(Store, Head, Hash).
+
+%%	gitty_create(+Store, +Name, +Data, +Meta, -Commit) is det.
 %
 %	Create a new object Name from Data and meta information.
 
-gitty_create(Store, Name, _Data, _Meta) :-
+gitty_create(Store, Name, _Data, _Meta, _) :-
 	gitty_scan(Store),
 	head(Store, Name, _), !,
-	throw(error(gitty(file_exists(Name),_))).
-gitty_create(Store, Name, Data, Meta) :-
+	throw(error(gitty(file_exists(Name)),_)).
+gitty_create(Store, Name, Data, Meta, CommitRet) :-
 	save_object(Store, Data, blob, Hash),
 	get_time(Now),
-	format(string(Commit), '~q.~n',
-	       [ Meta.put(_{ name:Name,
-			     time:Now,
-			     data:Hash
-			   })
-	       ]),
-	save_object(Store, Commit, commit, CommitHash),
+	Commit = gitty{}.put(Meta)
+		        .put(_{ name:Name,
+				time:Now,
+				data:Hash
+			      }),
+	format(string(CommitString), '~q.~n', [Commit]),
+	save_object(Store, CommitString, commit, CommitHash),
+	CommitRet = Commit.put(commit, CommitHash),
 	with_mutex(gitty,
 		   (   head(Store, Name, _)
 		   ->  delete_object(Store, CommitHash),
@@ -76,11 +91,11 @@ gitty_create(Store, Name, Data, Meta) :-
 		   ;   assertz(head(Store, Name, CommitHash))
 		   )).
 
-%%	gitty_update(+Store, +Name, +Data, +Meta) is det.
+%%	gitty_update(+Store, +Name, +Data, +Meta, -Commit) is det.
 %
 %	Update document Name using Data and the given meta information
 
-gitty_update(Store, Name, Data, Meta) :-
+gitty_update(Store, Name, Data, Meta, CommitRet) :-
 	gitty_scan(Store),
 	head(Store, Name, OldHead),
 	(   _{previous:OldHead} >:< Meta
@@ -90,14 +105,16 @@ gitty_update(Store, Name, Data, Meta) :-
 	load_commit(Store, OldHead, OldMeta),
 	get_time(Now),
 	save_object(Store, Data, blob, Hash),
-	format(string(Commit), '~q.~n',
-	       [ OldMeta.put(Meta).put(_{ name:Name,
-					  time:Now,
-					  data:Hash,
-					  previous:OldHead
-					})
-	       ]),
-	save_object(Store, Commit, commit, CommitHash),
+	Commit = gitty{}.put(OldMeta)
+		        .put(Meta)
+		        .put(_{ name:Name,
+				time:Now,
+				data:Hash,
+				previous:OldHead
+			      }),
+	format(string(CommitString), '~q.~n', [Commit]),
+	save_object(Store, CommitString, commit, CommitHash),
+	CommitRet = Commit.put(commit, CommitHash),
 	with_mutex(gitty,
 		   (   retract(head(Store, Name, OldHead))
 		   ->  assertz(head(Store, Name, CommitHash))
@@ -105,18 +122,30 @@ gitty_update(Store, Name, Data, Meta) :-
 		       throw(error(gitty(not_at_head(OldHead)), _))
 		   )).
 
-%%	gitty_fetch(+Store, +NameOrHash, -Data, -Meta) is semidet.
+%%	gitty_data(+Store, +NameOrHash, -Data, -Meta) is semidet.
 %
 %	Get the data in object Name and its meta-data
 
-gitty_fetch(Store, Name, Data, Meta) :-
+gitty_data(Store, Name, Data, Meta) :-
 	gitty_scan(Store),
 	head(Store, Name, Head), !,
 	load_commit(Store, Head, Meta),
 	load_object(Store, Meta.data, Data).
-gitty_fetch(Store, Hash, Data, Meta) :-
+gitty_data(Store, Hash, Data, Meta) :-
 	load_commit(Store, Hash, Meta),
 	load_object(Store, Meta.data, Data).
+
+%%	gitty_commit(+Store, +NameOrHash, -Meta) is semidet.
+%
+%	True if Meta holds the commit data of NameOrHash.
+
+gitty_commit(Store, Name, Meta) :-
+	gitty_scan(Store),
+	head(Store, Name, Head), !,
+	load_commit(Store, Head, Meta).
+gitty_commit(Store, Hash, Meta) :-
+	load_commit(Store, Hash, Meta).
+
 
 load_commit(Store, Head, Meta) :-
 	load_object(Store, Head, String),
