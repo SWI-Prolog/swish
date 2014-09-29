@@ -172,8 +172,13 @@ define([ "cm/lib/codemirror",
       var url     = config.http.locations.web_storage;
       var method  = "POST";
 
+      if ( options.cm.isClean(options.cleanGeneration) ) {
+	alert("No change");
+	return this;
+      }
+
       if ( options.file ) {
-	url += "/" + options.file;
+	url += "/" + encodeURI(options.file);
 	method = "PUT";
       }
 
