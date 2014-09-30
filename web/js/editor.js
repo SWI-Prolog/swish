@@ -14,6 +14,7 @@ define([ "cm/lib/codemirror",
 	 "cm/mode/prolog/prolog",
 	 "cm/mode/prolog/prolog_keys",
 	 "cm/mode/prolog/prolog_query",
+	 "cm/mode/prolog/prolog_server",
 
 	 "cm/addon/edit/matchbrackets",
 	 "cm/addon/comment/continuecomment",
@@ -74,6 +75,12 @@ define([ "cm/lib/codemirror",
 	    "Alt-/": "autocomplete",
 	  }
 	}, options);
+
+	if ( config.http.locations.cm_highlight ) {
+	  options.prologHighlightServer =
+	  { url: config.http.locations.cm_highlight
+	  }
+	}
 
 	if ( !options.role == "query" )
 	  options.continueComments = "Enter";

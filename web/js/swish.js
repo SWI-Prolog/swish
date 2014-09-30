@@ -29,7 +29,8 @@ require.config({
 					/* Our own Prolog mode */
     "cm/mode/prolog/prolog": "codemirror/mode/prolog/prolog",
     "cm/mode/prolog/prolog_keys": "codemirror/mode/prolog/prolog_keys",
-    "cm/mode/prolog/prolog_query": "codemirror/mode/prolog/prolog_query"
+    "cm/mode/prolog/prolog_query": "codemirror/mode/prolog/prolog_query",
+    "cm/mode/prolog/prolog_server": "codemirror/mode/prolog/prolog_server"
   },
   shim:
   { bootstrap:
