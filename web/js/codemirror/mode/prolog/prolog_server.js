@@ -20,20 +20,8 @@ classification of tokens.
   var DEFAULT_DELAY = 1000;
 
   function State(options) {
-
-    function generateUUID() {
-      var d = new Date().getTime();
-      var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-	.replace(/[xy]/g, function(c) {
-	  var r = (d + Math.random()*16)%16 | 0;
-	  d = Math.floor(d/16);
-	  return (c=='x' ? r : (r&0x7|0x8)).toString(16);
-	});
-      return uuid;
-    };
-
     if (typeof options == "object") {
-      this.uuid = options.uuid || generateUUID();
+      this.role = options.role || "source";
       this.url  = { change: options.url + "change",
 		    tokens: options.url + "tokens",
 		    leave:  options.url + "leave"
@@ -46,6 +34,7 @@ classification of tokens.
 
   function changeEditor(cm, change) {
     var state = cm.state.prologHighlightServer;
+    var msg = {change:change};
 
     if ( state == null || state.url == null )
       return;
@@ -54,14 +43,21 @@ classification of tokens.
       cm.askRefresh();
     }
 
+    if ( state.uuid ) {
+      msg.uuid = state.uuid;
+    } else {
+      msg.role = state.role;
+    }
+
     $.ajax({ url: state.url.change,
              dataType: "json",
 	     contentType: 'application/json',
 	     type: "POST",
-	     data: JSON.stringify({ uuid: state.uuid,
-	                            change: change
-				  }),
-	     success: function() {
+	     data: JSON.stringify(msg),
+	     success: function(data) {
+	       if ( typeof(data) == "object" && data.uuid )
+		 state.uuid = data.uuid;
+
 	       if ( change.origin == "setValue" ||
 		    state.generationFromServer == -1 )
 		 cm.serverAssistedHighlight();
@@ -81,6 +77,7 @@ classification of tokens.
 	     async: false,  // otherwise it is killed before completion
 	     contentType: 'application/json',
 	     type: "POST",
+	     dataType: "json",
 	     data: JSON.stringify({ uuid: state.uuid
 				  })
 	   });

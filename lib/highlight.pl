@@ -78,10 +78,14 @@ tokens_.
 codemirror_change(Request) :-
 	http_read_json_dict(Request, Change, []),
 	debug(codemirror, 'Change ~p', [Change]),
-	atom_string(UUID, Change.uuid),
-	uuid_editor(UUID, TextBuffer),
+	(   atom_string(UUID, Change.get(uuid))
+	->  current_editor(UUID, TextBuffer),
+	    Reply = true
+	;   create_editor(UUID, TextBuffer, Change),
+	    Reply = json{uuid:UUID}
+	),
 	apply_change(TextBuffer, Change.change),
-	reply_json(@true).
+	reply_json_dict(Reply).
 
 
 apply_change(_, []) :- !.
@@ -125,10 +129,12 @@ insert([H|T], TB, ChPos0, ChPos) :-
 :- dynamic
 	current_editor/2.
 
-uuid_editor(UUID, Editor) :-
-	current_editor(UUID, Editor), !.
-uuid_editor(UUID, Editor) :-
-	new(Editor, source_buffer(UUID)),
+create_editor(UUID, Editor, Change) :-
+	uuid(UUID),
+	(   Role = Change.get(role)
+	->  new(Editor, source_buffer(UUID, Role))
+	;   new(Editor, source_buffer(UUID))
+	),
 	(   debugging(text_buffer)
 	->  send(Editor, open)
 	;   true
@@ -168,14 +174,17 @@ codemirror_leave(Request) :-
 :- pce_begin_class(source_buffer, text_buffer,
 		   "Server side buffer for web editors").
 
-variable(uuid,		  name,  get, "Associated source id").
-variable(file,		  name*, get, "Associated file").
-variable(xref_generation, int*,  get, "Generation of last xref").
+variable(uuid,		  name,		  get,	"Associated source id").
+variable(role,		  {source,query}, both,	"Associated source id").
+variable(file,		  name*,	  get,	"Associated file").
+variable(xref_generation, int*,		  get,	"Generation of last xref").
 
-initialise(TB, UUID:name) :->
+initialise(TB, UUID:uuid=name, Role:role=[{source,query}]) :->
 	"Create from UUID"::
 	send_super(TB, initialise),
-	send(TB, slot, uuid, UUID).
+	send(TB, slot, uuid, UUID),
+	default(Role, source, TheRole),
+	send(TB, slot, role, TheRole).
 
 open(TB) :->
 	"Open graphical window (for debugging)"::

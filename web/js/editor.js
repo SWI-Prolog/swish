@@ -78,11 +78,12 @@ define([ "cm/lib/codemirror",
 
 	if ( config.http.locations.cm_highlight ) {
 	  options.prologHighlightServer =
-	  { url: config.http.locations.cm_highlight
+	  { url:  config.http.locations.cm_highlight,
+	    role: options.role
 	  }
 	}
 
-	if ( !options.role == "query" )
+	if ( options.role != "query" )
 	  options.continueComments = "Enter";
 
 	if ( (ta=elem.children("textarea")[0]) ) {
