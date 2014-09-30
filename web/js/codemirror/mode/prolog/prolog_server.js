@@ -20,8 +20,20 @@ classification of tokens.
   var DEFAULT_DELAY = 1000;
 
   function State(options) {
+
+    function generateUUID() {
+      var d = new Date().getTime();
+      var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+	.replace(/[xy]/g, function(c) {
+	  var r = (d + Math.random()*16)%16 | 0;
+	  d = Math.floor(d/16);
+	  return (c=='x' ? r : (r&0x7|0x8)).toString(16);
+	});
+      return uuid;
+    };
+
     if (typeof options == "object") {
-      this.uuid = options.uuid;
+      this.uuid = options.uuid || generateUUID();
       this.url  = { change: options.url + "change",
 		    tokens: options.url + "tokens",
 		    leave:  options.url + "leave"
