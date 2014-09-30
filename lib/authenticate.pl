@@ -67,6 +67,8 @@ pengines:authentication_hook(Request, _Application, User) :-
 pengines:authentication_hook(_Request, _Application, _User) :-
 	throw(http_reply(authorise(basic('SWISH user')))).
 
+pengines:not_sandboxed(_, _).
+
 %%	swish_add_user(+User, +Passwd, +Fields) is det.
 %
 %	Add a new user to the SWISH password file.
