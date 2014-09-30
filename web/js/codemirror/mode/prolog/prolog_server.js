@@ -92,6 +92,9 @@ classification of tokens.
       cm.state.prologHighlightServer = new State(val);
       cm.on("change", changeEditor);
       window.addEventListener("unload", function() { leaveEditor(cm); });
+      if ( cm.lineCount() > 0 ) {
+	cm.serverAssistedHighlight(true);
+      }
     }
   });
 
@@ -117,6 +120,7 @@ classification of tokens.
   CodeMirror.prototype.serverAssistedHighlight = function(always) {
     var cm = this;
     var state = cm.state.prologHighlightServer;
+    var msg = {};
 
     state.tmo = null;
 
@@ -139,13 +143,24 @@ classification of tokens.
       return opts;
     }
 
+    if ( state.uuid ) {
+      msg.uuid = state.uuid;
+    } else {
+      msg.text = cm.getValue();
+      msg.role = state.role;
+    }
+
     state.generationFromServer = cm.changeGeneration();
     $.ajax({ url: state.url.tokens,
 	     dataType: "json",
-	     data: { uuid: state.uuid },
+	     contentType: 'application/json',
+	     type: "POST",
+	     data: JSON.stringify(msg),
 	     success: function(data, status) {
 	       var opts = modeOptions();
-	       opts.metainfo = data;
+	       opts.metainfo = data.tokens;
+	       if ( !state.uuid && data.uuid )
+		 state.uuid = data.uuid;
 	       cm.setOption("mode", opts);
 	     }
 	   });

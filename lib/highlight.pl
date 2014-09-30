@@ -156,14 +156,16 @@ prolog:xref_open_source(UUID, Stream) :-
 
 %%	codemirror_leave(+Request)
 %
-%	Handle deletion of the client
+%	POST handler that deals with destruction of an editor
 
 codemirror_leave(Request) :-
-	http_read_json(Request, JSON, []),
-	debug(codemirror, 'Leaving editor ~q', [JSON]),
-	JSON = json([uuid=UUID]),
-	forall(retract(current_editor(UUID, TB)),
-	       send(TB, free)),
+	http_read_json_dict(Request, Data, []),
+	debug(codemirror, 'Leaving editor ~p', [Data]),
+	(   atom_string(UUID, Data.get(uuid))
+	->  forall(retract(current_editor(UUID, TB)),
+		   send(TB, free))
+	;   true
+	),
 	reply_json(@true).
 
 
@@ -269,22 +271,31 @@ master_load_file(File, _, File).
 
 %%	codemirror_tokens(+Request)
 %
-%	HTTP handler that returns  an  array   of  tokens  for the given
+%	HTTP POST handler that returns an array of tokens for the given
 %	editor.
 
 codemirror_tokens(Request) :-
-	http_parameters(Request,
-			[ uuid(UUID, [])
-			]),
-	(   current_editor(UUID, TB)
-	->  (   get(TB, role, source)
-	    ->	send(TB, xref_source)
-	    ;	true
+	http_read_json_dict(Request, Data, []),
+	(   atom_string(UUID, Data.get(uuid))
+	->  (   current_editor(UUID, TB)
+	    ->  (   get(TB, role, source)
+		->  send(TB, xref_source)
+		;   true
+		),
+		server_tokens(TB, Tokens)
+	    ;   Tokens = [[]]
 	    ),
-	    server_tokens(TB, Tokens)
-	;   Tokens = [[]]
-	),
-	reply_json(Tokens, [width(0)]).
+	    reply_json(json{tokens:Tokens}, [width(0)])
+	;   Text = Data.get(text)
+	->  create_editor(UUID, TB, Data),
+	    send(TB, contents, string(Text)),
+	    (   get(TB, role, source)
+	    ->  send(TB, xref_source)
+	    ;   true
+	    ),
+	    server_tokens(TB, Tokens),
+	    reply_json(json{uuid:UUID, tokens:Tokens}, [width(0)])
+	).
 
 
 :- thread_local
