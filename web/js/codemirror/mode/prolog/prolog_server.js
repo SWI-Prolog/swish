@@ -370,50 +370,57 @@ classification of tokens.
       return false;
     }
 
-    /* matchToken(token, state) matches the server token `token` to the
-       current token and updates state.curToken and/or state.curTerm if
-       the two matches.  It return the enriched style or null.
+    /**
+     * Matches the server token `token` to the current token and updates
+     * state.curToken and/or state.curTerm if the two matches.
+     *
+     * @param {Object} token is the next token from the server array
+     * @param {Object} state is the mode state object
+     * @returns {String|undefined} enriched style, the original style
+     * or `undefined` if the mode token does not match the server token.
     */
 
     function matchToken(token, state) {
-      if ( token && syncOnType[type] ) {
-	if ( token.text && content ) {
-	  if ( matchTokenText(token.text) ) {
+      if ( token ) {
+	if ( syncOnType[type] ) {
+	  if ( token.text && content ) {
+	    if ( matchTokenText(token.text) ) {
+	      state.curToken++;
+	      return token.type;
+	    }
+
+	    return null;
+	  } else if ( syncOnType[type] == serverSync[token.type] ) {
+	    if ( type == "fullstop" ) {
+	      state.curTerm++;
+	      state.curToken = 0;
+	    } else {
+	      state.curToken++;
+	    }
+	    return token.type;
+	  } else if ( type == "qatom" && serverSync[token.type] == "atom" ) {
 	    state.curToken++;
 	    return token.type;
+	  } else if ( type == "number" && token.type == "meta" ) {
+	    state.curToken++;	/* 0-9 as meta_predicate arguments */
+	    return token.type;
+	  } else if ( type == "neg-number" &&
+		      token.text && token.text == "-" ) {
+		/* HACK: A-1 is tokenised as "var" "neg-number" */
+		/* But the server says "var" "atom" "number" */
+		/* Needs operator logic to fix at the client */
+	    state.curToken += 2;
+	    return "number";
 	  }
-
-	  return null;
-	} else if ( syncOnType[type] == serverSync[token.type] ) {
-	  if ( type == "fullstop" ) {
-	    state.curTerm++;
-	    state.curToken = 0;
-	  } else {
-	    state.curToken++;
-	  }
+	} else if ( content && token.text == content ) {
+	  state.curToken++;		/* ,; are not synced */
 	  return token.type;
-	} else if ( type == "qatom" && serverSync[token.type] == "atom" ) {
-          state.curToken++;
-	  return token.type;
-	} else if ( type == "number" && token.type == "meta" ) {
-	  state.curToken++;	/* 0-9 as meta_predicate arguments */
-	  return token.type;
-	} else if ( type == "neg-number" &&
-		    token.text && token.text == "-" ) {
-	      /* HACK: A-1 is tokenised as "var" "neg-number" */
-	      /* But the server says "var" "atom" "number" */
-	      /* Needs operator logic to fix at the client */
-	  state.curToken += 2;
-	  return "number";
-        }
+	} else {
+	  return style;			/* not-synced client token */
+	}
       }
 
-      if ( token && content && token.text == content ) {
-	state.curToken++;			/* ,; are not synced */
-	return token.type;
-      }
-
-      return null;
+      return undefined;
     }
 
     /* enrichStyle() body */
@@ -455,7 +462,7 @@ classification of tokens.
 
       //console.log("Enrich: ("+content+") "+type+"/"+token.type);
 
-      if ( (serverStyle=matchToken(token, state)) ) {
+      if ( (serverStyle=matchToken(token, state)) !== undefined ) {
 	return serverStyle;
       } else if ( token.type == "syntax_error" ) {
 	state.syntax_error = true;
