@@ -68,7 +68,7 @@ classification of tokens.
   function leaveEditor(cm) {
     var state = cm.state.prologHighlightServer;
 
-    if ( state == null || state.url == null )
+    if ( state == null || state.url == null || state.uuid == null )
       return;
 
     console.log("Leaving CodeMirror "+state.uuid);
