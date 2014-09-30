@@ -334,7 +334,7 @@ classification of tokens.
 			};
 
       /* TBD */
-      if ( skippedTerms ) {
+      if ( oos.skippedTerms ) {
 
       } else {
       }
@@ -432,15 +432,15 @@ classification of tokens.
 	var oos = state.outOfSync;
 
 	if ( oos.skippedTerms <= 3 ) {
-	  oos.skipped.push({ type:    type,
-			     style:   style,
-			     content: content
-			   });
+	  oos.skippedTokens.push({ type:    type,
+			           style:   style,
+				   content: content
+			         });
 
 	  if ( (serverStyle=reSync()) ) {
 	    return serverStyle;			/* re-synchronized! */
 	  } else if ( type == "fullstop" ) {
-	    oos.skipped = [];
+	    oos.skippedTokens = [];
 	    oos.skippedTerms++;
 	  }
 	}
