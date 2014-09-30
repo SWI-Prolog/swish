@@ -745,6 +745,8 @@ define([ "config", "jquery", "answer", "laconic" ],
 
       if ( action )
 	action.call(client);
+
+      return false;
     }
 
     function addMenuItem(label, onclick) {

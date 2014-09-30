@@ -135,6 +135,8 @@ define([ "jquery", "laconic" ],
       ev.preventDefault();
       action.call(a);
     }
+
+    return false;
   }
 
   /**
