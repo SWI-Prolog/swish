@@ -277,7 +277,10 @@ codemirror_tokens(Request) :-
 			[ uuid(UUID, [])
 			]),
 	(   current_editor(UUID, TB)
-	->  send(TB, xref_source),
+	->  (   get(TB, role, source)
+	    ->	send(TB, xref_source)
+	    ;	true
+	    ),
 	    server_tokens(TB, Tokens)
 	;   Tokens = [[]]
 	),
