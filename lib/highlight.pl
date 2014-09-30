@@ -36,7 +36,6 @@
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_path), []).
 :- use_module(library(http/http_parameters)).
-:- use_module(library(http/json_convert)).
 :- use_module(library(prolog_colour)).
 :- use_module(library(pairs)).
 
@@ -61,42 +60,42 @@ tokens_.
 		 *	  SHADOW EDITOR		*
 		 *******************************/
 
-:- json_object
-	change_event(uuid:atom,
-		     change:change/6),
-	change(from:pos/2,
-	       to:pos/2,
-	       text:list(atom),
-	       removed:list(atom),
-	       origin:atom=unknown,	% sometimes missing
-	       next:change/6=[]),
-	pos(line:integer, ch:integer).
-
 %%	codemirror_change(+Request)
 %
 %	Handle changes to the codemirror instances. These are sent to us
-%	using a POST request.
+%	using  a  POST  request.  The  request   a  POSTed  JSON  object
+%	containing:
+%
+%	  - uuid: string holding the editor's UUID
+%	  - change: the change object, which holds:
+%	    - from: Start position as {line:Line, ch:Ch}
+%	    - to: End position
+%	    - removed: list(atom) of removed text
+%	    - text: list(atom) of inserted text
+%	    - origin: what caused this change event
+%	    - next: optional next change event.
 
 codemirror_change(Request) :-
-	http_read_json(Request, JSON, []),
-	(   json_to_prolog(JSON, change_event(UUID, Change))
-	->  debug(codemirror, 'Change ~p', [Change])
-	;   print_term(JSON, [output(user_error)])
-	),
+	http_read_json_dict(Request, Change, []),
+	debug(codemirror, 'Change ~p', [Change]),
+	atom_string(UUID, Change.uuid),
 	uuid_editor(UUID, TextBuffer),
-	apply_change(TextBuffer, Change),
+	apply_change(TextBuffer, Change.change),
 	reply_json(@true).
 
 
 apply_change(_, []) :- !.
-apply_change(TB, change(pos(FLine,FChar), pos(_TLine,_TChar),
-			Text, Removed, _Origin, Next)) :-
-	get(TB, scan, 0, line, FLine, start, SOL),
-	ChPos is SOL+FChar,
-	remove(Removed, TB, ChPos),
-	insert(Text, TB, ChPos, End),
+apply_change(TB, Change) :-
+	_{from:From} :< Change,
+	get(TB, scan, 0, line, From.line, start, SOL),
+	ChPos is SOL+From.ch,
+	remove(Change.removed, TB, ChPos),
+	insert(Change.text, TB, ChPos, End),
 	send(TB, caret, End),
-	apply_change(TB, Next).
+	(   Next = Change.get(next)
+	->  apply_change(TB, Next)
+	;   true
+	).
 
 remove([], _, _) :- !.
 remove([H|T], TB, ChPos) :-
