@@ -80,7 +80,9 @@ define([ "cm/lib/codemirror",
 	  options.prologHighlightServer =
 	  { url:  config.http.locations.cm_highlight,
 	    role: options.role
-	  }
+	  };
+	  if ( options.sourceID )
+	    options.prologHighlightServer.sourceID = options.sourceID;
 	}
 
 	if ( options.role != "query" )
@@ -139,6 +141,20 @@ define([ "cm/lib/codemirror",
     getSource: function() {
       return this.data(pluginName).cm.getValue();
     },
+
+    /**
+     * @return {String|null} UUID of the source used for server-side
+     * analysis
+     */
+     getSourceID: function() {
+       var cm = this.data(pluginName).cm;
+
+       console.log("getSourceID", cm.state);
+
+       if ( cm.state.prologHighlightServer )
+	 return cm.state.prologHighlightServer.uuid || null;
+       return null;
+     },
 
     /**
      * @param {String} src becomes the new contents of the editor

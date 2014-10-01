@@ -22,6 +22,8 @@ classification of tokens.
   function State(options) {
     if (typeof options == "object") {
       this.role = options.role || "source";
+      if ( options.sourceID )
+	this.sourceID = options.sourceID;
       this.url  = { change: options.url + "change",
 		    tokens: options.url + "tokens",
 		    leave:  options.url + "leave"
@@ -47,6 +49,10 @@ classification of tokens.
       msg.uuid = state.uuid;
     } else {
       msg.role = state.role;
+      console.log(state.sourceID);
+      if ( typeof(state.sourceID) == "function" )
+	msg.sourceID = state.sourceID();
+      console.log(msg);
     }
 
     $.ajax({ url: state.url.change,

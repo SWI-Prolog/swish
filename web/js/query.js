@@ -52,6 +52,7 @@ define([ "jquery", "laconic", "editor" ],
 
 	$(qediv).append(elem.children("textarea"))
 	        .prologEditor({ role: "query",
+				sourceID: options.sourceID,
 		                placeholder: "Your query goes here ...",
 				lineNumbers: false,
 				lineWrapping: true,

@@ -110,6 +110,7 @@ define([ "jquery",
 	data.runner = $(".prolog-runners").prologRunners();
 	data.query  = $(".prolog-query").queryEditor(
           { source:   function() { return elem.swish('prologSource'); },
+	    sourceID: function() { data.editor.prologEditor('getSourceID'); },
 	    examples: elem.swish('examples'),
 	    runner:   data.runner,
 	  }).trigger("source");
