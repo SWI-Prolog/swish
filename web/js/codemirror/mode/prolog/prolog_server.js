@@ -401,7 +401,7 @@ classification of tokens.
 	      return token.type;
 	    }
 
-	    return null;
+	    return undefined;
 	  } else if ( syncOnType[type] == serverSync[token.type] ) {
 	    if ( type == "fullstop" ) {
 	      state.curTerm++;
