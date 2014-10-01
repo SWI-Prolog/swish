@@ -63,7 +63,7 @@ define([ "jquery", "laconic", "editor" ],
 	elem.on("source", function(src) {
 	  if ( typeof(data.examples) == "function" ) {
 	    exl = data.examples();
-	    elem.queryEditor('setQuery', exl[0] ? exl[0] : "");
+	    elem.queryEditor('setQuery', (exl && exl[0]) ? exl[0] : "");
 	  }
 	});
 
