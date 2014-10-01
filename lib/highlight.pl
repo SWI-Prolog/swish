@@ -141,6 +141,14 @@ create_editor(UUID, Editor, Change) :-
 	),
 	asserta(current_editor(UUID, Editor)).
 
+destroy_editor(UUID, Editor) :-
+	(   xref_source_id(Editor, SourceID)
+	->  xref_clean(SourceID)
+	;   true
+	),
+	retractall(current_editor(UUID, Editor)),
+	free(Editor).
+
 
 :- multifile
 	prolog:xref_source_identifier/2,
@@ -156,22 +164,33 @@ prolog:xref_open_source(UUID, Stream) :-
 
 %%	codemirror_leave(+Request)
 %
-%	POST handler that deals with destruction of an editor
+%	POST  handler  that  deals   with    destruction   of  the  XPCE
+%	source_buffer  associated  with  an  editor,   as  well  as  the
+%	associated cross-reference information.
 
 codemirror_leave(Request) :-
 	http_read_json_dict(Request, Data, []),
 	debug(codemirror, 'Leaving editor ~p', [Data]),
 	(   atom_string(UUID, Data.get(uuid))
-	->  forall(retract(current_editor(UUID, TB)),
-		   send(TB, free))
+	->  forall(current_editor(UUID, TB),
+		   destroy_editor(UUID, TB))
 	;   true
 	),
-	reply_json(@true).
+	reply_json_dict(true).
 
 
 		 /*******************************
 		 *	CLASS SOURCE BUFFER	*
 		 *******************************/
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This XPCE class reuses XPCE's editor   infrastructructure  to maintain a
+mirror of the user's editor. This is   not  ideal because XPCE's objects
+are much more heavy weight that what is  needed for this purpos and XPCE
+is  not  multi-threaded.  Eventually,  we'll  make   a  snappy  small  C
+datastructure to deal with this. An alternative   might be to add insert
+and delete behaviour to Prolog's memory files.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- pce_begin_class(source_buffer, text_buffer,
 		   "Server side buffer for web editors").
@@ -180,6 +199,9 @@ variable(uuid,		  name,		  get,	"Associated source id").
 variable(role,		  {source,query}, both,	"Associated source id").
 variable(file,		  name*,	  get,	"Associated file").
 variable(xref_generation, int*,		  get,	"Generation of last xref").
+
+% do not maintain undo information.
+class_variable(undo_buffer_size, int, 0).
 
 initialise(TB, UUID:uuid=name, Role:role=[{source,query}]) :->
 	"Create from UUID"::
