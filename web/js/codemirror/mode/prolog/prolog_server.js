@@ -441,9 +441,13 @@ classification of tokens.
       var token;
       var serverStyle;
 
+      //console.log(type,style,content,state);
+
       if ( state.syntax_error ) {		/* error state; recap after . */
-	if ( type == "fullstop" )
+	if ( type == "fullstop" ) {
+	  parserConfig.editor.askRefresh();
 	  delete state.syntax_error;
+	}
 	return style;
       }
 
