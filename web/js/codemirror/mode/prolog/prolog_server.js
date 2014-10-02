@@ -49,11 +49,9 @@ classification of tokens.
       msg.uuid = state.uuid;
     } else {
       msg.role = state.role;
-      console.log(state.sourceID);
-      if ( typeof(state.sourceID) == "function" )
-	msg.sourceID = state.sourceID();
-      console.log(msg);
     }
+    if ( typeof(state.sourceID) == "function" )
+      msg.sourceID = state.sourceID();
 
     $.ajax({ url: state.url.change,
              dataType: "json",
@@ -155,6 +153,8 @@ classification of tokens.
       msg.text = cm.getValue();
       msg.role = state.role;
     }
+    if ( typeof(state.sourceID) == "function" )
+      msg.sourceID = state.sourceID();
 
     state.generationFromServer = cm.changeGeneration();
     $.ajax({ url: state.url.tokens,

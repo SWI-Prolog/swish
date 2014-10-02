@@ -149,10 +149,9 @@ define([ "cm/lib/codemirror",
      getSourceID: function() {
        var cm = this.data(pluginName).cm;
 
-       console.log("getSourceID", cm.state);
-
-       if ( cm.state.prologHighlightServer )
-	 return cm.state.prologHighlightServer.uuid || null;
+       if ( cm.state.prologHighlightServer ) {
+	 return cm.state.prologHighlightServer.uuid;
+       }
        return null;
      },
 
