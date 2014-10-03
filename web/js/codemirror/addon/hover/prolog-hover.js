@@ -1,17 +1,21 @@
-(function(mod) {
-  if (typeof exports == "object" && typeof module == "object") // CommonJS
-    mod(require("../../lib/codemirror"));
-  else if (typeof define == "function" && define.amd) // AMD
-    define(["../../lib/codemirror"], mod);
-  else // Plain browser env
-    mod(CodeMirror);
-})(function(CodeMirror) {
+define([ "../../lib/codemirror",
+	 "jquery",
+	 "laconic"
+       ],
+       function(CodeMirror, $) {
 "use strict";
 
 var tokenHelp = {
-  "goal_built_in":  "Built-in predicate",
+  "goal_built_in":  function(data, cm) {
+    if ( data ) {
+      return $.el.div(predName(data), ": ",
+		      cm.predicateInfo(data));
+    } else {
+      return "Built-in predicate";
+    }
+  },
   "goal_autoload":  "Autoloaded predicate",
-  "goal_imported":  function(data) {
+  "goal_imported":  function(data, cm) {
     if ( data ) {
       return predName(data)+": imported from "+fileName(data);
     } else {
@@ -47,6 +51,13 @@ function fileName(data) {
     return data.file;
 }
 
+function summary(data, cm) {
+  var server = cm.state.prologHighlightServer;
+
+  if ( server && server.url && server.url.info ) {
+  }
+}
+
 
 CodeMirror.registerHelper("textHover", "prolog", function(cm, data, node) {
   if ( data ) {
@@ -56,18 +67,17 @@ CodeMirror.registerHelper("textHover", "prolog", function(cm, data, node) {
 
     if ( help !== undefined ) {
       if ( typeof(help) === "function" ) {
-	html = help(cm.getEnrichedToken(token));
+	var r = help(cm.getEnrichedToken(token), cm);
+
+	if ( typeof(r) === "string" )
+	  return $.el.div(r);
+	else
+	  return r;
       } else if ( typeof(help) === "string" ) {
-	html = help;
+	return $.el.div(help);
       }
     } else {
-      html = token.type;
-    }
-
-    if ( html ) {
-      var result = document.createElement('div');
-      result.innerHTML = html;
-      return result;
+      return $.el.div(token.type);
     }
   }
 
