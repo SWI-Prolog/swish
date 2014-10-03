@@ -35,7 +35,6 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_path), []).
-:- use_module(library(http/http_parameters)).
 :- use_module(library(prolog_colour)).
 :- use_module(library(pairs)).
 
@@ -77,7 +76,7 @@ tokens_.
 
 codemirror_change(Request) :-
 	http_read_json_dict(Request, Change, []),
-	debug(codemirror, 'Change ~p', [Change]),
+	debug(cm(change), 'Change ~p', [Change]),
 	(   atom_string(UUID, Change.get(uuid))
 	->  current_editor(UUID, TextBuffer),
 	    Reply = true
@@ -170,7 +169,7 @@ prolog:xref_open_source(UUID, Stream) :-
 
 codemirror_leave(Request) :-
 	http_read_json_dict(Request, Data, []),
-	debug(codemirror, 'Leaving editor ~p', [Data]),
+	debug(cm(leave), 'Leaving editor ~p', [Data]),
 	(   atom_string(UUID, Data.get(uuid))
 	->  forall(current_editor(UUID, TB),
 		   destroy_editor(UUID, TB))
@@ -298,26 +297,33 @@ master_load_file(File, _, File).
 
 codemirror_tokens(Request) :-
 	http_read_json_dict(Request, Data, []),
-	(   atom_string(UUID, Data.get(uuid))
-	->  (   current_editor(UUID, TB)
-	    ->  (   get(TB, role, source)
-		->  send(TB, xref_source)
-		;   true
-		),
-		server_tokens(TB, Tokens)
-	    ;   Tokens = [[]]
-	    ),
-	    reply_json(json{tokens:Tokens}, [width(0)])
-	;   Text = Data.get(text)
-	->  create_editor(UUID, TB, Data),
-	    send(TB, contents, string(Text)),
-	    (   get(TB, role, source)
-	    ->  send(TB, xref_source)
-	    ;   true
-	    ),
-	    server_tokens(TB, Tokens),
-	    reply_json(json{uuid:UUID, tokens:Tokens}, [width(0)])
-	).
+	debug(cm(tokens), 'Asking for tokens: ~p', [Data]),
+	(   shadow_editor(Data, TB, Reply),
+	    enriched_tokens(TB, Data, Tokens)
+	->  true
+	;   Tokens = [[]]
+	),
+	reply_json_dict(json{tokens:Tokens}.put(Reply), [width(0)]).
+
+enriched_tokens(TB, _Data, Tokens) :-		% source window
+	get(TB, role, source), !,
+	send(TB, xref_source),
+	server_tokens(TB, Tokens).
+enriched_tokens(TB, Data, Tokens) :-		% query window
+	atom_string(SourceID, Data.get(sourceID)),
+	current_editor(SourceID, SourceTB),
+	xref_source_id(SourceTB, XRefID),
+	get(TB, contents, string(Query)),
+	prolog_colourise_query(Query, XRefID, colour_item(TB)),
+	collect_tokens(TB, Tokens).
+
+shadow_editor(Data, TB, _{}) :-
+	atom_string(UUID, Data.get(uuid)), !,
+	current_editor(UUID, TB).
+shadow_editor(Data, TB, _{uuid:UUID}) :-
+	Text = Data.get(text),
+	create_editor(UUID, TB, Data),
+	send(TB, contents, string(Text)).
 
 
 :- thread_local
@@ -353,6 +359,9 @@ server_tokens(TB, GroupedTokens) :-
 	      prolog_colourise_stream(Stream, UUID, colour_item(TB))
 	    ),
 	    close(Stream)),
+	collect_tokens(TB, GroupedTokens).
+
+collect_tokens(TB, GroupedTokens) :-
 	findall(Start-Token, json_token(TB, Start, Token), Pairs),
 	keysort(Pairs, Sorted),
 	pairs_values(Sorted, Tokens),
@@ -395,7 +404,7 @@ ends_term(syntax_error).
 %		instead of using assert/retract.  Most likely that would
 %		be faster.  Need to profile to check the bottleneck.
 
-json_token(TB, Start, json([type(Type)|Attrs])) :-
+json_token(TB, Start, Token) :-
 	retract(token(Style, Start0, Len)),
 	debug(color, 'Trapped ~q.', [token(Style, Start0, Len)]),
 	(   atomic_special(Style, Start0, Len, TB, Type, Attrs)
@@ -411,7 +420,8 @@ json_token(TB, Start, json([type(Type)|Attrs])) :-
 		Start = Start0
 	    ),
 	    json_attributes(Attrs0, Attrs, TB, Start0, Len)
-	).
+	),
+	dict_create(Token, json, [type(Type)|Attrs]).
 
 atomic_special(atom, Start, Len, TB, Type, Attrs) :-
 	(   get(TB, character, Start, 0'\')
@@ -420,7 +430,7 @@ atomic_special(atom, Start, Len, TB, Type, Attrs) :-
 	;   Type = atom,
 	    (   Len =< 5			% solo characters, neck, etc.
 	    ->  get(TB, contents, Start, Len, string(Text)),
-	        Attrs = [text(Text)]
+	        Attrs = [text(#(Text))]
 	    ;   Attrs = []
 	    )
 	).
@@ -433,7 +443,7 @@ json_attributes([_|T0], T, TB, Start, Len) :-
 	json_attributes(T0, T, TB, Start, Len).
 
 
-json_attribute(text, text(Text), TB, Start, Len) :- !,
+json_attribute(text, text(#(Text)), TB, Start, Len) :- !,
 	get(TB, contents, Start, Len, string(Text)).
 json_attribute(Term, Term, _, _, _).
 
