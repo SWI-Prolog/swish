@@ -35,8 +35,12 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_path), []).
-:- use_module(library(prolog_colour)).
+:- use_module(library(http/http_parameters)).
 :- use_module(library(pairs)).
+:- use_module(library(prolog_colour)).
+:- if(exists_source(library(helpidx))).
+:- use_module(library(helpidx), [predicate/5]).
+:- endif.
 
 http:location(codemirror, swish(cm), []).
 
@@ -44,6 +48,7 @@ http:location(codemirror, swish(cm), []).
 :- http_handler(codemirror(change), codemirror_change, []).
 :- http_handler(codemirror(tokens), codemirror_tokens, []).
 :- http_handler(codemirror(leave),  codemirror_leave,  []).
+:- http_handler(codemirror(info),   predicate_info,    []).
 
 /** <module> Highlight token server
 
@@ -583,3 +588,56 @@ goal_arity(Goal, Arity) :-
 	->  compound_name_arity(Goal, _, Arity)
 	;   Arity = 0
 	).
+
+:- multifile
+	prolog:predicate_summary/2.
+
+
+		 /*******************************
+		 *	       INFO		*
+		 *******************************/
+
+%%	predicate_info(+Request)
+%
+%	HTTP handler that provides information  about a predicate. Reply
+%	is a JSON array of predicate   descriptions. Each description is
+%	an object holding:
+%
+%	  - name    -- Name of the predicate
+%	  - arity   -- Arity of the predicate
+%	  - module  -- Where the predicate is defined
+%	  - summary -- Summary information from the manual or PlDoc
+
+predicate_info(Request) :-
+	http_parameters(Request,
+			[ name(Name, []),
+			  arity(Arity, [integer]),
+			  module(Module, [optional(true)])
+			]),
+	PI = Module:Name/Arity,
+	findall(Dict,
+		( setof(Key-Value,
+		      predicate_info(PI, Key, Value),
+		      Pairs),
+		  dict_pairs(Dict, json,
+			     [ name   - #(Name),
+			       arity  - Arity,
+			       module - Module
+			     | Pairs
+			     ])
+		),
+		Answers),
+	reply_json_dict(Answers).
+
+predicate_info(PI, summary, Summary) :-
+	PI = Module:Name/Arity,
+	(   catch(predicate(Name, Arity, Summary, _, _), _, fail)
+	->  functor(Head, Name, Arity),
+	    manual_module(Head, Module)
+	;   prolog:predicate_summary(PI, Summary)
+	).
+
+manual_module(Head, system) :-
+	predicate_property(Head, built_in), !.
+manual_module(_, library).		% TBD
+
