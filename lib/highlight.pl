@@ -301,7 +301,8 @@ codemirror_tokens(Request) :-
 	(   shadow_editor(Data, TB, Reply),
 	    enriched_tokens(TB, Data, Tokens)
 	->  true
-	;   Tokens = [[]]
+	;   Reply = _{},
+	    Tokens = [[]]
 	),
 	reply_json_dict(json{tokens:Tokens}.put(Reply), [width(0)]).
 
@@ -383,14 +384,11 @@ group_by_term(Flat, [Term|Grouped]) :-
 
 take_term([], [], []).
 take_term([H|T0], [H|T], R) :-
-	(   token_type(H, Type),
-	    ends_term(Type)
+	(   ends_term(H.get(type))
 	->  T = [],
 	    R = T0
 	;   take_term(T0, T, R)
 	).
-
-token_type(json([type(Type)|_]), Type).
 
 ends_term(fullstop).
 ends_term(syntax_error).
