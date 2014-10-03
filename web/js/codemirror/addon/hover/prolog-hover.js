@@ -14,14 +14,27 @@ var tokenHelp = {
       return "Built-in predicate";
     }
   },
-  "goal_autoload":  "Autoloaded predicate",
+
+  "goal_autoload":  function(data, cm) {
+    if ( data ) {
+      return $.el.div(predName(data), " (autoload from ",
+		      fileName(data), "): ",
+		      cm.predicateInfo(data));
+    } else {
+      return "Autoloaded predicate";
+    }
+  },
+
   "goal_imported":  function(data, cm) {
     if ( data ) {
-      return predName(data)+": imported from "+fileName(data);
+      return $.el.div(predName(data), " (imported from ",
+		      fileName(data), "): ",
+		      cm.predicateInfo(data));
     } else {
       return "Imported predicate";
     }
   },
+
   "goal_recursion": "Recursive call",
   "goal_local":     "Local predicate",
   "goal_dynamic":   "Dynamic predicate",
