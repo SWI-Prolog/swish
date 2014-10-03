@@ -50,8 +50,6 @@ classification of tokens.
     } else {
       msg.role = state.role;
     }
-    if ( typeof(state.sourceID) == "function" )
-      msg.sourceID = state.sourceID();
 
     $.ajax({ url: state.url.change,
              dataType: "json",
