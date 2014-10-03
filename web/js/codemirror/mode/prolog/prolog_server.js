@@ -26,7 +26,8 @@ classification of tokens.
 	this.sourceID = options.sourceID;
       this.url  = { change: options.url + "change",
 		    tokens: options.url + "tokens",
-		    leave:  options.url + "leave"
+		    leave:  options.url + "leave",
+		    info:   options.url + "info"
 		  },
       this.delay = options.delay ? options.delay : DEFAULT_DELAY;
       this.generationFromServer = -1;
@@ -523,6 +524,27 @@ classification of tokens.
     }
 
     return undefined;
+  }
+
+  CodeMirror.prototype.predicateInfo = function(token) {
+    var state = this.state.prologHighlightServer;
+    var elem = $.el.span({class:"pred-info"}, "...");
+
+    $.ajax({ url: state.url.info,
+	     dataType: "json",
+	     data: {
+	       name: token.text,
+	       arity: token.arity
+	     },
+	     success: function(data) {
+	       if ( data.length > 0 )
+		 $(elem).html(data[0].summary);
+	       else
+		 $(elem).html("no help found");
+	     }
+           });
+
+    return elem;
   }
 
 });
