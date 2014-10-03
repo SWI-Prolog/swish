@@ -564,7 +564,7 @@ head_type(_,		head).
 
 goal_type(built_in,	      goal_built_in,	 []).
 goal_type(imported(File),     goal_imported,	 [file(File)]).
-goal_type(autoload,	      goal_autoload,	 []).
+goal_type(autoload(File),     goal_autoload,	 [file(File)]).
 goal_type(global,	      goal_global,	 []).
 goal_type(undefined,	      goal_undefined,	 []).
 goal_type(thread_local(Line), goal_thread_local, [line(Line)]).
