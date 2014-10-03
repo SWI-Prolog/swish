@@ -77,14 +77,9 @@ tokens_.
 codemirror_change(Request) :-
 	http_read_json_dict(Request, Change, []),
 	debug(cm(change), 'Change ~p', [Change]),
-	(   atom_string(UUID, Change.get(uuid))
-	->  current_editor(UUID, TextBuffer),
-	    Reply = true
-	;   create_editor(UUID, TextBuffer, Change),
-	    Reply = json{uuid:UUID}
-	),
-	apply_change(TextBuffer, Change.change),
-	reply_json_dict(Reply).
+	shadow_editor(Change, TB),
+	apply_change(TB, Change.change),
+	reply_json_dict(true).
 
 
 apply_change(_, []) :- !.
@@ -129,7 +124,7 @@ insert([H|T], TB, ChPos0, ChPos) :-
 	current_editor/2.
 
 create_editor(UUID, Editor, Change) :-
-	uuid(UUID),
+	must_be(atom, UUID),
 	(   Role = Change.get(role)
 	->  new(Editor, source_buffer(UUID, Role))
 	;   new(Editor, source_buffer(UUID))
@@ -141,6 +136,7 @@ create_editor(UUID, Editor, Change) :-
 	asserta(current_editor(UUID, Editor)).
 
 destroy_editor(UUID, Editor) :-
+	must_be(atom, UUID),
 	(   xref_source_id(Editor, SourceID)
 	->  xref_clean(SourceID)
 	;   true
@@ -298,13 +294,11 @@ master_load_file(File, _, File).
 codemirror_tokens(Request) :-
 	http_read_json_dict(Request, Data, []),
 	debug(cm(tokens), 'Asking for tokens: ~p', [Data]),
-	(   shadow_editor(Data, TB, Reply),
-	    enriched_tokens(TB, Data, Tokens)
-	->  true
-	;   Reply = _{},
-	    Tokens = [[]]
+	(   shadow_editor(Data, TB)
+	->  enriched_tokens(TB, Data, Tokens)
+	;   Tokens = [[]]
 	),
-	reply_json_dict(json{tokens:Tokens}.put(Reply), [width(0)]).
+	reply_json_dict(json{tokens:Tokens}, [width(0)]).
 
 enriched_tokens(TB, _Data, Tokens) :-		% source window
 	get(TB, role, source), !,
@@ -313,18 +307,27 @@ enriched_tokens(TB, _Data, Tokens) :-		% source window
 enriched_tokens(TB, Data, Tokens) :-		% query window
 	atom_string(SourceID, Data.get(sourceID)),
 	current_editor(SourceID, SourceTB),
-	xref_source_id(SourceTB, XRefID),
+	xref_source_id(SourceTB, XRefID), !,
 	get(TB, contents, string(Query)),
 	prolog_colourise_query(Query, XRefID, colour_item(TB)),
 	collect_tokens(TB, Tokens).
+enriched_tokens(TB, _Data, Tokens) :-
+	get(TB, contents, string(Query)),
+	prolog_colourise_query(Query, swish, colour_item(TB)),
+	collect_tokens(TB, Tokens).
 
-shadow_editor(Data, TB, _{}) :-
-	atom_string(UUID, Data.get(uuid)), !,
-	current_editor(UUID, TB).
-shadow_editor(Data, TB, _{uuid:UUID}) :-
-	Text = Data.get(text),
+shadow_editor(Data, TB) :-
+	Text = Data.get(text), !,
+	atom_string(UUID, Data.uuid),
 	create_editor(UUID, TB, Data),
 	send(TB, contents, string(Text)).
+shadow_editor(Data, TB) :-
+	_{role:_} :< Data, !,
+	atom_string(UUID, Data.uuid),
+	create_editor(UUID, TB, Data).
+shadow_editor(Data, TB) :-
+	atom_string(UUID, Data.get(uuid)), !,
+	current_editor(UUID, TB).
 
 
 :- thread_local

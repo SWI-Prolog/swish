@@ -48,7 +48,9 @@ classification of tokens.
     if ( state.uuid ) {
       msg.uuid = state.uuid;
     } else {
-      msg.role = state.role;
+      state.uuid = generateUUID();
+      msg.uuid   = state.uuid;
+      msg.role   = state.role;
     }
 
     $.ajax({ url: state.url.change,
@@ -57,9 +59,6 @@ classification of tokens.
 	     type: "POST",
 	     data: JSON.stringify(msg),
 	     success: function(data) {
-	       if ( typeof(data) == "object" && data.uuid )
-		 state.uuid = data.uuid;
-
 	       if ( change.origin == "setValue" ||
 		    state.generationFromServer == -1 )
 		 cm.serverAssistedHighlight();
@@ -148,8 +147,10 @@ classification of tokens.
     if ( state.uuid ) {
       msg.uuid = state.uuid;
     } else {
-      msg.text = cm.getValue();
-      msg.role = state.role;
+      state.uuid = generateUUID();
+      msg.uuid   = state.uuid;
+      msg.text   = cm.getValue();
+      msg.role   = state.role;
     }
     if ( typeof(state.sourceID) == "function" )
       msg.sourceID = state.sourceID();
@@ -163,8 +164,6 @@ classification of tokens.
 	     success: function(data, status) {
 	       var opts = modeOptions();
 	       opts.metainfo = data.tokens;
-	       if ( !state.uuid && data.uuid )
-		 state.uuid = data.uuid;
 	       cm.setOption("mode", opts);
 	     }
 	   });
@@ -172,6 +171,17 @@ classification of tokens.
 
   CodeMirror.commands.refreshHighlight = function(cm) {
     cm.serverAssistedHighlight(true);
+  }
+
+  function generateUUID() {
+    var d = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+      .replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x7|0x8)).toString(16);
+    });
+    return uuid;
   }
 
   var syncOnType = { "var": "var",	/* JavaScript Types */
