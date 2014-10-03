@@ -147,9 +147,11 @@ classification of tokens.
     if ( state.uuid ) {
       msg.uuid = state.uuid;
     } else {
+      msg.text   = cm.getValue();
+      if ( msg.text.trim() == "" )
+	return;
       state.uuid = generateUUID();
       msg.uuid   = state.uuid;
-      msg.text   = cm.getValue();
       msg.role   = state.role;
     }
     if ( typeof(state.sourceID) == "function" )
