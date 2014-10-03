@@ -24,6 +24,9 @@ define([ "cm/lib/codemirror",
 	 "cm/addon/display/placeholder",
 	 "cm/addon/runmode/runmode",
 
+	 "cm/addon/hover/text-hover",
+	 "cm/addon/hover/prolog-hover",
+
          "jquery", "laconic"
        ],
        function(CodeMirror, config) {
@@ -69,6 +72,7 @@ define([ "cm/lib/codemirror",
 	  mode: "prolog",
 	  theme: "prolog",
 	  matchBrackets: true,
+	  textHover: true,
 	  prologKeys: true,
 	  extraKeys: {
 	    "Ctrl-Space": "autocomplete",

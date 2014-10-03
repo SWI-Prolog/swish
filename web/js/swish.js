@@ -30,7 +30,9 @@ require.config({
     "cm/mode/prolog/prolog": "codemirror/mode/prolog/prolog",
     "cm/mode/prolog/prolog_keys": "codemirror/mode/prolog/prolog_keys",
     "cm/mode/prolog/prolog_query": "codemirror/mode/prolog/prolog_query",
-    "cm/mode/prolog/prolog_server": "codemirror/mode/prolog/prolog_server"
+    "cm/mode/prolog/prolog_server": "codemirror/mode/prolog/prolog_server",
+    "cm/addon/hover/text-hover": "codemirror/addon/hover/text-hover",
+    "cm/addon/hover/prolog-hover": "codemirror/addon/hover/prolog-hover"
   },
   shim:
   { bootstrap:
