@@ -24,12 +24,9 @@ a.pengine-logo {
    - overflow: auto clip menus
 */
 
-.splitter_panel .vsplitter {
+.splitter_panel .vsplitter, .splitter_panel .hsplitter {
     z-index: 100;
-}
-
-.splitter_panel .hsplitter {
-    z-index: 100;
+    border: 2px outset #ccc;
 }
 
 .splitter_panel .vsplitter, .splitter_panel .left_panel, .splitter_panel .right_panel,
