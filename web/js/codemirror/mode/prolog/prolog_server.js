@@ -86,14 +86,18 @@ classification of tokens.
   }
 
   CodeMirror.defineOption("prologHighlightServer", false, function(cm, val, old) {
+    function leaveCM() { leaveEditor(cm); }
+
     if ( old && old != CodeMirror.Init ) {
-      /* FIXME: Unregister the Prolog server */
       cm.off("change", changeEditor);
+      window.removeEventListener("unload", leaveCM);
+      cm.state.prologHighlightServer = null;
+      cm.setOption("mode", {name:"prolog"});
     }
     if ( val ) {
       cm.state.prologHighlightServer = new State(val);
       cm.on("change", changeEditor);
-      window.addEventListener("unload", function() { leaveEditor(cm); });
+      window.addEventListener("unload", leaveCM);
       if ( cm.lineCount() > 0 ) {
 	cm.serverAssistedHighlight(true);
       }

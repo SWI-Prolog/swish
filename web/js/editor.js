@@ -123,6 +123,9 @@ define([ "cm/lib/codemirror",
 	  elem.on("clearMessages", function(ev) {
 	    elem.prologEditor('clearMessages');
 	  });
+	  elem.on("highlight", function(ev, how) {
+	    elem.prologEditor('highlight', how);
+	  });
 	}
       });
     },
@@ -256,6 +259,24 @@ define([ "cm/lib/codemirror",
 		 printWithIframe(pre);
 	       }
              });
+
+      return this;
+    },
+
+    /**
+     * Define highlighting style.
+     * @param {String} how is one of `semantic` or `syntactic`
+     */
+    highlight: function(how) {
+      var data = this.data(pluginName);
+      var optval = null;
+
+      if ( how == "semantic" ) {
+	optval = {  url:  config.http.locations.cm_highlight,
+		    role: data.role
+	         };
+      }
+      data.cm.setOption("prologHighlightServer", optval);
 
       return this;
     },

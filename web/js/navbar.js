@@ -123,6 +123,9 @@ define([ "jquery", "laconic" ],
       if ( onclick.type == "checkbox" ) {
 	var cb = $.el.input({type:"checkbox"});
 
+	if ( onclick.checked )
+	  $(cb).prop("checked", onclick.checked);
+
 	$(cb).on("click", function() {
 	  onclick.action($(this).prop("checked"));
 	});

@@ -55,6 +55,7 @@ define([ "jquery",
 	"Options": "--",
 	"Semantic highlighting": {
 	  type: "checkbox",
+	  checked: true,
 	  action: function(val) {
 	    menuBroadcast("highlight", val ? "semantic" : "syntactic");
 	  }
