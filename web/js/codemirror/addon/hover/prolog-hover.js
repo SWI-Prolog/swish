@@ -36,15 +36,19 @@ var tokenHelp = {
   },
 
   "goal_recursion": "Recursive call",
-  "goal_local":     "Local predicate",
+  "goal_local":     "Locally defined predicate",
   "goal_dynamic":   "Dynamic predicate",
   "goal_undefined": "Undefined predicate",
 
   "head_unreferenced": "Predicate is not called",
 
+  "singleton": "Variable appearing only once",
+
   "head":       null,
   "var":        null,
   "int":        null,
+  "number":     null,
+  "atom":       null,
   "comment":    null,
   "neck":       null,
   "list_open":  null,
