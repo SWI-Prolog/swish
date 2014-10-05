@@ -111,7 +111,7 @@ define([ "jquery", "laconic" ],
   function appendDropdown(dropdown, label, onclick) {
     if ( onclick == "--" ) {
       dropdown.append($.el.li({class:"divider"}));
-    } else {
+    } else if ( typeof(onclick) == "function" ) {
       var a = $.el.a({href:"#"}, label);
 
       $(a).data('action', onclick);
@@ -119,6 +119,19 @@ define([ "jquery", "laconic" ],
 	$(a).attr("id", onclick.name);
 
       dropdown.append($.el.li(a));
+    } else {
+      if ( onclick.type == "checkbox" ) {
+	var cb = $.el.input({type:"checkbox"});
+
+	$(cb).on("click", function() {
+	  onclick.action($(this).prop("checked"));
+	});
+        dropdown.append($.el.li({class:"checkbox"},
+				cb,
+				$.el.span(label)));
+      } else {
+	alert("Unknown navbar item");
+      }
     }
   }
 

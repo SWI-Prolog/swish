@@ -51,6 +51,13 @@ define([ "jquery",
       "Edit":
       { "Clear messages": function() {
 	  menuBroadcast("clearMessages");
+	},
+	"Options": "--",
+	"Semantic highlighting": {
+	  type: "checkbox",
+	  action: function(val) {
+	    menuBroadcast("highlight", val ? "semantic" : "syntactic");
+	  }
 	}
       },
       "Examples": function(navbar, dropdown) {
