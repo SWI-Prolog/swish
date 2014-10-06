@@ -5,6 +5,8 @@ define([ "../../lib/codemirror",
        function(CodeMirror, $) {
 "use strict";
 
+var pathTranslations = {};
+
 var tokenHelp = {
   "goal_built_in":  function(data, cm) {
     if ( data ) {
@@ -18,7 +20,7 @@ var tokenHelp = {
   "goal_autoload":  function(data, cm) {
     if ( data ) {
       return $.el.div(predName(data), " (autoload from ",
-		      fileName(data), "): ",
+		      fileName(data, cm), "): ",
 		      cm.predicateInfo(data));
     } else {
       return "Autoloaded predicate";
@@ -28,7 +30,7 @@ var tokenHelp = {
   "goal_imported":  function(data, cm) {
     if ( data ) {
       return $.el.div(predName(data), " (imported from ",
-		      fileName(data), "): ",
+		      fileName(data, cm), "): ",
 		      cm.predicateInfo(data));
     } else {
       return "Imported predicate";
@@ -42,7 +44,36 @@ var tokenHelp = {
 
   "head_unreferenced": "Predicate is not called",
 
+  "file": function(data, cm) {
+    if ( data ) {
+      addFileTranslation(cm, data.text, data.path);
+      return $.el.div("File: ",
+		      $.el.span({class:"file-path"},
+				data.path));
+    } else {
+      return "File name";
+    }
+  },
+
+  "file_no_depends": function(data, cm) {
+    if ( data ) {
+      addFileTranslation(cm, data.text, data.path);
+      return $.el.div("File: ",
+		      $.el.span({class:"file-path"},
+				data.path),
+		      $.el.div({class:"hover-remark"},
+			       "does not resolve any dependencies")
+		     );
+    } else {
+      return "File name (does not resolve any dependencies)";
+    }
+  },
+
   "singleton": "Variable appearing only once",
+  "codes":     "List of Unicode code points (integers)",
+  "chars":     "List of one-character atoms",
+  "string":    "Packed string (SWI7, use `text` for a list of codes)",
+  "tag":       "Tag of a SWI7 dict",
 
   "head":       null,
   "control":    null,
@@ -54,6 +85,7 @@ var tokenHelp = {
   "functor":    null,
   "comment":    null,
   "neck":       null,
+  "sep":        null,
   "list_open":  null,
   "list_close": null
 };
@@ -62,13 +94,20 @@ function predName(data) {
   return data.text+"/"+data.arity;
 }
 
-function fileName(data) {
+function addFileTranslation(cm, text, path) {
+  pathTranslations[path] = text;
+}
+
+function fileName(data, cm) {
   var last;
 
-  if ( (last=data.file.lastIndexOf("/")) ) {
+  if ( pathTranslations[data.file] )
+    return pathTranslations[data.file];
+
+  if ( (last=data.file.lastIndexOf("/")) )
     return data.file.substring(last+1);
-  } else
-    return data.file;
+
+  return data.file;
 }
 
 function summary(data, cm) {
