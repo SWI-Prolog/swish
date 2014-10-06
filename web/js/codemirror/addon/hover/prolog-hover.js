@@ -81,6 +81,7 @@ var tokenHelp = {
   "fullstop":   null,
   "var":        null,
   "int":        null,
+  "float":      null,
   "number":     null,
   "atom":       null,
   "functor":    null,
