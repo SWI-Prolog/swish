@@ -8,8 +8,8 @@
  */
 
 
-define([ "jquery", "laconic" ],
-       function() {
+define([ "jquery", "preferences", "laconic" ],
+       function($, preferences) {
 
 (function($) {
   var pluginName = 'navbar';
@@ -121,16 +121,29 @@ define([ "jquery", "laconic" ],
       dropdown.append($.el.li(a));
     } else {
       if ( onclick.type == "checkbox" ) {
-	var cb = $.el.input({type:"checkbox"});
+	var cb = $($.el.input({type:"checkbox"}));
 
-	if ( onclick.checked )
-	  $(cb).prop("checked", onclick.checked);
+	if ( onclick.preference !== undefined ) {
+	  cb.addClass("swish-event-receiver");
+	  if ( preferences.getVal(onclick.preference) )
+	    cb.prop("checked", true);
+	  cb.on("click", function() {
+	    preferences.setVal(onclick.preference, $(this).prop("checked"));
+	  });
+	  cb.on("preference", function(pref) {
+	    if ( pref.name == onclick.preference )
+	      cb.prop("checked", pref.value);
+	  });
+	} else {
+	  if ( onclick.checked )
+	    cb.prop("checked", onclick.checked);
 
-	$(cb).on("click", function() {
-	  onclick.action($(this).prop("checked"));
-	});
+	  cb.on("click", function() {
+	    onclick.action($(this).prop("checked"));
+	  });
+	}
         dropdown.append($.el.li({class:"checkbox"},
-				cb,
+				cb[0],
 				$.el.span(label)));
       } else {
 	alert("Unknown navbar item");

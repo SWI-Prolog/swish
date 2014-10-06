@@ -21,7 +21,7 @@ classification of tokens.
 
   function State(options) {
     if (typeof options == "object") {
-      this.enabled = options.enabled || "false";
+      this.enabled = options.enabled || false;
       this.role    = options.role    || "source";
       if ( options.sourceID )
 	this.sourceID = options.sourceID;

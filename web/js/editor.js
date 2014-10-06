@@ -10,6 +10,7 @@
 
 define([ "cm/lib/codemirror",
 	 "config",
+	 "preferences",
 
 	 "cm/mode/prolog/prolog",
 	 "cm/mode/prolog/prolog_keys",
@@ -29,7 +30,7 @@ define([ "cm/lib/codemirror",
 
          "jquery", "laconic"
        ],
-       function(CodeMirror, config) {
+       function(CodeMirror, config, preferences) {
 
 (function($) {
   var pluginName = 'prologEditor';
@@ -84,7 +85,7 @@ define([ "cm/lib/codemirror",
 	  options.prologHighlightServer =
 	  { url:  config.http.locations.cm_highlight,
 	    role: options.role,
-	    enabled: true
+	    enabled: preferences.getVal("semantic-highlighting")
 	  };
 	  if ( options.sourceID )
 	    options.prologHighlightServer.sourceID = options.sourceID;
@@ -110,8 +111,8 @@ define([ "cm/lib/codemirror",
 
 	elem.data(pluginName, data);
 	elem.addClass("swish-event-receiver"); /* do this anyway? */
-	elem.on("highlight", function(ev, how) {
-	  elem.prologEditor('highlight', how);
+	elem.on("preference", function(ev, pref) {
+	  elem.prologEditor('preference', pref);
 	});
 
 	if ( data.role == "source" ) {
@@ -265,14 +266,21 @@ define([ "cm/lib/codemirror",
     },
 
     /**
-     * Define highlighting style.
-     * @param {String} how is one of `semantic` or `syntactic`
+     * Manage user preference changes.  Defines preferences are:
+     *
+     *   - "highlight" -- one of `semantic` or `syntactic`
+     *
+     * @param {Object} pref describes a preference
+     * @param {String} pref.name name of the preference
+     * @param {Any}    pref.value value of the preference
      */
-    highlight: function(how) {
+    preference: function(pref) {
       var data = this.data(pluginName);
-      var optval = {enabled: how == "semantic" ? true : false};
 
-      data.cm.setOption("prologHighlightServer", optval);
+      if ( pref.name == "semantic-highlighting" ) {
+	data.cm.setOption("prologHighlightServer",
+			  { enabled: pref.value });
+      }
 
       return this;
     },

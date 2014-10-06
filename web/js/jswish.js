@@ -9,6 +9,7 @@
 
 define([ "jquery",
 	 "config",
+	 "preferences",
 	 "jquery-ui",
 	 "splitter",
 	 "bootstrap",
@@ -20,7 +21,9 @@ define([ "jquery",
 	 "modal",
 	 "term",
 	 "laconic"
-       ], function($, config) {
+       ], function($, config, preferences) {
+
+preferences.setDefault("semantic-highlighting", true);
 
 (function($) {
   var pluginName = 'swish';
@@ -54,11 +57,8 @@ define([ "jquery",
 	},
 	"Options": "--",
 	"Semantic highlighting": {
-	  type: "checkbox",
-	  checked: true,
-	  action: function(val) {
-	    menuBroadcast("highlight", val ? "semantic" : "syntactic");
-	  }
+	  preference: "semantic-highlighting",
+	  type: "checkbox"
 	}
       },
       "Examples": function(navbar, dropdown) {
