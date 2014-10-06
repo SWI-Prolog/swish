@@ -340,7 +340,8 @@ define([ "config", "jquery", "answer", "laconic" ],
     renderAnswer: function(answer) {
       var data = this.data('prologRunner');
       var even = (++data.answers % 2 == 0);
-      var div = $.el.div({class:"answer "+(even ? "even" : "odd")});
+      var div = $.el.div({class:"answer "+(even ? "even" : "odd")},
+			 $.el.span({class:"answer-no"}, data.answers));
 
       addAnswer(this, div);
       $(div).prologAnswer(answer);
