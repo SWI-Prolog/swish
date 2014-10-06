@@ -558,7 +558,7 @@ classification of tokens.
 
   CodeMirror.prototype.predicateInfo = function(token) {
     var state = this.state.prologHighlightServer;
-    var elem = $.el.span({class:"pred-info"}, "...");
+    var elem = $($.el.span({class:"pred-info"}, "..."));
 
     $.ajax({ url: state.url.info,
 	     dataType: "json",
@@ -567,14 +567,18 @@ classification of tokens.
 	       arity: token.arity
 	     },
 	     success: function(data) {
-	       if ( data.length > 0 )
-		 $(elem).html(data[0].summary);
-	       else
-		 $(elem).html("no help found");
+	       if ( data.length > 0 ) {
+		 elem.html("");
+		 if ( data[0].iso )
+		   elem.append($.el.span({class:"pred-tag"}, "ISO"));
+		 elem.append($.el.span({class:"pred-summary"},
+				       data[0].summary));
+	       } else
+		 elem.html("no help found");
 	     }
            });
 
-    return elem;
+    return elem[0];
   }
 
 });

@@ -10,7 +10,7 @@ var pathTranslations = {};
 var tokenHelp = {
   "goal_built_in":  function(data, cm) {
     if ( data ) {
-      return $.el.div(predName(data), ": ",
+      return $.el.div(predName(data),
 		      cm.predicateInfo(data));
     } else {
       return "Built-in predicate";
@@ -91,7 +91,8 @@ var tokenHelp = {
 };
 
 function predName(data) {
-  return data.text+"/"+data.arity;
+  return $.el.span({class:"pred-name"},
+		   data.text+"/"+data.arity);
 }
 
 function addFileTranslation(cm, text, path) {
@@ -109,14 +110,6 @@ function fileName(data, cm) {
 
   return data.file;
 }
-
-function summary(data, cm) {
-  var server = cm.state.prologHighlightServer;
-
-  if ( server && server.url && server.url.info ) {
-  }
-}
-
 
 CodeMirror.registerHelper("textHover", "prolog", function(cm, data, node) {
   if ( data ) {

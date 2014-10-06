@@ -1,7 +1,7 @@
 @import url("../bower_components/codemirror/lib/codemirror.css");
 @import url("../bower_components/codemirror/addon/hint/show-hint.css");
 @import url("../js/codemirror/theme/prolog.css");
-@import url("../js/codemirror/addon/hover/text-hover.css");
+@import url("../js/codemirror/addon/hover/prolog-hover.css");
 
 .prolog-editor, .CodeMirror { height: 100%; }
 .CodeMirror pre.CodeMirror-placeholder { color: #999; }

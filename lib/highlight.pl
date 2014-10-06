@@ -614,6 +614,10 @@ predicate_info(Request) :-
 			  arity(Arity, [integer]),
 			  module(Module, [optional(true)])
 			]),
+	predicate_info(Module:Name/Arity, Info),
+	reply_json_dict(Info).
+
+predicate_info(PI, Info) :-
 	PI = Module:Name/Arity,
 	findall(Dict,
 		( setof(Key-Value,
@@ -626,8 +630,7 @@ predicate_info(Request) :-
 			     | Pairs
 			     ])
 		),
-		Answers),
-	reply_json_dict(Answers).
+		Info).
 
 predicate_info(PI, summary, Summary) :-
 	PI = Module:Name/Arity,
@@ -636,6 +639,9 @@ predicate_info(PI, summary, Summary) :-
 	    manual_module(Head, Module)
 	;   prolog:predicate_summary(PI, Summary)
 	).
+predicate_info(system:Name/Arity, iso, true) :-
+	compound_name_arity(Head, Name, Arity),
+	predicate_property(system:Head, iso).
 
 manual_module(Head, system) :-
 	predicate_property(Head, built_in), !.
