@@ -7,9 +7,10 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  */
 
-define([],
+define(["jquery"],
        function($) {
   var hasLocalStore = (typeof(Storage) !== "undefined");
+  var defaults = {};
 
   var preferences = {
     /**
@@ -47,6 +48,53 @@ define([],
 	return data.indexOf(id) >= 0;
       }
       return false;
+    },
+
+    /**
+     * Broadcast the change of a preference.
+     */
+    broadcast: function(name, value) {
+      $(".swish-event-receiver").trigger("preference",
+					 { name: name,
+					   value: value
+					 });
+    },
+
+    /**
+     * Set the value of a preference and broadcast it.
+     * FIXME: we should only broadcast if the value has changed.
+     * @param {String} name describes the name of the preference
+     * @param {Any} value describes the value.  Values are stored
+     * using JSON serialization.
+     */
+    setVal: function(name, value) {
+      if ( hasLocalStore ) {
+	localStorage.setItem(name, JSON.stringify(value));
+      }
+      this.broadcast(name, value);
+    },
+
+    /**
+     * @param {String} name describes the name of the preference
+     * @param {Any} value describes the default value.
+     */
+    setDefault: function(name, value) {
+      defaults[name] = value;
+    },
+
+    /**
+     * @param {String} name describes the name of the preference
+     */
+    getVal: function(name) {
+      if ( hasLocalStore ) {
+	var str;
+
+	if ( (str = localStorage.getItem(name)) ) {
+	  value = JSON.parse(str);
+	  return value;
+	}
+      }
+      return defaults[name];
     }
   }
 

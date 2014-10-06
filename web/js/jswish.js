@@ -9,6 +9,7 @@
 
 define([ "jquery",
 	 "config",
+	 "preferences",
 	 "jquery-ui",
 	 "splitter",
 	 "bootstrap",
@@ -20,7 +21,9 @@ define([ "jquery",
 	 "modal",
 	 "term",
 	 "laconic"
-       ], function($, config) {
+       ], function($, config, preferences) {
+
+preferences.setDefault("semantic-highlighting", true);
 
 (function($) {
   var pluginName = 'swish';
@@ -51,6 +54,11 @@ define([ "jquery",
       "Edit":
       { "Clear messages": function() {
 	  menuBroadcast("clearMessages");
+	},
+	"Options": "--",
+	"Semantic highlighting": {
+	  preference: "semantic-highlighting",
+	  type: "checkbox"
 	}
       },
       "Examples": function(navbar, dropdown) {
@@ -109,7 +117,12 @@ define([ "jquery",
 	data.editor = $(".prolog-editor").prologEditor();
 	data.runner = $(".prolog-runners").prologRunners();
 	data.query  = $(".prolog-query").queryEditor(
-          { source:   function() { return elem.swish('prologSource'); },
+          { source:   function() {
+	      return elem.swish('prologSource');
+	    },
+	    sourceID: function() {
+	      return data.editor.prologEditor('getSourceID');
+	    },
 	    examples: elem.swish('examples'),
 	    runner:   data.runner,
 	  }).trigger("source");

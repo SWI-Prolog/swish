@@ -1,0 +1,14 @@
+@import url("text-hover.css");
+
+.CodeMirror-hover-tooltip .pred-name {
+  color: blue;
+  font-family: monospace;
+  margin-right: 5px;
+}
+.CodeMirror-hover-tooltip .pred-tag {
+  font-weight: bold;
+  margin-right: 5px;
+}
+.CodeMirror-hover-tooltip .pred-summary {
+ font-style: italic;
+}

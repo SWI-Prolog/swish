@@ -33,6 +33,9 @@ div.runner-results {
   background-color: #fff;
 }
 
+span.answer-no  { float: right; color: #060; font-size: 80%; margin-right: 2px;
+		  font-style: italic;
+		}
 div.answer.even { background-color: #eee; }
 div.answer.odd  { background-color: #fff; }
 div.response    { font-style: italic; color: blue; font-size: 90%;

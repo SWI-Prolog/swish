@@ -33,9 +33,13 @@
 
 /** <module> SWISH help system
 
+This module serves help information for SWISH.
+
 @tbd	Server SWI-Prolog Markdown files.
 */
 
-:- http_handler(swish(help), serve_files_in_directory(swish_help), [id(help),prefix]).
+:- http_handler(swish(help), serve_files_in_directory(swish_help),
+		[id(help),prefix]).
 
 user:file_search_path(swish_help, swish(web/help)).
+

@@ -9,6 +9,7 @@
  */
 
 require.config({
+  urlArgs: "ts="+new Date().getTime(),	/* prevent caching during development */
   waitSeconds: 60,			/* swish-min.js is big */
   paths:
   { jquery:      "../bower_components/jquery/dist/jquery.min",
@@ -29,7 +30,10 @@ require.config({
 					/* Our own Prolog mode */
     "cm/mode/prolog/prolog": "codemirror/mode/prolog/prolog",
     "cm/mode/prolog/prolog_keys": "codemirror/mode/prolog/prolog_keys",
-    "cm/mode/prolog/prolog_query": "codemirror/mode/prolog/prolog_query"
+    "cm/mode/prolog/prolog_query": "codemirror/mode/prolog/prolog_query",
+    "cm/mode/prolog/prolog_server": "codemirror/mode/prolog/prolog_server",
+    "cm/addon/hover/text-hover": "codemirror/addon/hover/text-hover",
+    "cm/addon/hover/prolog-hover": "codemirror/addon/hover/prolog-hover"
   },
   shim:
   { bootstrap:

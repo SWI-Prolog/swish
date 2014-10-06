@@ -10,10 +10,12 @@
 
 define([ "cm/lib/codemirror",
 	 "config",
+	 "preferences",
 
 	 "cm/mode/prolog/prolog",
 	 "cm/mode/prolog/prolog_keys",
 	 "cm/mode/prolog/prolog_query",
+	 "cm/mode/prolog/prolog_server",
 
 	 "cm/addon/edit/matchbrackets",
 	 "cm/addon/comment/continuecomment",
@@ -23,9 +25,12 @@ define([ "cm/lib/codemirror",
 	 "cm/addon/display/placeholder",
 	 "cm/addon/runmode/runmode",
 
+	 "cm/addon/hover/text-hover",
+	 "cm/addon/hover/prolog-hover",
+
          "jquery", "laconic"
        ],
-       function(CodeMirror, config) {
+       function(CodeMirror, config, preferences) {
 
 (function($) {
   var pluginName = 'prologEditor';
@@ -68,6 +73,7 @@ define([ "cm/lib/codemirror",
 	  mode: "prolog",
 	  theme: "prolog",
 	  matchBrackets: true,
+	  textHover: true,
 	  prologKeys: true,
 	  extraKeys: {
 	    "Ctrl-Space": "autocomplete",
@@ -75,7 +81,17 @@ define([ "cm/lib/codemirror",
 	  }
 	}, options);
 
-	if ( !options.role == "query" )
+	if ( config.http.locations.cm_highlight ) {
+	  options.prologHighlightServer =
+	  { url:  config.http.locations.cm_highlight,
+	    role: options.role,
+	    enabled: preferences.getVal("semantic-highlighting")
+	  };
+	  if ( options.sourceID )
+	    options.prologHighlightServer.sourceID = options.sourceID;
+	}
+
+	if ( options.role != "query" )
 	  options.continueComments = "Enter";
 
 	if ( (ta=elem.children("textarea")[0]) ) {
@@ -94,9 +110,12 @@ define([ "cm/lib/codemirror",
 	data.role            = options.role;
 
 	elem.data(pluginName, data);
+	elem.addClass("swish-event-receiver"); /* do this anyway? */
+	elem.on("preference", function(ev, pref) {
+	  elem.prologEditor('preference', pref);
+	});
 
 	if ( data.role == "source" ) {
-	  elem.addClass("swish-event-receiver"); /* do this anyway? */
 	  elem.on("source", function(ev, src) {
 	    elem.prologEditor('setSource', src.data);
 	  });
@@ -131,6 +150,19 @@ define([ "cm/lib/codemirror",
     getSource: function() {
       return this.data(pluginName).cm.getValue();
     },
+
+    /**
+     * @return {String|null} UUID of the source used for server-side
+     * analysis
+     */
+     getSourceID: function() {
+       var cm = this.data(pluginName).cm;
+
+       if ( cm.state.prologHighlightServer ) {
+	 return cm.state.prologHighlightServer.uuid;
+       }
+       return null;
+     },
 
     /**
      * @param {String} src becomes the new contents of the editor
@@ -229,6 +261,26 @@ define([ "cm/lib/codemirror",
 		 printWithIframe(pre);
 	       }
              });
+
+      return this;
+    },
+
+    /**
+     * Manage user preference changes.  Defines preferences are:
+     *
+     *   - "highlight" -- one of `semantic` or `syntactic`
+     *
+     * @param {Object} pref describes a preference
+     * @param {String} pref.name name of the preference
+     * @param {Any}    pref.value value of the preference
+     */
+    preference: function(pref) {
+      var data = this.data(pluginName);
+
+      if ( pref.name == "semantic-highlighting" ) {
+	data.cm.setOption("prologHighlightServer",
+			  { enabled: pref.value });
+      }
 
       return this;
     },

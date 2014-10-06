@@ -52,6 +52,7 @@ define([ "jquery", "laconic", "editor" ],
 
 	$(qediv).append(elem.children("textarea"))
 	        .prologEditor({ role: "query",
+				sourceID: options.sourceID,
 		                placeholder: "Your query goes here ...",
 				lineNumbers: false,
 				lineWrapping: true,
@@ -63,7 +64,7 @@ define([ "jquery", "laconic", "editor" ],
 	elem.on("source", function(src) {
 	  if ( typeof(data.examples) == "function" ) {
 	    exl = data.examples();
-	    elem.queryEditor('setQuery', exl[0] ? exl[0] : "");
+	    elem.queryEditor('setQuery', (exl && exl[0]) ? exl[0] : "");
 	  }
 	});
 

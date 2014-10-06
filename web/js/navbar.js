@@ -8,8 +8,8 @@
  */
 
 
-define([ "jquery", "laconic" ],
-       function() {
+define([ "jquery", "preferences", "laconic" ],
+       function($, preferences) {
 
 (function($) {
   var pluginName = 'navbar';
@@ -60,8 +60,7 @@ define([ "jquery", "laconic" ],
       var ul2 = $.el.ul({name:label, class:"dropdown-menu"});
       var li  = $.el.li({class:"dropdown"},
 			$.el.a({class:"dropdown-toggle",
-				"data-toggle":"dropdown",
-				href:"#"
+				"data-toggle":"dropdown"
 			       },
 			       label,
 			       $.el.b({class:"caret"})),
@@ -111,14 +110,43 @@ define([ "jquery", "laconic" ],
   function appendDropdown(dropdown, label, onclick) {
     if ( onclick == "--" ) {
       dropdown.append($.el.li({class:"divider"}));
-    } else {
-      var a = $.el.a({href:"#"}, label);
+    } else if ( typeof(onclick) == "function" ) {
+      var a = $.el.a(label);
 
       $(a).data('action', onclick);
       if ( onclick.name )
 	$(a).attr("id", onclick.name);
 
       dropdown.append($.el.li(a));
+    } else {
+      if ( onclick.type == "checkbox" ) {
+	var cb = $($.el.input({type:"checkbox"}));
+
+	if ( onclick.preference !== undefined ) {
+	  cb.addClass("swish-event-receiver");
+	  if ( preferences.getVal(onclick.preference) )
+	    cb.prop("checked", true);
+	  cb.on("click", function() {
+	    preferences.setVal(onclick.preference, $(this).prop("checked"));
+	  });
+	  cb.on("preference", function(pref) {
+	    if ( pref.name == onclick.preference )
+	      cb.prop("checked", pref.value);
+	  });
+	} else {
+	  if ( onclick.checked )
+	    cb.prop("checked", onclick.checked);
+
+	  cb.on("click", function() {
+	    onclick.action($(this).prop("checked"));
+	  });
+	}
+        dropdown.append($.el.li({class:"checkbox"},
+				cb[0],
+				$.el.span(label)));
+      } else {
+	alert("Unknown navbar item");
+      }
     }
   }
 

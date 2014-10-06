@@ -24,6 +24,10 @@ config(File, Config) :-
 config(Config) -->
 	...,
 	"require.config(", whites, "{",
+	(   blanks, "urlArgs:", string_without(`\n`, _)
+	->  []
+	;   []
+	),
 	string(Config), blanks,
 	"}", whites, ")", whites, ";", whites, "//", whites, "require.config", !,
 	... .

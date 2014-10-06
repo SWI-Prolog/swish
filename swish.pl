@@ -40,6 +40,7 @@
 :- use_module(lib/storage).
 :- use_module(lib/examples).
 :- use_module(lib/help).
+:- use_module(lib/highlight).
 
 
 		 /*******************************

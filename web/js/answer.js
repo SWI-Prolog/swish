@@ -78,10 +78,10 @@ define([ "jquery", "laconic" ],
     for (var i = 0; i < bindings.length; i++) {
         var vars = bindings[i].variables;
         for (var v = 0; v < vars.length - 1; v++) {
-            html += "<span class='pl-var'>" + vars[v] + "</span> = " +
+            html += "<span class='pl-ovar'>" + vars[v] + "</span> = " +
                 "<span class='pl-var'>" + vars[v + 1] + "</span>, ";
         }
-        html += "<span class='pl-var'>" + vars[vars.length - 1] + "</span> = ";
+        html += "<span class='pl-ovar'>" + vars[vars.length - 1] + "</span> = ";
         html += bindings[i].value;
         if (bindings[i].substitutions) {
             var substs = bindings[i].substitutions;

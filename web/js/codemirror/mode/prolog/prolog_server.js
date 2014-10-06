@@ -21,10 +21,14 @@ classification of tokens.
 
   function State(options) {
     if (typeof options == "object") {
-      this.uuid = options.uuid;
+      this.enabled = options.enabled || false;
+      this.role    = options.role    || "source";
+      if ( options.sourceID )
+	this.sourceID = options.sourceID;
       this.url  = { change: options.url + "change",
 		    tokens: options.url + "tokens",
-		    leave:  options.url + "leave"
+		    leave:  options.url + "leave",
+		    info:   options.url + "info"
 		  },
       this.delay = options.delay ? options.delay : DEFAULT_DELAY;
       this.generationFromServer = -1;
@@ -34,22 +38,29 @@ classification of tokens.
 
   function changeEditor(cm, change) {
     var state = cm.state.prologHighlightServer;
+    var msg = {change:change};
 
-    if ( state == null || state.url == null )
+    if ( state == null || state.url == null || !state.enabled )
       return;
 
     if ( state.tmo ) {			/* changing: delay refresh */
       cm.askRefresh();
     }
 
+    if ( state.uuid ) {
+      msg.uuid = state.uuid;
+    } else {
+      state.uuid = generateUUID();
+      msg.uuid   = state.uuid;
+      msg.role   = state.role;
+    }
+
     $.ajax({ url: state.url.change,
              dataType: "json",
 	     contentType: 'application/json',
 	     type: "POST",
-	     data: JSON.stringify({ uuid: state.uuid,
-	                            change: change
-				  }),
-	     success: function() {
+	     data: JSON.stringify(msg),
+	     success: function(data) {
 	       if ( change.origin == "setValue" ||
 		    state.generationFromServer == -1 )
 		 cm.serverAssistedHighlight();
@@ -60,29 +71,62 @@ classification of tokens.
   function leaveEditor(cm) {
     var state = cm.state.prologHighlightServer;
 
-    if ( state == null || state.url == null )
+    if ( state == null || state.url == null || state.uuid == null )
       return;
-
-    console.log("Leaving CodeMirror "+state.uuid);
+    var uuid = state.uuid;
+    delete state.uuid;
 
     $.ajax({ url: state.url.leave,
 	     async: false,  // otherwise it is killed before completion
 	     contentType: 'application/json',
 	     type: "POST",
-	     data: JSON.stringify({ uuid: state.uuid
+	     dataType: "json",
+	     data: JSON.stringify({ uuid: uuid
 				  })
 	   });
   }
 
+  /**
+   * control server side highlight support. This can be in three states:
+   * (1) absent, in which case `cm.state.prologHighlightServer` is not
+   * present, (2) disabled and (3) enabled.
+   */
   CodeMirror.defineOption("prologHighlightServer", false, function(cm, val, old) {
-    if ( old && old != CodeMirror.Init ) {
-      /* FIXME: Unregister the Prolog server */
-      cm.off("change", changeEditor);
-    }
-    if ( val ) {
+    function leaveCM() { leaveEditor(cm); }
+
+    if ( cm.state.prologHighlightServer ) {
+      if ( val == null ) {		/* remove the highlight server */
+	leaveEditor(cm);
+	cm.off("change", changeEditor);
+	window.removeEventListener("unload", leaveCM);
+	delete cm.state.prologHighlightServer;
+	cm.setOption("mode", {name:"prolog"});
+      } else {
+	if ( val.enabled != old.enabled ) {
+	  cm.state.prologHighlightServer.enabled = val.enabled;
+	  if ( val.enabled ) {		/* enable the highlight server */
+	    cm.on("change", changeEditor);
+	    window.addEventListener("unload", leaveCM);
+	    if ( cm.lineCount() > 0 ) {
+	      cm.serverAssistedHighlight(true);
+	    }
+	  } else {			/* disable */
+	    leaveEditor(cm);
+	    cm.off("change", changeEditor);
+	    window.removeEventListener("unload", leaveCM);
+	    cm.setOption("mode", {name:"prolog"});
+	  }
+	}
+      }
+    } else if ( val ) {			/* create for the first time */
       cm.state.prologHighlightServer = new State(val);
-      cm.on("change", changeEditor);
-      window.addEventListener("unload", function() { leaveEditor(cm); });
+      if ( cm.state.prologHighlightServer.enabled ) {
+	cm.on("change", changeEditor);
+	window.addEventListener("unload", leaveCM);
+	if ( cm.lineCount() > 0 ) {
+	  cm.serverAssistedHighlight(true);
+	}
+      }
     }
   });
 
@@ -108,10 +152,11 @@ classification of tokens.
   CodeMirror.prototype.serverAssistedHighlight = function(always) {
     var cm = this;
     var state = cm.state.prologHighlightServer;
+    var msg = {};
 
     state.tmo = null;
 
-    if ( state == null || state.url == null ||
+    if ( state == null || state.url == null || !state.enabled ||
 	 (cm.isClean(state.generationFromServer) && !always) )
       return;
 
@@ -130,13 +175,28 @@ classification of tokens.
       return opts;
     }
 
+    if ( state.uuid ) {
+      msg.uuid = state.uuid;
+    } else {
+      msg.text   = cm.getValue();
+      if ( msg.text.trim() == "" )
+	return;
+      state.uuid = generateUUID();
+      msg.uuid   = state.uuid;
+      msg.role   = state.role;
+    }
+    if ( typeof(state.sourceID) == "function" )
+      msg.sourceID = state.sourceID();
+
     state.generationFromServer = cm.changeGeneration();
     $.ajax({ url: state.url.tokens,
 	     dataType: "json",
-	     data: { uuid: state.uuid },
+	     contentType: 'application/json',
+	     type: "POST",
+	     data: JSON.stringify(msg),
 	     success: function(data, status) {
 	       var opts = modeOptions();
-	       opts.metainfo = data;
+	       opts.metainfo = data.tokens;
 	       cm.setOption("mode", opts);
 	     }
 	   });
@@ -144,6 +204,17 @@ classification of tokens.
 
   CodeMirror.commands.refreshHighlight = function(cm) {
     cm.serverAssistedHighlight(true);
+  }
+
+  function generateUUID() {
+    var d = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+      .replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x7|0x8)).toString(16);
+    });
+    return uuid;
   }
 
   var syncOnType = { "var": "var",	/* JavaScript Types */
@@ -322,7 +393,7 @@ classification of tokens.
 			};
 
       /* TBD */
-      if ( skippedTerms ) {
+      if ( oos.skippedTerms ) {
 
       } else {
       }
@@ -358,50 +429,57 @@ classification of tokens.
       return false;
     }
 
-    /* matchToken(token, state) matches the server token `token` to the
-       current token and updates state.curToken and/or state.curTerm if
-       the two matches.  It return the enriched style or null.
+    /**
+     * Matches the server token `token` to the current token and updates
+     * state.curToken and/or state.curTerm if the two matches.
+     *
+     * @param {Object} token is the next token from the server array
+     * @param {Object} state is the mode state object
+     * @returns {String|undefined} enriched style, the original style
+     * or `undefined` if the mode token does not match the server token.
     */
 
     function matchToken(token, state) {
-      if ( token && syncOnType[type] ) {
-	if ( token.text && content ) {
-	  if ( matchTokenText(token.text) ) {
+      if ( token ) {
+	if ( syncOnType[type] ) {
+	  if ( token.text && content ) {
+	    if ( matchTokenText(token.text) ) {
+	      state.curToken++;
+	      return token.type;
+	    }
+
+	    return undefined;
+	  } else if ( syncOnType[type] == serverSync[token.type] ) {
+	    if ( type == "fullstop" ) {
+	      state.curTerm++;
+	      state.curToken = 0;
+	    } else {
+	      state.curToken++;
+	    }
+	    return token.type;
+	  } else if ( type == "qatom" && serverSync[token.type] == "atom" ) {
 	    state.curToken++;
 	    return token.type;
+	  } else if ( type == "number" && token.type == "meta" ) {
+	    state.curToken++;	/* 0-9 as meta_predicate arguments */
+	    return token.type;
+	  } else if ( type == "neg-number" &&
+		      token.text && token.text == "-" ) {
+		/* HACK: A-1 is tokenised as "var" "neg-number" */
+		/* But the server says "var" "atom" "number" */
+		/* Needs operator logic to fix at the client */
+	    state.curToken += 2;
+	    return "number";
 	  }
-
-	  return null;
-	} else if ( syncOnType[type] == serverSync[token.type] ) {
-	  if ( type == "fullstop" ) {
-	    state.curTerm++;
-	    state.curToken = 0;
-	  } else {
-	    state.curToken++;
-	  }
+	} else if ( content && token.text == content ) {
+	  state.curToken++;		/* ,; are not synced */
 	  return token.type;
-	} else if ( type == "qatom" && serverSync[token.type] == "atom" ) {
-          state.curToken++;
-	  return token.type;
-	} else if ( type == "number" && token.type == "meta" ) {
-	  state.curToken++;	/* 0-9 as meta_predicate arguments */
-	  return token.type;
-	} else if ( type == "neg-number" &&
-		    token.text && token.text == "-" ) {
-	      /* HACK: A-1 is tokenised as "var" "neg-number" */
-	      /* But the server says "var" "atom" "number" */
-	      /* Needs operator logic to fix at the client */
-	  state.curToken += 2;
-	  return "number";
-        }
+	} else {
+	  return style;			/* not-synced client token */
+	}
       }
 
-      if ( token && content && token.text == content ) {
-	state.curToken++;			/* ,; are not synced */
-	return token.type;
-      }
-
-      return null;
+      return undefined;
     }
 
     /* enrichStyle() body */
@@ -410,9 +488,13 @@ classification of tokens.
       var token;
       var serverStyle;
 
+      //console.log(type,style,content,state);
+
       if ( state.syntax_error ) {		/* error state; recap after . */
-	if ( type == "fullstop" )
+	if ( type == "fullstop" ) {
+	  parserConfig.editor.askRefresh();
 	  delete state.syntax_error;
+	}
 	return style;
       }
 
@@ -420,15 +502,15 @@ classification of tokens.
 	var oos = state.outOfSync;
 
 	if ( oos.skippedTerms <= 3 ) {
-	  oos.skipped.push({ type:    type,
-			     style:   style,
-			     content: content
-			   });
+	  oos.skippedTokens.push({ type:    type,
+			           style:   style,
+				   content: content
+			         });
 
 	  if ( (serverStyle=reSync()) ) {
 	    return serverStyle;			/* re-synchronized! */
 	  } else if ( type == "fullstop" ) {
-	    oos.skipped = [];
+	    oos.skippedTokens = [];
 	    oos.skippedTerms++;
 	  }
 	}
@@ -443,7 +525,7 @@ classification of tokens.
 
       //console.log("Enrich: ("+content+") "+type+"/"+token.type);
 
-      if ( (serverStyle=matchToken(token, state)) ) {
+      if ( (serverStyle=matchToken(token, state)) !== undefined ) {
 	return serverStyle;
       } else if ( token.type == "syntax_error" ) {
 	state.syntax_error = true;
@@ -472,6 +554,31 @@ classification of tokens.
     }
 
     return undefined;
+  }
+
+  CodeMirror.prototype.predicateInfo = function(token) {
+    var state = this.state.prologHighlightServer;
+    var elem = $($.el.span({class:"pred-info"}, "..."));
+
+    $.ajax({ url: state.url.info,
+	     dataType: "json",
+	     data: {
+	       name: token.text,
+	       arity: token.arity
+	     },
+	     success: function(data) {
+	       if ( data.length > 0 ) {
+		 elem.html("");
+		 if ( data[0].iso )
+		   elem.append($.el.span({class:"pred-tag"}, "ISO"));
+		 elem.append($.el.span({class:"pred-summary"},
+				       data[0].summary));
+	       } else
+		 elem.html("no help found");
+	     }
+           });
+
+    return elem[0];
   }
 
 });

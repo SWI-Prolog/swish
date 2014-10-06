@@ -1,3 +1,4 @@
+@import url("navbar.css");
 @import url("pane.css");
 @import url("editor.css");
 @import url("query.css");
@@ -18,3 +19,19 @@ a.pengine-logo {
   background-image: url("../icons/logo.png");
   background-size: 100%;
 }
+
+/* jQuery splitter overrules.
+   - z-index is too high for text hover
+   - overflow: auto clip menus
+*/
+
+.splitter_panel .vsplitter, .splitter_panel .hsplitter {
+    z-index: 100;
+    border: 2px outset #ccc;
+}
+
+.splitter_panel .vsplitter, .splitter_panel .left_panel, .splitter_panel .right_panel,
+.splitter_panel .hsplitter, .splitter_panel .top_panel, .splitter_panel .bottom_panel {
+    overflow: visible;
+}
+

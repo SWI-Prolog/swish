@@ -223,7 +223,10 @@ define([ "config", "jquery", "answer", "laconic" ],
 	}
 
 	function controllerDiv() {
-	  function next()  { data.prolog.next(); }
+	  function next()  { data.prolog.next(1); }
+	  function next10()  { data.prolog.next(10); }
+	  function next100()  { data.prolog.next(100); }
+	  function next1000()  { data.prolog.next(1000); }
 	  function stop()  { data.prolog.stop(); }
 	  function abort() { data.prolog.abort(); }
 
@@ -264,7 +267,11 @@ define([ "config", "jquery", "answer", "laconic" ],
 			     $.el.div({class:"running"},
 				      button(abort, "Abort")),
 			     $.el.div({class:"wait-next"},
-				      button(next, "Next"), button(stop, "Stop")),
+				      button(next, "Next"),
+				      button(next10, "10"),
+				      button(next100, "100"),
+				      button(next1000, "1,000"), " ",
+				      button(stop, "Stop")),
 			     $.el.div({class:"wait-input"},
 				      button(abort, "Abort"), inp.button,
 				      $.el.span(inp.input)));
@@ -340,7 +347,8 @@ define([ "config", "jquery", "answer", "laconic" ],
     renderAnswer: function(answer) {
       var data = this.data('prologRunner');
       var even = (++data.answers % 2 == 0);
-      var div = $.el.div({class:"answer "+(even ? "even" : "odd")});
+      var div = $.el.div({class:"answer "+(even ? "even" : "odd")},
+			 $.el.span({class:"answer-no"}, data.answers));
 
       addAnswer(this, div);
       $(div).prologAnswer(answer);
@@ -750,7 +758,7 @@ define([ "config", "jquery", "answer", "laconic" ],
     }
 
     function addMenuItem(label, onclick) {
-      var a = $.el.a({href:"#"}, label);
+      var a = $.el.a(label);
 
        $(a).data('action', onclick);
        ul.append($.el.li(a));
