@@ -98,7 +98,14 @@ swish_reply(SwishOptions, Request) :-
 	->  true
 	;   reply_html_page(
 		swish(main),
-		title('SWISH -- SWI-Prolog for SHaring'),
+		[ title('SWISH -- SWI-Prolog for SHaring'),
+		  link([ rel('shortcut icon'),
+			 href('/icons/favicon.ico')
+		       ]),
+		  link([ rel('apple-touch-icon'),
+			 href('/icons/swish-touch-icon.png')
+		       ])
+		],
 		\swish_page(Options))
 	).
 
