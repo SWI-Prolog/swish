@@ -21,7 +21,8 @@ classification of tokens.
 
   function State(options) {
     if (typeof options == "object") {
-      this.role = options.role || "source";
+      this.enabled = options.enabled || "false";
+      this.role    = options.role    || "source";
       if ( options.sourceID )
 	this.sourceID = options.sourceID;
       this.url  = { change: options.url + "change",
@@ -39,7 +40,7 @@ classification of tokens.
     var state = cm.state.prologHighlightServer;
     var msg = {change:change};
 
-    if ( state == null || state.url == null )
+    if ( state == null || state.url == null || !state.enabled )
       return;
 
     if ( state.tmo ) {			/* changing: delay refresh */
@@ -72,35 +73,59 @@ classification of tokens.
 
     if ( state == null || state.url == null || state.uuid == null )
       return;
-
-    console.log("Leaving CodeMirror "+state.uuid);
+    var uuid = state.uuid;
+    delete state.uuid;
 
     $.ajax({ url: state.url.leave,
 	     async: false,  // otherwise it is killed before completion
 	     contentType: 'application/json',
 	     type: "POST",
 	     dataType: "json",
-	     data: JSON.stringify({ uuid: state.uuid
+	     data: JSON.stringify({ uuid: uuid
 				  })
 	   });
   }
 
+  /**
+   * control server side highlight support. This can be in three states:
+   * (1) absent, in which case `cm.state.prologHighlightServer` is not
+   * present, (2) disabled and (3) enabled.
+   */
   CodeMirror.defineOption("prologHighlightServer", false, function(cm, val, old) {
     function leaveCM() { leaveEditor(cm); }
 
-    if ( old && old != CodeMirror.Init ) {
-      leaveEditor(cm);
-      cm.off("change", changeEditor);
-      window.removeEventListener("unload", leaveCM);
-      cm.state.prologHighlightServer = null;
-      cm.setOption("mode", {name:"prolog"});
-    }
-    if ( val ) {
+    if ( cm.state.prologHighlightServer ) {
+      if ( val == null ) {		/* remove the highlight server */
+	leaveEditor(cm);
+	cm.off("change", changeEditor);
+	window.removeEventListener("unload", leaveCM);
+	delete cm.state.prologHighlightServer;
+	cm.setOption("mode", {name:"prolog"});
+      } else {
+	if ( val.enabled != old.enabled ) {
+	  cm.state.prologHighlightServer.enabled = val.enabled;
+	  if ( val.enabled ) {		/* enable the highlight server */
+	    cm.on("change", changeEditor);
+	    window.addEventListener("unload", leaveCM);
+	    if ( cm.lineCount() > 0 ) {
+	      cm.serverAssistedHighlight(true);
+	    }
+	  } else {			/* disable */
+	    leaveEditor(cm);
+	    cm.off("change", changeEditor);
+	    window.removeEventListener("unload", leaveCM);
+	    cm.setOption("mode", {name:"prolog"});
+	  }
+	}
+      }
+    } else if ( val ) {			/* create for the first time */
       cm.state.prologHighlightServer = new State(val);
-      cm.on("change", changeEditor);
-      window.addEventListener("unload", leaveCM);
-      if ( cm.lineCount() > 0 ) {
-	cm.serverAssistedHighlight(true);
+      if ( cm.state.prologHighlightServer.enabled ) {
+	cm.on("change", changeEditor);
+	window.addEventListener("unload", leaveCM);
+	if ( cm.lineCount() > 0 ) {
+	  cm.serverAssistedHighlight(true);
+	}
       }
     }
   });
@@ -131,7 +156,7 @@ classification of tokens.
 
     state.tmo = null;
 
-    if ( state == null || state.url == null ||
+    if ( state == null || state.url == null || !state.enabled ||
 	 (cm.isClean(state.generationFromServer) && !always) )
       return;
 

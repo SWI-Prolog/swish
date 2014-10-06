@@ -83,7 +83,8 @@ define([ "cm/lib/codemirror",
 	if ( config.http.locations.cm_highlight ) {
 	  options.prologHighlightServer =
 	  { url:  config.http.locations.cm_highlight,
-	    role: options.role
+	    role: options.role,
+	    enabled: true
 	  };
 	  if ( options.sourceID )
 	    options.prologHighlightServer.sourceID = options.sourceID;
@@ -269,13 +270,8 @@ define([ "cm/lib/codemirror",
      */
     highlight: function(how) {
       var data = this.data(pluginName);
-      var optval = null;
+      var optval = {enabled: how == "semantic" ? true : false};
 
-      if ( how == "semantic" ) {
-	optval = {  url:  config.http.locations.cm_highlight,
-		    role: data.role
-	         };
-      }
       data.cm.setOption("prologHighlightServer", optval);
 
       return this;
