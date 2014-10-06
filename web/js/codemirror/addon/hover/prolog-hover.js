@@ -73,6 +73,7 @@ var tokenHelp = {
   "codes":     "List of Unicode code points (integers)",
   "chars":     "List of one-character atoms",
   "string":    "Packed string (SWI7, use `text` for a list of codes)",
+  "qatom":     "Quoted atom",
   "tag":       "Tag of a SWI7 dict",
 
   "head":       null,
