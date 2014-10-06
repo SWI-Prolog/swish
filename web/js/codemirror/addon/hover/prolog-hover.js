@@ -45,10 +45,13 @@ var tokenHelp = {
   "singleton": "Variable appearing only once",
 
   "head":       null,
+  "control":    null,
+  "fullstop":   null,
   "var":        null,
   "int":        null,
   "number":     null,
   "atom":       null,
+  "functor":    null,
   "comment":    null,
   "neck":       null,
   "list_open":  null,
