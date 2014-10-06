@@ -5,6 +5,10 @@
 .pl-ellipsis      {color:blue; text-decoration:underline;}
 .pl-functor:hover {color:blue; text-decoration:underline;}
 .pl-infix:hover   {color:blue; text-decoration:underline;}
+.pl-var		  {color:#800;}  /* Normal variable */
+.pl-ovar	  {color:#800; font-weight: bold;}  /* Answer field output */
+.pl-anon	  {color:#800;}  /* _ */
+.pl-avar	  {color:#888;}  /* _GXXX */
 .pl-var		  {color:#800;}
 .pl-atom	  {color:#762;}
 .pl-functor	  {color: #000; font-style: italic;}
