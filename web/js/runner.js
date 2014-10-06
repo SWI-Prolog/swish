@@ -758,7 +758,7 @@ define([ "config", "jquery", "answer", "laconic" ],
     }
 
     function addMenuItem(label, onclick) {
-      var a = $.el.a({href:"#"}, label);
+      var a = $.el.a(label);
 
        $(a).data('action', onclick);
        ul.append($.el.li(a));

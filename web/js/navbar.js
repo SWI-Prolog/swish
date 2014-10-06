@@ -60,8 +60,7 @@ define([ "jquery", "preferences", "laconic" ],
       var ul2 = $.el.ul({name:label, class:"dropdown-menu"});
       var li  = $.el.li({class:"dropdown"},
 			$.el.a({class:"dropdown-toggle",
-				"data-toggle":"dropdown",
-				href:"#"
+				"data-toggle":"dropdown"
 			       },
 			       label,
 			       $.el.b({class:"caret"})),
@@ -112,7 +111,7 @@ define([ "jquery", "preferences", "laconic" ],
     if ( onclick == "--" ) {
       dropdown.append($.el.li({class:"divider"}));
     } else if ( typeof(onclick) == "function" ) {
-      var a = $.el.a({href:"#"}, label);
+      var a = $.el.a(label);
 
       $(a).data('action', onclick);
       if ( onclick.name )
