@@ -108,9 +108,12 @@ define([ "cm/lib/codemirror",
 	data.role            = options.role;
 
 	elem.data(pluginName, data);
+	elem.addClass("swish-event-receiver"); /* do this anyway? */
+	elem.on("highlight", function(ev, how) {
+	  elem.prologEditor('highlight', how);
+	});
 
 	if ( data.role == "source" ) {
-	  elem.addClass("swish-event-receiver"); /* do this anyway? */
 	  elem.on("source", function(ev, src) {
 	    elem.prologEditor('setSource', src.data);
 	  });
@@ -122,9 +125,6 @@ define([ "cm/lib/codemirror",
 	  });
 	  elem.on("clearMessages", function(ev) {
 	    elem.prologEditor('clearMessages');
-	  });
-	  elem.on("highlight", function(ev, how) {
-	    elem.prologEditor('highlight', how);
 	  });
 	}
       });

@@ -89,6 +89,7 @@ classification of tokens.
     function leaveCM() { leaveEditor(cm); }
 
     if ( old && old != CodeMirror.Init ) {
+      leaveEditor(cm);
       cm.off("change", changeEditor);
       window.removeEventListener("unload", leaveCM);
       cm.state.prologHighlightServer = null;
