@@ -422,4 +422,50 @@ define([ "cm/lib/codemirror",
   };
 }(jQuery));
 
-});
+		 /*******************************
+		 *	STYLE CONFIGURATION	*
+		 *******************************/
+
+/**
+ * Translate style specifications from Prolog/XPCE's style objects into
+ * CodeMirror styles.
+ *
+ * @param {Object} style is an object mapping style names into style
+ * properties.  The properties are also in an object, linking style
+ * names to values.  For example:
+ *
+ *    ```
+ *    { column: {color: "#8b008b},
+ *      table:  {color: "#8b008b, "font-weight":"bold"}
+ *    }
+ *    ```
+ */
+
+function loadStyleExtensions(style)
+{ var parts=[];
+
+  parts.push("<style>\n");
+  for(var sname in style) {
+    if ( style.hasOwnProperty(sname) ) {
+      var attrs = style[sname];
+
+      parts.push(".cm-s-prolog span.cm-", sname, "{");
+
+      for(var a in attrs) {
+	if ( attrs.hasOwnProperty(a) ) {
+	  parts.push(a, ":", attrs[a], ";");
+	}
+      }
+
+      parts.push("}\n");
+    }
+  }
+  parts.push("</style>\n");
+
+  $("body").append(parts.join(""));
+}
+
+if ( config.swish.style )
+  loadStyleExtensions(config.swish.style);
+
+}); // define

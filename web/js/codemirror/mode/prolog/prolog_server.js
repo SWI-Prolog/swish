@@ -254,7 +254,7 @@ classification of tokens.
 		     "op_type": "atom",
 		     "int": "number",
 		     "float": "number",
-		     "key": "atom",
+		     "key": "atom",	/* TBD: or integer */
 		     "sep": "atom",	/* : in dict */
 
 		     "expanded": "expanded",
@@ -456,6 +456,9 @@ classification of tokens.
 	    } else {
 	      state.curToken++;
 	    }
+	    return token.type;
+	  } else if ( syncOnType[type] == token.base ) {
+	    state.curToken++;
 	    return token.type;
 	  } else if ( type == "qatom" && serverSync[token.type] == "atom" ) {
 	    state.curToken++;
