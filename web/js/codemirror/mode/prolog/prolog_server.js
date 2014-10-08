@@ -551,9 +551,10 @@ classification of tokens.
   CodeMirror.prototype.getEnrichedToken = function(token) {
     if ( token.state.curTerm != null && token.state.curToken != null )
     { var state = this.getOption("mode");
+      var terminfo;
 
-      if ( state.metainfo )
-	return state.metainfo[token.state.curTerm][token.state.curToken-1];
+      if ( state.metainfo && (terminfo=state.metainfo[token.state.curTerm]) )
+	return terminfo[token.state.curToken-1];
     }
 
     return undefined;

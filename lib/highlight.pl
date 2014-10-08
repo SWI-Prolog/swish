@@ -623,7 +623,8 @@ goal_arity(Goal, Arity) :-
 		 *******************************/
 
 :- multifile
-	swish_config:config/2.
+	swish_config:config/2,
+	css/3.				% ?Context, ?Selector, -Attributes
 
 %%	swish_config:config(-Name, -Styles) is det.
 %
@@ -634,11 +635,14 @@ goal_arity(Goal, Arity) :-
 %
 %	@tbd	Provide summary information
 
-swish_config:config(style, Styles) :-
+swish_config:config(cm_style, Styles) :-
 	findall(Name-Style, highlight_style(Name, Style), Pairs),
 	keysort(Pairs, Sorted),
 	remove_duplicate_styles(Sorted, Unique),
 	dict_pairs(Styles, json, Unique).
+swish_config:config(cm_hover_style, Styles) :-
+	findall(Sel-Attrs, css_dict(hover, Sel, Attrs), Pairs),
+	dict_pairs(Styles, json, Pairs).
 
 remove_duplicate_styles([], []).
 remove_duplicate_styles([H|T0], [H|T]) :-
@@ -670,6 +674,22 @@ css_style(colour(Name), color(RGB)) :- !,
 	format(atom(RGB), '#~|~`0t~16r~2+~`0t~16r~2+~`0t~16r~2+', [R,G,B]).
 css_style(Style, Style).
 
+%%	css(?Context, ?Selector, -Style) is nondet.
+%
+%	Multifile hook to define additional style to apply in a specific
+%	context.  Currently defined contexts are:
+%
+%	  - hover
+%	  Used for CodeMirror hover extension.
+%
+%	@arg Selector is a CSS selector, which is refined by Context
+%	@arg Style is a list of Name(Value) terms.
+
+css_dict(Context, Selector, Style) :-
+	css(Context, Selector, Attrs0),
+	maplist(css_style, Attrs0, Attrs),
+	dict_create(Style, json, Attrs).
+
 
 		 /*******************************
 		 *	       INFO		*
@@ -688,12 +708,26 @@ token_info(Request) :-
 	dict_create(Token, token, Values),
 	reply_html_page(plain,
 			title('token info'),
-			\token_info(Token)).
+			\token_info_or_none(Token)).
 
 type_convert(Name=Atom, Name=Number) :-
 	atom_number(Atom, Number), !.
 type_convert(NameValue, NameValue).
 
+
+token_info_or_none(Token) -->
+	token_info(Token), !.
+token_info_or_none(_) -->
+	html(span(class('token-noinfo'), 'No info available')).
+
+%%	token_info(+Token:dict)// is det.
+%
+%	Generate HTML, providing details about Token.   Token is a dict,
+%	providing  the  enriched  token  as  defined  by  style/3.  This
+%	multifile non-terminal can be hooked to provide details for user
+%	defined style extensions.
+
+:- multifile token_info//1.
 
 token_info(Token) -->
 	{ _{type:Type, text:Name, arity:Arity} :< Token,

@@ -89,7 +89,9 @@ var tokenHelp = {
   "neck":       null,
   "sep":        null,
   "list_open":  null,
-  "list_close": null
+  "list_close": null,
+  "dict_open":  null,
+  "dict_close": null
 };
 
 function predName(data) {
@@ -117,7 +119,7 @@ CodeMirror.registerHelper("textHover", "prolog", function(cm, data, node) {
   if ( data ) {
     var token = data.token;
     var help  = tokenHelp[token.type];
-    var html;
+    var et;
 
     if ( help !== undefined ) {
       if ( typeof(help) === "function" ) {
@@ -130,6 +132,13 @@ CodeMirror.registerHelper("textHover", "prolog", function(cm, data, node) {
       } else if ( typeof(help) === "string" ) {
 	return $.el.div(help);
       }
+    } else if ( (et=cm.getEnrichedToken(token)) ) {
+      if ( et.summary && et.info === "ask" )
+	return $.el.div(et.summary, cm.tokenInfo(et));
+      else if ( et.summary )
+	return $.el.div(et.summary);
+      else
+	return $.el.div(token.type);
     } else {
       return $.el.div(token.type);
     }

@@ -427,8 +427,7 @@ define([ "cm/lib/codemirror",
 		 *******************************/
 
 /**
- * Translate style specifications from Prolog/XPCE's style objects into
- * CodeMirror styles.
+ * Include styles provided through the configuration object.
  *
  * @param {Object} style is an object mapping style names into style
  * properties.  The properties are also in an object, linking style
@@ -441,15 +440,17 @@ define([ "cm/lib/codemirror",
  *    ```
  */
 
-function loadStyleExtensions(style)
+function loadStyleExtensions(style, prefix)
 { var parts=[];
+
+  prefix = prefix || "";
 
   parts.push("<style>\n");
   for(var sname in style) {
     if ( style.hasOwnProperty(sname) ) {
       var attrs = style[sname];
 
-      parts.push(".cm-s-prolog span.cm-", sname, "{");
+      parts.push(prefix, sname, "{");
 
       for(var a in attrs) {
 	if ( attrs.hasOwnProperty(a) ) {
@@ -465,7 +466,11 @@ function loadStyleExtensions(style)
   $("body").append(parts.join(""));
 }
 
-if ( config.swish.style )
-  loadStyleExtensions(config.swish.style);
+if ( config.swish.cm_style )
+  loadStyleExtensions(config.swish.cm_style,
+		      ".cm-s-prolog span.cm-");
+if ( config.swish.cm_hover_style )
+  loadStyleExtensions(config.swish.cm_hover_style,
+		      ".CodeMirror-hover-tooltip ");
 
 }); // define
