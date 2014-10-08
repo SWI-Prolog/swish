@@ -559,25 +559,23 @@ classification of tokens.
     return undefined;
   }
 
-  CodeMirror.prototype.predicateInfo = function(token) {
+  /**
+   * @param {Object} [elem] is the element that will be filled with
+   * the token information.  If not provided, a `<span>` of class
+   * `token-info` is returned.
+   * @returns {Object} DOM object providing info that will be filled
+   * later from the ajax call.
+   */
+  CodeMirror.prototype.tokenInfo = function(token, elem) {
     var state = this.state.prologHighlightServer;
-    var elem = $($.el.span({class:"pred-info"}, "..."));
+
+    if ( !elem )
+      elem = $($.el.span({class:"token-info"}, "..."));
 
     $.ajax({ url: state.url.info,
-	     dataType: "json",
-	     data: {
-	       name: token.text,
-	       arity: token.arity
-	     },
+	     data: token,
 	     success: function(data) {
-	       if ( data.length > 0 ) {
-		 elem.html("");
-		 if ( data[0].iso )
-		   elem.append($.el.span({class:"pred-tag"}, "ISO"));
-		 elem.append($.el.span({class:"pred-summary"},
-				       data[0].summary));
-	       } else
-		 elem.html("no help found");
+	       elem.html(data);
 	     }
            });
 

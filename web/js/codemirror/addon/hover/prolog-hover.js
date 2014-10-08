@@ -11,7 +11,7 @@ var tokenHelp = {
   "goal_built_in":  function(data, cm) {
     if ( data ) {
       return $.el.div(predName(data),
-		      cm.predicateInfo(data));
+		      cm.tokenInfo(data));
     } else {
       return "Built-in predicate";
     }
@@ -21,7 +21,7 @@ var tokenHelp = {
     if ( data ) {
       return $.el.div(predName(data), " (autoload from ",
 		      fileName(data, cm), "): ",
-		      cm.predicateInfo(data));
+		      cm.tokenInfo(data));
     } else {
       return "Autoloaded predicate";
     }
@@ -31,7 +31,7 @@ var tokenHelp = {
     if ( data ) {
       return $.el.div(predName(data), " (imported from ",
 		      fileName(data, cm), "): ",
-		      cm.predicateInfo(data));
+		      cm.tokenInfo(data));
     } else {
       return "Imported predicate";
     }

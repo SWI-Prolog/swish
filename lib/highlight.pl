@@ -33,10 +33,12 @@
 :- use_module(library(pce)).
 :- use_module(library(debug)).
 :- use_module(library(http/http_dispatch)).
+:- use_module(library(http/html_write)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_path), []).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(pairs)).
+:- use_module(library(apply)).
 :- use_module(library(prolog_colour)).
 :- if(exists_source(library(helpidx))).
 :- use_module(library(helpidx), [predicate/5]).
@@ -48,7 +50,7 @@ http:location(codemirror, swish(cm), []).
 :- http_handler(codemirror(change), codemirror_change, []).
 :- http_handler(codemirror(tokens), codemirror_tokens, []).
 :- http_handler(codemirror(leave),  codemirror_leave,  []).
-:- http_handler(codemirror(info),   predicate_info,    []).
+:- http_handler(codemirror(info),   token_info,        []).
 
 /** <module> Highlight token server
 
@@ -676,53 +678,106 @@ css_style(Style, Style).
 :- multifile
 	prolog:predicate_summary/2.
 
-%%	predicate_info(+Request)
+%%	token_info(+Request)
 %
-%	HTTP handler that provides information  about a predicate. Reply
-%	is a JSON array of predicate   descriptions. Each description is
-%	an object holding:
-%
-%	  - name    -- Name of the predicate
-%	  - arity   -- Arity of the predicate
-%	  - module  -- Where the predicate is defined
-%	  - summary -- Summary information from the manual or PlDoc
+%	HTTP handler that provides information  about a token.
 
-predicate_info(Request) :-
-	http_parameters(Request,
-			[ name(Name, []),
-			  arity(Arity, [integer]),
-			  module(Module, [optional(true)])
-			]),
-	predicate_info(Module:Name/Arity, Info),
-	reply_json_dict(Info).
+token_info(Request) :-
+	http_parameters(Request, [], [form_data(Form)]),
+	maplist(type_convert, Form, Values),
+	dict_create(Token, token, Values),
+	reply_html_page(plain,
+			title('token info'),
+			\token_info(Token)).
+
+type_convert(Name=Atom, Name=Number) :-
+	atom_number(Atom, Number), !.
+type_convert(NameValue, NameValue).
+
+
+token_info(Token) -->
+	{ _{type:Type, text:Name, arity:Arity} :< Token,
+	  goal_type(_, Type, _), !,
+	  ignore(token_predicate_module(Token, Module)),
+	  predicate_info(Module:Name/Arity, Info)
+	},
+	pred_info(Info).
+
+pred_info([]) -->
+	html(span(class('pred-nosummary'), 'No help available')).
+pred_info([Info|_]) -->			% TBD: Ambiguous
+	(pred_tags(Info)     -> [];[]),
+	(pred_summary(Info)  -> [];[]).
+
+pred_tags(Info) -->
+	{ Info.get(iso) == true },
+	html(span(class('pred-tag'), 'ISO')).
+
+pred_summary(Info) -->
+	html(span(class('pred-summary'), Info.get(summary))).
+
+
+%%	token_predicate_module(+Token, -Module) is semidet.
+%
+%	Try to extract the module from the token.
+
+token_predicate_module(Token, Module) :-
+	source_file_property(Token.get(file), module(Module)), !.
+
+%%	predicate_info(+PI, -Info:list(dict)) is det.
+%
+%	Info is a list of dicts providing details about predicates that
+%	match PI.  Fields in dict are:
+%
+%	  - module:Atom
+%	  Module of the predicate
+%	  - name:Atom
+%	  Name of the predicate
+%	  - arity:Integer
+%	  Arity of the predicate
+%	  - summary:Text
+%	  Summary text extracted from the system manual or PlDoc
+%	  - iso:Boolean
+%	  Presend and =true= if the predicate is an ISO predicate
 
 predicate_info(PI, Info) :-
 	PI = Module:Name/Arity,
 	findall(Dict,
 		( setof(Key-Value,
-		      predicate_info(PI, Key, Value),
-		      Pairs),
+			predicate_info(PI, Key, Value),
+			Pairs),
 		  dict_pairs(Dict, json,
-			     [ name   - #(Name),
-			       arity  - Arity,
-			       module - Module
+			     [ module - Module,
+			       name   - Name,
+			       arity  - Arity
 			     | Pairs
 			     ])
 		),
 		Info).
 
-predicate_info(PI, summary, Summary) :-
-	PI = Module:Name/Arity,
-	(   catch(predicate(Name, Arity, Summary, _, _), _, fail)
-	->  functor(Head, Name, Arity),
-	    manual_module(Head, Module)
-	;   prolog:predicate_summary(PI, Summary)
-	).
-predicate_info(system:Name/Arity, iso, true) :-
+%%	predicate_info(?PI, -Key, -Value) is nondet.
+%
+%	Find information about predicates from   the  system, manual and
+%	PlDoc. First, we  deal  with  ISO   predicates  that  cannot  be
+%	redefined and are documented in the   manual. Next, we deal with
+%	predicates that are documented in  the   manual.
+%
+%	@bug: Handling predicates documented  in   the  manual  is buggy
+%	because their definition may  be  overruled   by  the  user.  We
+%	probably must include the file into the equation.
+
+					% ISO predicates
+predicate_info(Module:Name/Arity, Key, Value) :-
 	compound_name_arity(Head, Name, Arity),
-	predicate_property(system:Head, iso).
-
-manual_module(Head, system) :-
-	predicate_property(Head, built_in), !.
-manual_module(_, library).		% TBD
-
+	predicate_property(system:Head, iso), !,
+	ignore(Module = system),
+	(   catch(predicate(Name, Arity, Summary, _, _), _, fail),
+	    Key = summary,
+	    Value = Summary
+	;   Key = iso,
+	    Value = true
+	).
+predicate_info(_Module:Name/Arity, summary, Summary) :-
+	catch(predicate(Name, Arity, Summary, _, _), _, fail), !.
+predicate_info(PI, summary, Summary) :-	% PlDoc
+	prolog:predicate_summary(PI, Summary).
