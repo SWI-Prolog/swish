@@ -223,12 +223,12 @@ define([ "config", "jquery", "answer", "laconic" ],
 	}
 
 	function controllerDiv() {
-	  function next()  { data.prolog.next(1); }
-	  function next10()  { data.prolog.next(10); }
-	  function next100()  { data.prolog.next(100); }
-	  function next1000()  { data.prolog.next(1000); }
-	  function stop()  { data.prolog.stop(); }
-	  function abort() { data.prolog.abort(); }
+	  function next()     { elem.prologRunner('next',    1); }
+	  function next10()   { elem.prologRunner('next',   10); }
+	  function next100()  { elem.prologRunner('next',  100); }
+	  function next1000() { elem.prologRunner('next', 1000); }
+	  function stop()     { data.prolog.stop(); }
+	  function abort()    { data.prolog.abort(); }
 
 	  function button(action, label) {
 	    var btn = $.el.button(label);
@@ -429,12 +429,15 @@ define([ "config", "jquery", "answer", "laconic" ],
 
     /**
      * Ask the associated Prolog engines for the next answer.
+     * @param {Integer} chunk maximum number of answers to return in the
+     * next chunk.
      */
-    next: function() {
+    next: function(chunk) {
       return this.each(function() {
 	var elem = $(this);
 	var data = elem.data('prologRunner');
-	data.prolog.next();
+	data.prolog.next(chunk);
+	elem.prologRunner('setState', "running");
       });
     },
 
