@@ -619,6 +619,11 @@ define([ "config", "jquery", "answer", "laconic" ],
     for(var i=0; i<this.data.length; i++) {
       elem.prologRunner('renderAnswer', this.data[i]);
     }
+    if ( this.time > 0.1 )
+      addAnswer(elem, $.el.div(
+	{class:"cputime"},
+	$.el.span(this.time.toFixed(3),
+		  " seconds cpu time")));
 
     elem.prologRunner('setState', this.more ? "wait-next" : "true");
   }
