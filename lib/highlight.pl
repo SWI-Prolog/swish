@@ -694,7 +694,8 @@ highlight_style(StyleName, Style) :-
 
 css_style(bold(true),      'font-weight'(bold)) :- !.
 css_style(underline(true), 'text-decoration'(underline)) :- !.
-css_style(colour(Name), color(RGB)) :- !,
+css_style(colour(Name), color(RGB)) :-
+	current_prolog_flag(gui, true), !,
 	get(colour(Name), red,   R0),
 	get(colour(Name), green, G0),
 	get(colour(Name), blue,  B0),
