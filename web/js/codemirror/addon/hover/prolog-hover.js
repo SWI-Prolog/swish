@@ -87,6 +87,7 @@ var tokenHelp = {
   "functor":    null,
   "comment":    null,
   "neck":       null,
+  "operator":   null,
   "sep":        null,
   "list_open":  null,
   "list_close": null,
