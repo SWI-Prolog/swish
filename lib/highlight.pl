@@ -132,6 +132,7 @@ insert([H|T], TB, ChPos0, ChPos) :-
 
 create_editor(UUID, Editor, Change) :-
 	must_be(atom, UUID),
+	uuid_like(UUID),
 	(   Role = Change.get(role)
 	->  new(Editor, source_buffer(UUID, Role))
 	;   new(Editor, source_buffer(UUID))
@@ -142,10 +143,22 @@ create_editor(UUID, Editor, Change) :-
 	),
 	asserta(current_editor(UUID, Editor)).
 
+%%	uuid_like(+UUID) is semidet.
+%
+%	Do some sanity checking on  the  UUID   because  we  use it as a
+%	temporary module name and thus we must be quite sure it will not
+%	conflict with anything.
+
+uuid_like(UUID) :-
+	split_string(UUID, "-", "", Parts),
+	maplist(string_length, Parts, [8,4,4,4,12]),
+	\+ current_editor(UUID, _).
+
 destroy_editor(UUID, Editor) :-
 	must_be(atom, UUID),
 	(   xref_source_id(Editor, SourceID)
-	->  xref_clean(SourceID)
+	->  xref_clean(SourceID),
+	    '$destroy_module'(UUID)	% temp xref module
 	;   true
 	),
 	retractall(current_editor(UUID, Editor)),
@@ -244,7 +257,13 @@ xref_source(TB, Always:[bool]) :->
 	    ->	true
 	    ;	send(TB, attribute, xref_source_id, SourceId)
 	    ),
-	    xref_source(SourceId, [silent(true)]),
+	    (	xref_module(TB, Module)
+	    ->  xref_source(SourceId,
+			    [ silent(true),
+			      module(Module)
+			    ])
+	    ;	xref_source(SourceId, [silent(true)])
+	    ),
 	    send(TB, slot, xref_generation, G)
 	;   true
 	).
@@ -273,6 +292,17 @@ xref_source_id(TB, SourceId) :-
 	).
 xref_source_id(TB, SourceId) :-
 	get(TB, uuid, SourceId).
+
+%%	xref_module(+TB, -Module) is semidet.
+%
+%	True if we must run the cross-referencing in Module. Now, we use
+%	a single module. Eventually, we should use multiple modules from
+%	a pool.
+
+xref_module(TB, Module) :-
+	get(TB, uuid, Module),
+	set_module(Module:class(temporary)),
+	add_import_module(Module, swish, start).
 
 %%	master_load_file(+File, +Seen, -MasterFile) is det.
 %
