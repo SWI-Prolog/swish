@@ -31,5 +31,12 @@ problem(1, [[_,_,_,_,_,_,_,_,_],
 
 /** <examples>
 
-?- problem(1, Rows), time(sudoku(Rows)), maplist(writeln, Rows).
+% Use the Sudoku renderer
+?- problem(1, Sudoku), sudoku(Sudoku).
+
+% Output plain Prolog term
+?- problem(1, Rows), sudoku(Rows).
+
+% Time the solving, hide results.
+?- problem(1, _Rows), time(sudoku(_Rows)).
 */
