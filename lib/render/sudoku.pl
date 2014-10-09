@@ -45,7 +45,10 @@ pengines_io:binding_term(Term, Vars, _WriteOptions) -->
 	{ memberchk('Sudoku', Vars),
 	  is_sudoku(Term)
 	}, !,
-	html(div(class(sudoku), \rows(Term, 1))),
+	html(div([class(sudoku),
+		  title('Sudoku renderer')
+		 ],
+		 \rows(Term, 1))),
 	html({|html||
 	      <style>
 div.sudoku { vertical-align: top;
