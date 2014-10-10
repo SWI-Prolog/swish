@@ -10,6 +10,10 @@
 define([ "jquery", "laconic" ],
        function() {
 
+		 /*******************************
+		 *	RENDER AN ANSWER	*
+		 *******************************/
+
 (function($) {
   var pluginName = 'prologAnswer';
 
@@ -59,9 +63,10 @@ define([ "jquery", "laconic" ],
       return this.each(function() {
 	var elem = $(this);
 
-	if ( answerHasOutput(answer) )
+	if ( answerHasOutput(answer) ) {
 	  elem.append(renderAnswer(answer));
-	else
+	  elem.find(".render-multi").renderMulti();
+	} else
 	  elem.append($.el.span({class: "prolog-true"}, "true"));
       });
     }
@@ -130,6 +135,109 @@ define([ "jquery", "laconic" ],
     }
   };
 
-
 }(jQuery));
+
+		 /*******************************
+		 *	   RENDER TERMS		*
+		 *******************************/
+
+(function($) {
+  var pluginName = 'renderMulti';
+
+  /** @lends $.fn.renderMulti */
+  var methods = {
+    _init: function(options) {
+      return this.each(function() {
+	var elem = $(this);
+	var data = { current: 0};		/* private data */
+	var select = ["<form class='render-select' style='display:none'>" +
+		      "<label>View as</label><br>"
+		     ];
+	var i = 0;
+
+	elem.children().each(function() {
+	  var r = $(this);
+	  var name = r.attr("data-render") || ("unknown "+i);
+
+	  r.wrap("<div class='render-wrapper'></div>");
+	  var wrapper = r.parent();
+	  if ( i == 0 ) {
+	    wrapper.css("display", r.css("display"));
+	    elem.css("display", r.css("display"));
+	  } else {
+	    select.push("<br>");
+	    wrapper.css("display", "none");
+	  }
+	  select.push("<input type='radio' name='render' value='", i, "'");
+	  if ( i == 0 ) select.push(" checked");
+	  select.push("> ", name);
+	  i++;
+	});
+	select.push("</form");
+	elem.append(select.join(""));
+	elem.hover(function(ev) { elem.renderMulti('showSelect', ev); },
+		   function()   { elem.renderMulti('hideSelect'); });
+	elem.find(".render-select").on("click", function() {
+	  var r = $("input[name=render]:checked",
+		    elem.find(".render-select")).val();
+	  elem.renderMulti('select', parseInt(r));
+	});
+
+	elem.data(pluginName, data);	/* store with element */
+      });
+    },
+
+    showSelect: function(ev) {
+      this.find(".render-select").css("display", "block");
+    },
+
+    hideSelect: function() {
+      this.find(".render-select").css("display", "none");
+    },
+
+    /**
+     * Select the i-th (0-based) rendering alternative
+     * @param {Integer} i denotes the alternative
+     */
+    select: function(i) {
+      var data  = this.data(pluginName);
+      var child = this.children();
+      var how   = $($(child[i]).children()[0]).css("display");
+
+      $(child[data.current]).css("display", "none");
+      $(child[i]).css("display", how);
+      this.css("display", how);
+
+      data.current = i;
+      this.renderMulti('hideSelect');
+    }
+  }; // methods
+
+  /**
+   * <Class description>
+   *
+   * @class renderMulti
+   * @tutorial jquery-doc
+   * @memberOf $.fn
+   * @param {String|Object} [method] Either a method name or the jQuery
+   * plugin initialization object.
+   * @param [...] Zero or more arguments passed to the jQuery `method`
+   */
+
+  $.fn.renderMulti = function(method) {
+    if ( methods[method] ) {
+      return methods[method]
+	.apply(this, Array.prototype.slice.call(arguments, 1));
+    } else if ( typeof method === 'object' || !method ) {
+      return methods._init.apply(this, arguments);
+    } else {
+      $.error('Method ' + method + ' does not exist on jQuery.' + pluginName);
+    }
+  };
+}(jQuery));
+
+
+
+
+
 });

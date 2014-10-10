@@ -1,0 +1,15 @@
+div.render-multi {
+  position: relative;
+  vertical-align: top;
+}
+
+form.render-select {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  background-color: #fff;
+  padding: 5px 20px;
+  border: 1px solid #000;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px #888;
+}
