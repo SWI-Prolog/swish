@@ -34,8 +34,6 @@
 :- use_module(library(http/html_write)).
 :- use_module(library(http/term_html)).
 
-:- multifile pengines_io:binding_term//3.
-
 /** <module> SWISH Sudoku renderer
 
 Renders a term like below as a _sudoku matrix_
