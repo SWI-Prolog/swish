@@ -1,6 +1,7 @@
-:- use_module(library(clpfd)).
-% show results as a nice diagram.
+% render solutions nicely.
 :- use_rendering(sudoku).
+
+:- use_module(library(clpfd)).
 
 % Example by Markus Triska, taken from the SWI-Prolog manual.
 
