@@ -1,3 +1,5 @@
+% render solutions nicely.
+:- use_rendering(chess).
 
 %%	n_queens(?N, ?Cols) is nondet.
 %

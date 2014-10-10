@@ -1,3 +1,6 @@
+% render solutions nicely.
+:- use_rendering(chess).
+
 %%    queens(+N, -Queens) is nondet.
 %
 %	@param	Queens is a list of column numbers for placing the queens.
