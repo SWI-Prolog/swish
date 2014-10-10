@@ -97,3 +97,4 @@ pengines:prepare_module(Module, swish, _Options) :-
 % load rendering modules
 
 :- use_module(swish(lib/render/sudoku), []).
+:- use_module(swish(lib/render/chess), []).
