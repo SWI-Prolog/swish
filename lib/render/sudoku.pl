@@ -46,9 +46,11 @@ pengines_io:binding_term(Term, Vars, _WriteOptions) -->
 	  is_sudoku(Term)
 	}, !,
 	html(div([class(sudoku),
-		  title('Sudoku renderer')
+		  'data-render'('Sudoku matrix')
 		 ],
-		 \rows(Term, 1))),
+		 [\rows(Term, 1), \sudoku_style])).
+
+sudoku_style -->
 	html({|html||
 	      <style>
 div.sudoku { vertical-align: top;
