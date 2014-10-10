@@ -82,6 +82,7 @@ swish_config:config(show_beware, true).
 	pengines:prepare_module/3.
 
 :- pengine_application(swish).
+:- use_module(swish:lib/render).
 :- use_module(swish:library(pengines_io)).
 pengines:prepare_module(Module, swish, _Options) :-
 	pengines_io:pengine_bind_io_to_html(Module).
@@ -95,4 +96,4 @@ pengines:prepare_module(Module, swish, _Options) :-
 
 % load rendering modules
 
-:- use_module(swish(lib/render/sudoku)).
+:- use_module(swish(lib/render/sudoku), []).

@@ -27,7 +27,9 @@
     the GNU General Public License.
 */
 
-:- module(swish_render_sudoku, []).
+:- module(swish_render_sudoku,
+	  [ term_rendering//3			% +Term, +Vars, +Options
+	  ]).
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/term_html)).
@@ -36,14 +38,29 @@
 
 /** <module> SWISH Sudoku renderer
 
-This renderer renders a binding that consists of   a  list if 9 lists of
-variables or integers  1..9  as  a   Sudoku  grid  for  variables  named
-=Sudoku=.
+Renders a term like below as a _sudoku matrix_
+
+  ==
+  [[_,_,_,_,_,_,_,_,_],
+   [_,_,_,_,_,3,_,8,5],
+   [_,_,1,_,2,_,_,_,_],
+   [_,_,_,5,_,7,_,_,_],
+   [_,_,4,_,_,_,1,_,_],
+   [_,9,_,_,_,_,_,_,_],
+   [5,_,_,_,_,_,_,7,3],
+   [_,_,2,_,1,_,_,_,_],
+   [_,_,_,_,4,_,_,_,9]]
+  ==
 */
 
-pengines_io:binding_term(Term, Vars, _WriteOptions) -->
-	{ memberchk('Sudoku', Vars),
-	  is_sudoku(Term)
+%%	term_rendering(+Term, +Vars, +Options)//
+%
+%	Renders Term as a sudoku matrix. Term must be a list of 9 lists,
+%	each of which must have  9  elements   that  are  all either the
+%	integer 1..9 or unbound.
+
+term_rendering(Term, _Vars, _Options) -->
+	{ is_sudoku(Term)
 	}, !,
 	html(div([class(sudoku),
 		  'data-render'('Sudoku matrix')
@@ -95,7 +112,11 @@ cells([H|T], I) -->
 	  ;   Extra = []
 	  )
 	},
-	html(div(class(['sudoku-cell'|Extra]), \term(H, []))), cells(T, I2).
+	html(div(class(['sudoku-cell'|Extra]), \value(H))), cells(T, I2).
+
+value(H) --> { var(H) }, !.
+value(H) --> term(H, []).
+
 
 %%	is_sudoku(+Term) is semidet.
 %
