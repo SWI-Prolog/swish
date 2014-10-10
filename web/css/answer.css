@@ -12,4 +12,6 @@ form.render-select {
   border: 1px solid #000;
   border-radius: 5px;
   box-shadow: 5px 5px 5px #888;
+  z-index: 50;
+  white-space: nowrap;
 }
