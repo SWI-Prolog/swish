@@ -105,6 +105,16 @@ user:term_expansion((:- use_rendering(FileSpec)),
 	render_file(FileSpec, File),
 	source_file_property(File, module(M)).
 
+user:term_expansion((:- use_rendering(FileSpec, Options)),
+		    [ (:- use_module(File, [])),
+		      (Head :- swi_option:merge_options(Options, WriteOptions, AllOptions),
+		               M:Body)
+		    ]) :-
+	Head = term_rendering(Term, Vars, WriteOptions, List, Tail),
+	Body = term_rendering(Term, Vars, AllOptions, List, Tail),
+	render_file(FileSpec, File),
+	source_file_property(File, module(M)).
+
 render_file(Spec, File) :-
 	(   atomic(Spec)
 	->  File = render(Spec)

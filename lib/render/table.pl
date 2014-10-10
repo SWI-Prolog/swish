@@ -50,23 +50,27 @@ Render table-like data.
 %	@tbd: recogniser more formats, provide options to specify the
 %	header, etc.
 
-term_rendering(Term, _Vars, _Options) -->
-	{ is_list_of_terms(Term, _Rows, _Cols)
+term_rendering(Term, _Vars, Options) -->
+	{ is_list_of_terms(Term, _Rows, Cols)
 	}, !,
 	html(div([ style('display:inline-block'),
 		   'data-render'('List of terms as a table')
 		 ],
 		 [ table(class('render-table'),
-			 \rows(Term))
+			 [ \header(Cols, Options),
+			   \rows(Term)
+			 ])
 		 ])).
-term_rendering(Term, _Vars, _Options) -->
-	{ is_list_of_lists(Term, _Rows, _Cols)
+term_rendering(Term, _Vars, Options) -->
+	{ is_list_of_lists(Term, _Rows, Cols)
 	}, !,
 	html(div([ style('display:inline-block'),
 		   'data-render'('List of lists as a table')
 		 ],
 		 [ table(class('render-table'),
-			 \rows(Term))
+			 [ \header(Cols, Options),
+			   \rows(Term)
+			 ])
 		 ])).
 
 rows([]) --> [].
@@ -86,6 +90,24 @@ cells(Row, Cells) :-
 cells(Row, Cells) :-
 	compound(Row),
 	compound_name_arguments(Row, _, Cells).
+
+%%	header(+NCols, +Options)// is det.
+%
+%	Include a header row  if   an  option header(+ListOfColNames) is
+%	present, whose length matches NCols.
+
+header(Cols, Options) -->
+	{ option(header(ColNames), Options),
+	  length(ColNames, Cols)
+	},
+	html(tr(class(hrow), \header_row(ColNames))).
+header(_, _) --> [].
+
+header_row([]) --> [].
+header_row([H|T]) -->
+	html(th(\term(H, []))),
+	header_row(T).
+
 
 %%	is_list_of_terms(@Term, -Rows, -Cols) is semidet.
 %

@@ -33,6 +33,8 @@ but that is rather expensive.
 }
 
 .render-table td { padding: 0px 5px; border: 1px solid #888;}
+.render-table th { padding: 0px 5px; border: 1px solid #888; text-align: center;}
 
 .render-table tr:nth-child(odd)  { background-color: #eee; }
 .render-table tr:nth-child(even) { background-color: #fff; }
+.render-table tr.hrow            { border-bottom: 2px solid #333; }
