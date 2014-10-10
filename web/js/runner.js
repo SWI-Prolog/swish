@@ -619,7 +619,7 @@ define([ "config", "jquery", "answer", "laconic" ],
     for(var i=0; i<this.data.length; i++) {
       elem.prologRunner('renderAnswer', this.data[i]);
     }
-    if ( this.time > 0.1 )
+    if ( this.time > 0.1 )	/* more than 0.1 sec. CPU (TBD: preference) */
       addAnswer(elem, $.el.div(
 	{class:"cputime"},
 	$.el.span(this.time.toFixed(3),
