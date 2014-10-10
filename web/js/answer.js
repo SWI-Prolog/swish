@@ -162,11 +162,12 @@ define([ "jquery", "laconic" ],
 	  r.wrap("<div class='render-wrapper'></div>");
 	  var wrapper = r.parent();
 	  if ( i == 0 ) {
-	    wrapper.css("display", r.css("display"));
-	    elem.css("display", r.css("display"));
+	    var how = r.css("display");
+	    wrapper.css("display", how);
+	    elem.css("display", how);
 	  } else {
 	    select.push("<br>");
-	    wrapper.css("display", "none");
+	    wrapper.hide();
 	  }
 	  select.push("<input type='radio' name='render' value='", i, "'");
 	  if ( i == 0 ) select.push(" checked");
@@ -188,11 +189,11 @@ define([ "jquery", "laconic" ],
     },
 
     showSelect: function(ev) {
-      this.find(".render-select").css("display", "block");
+      this.find(".render-select").show("fast");
     },
 
     hideSelect: function() {
-      this.find(".render-select").css("display", "none");
+      this.find(".render-select").hide("fast");
     },
 
     /**
@@ -204,8 +205,8 @@ define([ "jquery", "laconic" ],
       var child = this.children();
       var how   = $($(child[i]).children()[0]).css("display");
 
-      $(child[data.current]).css("display", "none");
-      $(child[i]).css("display", how);
+      $(child[data.current]).hide(400);
+      $(child[i]).show(400, function() { $(this).css("display", how); });
       this.css("display", how);
 
       data.current = i;
