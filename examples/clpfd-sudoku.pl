@@ -1,4 +1,6 @@
 :- use_module(library(clpfd)).
+% show results as a nice diagram.
+:- use_rendering(sudoku).
 
 % Example by Markus Triska, taken from the SWI-Prolog manual.
 
@@ -31,12 +33,5 @@ problem(1, [[_,_,_,_,_,_,_,_,_],
 
 /** <examples>
 
-% Use the Sudoku renderer
 ?- problem(1, Sudoku), sudoku(Sudoku).
-
-% Output plain Prolog term
-?- problem(1, Rows), sudoku(Rows).
-
-% Time the solving, hide results.
-?- problem(1, _Rows), time(sudoku(_Rows)).
 */
