@@ -71,39 +71,39 @@ define([ "jquery", "laconic" ],
     return answer.variables.length > 0 || answer.residuals;
   }
 
-  // FIXME: use laconic to make this more readable and less vulnerable
   function renderAnswer(answer) {
-    var html = "";
+    var html = [];
     var bindings = answer.variables;
     for (var i = 0; i < bindings.length; i++) {
         var vars = bindings[i].variables;
         for (var v = 0; v < vars.length - 1; v++) {
-            html += "<span class='pl-ovar'>" + vars[v] + "</span> = " +
-                "<span class='pl-var'>" + vars[v + 1] + "</span>, ";
+	    html.push("<span class='pl-ovar'>", vars[v], "</span> = ",
+		      "<span class='pl-var'>", vars[v + 1], "</span>, ");
         }
-        html += "<span class='pl-ovar'>" + vars[vars.length - 1] + "</span> = ";
-        html += bindings[i].value;
+	html.push("<span class='pl-ovar'>", vars[vars.length - 1],
+		  "</span> = ", bindings[i].value);
         if (bindings[i].substitutions) {
             var substs = bindings[i].substitutions;
-            html += ', <span class="pl-comment">% where</span><br/>';
+	    html.push(', <span class="pl-comment">% where</span><br/>');
             for (var s = 0; s < substs.length; s++) {
-                html += '<span class="where-binding">';
-                html += "<span class='pl-var'>" + substs[s].var+"</span> = ";
-                html += substs[s].value;
-                html += '</span>';
-                if (s < substs.length - 1) html += ",<br/>";
+	        html.push('<span class="where-binding">',
+			  "<span class='pl-var'>", substs[s].var+"</span> = ",
+			  substs[s].value, '</span>');
+                if (s < substs.length - 1)
+		    html.push(",<br/>");
             }
         }
-        if (i < bindings.length - 1 || answer.residuals) html += ",<br/>";
+        if (i < bindings.length - 1 || answer.residuals)
+	  html.push(",<br/>");
     }
     if ((residuals = answer.residuals)) {
         for (var i = 0; i < residuals.length; i++) {
-            html += residuals[i];
+            html.push(residuals[i]);
             if (i < residuals.length - 1)
-                html += ",<br/>";
+                html.push(",<br/>");
         }
     }
-    return html;
+    return html.join("");
   }
 
   /**
