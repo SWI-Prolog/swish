@@ -1,3 +1,5 @@
+/* Support switching representations */
+
 div.render-multi {
   position: relative;
   vertical-align: top;
@@ -15,3 +17,22 @@ form.render-select {
   z-index: 50;
   white-space: nowrap;
 }
+
+		 /*******************************
+		 *	GENERAL RENDERERS	*
+		 *******************************/
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Below we provide styling support for  general purpose renderers. Special
+purpose renderers typically give their style   together with the output,
+but that is rather expensive.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+.render-table {
+  border: 2px solid #333;
+}
+
+.render-table td { padding: 0px 5px; border: 1px solid #888;}
+
+.render-table tr:nth-child(odd)  { background-color: #eee; }
+.render-table tr:nth-child(even) { background-color: #fff; }

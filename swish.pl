@@ -98,3 +98,4 @@ pengines:prepare_module(Module, swish, _Options) :-
 
 :- use_module(swish(lib/render/sudoku), []).
 :- use_module(swish(lib/render/chess), []).
+:- use_module(swish(lib/render/table), []).
