@@ -33,5 +33,5 @@ problem(1, [[_,_,_,_,_,_,_,_,_],
 
 /** <examples>
 
-?- problem(1, Sudoku), sudoku(Sudoku).
+?- problem(1, Rows), sudoku(Rows).
 */
