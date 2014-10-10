@@ -26,7 +26,8 @@ Who owns the zebra and who drinks water?
 */
 
 % Render the houses term as a nice table.
-:- use_rendering(table).
+:- use_rendering(table,
+		 [header(['Owner', 'Pet', 'Cigarette', 'Drink', 'Color'])]).
 
 zebra_owner(Owner) :-
 	houses(Hs),
