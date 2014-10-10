@@ -1,5 +1,6 @@
 MAIN=swish.css
-CSS=$(MAIN) editor.css pane.css query.css runner.css term.css
+CSS=$(MAIN) answer.css editor.css navbar.css pane.css query.css \
+	    runner.css term.css
 
 swish-min.css: $(CSS)
 	cleancss -o $@ $(MAIN)
