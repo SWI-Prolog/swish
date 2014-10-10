@@ -25,6 +25,9 @@
 Who owns the zebra and who drinks water?
 */
 
+% Render the houses term as a nice table.
+:- use_rendering(table).
+
 zebra_owner(Owner) :-
 	houses(Hs),
 	member(h(Owner,zebra,_,_,_), Hs).
@@ -64,6 +67,6 @@ next(A, B, Ls) :- append(_, [B,A|_], Ls).
 
 ?- water_drinker(Drinker).
 
-?- houses(Solution), maplist(writeln, Solution), nl.
+?- houses(Houses).
 
 */
