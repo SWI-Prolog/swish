@@ -159,14 +159,18 @@ define([ "jquery", "laconic" ],
       html.push("</td>");
     }
 
-    function ensureResidualHeader() {
-      if ( table.find("tr.projection th.residuals").length == 0 )
-	table.find("tr.projection").append("<th class='residuals'>Residual goals</th>");
+    function ensureResidualColumn() {
+      if ( table.find("tr.projection th.residuals").length == 0 ) {
+	$("<th class='residuals'>Residual goals</th>").insertBefore(
+	   table.find("tr.projection th.answer-nth"));
+	$("<td></td>").insertBefore(
+	   table.find("tr td.answer-nth"));
+      }
     }
 
     var residuals;
     if ((residuals = answer.residuals)) {
-      ensureResidualHeader();
+      ensureResidualColumn();
       html.push("<td>");
       for (var i = 0; i < residuals.length; i++) {
 	html.push(residuals[i]);
@@ -175,6 +179,9 @@ define([ "jquery", "laconic" ],
       }
       html.push("</td>");
     }
+
+    if ( answer.nth )
+      html.push("<td class='answer-nth'>", answer.nth, "</td>");
 
     return html.join("");
   }

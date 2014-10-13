@@ -155,5 +155,12 @@ table.prolog-answers th { padding: 0px 5px; border: 1px solid #888; text-align: 
 table.prolog-answers tr:nth-child(odd)  { background-color: #eee; }
 table.prolog-answers tr:nth-child(even) { background-color: #fff; }
 table.prolog-answers tr.projection      { border-bottom: 2px solid #333; }
-tr.projection th { color: #800; font-weight: bold; }
+tr.projection th.pl-pvar { color: #800; font-weight: bold; }
 tr.projection th.residuals { color: #888; font-weight: normal; font-style:italic;}
+.answer-nth { width: 2ex; text-align: right;}
+th.answer-nth { color: #888; font-weight:normal; font-style:italic;
+	      }
+td.answer-nth { color: #060; font-size: 80%; font-style: italic;
+		background-color: #eee;
+		vertical-align: top;
+	      }

@@ -359,11 +359,13 @@ define([ "config", "jquery", "answer", "laconic" ],
 	    addAnswer(this, table);
 	    data.table = table;
 	    data.projection = answer.projection;
+	    answer.nth = data.answers;
 	    $(data.table).prologAnswer(answer);
 	    return this;
 	  }
         } else
 	{ answer.projection = data.projection;
+	  answer.nth = data.answers;
 	  $(data.table).prologAnswer(answer);
 	  return this;
 	}
@@ -627,7 +629,8 @@ define([ "config", "jquery", "answer", "laconic" ],
     var tds = [{class:"projection"}];
 
     for(i=0; i<projection.length; i++)
-      tds.push($.el.th(projection[i]));
+      tds.push($.el.th({class:"pl-pvar"}, projection[i]));
+    tds.push($.el.th({class:"answer-nth"}, "No"));
 
     var table = $.el.table({class:"prolog-answers"},
 			   $.el.tbody($.el.tr.apply(this, tds)));
