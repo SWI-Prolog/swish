@@ -135,7 +135,7 @@ define([ "config", "jquery", "answer", "laconic" ],
     scrollToBottom: function(onlydown) {
       var data   = this.data('prologRunners');
       var height = data.inner.height();
-      var room   = this.height() - height - 4;
+      var room   = this.height() - height - 4 - 2;
 
       if ( room > 0 || onlydown !== true ) {
 	data.stretch.height(room > 0 ? room : 0);
