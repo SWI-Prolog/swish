@@ -28,7 +28,8 @@
 */
 
 :- module(swish_render,
-	  [ use_rendering/1			% Renderer
+	  [ use_rendering/1,		% +Renderer
+	    use_rendering/2		% +Renderer, +Options
 	  ]).
 :- use_module(library(pengines_io), []).
 :- use_module(library(http/html_write)).
@@ -36,7 +37,8 @@
 :- use_module(library(option)).
 
 :- meta_predicate
-	use_rendering(:).
+	use_rendering(:),
+	use_rendering(:, +).
 
 /** <module> SWISH term-rendering support
 
@@ -78,20 +80,30 @@ user:file_search_path(render, swish('lib/render')).
 
 %%	use_rendering(+FileOrID)
 %
-%	Register a module as a renderer for answers in this pengine.
+%	Register an answer  renderer.   Same  as use_rendering(FileOrID,
+%	[]).
 %
-%	@tbd	Should we allow for a list of Files?
+%	@see use_rendering/2.
 
 :- multifile user:term_expansion/2.
 
 use_rendering(Rendering) :-
+	use_rendering(Rendering, []).
+
+%%	use_rendering(+FileOrID, +Options)
+%
+%	Register an answer renderer  with   options.  Options are merged
+%	with   write-options   and   passed     to    the   non-terminal
+%	term_rendering//3 defined in the rendering module.
+
+use_rendering(Rendering, Options) :-
 	Rendering = Into:FileSpec,
 	render_file(FileSpec, File),
 	use_module(File, []),
 	source_file_property(File, module(M)),
-	Term = term_rendering(_Term, _Vars, _Options, _List, _Tail),
-	Head = Into:Term,
-	Body =    M:Term,
+	Head = Into:term_rendering(Term, Vars, WriteOptions, List, Tail),
+	Body = (swi_option:merge_options(Options, WriteOptions, AllOptions),
+		  M:term_rendering(Term, Vars, AllOptions, List, Tail)),
 	(   clause(Head, Body)
 	->  true
 	;   assertz((Head :- Body))
