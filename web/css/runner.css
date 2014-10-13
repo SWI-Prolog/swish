@@ -60,7 +60,7 @@ div.cputime span{ background-color: #ccc;
 
 span.runner-state {
   position: relative;
-  top: 5px;
+  top: 2px;
   width:  1.5em;
   height: 1.5em;
   margin-right: 5px;
