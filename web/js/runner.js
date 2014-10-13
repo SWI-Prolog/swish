@@ -9,8 +9,8 @@
  * @requires editor
  */
 
-define([ "config", "jquery", "answer", "laconic" ],
-       function(config) {
+define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
+       function($, config, CodeMirror) {
 
 		 /*******************************
 		 *	  THE COLLECTION	*
@@ -284,12 +284,14 @@ define([ "config", "jquery", "answer", "laconic" ],
 	}
 
 	elem.addClass("prolog-runner");
+	var qspan = $.el.span({class:"query cm-s-prolog"});
+	CodeMirror.runMode(query.query, "prolog", qspan);
 	elem.append($.el.div(
 	  {class:"runner-title ui-widget-header"},
 	  closeButton(),
 	  iconizeButton(),
 	  stateButton(),
-	  $.el.span({class:"query"}, query.query)));
+          qspan));
 	elem.append($.el.div(
 	  {class:"runner-results"}));
 	elem.append(controllerDiv());
