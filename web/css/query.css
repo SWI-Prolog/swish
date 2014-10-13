@@ -3,3 +3,6 @@ table.prolog-query { width: 100%; height: 100%; }
 table.prolog-query .buttons-right { text-align: right; }
 table.prolog-query textarea.query { width: 100%; height: 100%; box-sizing: border-box; }
 table.prolog-query .prolog-prompt { vertical-align: top; font-weight: bold; }
+
+span.run-chk-table { margin-right: 5px; }
+

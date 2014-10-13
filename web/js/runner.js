@@ -79,6 +79,8 @@ define([ "config", "jquery", "answer", "laconic" ],
      * @param {String} [query.source] the Prolog program
      * @param {Boolean} [query.iconifyLast=true] define whether or not
      * to iconify the previous runner.
+     * @param {Boolean} [query.tabled=false] if `true`, make a table with
+     * the results.
      */
     run: function(query) {
       var data = this.data('prologRunners');
@@ -196,6 +198,8 @@ define([ "config", "jquery", "answer", "laconic" ],
      * @param {Object} query
      * @param {String} query.query the Prolog query to prove
      * @param {String} [query.source] the Prolog program
+     * @param {Boolean} [query.tabled=false]  If `true`, represent the
+     * results as a table.
      */
     _init: function(query) {
       return this.each(function() {
@@ -347,6 +351,24 @@ define([ "config", "jquery", "answer", "laconic" ],
     renderAnswer: function(answer) {
       var data = this.data('prologRunner');
       var even = (++data.answers % 2 == 0);
+
+      if ( data.query.tabled ) {
+	if ( data.answers == 1 ) {
+	  if ( answer.projection && answer.projection.length > 0 ) {
+	    var table = answerTable(answer.projection);
+	    addAnswer(this, table);
+	    data.table = table;
+	    data.projection = answer.projection;
+	    $(data.table).prologAnswer(answer);
+	    return this;
+	  }
+        } else
+	{ answer.projection = data.projection;
+	  $(data.table).prologAnswer(answer);
+	  return this;
+	}
+      }
+
       var div = $.el.div({class:"answer "+(even ? "even" : "odd")},
 			 $.el.span({class:"answer-no"}, data.answers));
 
@@ -601,6 +623,20 @@ define([ "config", "jquery", "answer", "laconic" ],
     }
   }
 
+  function answerTable(projection) {
+    var tds = [{class:"projection"}];
+
+    for(i=0; i<projection.length; i++)
+      tds.push($.el.th(projection[i]));
+
+    var table = $.el.table({class:"prolog-answers"},
+			   $.el.tbody($.el.tr.apply(this, tds)));
+
+    return table;
+  }
+
+
+
 		 /*******************************
 		 *   HANDLE PROLOG CALLBACKS	*
 		 *******************************/
@@ -617,7 +653,11 @@ define([ "config", "jquery", "answer", "laconic" ],
     var elem = this.pengine.options.runner;
 
     for(var i=0; i<this.data.length; i++) {
-      elem.prologRunner('renderAnswer', this.data[i]);
+      var answer = this.data[i];
+      if ( this.projection )
+	answer.projection = this.projection;
+
+      elem.prologRunner('renderAnswer', answer);
     }
     if ( this.time > 0.1 )	/* more than 0.1 sec. CPU (TBD: preference) */
       addAnswer(elem, $.el.div(

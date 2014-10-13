@@ -28,9 +28,10 @@ define([ "jquery", "laconic", "editor" ],
      */
     _init: function(options) {
       return this.each(function() {
-	var elem  = $(this);
-	var data  = $.extend({maxHistoryLength: 50}, options);
-	var qediv = $.el.div({class:"query",style:"height:100%"});
+	var elem   = $(this);
+	var data   = $.extend({maxHistoryLength: 50}, options);
+	var qediv  = $.el.div({class:"query",style:"height:100%"});
+	var tabled = tableCheckbox(options);
 
         var content =
 	  $.el.table({class:"prolog-query"},
@@ -45,10 +46,15 @@ define([ "jquery", "laconic", "editor" ],
 				     historyButton(options),
 				     clearButton(options)),
 			     $.el.td({class:"buttons-right"},
+				     tabled,
 				     runButton(options))));
 
 	elem.addClass("prolog-query-editor swish-event-receiver");
 	elem.append(content);
+
+	function tableSelected() {
+	  return $(tabled).find("input").prop("checked");
+	}
 
 	$(qediv).append(elem.children("textarea"))
 	        .prologEditor({ role: "query",
@@ -57,7 +63,7 @@ define([ "jquery", "laconic", "editor" ],
 				lineNumbers: false,
 				lineWrapping: true,
 				prologQuery: function(q) {
-				  elem.queryEditor('run', q);
+				  elem.queryEditor('run', q, tableSelected());
 				}
 		              });
 
@@ -160,8 +166,13 @@ define([ "jquery", "laconic", "editor" ],
     /**
      * Collect source and query and submit them to the associated
      * `runner`.
+     *
+     * @param {String} [q] is the query to execute.  Default asks it
+     * from the associated query editor.
+     * @param {Boolean} [tabled=false] when `true`, present the results
+     * as a table.
      */
-    run: function(q) {
+    run: function(q, tabled) {
       var data  = this.data('queryEditor');
 
       if ( q === undefined ) q = this.queryEditor('getQuery');
@@ -178,6 +189,8 @@ define([ "jquery", "laconic", "editor" ],
 	query.source = data.source(q);
       else if ( typeof(data.source) == "string" )
 	query.source = source;
+      if ( tabled )
+	query.tabled = true;
 
       this.queryEditor('addHistory', q);
       data.runner.prologRunners('run', query);
@@ -269,10 +282,23 @@ define([ "jquery", "laconic", "editor" ],
 	"Run!");
 
     $(button).on("click", function() {
-      Q(this).queryEditor('run');
+      Q(this).queryEditor('run', undefined, tableSelected(this));
     });
 
     return button;
+  }
+
+  function tableSelected(from) {
+    return $(from).parent().find("input").prop("checked");
+  }
+
+  function tableCheckbox(options) {
+    var checkbox =
+      $.el.span({class:"run-chk-table"},
+		$.el.input({type:"checkbox", name:"table"}),
+		" table results");
+
+    return checkbox;
   }
 
   /**

@@ -64,8 +64,15 @@ define([ "jquery", "laconic" ],
 	var elem = $(this);
 
 	if ( answerHasOutput(answer) ) {
-	  elem.append(renderAnswer(answer));
-	  elem.find(".render-multi").renderMulti();
+	  if ( elem.is("table") ) {
+	    var row = $.el.tr();
+	    $(row).html(renderTabledAnswer(answer, elem));
+	    elem.append(row);
+	    $(row).find(".render-multi").renderMulti();
+	  } else {
+	    elem.append(renderAnswer(answer));
+	    elem.find(".render-multi").renderMulti();
+	  }
 	} else
 	  elem.append($.el.span({class: "prolog-true"}, "true"));
       });
@@ -76,40 +83,102 @@ define([ "jquery", "laconic" ],
     return answer.variables.length > 0 || answer.residuals;
   }
 
+  function renderSubstitutions(substs, html) {
+    html.push(', <span class="pl-comment">% where</span><br/>');
+    for (var s = 0; s < substs.length; s++) {
+      html.push('<span class="where-binding">',
+		"<span class='pl-var'>", substs[s].var+"</span> = ",
+		substs[s].value, '</span>');
+      if (s < substs.length - 1)
+	html.push(",<br/>");
+    }
+  }
+
   function renderAnswer(answer) {
     var html = [];
     var bindings = answer.variables;
     for (var i = 0; i < bindings.length; i++) {
-        var vars = bindings[i].variables;
-        for (var v = 0; v < vars.length - 1; v++) {
-	    html.push("<span class='pl-ovar'>", vars[v], "</span> = ",
-		      "<span class='pl-var'>", vars[v + 1], "</span>, ");
-        }
-	html.push("<span class='pl-ovar'>", vars[vars.length - 1],
-		  "</span> = ", bindings[i].value);
-        if (bindings[i].substitutions) {
-            var substs = bindings[i].substitutions;
-	    html.push(', <span class="pl-comment">% where</span><br/>');
-            for (var s = 0; s < substs.length; s++) {
-	        html.push('<span class="where-binding">',
-			  "<span class='pl-var'>", substs[s].var+"</span> = ",
-			  substs[s].value, '</span>');
-                if (s < substs.length - 1)
-		    html.push(",<br/>");
-            }
-        }
-        if (i < bindings.length - 1 || answer.residuals)
-	  html.push(",<br/>");
+      var vars = bindings[i].variables;
+      for (var v = 0; v < vars.length - 1; v++) {
+	html.push("<span class='pl-ovar'>", vars[v], "</span> = ",
+		  "<span class='pl-var'>", vars[v + 1], "</span>, ");
+      }
+      html.push("<span class='pl-ovar'>", vars[vars.length - 1],
+		"</span> = ", bindings[i].value);
+      if (bindings[i].substitutions) {
+	renderSubstitutions(bindings[i].substitutions, html);
+      }
+      if (i < bindings.length - 1 || answer.residuals)
+	html.push(",<br/>");
     }
+
+    var residuals;
     if ((residuals = answer.residuals)) {
-        for (var i = 0; i < residuals.length; i++) {
-            html.push(residuals[i]);
-            if (i < residuals.length - 1)
-                html.push(",<br/>");
-        }
+      for (var i = 0; i < residuals.length; i++) {
+	html.push(residuals[i]);
+	if (i < residuals.length - 1)
+	  html.push(",<br/>");
+      }
     }
     return html.join("");
   }
+
+  /**
+   * Render answer as a new row to the answer table.
+   * @param {Answer} answer represents an answer to a Prolog query
+   * @param {Table} table is the jQuery table to which the answer must
+   * be added.
+   */
+  function renderTabledAnswer(answer, table) {
+    var html = [];
+
+    function findBinding(name) {
+      var bindings = answer.variables;
+      for (var i = 0; i < bindings.length; i++) {
+	var vars = bindings[i].variables;
+	for (var v = 0; v < vars.length; v++) {
+	  if ( vars[v] == name )
+	    return bindings[i];
+	}
+      }
+      return null;
+    }
+
+    for(var i = 0; i<answer.projection.length; i++) {
+      var vname  = answer.projection[i];
+      var binding = findBinding(vname);
+
+      html.push("<td>");
+      if ( binding ) {
+	html.push(binding.value);
+	if ( binding.substitutions )
+	  renderSubstitutions(binding.substitutions, html);
+      } else {
+	html.push("<span class='pl-var'>", vname, "</span>");
+      }
+      html.push("</td>");
+    }
+
+    function ensureResidualHeader() {
+      if ( table.find("tr.projection th.residuals").length == 0 )
+	table.find("tr.projection").append("<th class='residuals'>Residual goals</th>");
+    }
+
+    var residuals;
+    if ((residuals = answer.residuals)) {
+      ensureResidualHeader();
+      html.push("<td>");
+      for (var i = 0; i < residuals.length; i++) {
+	html.push(residuals[i]);
+	if (i < residuals.length - 1)
+	  html.push(",<br/>");
+      }
+      html.push("</td>");
+    }
+
+    return html.join("");
+  }
+
 
   /**
    * Render a single Prolog answer. This class is the entry point for
