@@ -301,8 +301,11 @@ xref_source_id(TB, SourceId) :-
 
 xref_module(TB, Module) :-
 	get(TB, uuid, Module),
-	set_module(Module:class(temporary)),
-	add_import_module(Module, swish, start).
+	(   module_property(foobar, class(temporary))
+	->  true
+	;   set_module(Module:class(temporary)),
+	    add_import_module(Module, swish, start)
+	).
 
 %%	master_load_file(+File, +Seen, -MasterFile) is det.
 %
