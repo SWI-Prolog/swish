@@ -111,6 +111,7 @@ use_rendering(Rendering, Options) :-
 
 user:term_expansion((:- use_rendering(FileSpec)),
 		    [ (:- use_module(File, [])),
+		      (:- discontiguous(term_rendering//3)),
 		      (Term :- M:Term)
 		    ]) :-
 	Term = term_rendering(_Term, _Vars, _Options, _List, _Tail),
