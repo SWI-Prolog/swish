@@ -33,6 +33,9 @@
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/term_html)).
+:- use_module('../render').
+
+:- register_renderer(table, "Render data as tables").
 
 /** <module> SWISH table renderer
 

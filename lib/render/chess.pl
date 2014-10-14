@@ -31,6 +31,9 @@
 	  [ term_rendering//3			% +Term, +Vars, +Options
 	  ]).
 :- use_module(library(http/html_write)).
+:- use_module('../render').
+
+:- register_renderer(chess, "Render chess board representations").
 
 /** <module> SWISH chessboard renderer
 

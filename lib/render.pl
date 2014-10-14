@@ -29,14 +29,18 @@
 
 :- module(swish_render,
 	  [ use_rendering/1,		% +Renderer
-	    use_rendering/2		% +Renderer, +Options
+	    use_rendering/2,		% +Renderer, +Options
+
+	    register_renderer/2		% Declare a rendering module
 	  ]).
 :- use_module(library(pengines_io), []).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/term_html)).
 :- use_module(library(option)).
+:- use_module(library(error)).
 
 :- meta_predicate
+	register_renderer(:, +),
 	use_rendering(:),
 	use_rendering(:, +).
 
@@ -90,49 +94,28 @@ user:file_search_path(render, swish('lib/render')).
 use_rendering(Rendering) :-
 	use_rendering(Rendering, []).
 
-%%	use_rendering(+FileOrID, +Options)
+%%	use_rendering(:ID, +Options)
 %
 %	Register an answer renderer  with   options.  Options are merged
 %	with   write-options   and   passed     to    the   non-terminal
 %	term_rendering//3 defined in the rendering module.
 
 use_rendering(Rendering, Options) :-
-	Rendering = Into:FileSpec,
-	render_file(FileSpec, File),
-	use_module(File, []),
-	source_file_property(File, module(M)),
-	Head = Into:term_rendering(Term, Vars, WriteOptions, List, Tail),
-	Body = (swi_option:merge_options(Options, WriteOptions, AllOptions),
-		  M:term_rendering(Term, Vars, AllOptions, List, Tail)),
-	(   clause(Head, Body)
+	Rendering = Into:Renderer,
+	must_be(atom, Renderer),
+	(   renderer(Renderer, _, _)
 	->  true
-	;   assertz((Head :- Body))
-	).
+	;   existence_error(renderer, Renderer)
+	),
+	retractall(Into:'swish renderer'(Renderer, _)),
+	assertz(Into:'swish renderer'(Renderer, Options)).
 
-user:term_expansion((:- use_rendering(FileSpec)),
-		    [ (:- use_module(File, [])),
-		      (:- discontiguous(term_rendering//3)),
-		      (Term :- M:Term)
-		    ]) :-
-	Term = term_rendering(_Term, _Vars, _Options, _List, _Tail),
-	render_file(FileSpec, File),
-	source_file_property(File, module(M)).
-
-user:term_expansion((:- use_rendering(FileSpec, Options)),
-		    [ (:- use_module(File, [])),
-		      (Head :- swi_option:merge_options(Options, WriteOptions, AllOptions),
-		               M:Body)
-		    ]) :-
-	Head = term_rendering(Term, Vars, WriteOptions, List, Tail),
-	Body = term_rendering(Term, Vars, AllOptions, List, Tail),
-	render_file(FileSpec, File),
-	source_file_property(File, module(M)).
-
-render_file(Spec, File) :-
-	(   atomic(Spec)
-	->  File = render(Spec)
-	;   File = Spec
-	).
+user:term_expansion((:- use_rendering(Renderer)),
+		    'swish renderer'(Renderer, [])) :-
+	must_be(atom, Renderer).
+user:term_expansion((:- use_rendering(Renderer, Options)),
+		    'swish renderer'(Renderer, Options)) :-
+	must_be(atom, Renderer).
 
 %%	pengines_io:binding_term(+Term, +Vars, +Options) is semidet.
 %
@@ -158,9 +141,13 @@ pengines_io:binding_term(Term, Vars, Options) -->
 call_term_rendering(Module, Term, Vars, Options, Tokens) :-
 	State = state([]),
 	default_module(Module, Target),
-	predicate_property(Target:term_rendering(_,_,_,_,_), imported_from(M)),
-	is_new(State, M),
-	phrase(Target:term_rendering(Term, Vars, Options), Tokens).
+	current_predicate(Target:'swish renderer'/2),
+	Target:'swish renderer'(Name, RenderOptions),
+	atom(Name),
+	is_new(State, Name),
+	renderer(Name, RenderModule, _Comment),
+	merge_options(RenderOptions, Options, AllOptions),
+	phrase(RenderModule:term_rendering(Term, Vars, AllOptions), Tokens).
 
 %%	is_new(!State, +M) is semidet.
 %
@@ -191,3 +178,22 @@ specialised([H|T], Term, Options) -->
 tokens([]) --> [].
 tokens([H|T]) --> [H], tokens(T).
 
+
+		 /*******************************
+		 *	   REGISTRATION		*
+		 *******************************/
+
+:- multifile
+	renderer/3.
+
+%%	register_renderer(:Name, +Comment)
+%
+%	Register a module as SWISH rendering component.
+
+register_renderer(Name, Comment) :-
+	throw(error(context_error(nodirective, register_renderer(Name, Comment)),
+		    _)).
+
+user:term_expansion((:- register_renderer(Name, Comment)),
+		    swish_render:renderer(Name, Module, Comment)) :-
+	prolog_load_context(module, Module).
