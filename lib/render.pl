@@ -156,9 +156,27 @@ pengines_io:binding_term(Term, Vars, Options) -->
 %	inherits.
 
 call_term_rendering(Module, Term, Vars, Options, Tokens) :-
+	State = state([]),
 	default_module(Module, Target),
-	current_predicate(Target:term_rendering//3),
+	predicate_property(Target:term_rendering(_,_,_,_,_), imported_from(M)),
+	is_new(State, M),
 	phrase(Target:term_rendering(Term, Vars, Options), Tokens).
+
+%%	is_new(!State, +M) is semidet.
+%
+%	Only succeeds once for each new ground value M.
+
+is_new(State, M) :-
+	arg(1, State, Seen),
+	(   memberchk(M, Seen)
+	->  fail
+	;   nb_linkarg(1, State, [M|Seen])
+	).
+
+%%	alt_renderer(+Specialised, +Term, +Options)//
+%
+%	Create a rendering selection object after we have found at least
+%	one alternative rendering for Term.
 
 alt_renderer(Specialised, Term, Options) -->
 	html(div(class('render-multi'),
