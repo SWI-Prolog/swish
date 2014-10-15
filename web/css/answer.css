@@ -6,20 +6,34 @@
 div.render-multi {
   position: relative;
   vertical-align: top;
+  background-image: url("../icons/page-fold-20.png");
+  background-size: 15px;
+  background-repeat: no-repeat;
+/* background-position: 0% 0%;*/
 }
 
-form.render-select {
+#render-select {
   position: absolute;
-  left: 10px;
-  top: 10px;
   background-color: #fff;
   padding: 5px 20px;
   border: 1px solid #000;
   border-radius: 5px;
   box-shadow: 5px 5px 5px #888;
-  z-index: 50;
+  z-index: 500;
   white-space: nowrap;
 }
+
+.render-selecting {
+  outline: 1px solid #800;
+}
+
+.render-multi-active {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 20px; height: 20px;
+}
+
 
 		 /*******************************
 		 *	GENERAL RENDERERS	*

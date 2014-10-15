@@ -219,57 +219,87 @@ define([ "jquery", "laconic" ],
 
 (function($) {
   var pluginName = 'renderMulti';
+  var timeout = 0;
+  var hovering = false;
 
   /** @lends $.fn.renderMulti */
   var methods = {
     _init: function(options) {
       return this.each(function() {
 	var elem = $(this);
-	var data = { current: 0};		/* private data */
-	var select = ["<form class='render-select' style='display:none'>" +
-		      "<label>View as</label><br>"
-		     ];
+	var data = {current: 0};		/* private data */
+	var display = [];
+	var selector = $.el.div({class: "render-multi-active"});
+
 	var i = 0;
-
 	elem.children().each(function() {
-	  var r = $(this);
-	  var name = r.attr("data-render") || ("unknown "+i);
+	  var how = $(this).css("display");
 
-	  r.wrap("<div class='render-wrapper'></div>");
-	  var wrapper = r.parent();
-	  if ( i == 0 ) {
-	    var how = r.css("display");
-	    wrapper.css("display", how);
+	  display.push(how);
+	  if ( i++ == 0 )
 	    elem.css("display", how);
-	  } else {
-	    select.push("<br>");
-	    wrapper.hide();
-	  }
-	  select.push("<input type='radio' name='render' value='", i, "'");
-	  if ( i == 0 ) select.push(" checked");
-	  select.push("> ", name);
-	  i++;
+	  else
+	    $(this).hide();
 	});
-	select.push("</form");
-	elem.append(select.join(""));
-	elem.hover(function(ev) { elem.renderMulti('showSelect', ev); },
-		   function()   { elem.renderMulti('hideSelect'); });
-	elem.find(".render-select").on("click", function() {
-	  var r = $("input[name=render]:checked",
-		    elem.find(".render-select")).val();
-	  elem.renderMulti('select', parseInt(r));
-	});
+	data.display = display;
+	elem.append(selector);
+
+	$(selector).hover(function(ev) { elem.renderMulti('showSelect', ev); },
+			  function(ev) { elem.renderMulti('hideSelect', ev); });
 
 	elem.data(pluginName, data);	/* store with element */
       });
     },
 
-    showSelect: function(ev) {
-      this.find(".render-select").show("fast");
+    /**
+     * @returns {String} holding HTML with a radio button to select a
+     * rendering
+     */
+    selectMenu: function() {
+      var data = this.data(pluginName);
+      var select = ["<label>View as</label><br>"];
+      var children = this.children();
+
+      var i = 0;
+      for(var i=0; i<data.display.length; i++) {
+	var r = $(children[i]);
+	var name = r.attr("data-render") || ("unknown "+i);
+
+	select.push("<input type='radio' name='render' value='", i, "'");
+	if ( i == data.current ) select.push(" checked");
+	select.push("> ", name, "<br>");
+      }
+
+      select.push("</form");
+      return select.join("");
     },
 
-    hideSelect: function() {
-      this.find(".render-select").hide("fast");
+    showSelect: function(ev) {
+      var elem = this;
+      var menu = selectMenu();
+      var pos  = this.offset();
+      var target;
+
+      hovering = true;
+      if ( timeout ) {
+	clearTimeout(timeout);
+	timeout = 0;
+      }
+
+      if ( (target=menu.data("target")) )
+	target.removeClass("render-selecting");
+      menu.data("target", elem);
+
+      menu.html(this.renderMulti('selectMenu'));
+      menu.css({ top:      pos.top + 5 + "px",
+                 left:     pos.left + 5 + "px"
+               }).show(400);
+
+      this.addClass("render-selecting");
+    },
+
+    hideSelect: function(ev) {
+      resetHover();
     },
 
     /**
@@ -279,16 +309,62 @@ define([ "jquery", "laconic" ],
     select: function(i) {
       var data  = this.data(pluginName);
       var child = this.children();
-      var how   = $($(child[i]).children()[0]).css("display");
+      var how   = data.display[i];
 
       $(child[data.current]).hide(400);
       $(child[i]).show(400, function() { $(this).css("display", how); });
       this.css("display", how);
 
       data.current = i;
-      this.renderMulti('hideSelect');
+      closeSelectMenu();
     }
   }; // methods
+
+
+  function selectMenu() {
+    var menu = $("#render-select");
+
+    if ( !menu[0] ) {
+      menu = $($.el.form({ id:"render-select",
+                           style:"display:none"
+		         }));
+
+      menu.on("click", function() {
+	var r = $("input[name=render]:checked", $(this)).val();
+	menu.data("target").renderMulti('select', parseInt(r));
+      });
+      menu.hover(function() { hovering = true; startMenuTimeout(); },
+		 function() { resetHover(); });
+
+      $("body").append(menu);
+    }
+
+    return menu;
+  }
+
+  function closeSelectMenu() {
+    if ( !hovering ) {
+      var menu = selectMenu();
+      var target = menu.data("target");
+
+      if ( target ) {
+	target.removeClass("render-selecting");
+	menu.data("target", null);
+      }
+      menu.hide(400);
+    }
+  }
+
+  function startMenuTimeout() {
+    timeout = setTimeout(function() {
+      closeSelectMenu();
+    }, 400);
+  }
+
+  function resetHover() {
+    hovering = false;
+    startMenuTimeout();
+  }
 
   /**
    * <Class description>
