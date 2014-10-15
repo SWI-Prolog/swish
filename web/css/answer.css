@@ -55,3 +55,6 @@ but that is rather expensive.
 .render-table tr:nth-child(odd)  { background-color: #eee; }
 .render-table tr:nth-child(even) { background-color: #fff; }
 .render-table tr.hrow            { border-bottom: 2px solid #333; }
+
+.render-code-list { color: #040; font-style: italic; }
+.render-ellipsis  { colour: blue; padding: 0px 5px;}

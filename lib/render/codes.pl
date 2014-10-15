@@ -63,20 +63,35 @@ Render lists of character codes as a `string`
 %	    Allow 32..126 and 160..255
 
 term_rendering(Codes, _Vars, Options) -->
-	{ is_code_list(Codes, Len, Options),
-	  option(ellipsis(Ellipsis), Options, 30),
-	  (   Len > Ellipsis
-	  ->  First is Ellipsis - 5,
+	{ is_code_list(Codes, Len, Options)
+	},
+	(   { option(ellipsis(Ellipsis), Options, 30),
+	      Len > Ellipsis
+	    }
+	->  { First is Ellipsis - 5,
 	      Skip is Len - 5,
 	      skip_first(Skip, Codes, Rest),
-	      phrase((put_n_codes(First, Codes), "...",
-		      put_codes(Rest)), TextCodes)
-	  ;   phrase(put_codes(Codes), TextCodes)
-	  ),
-	  string_codes(String, TextCodes)
-	}, !,
-	html(span('data-render'('List of codes as a string'),
-		  '`~s`'-String)).
+	      phrase(put_n_codes(First, Codes), PrefixCodes),
+	      phrase(put_codes(Rest), PostfixCodes),
+	      string_codes(Prefix, PrefixCodes),
+	      string_codes(Postfix, PostfixCodes)
+	    },
+	    html(span([ 'data-render'('Truncated list of codes as a string'),
+			class('render-code-list'),
+			title('Code list of length: '+Len)
+		      ],
+		      [ '`~s'-[Prefix],
+			span(class('render-ellipsis'), ...),
+			'~s`'-[Postfix]
+		      ]))
+	;   { phrase(put_codes(Codes), TextCodes),
+	      string_codes(String, TextCodes)
+	    },
+	    html(span([ 'data-render'('List of codes as a string'),
+			class('render-code-list')
+		      ],
+		  '`~s`'-String))
+	).
 
 skip_first(N, [_|T0], T) :-
 	succ(N2, N), !,
