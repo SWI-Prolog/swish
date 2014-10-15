@@ -263,7 +263,14 @@ define([ "jquery", "laconic" ],
       var i = 0;
       for(var i=0; i<data.display.length; i++) {
 	var r = $(children[i]);
-	var name = r.attr("data-render") || ("unknown "+i);
+	var name = r.attr("data-render");
+
+	if ( !name ) {
+	  if ( i == 0 )
+	    name = "Default rendered";
+	  else
+	    name = "Alt rendered ["+(i+1)+"]";
+	}
 
 	select.push("<input type='radio' name='render' value='", i, "'");
 	if ( i == data.current ) select.push(" checked");
