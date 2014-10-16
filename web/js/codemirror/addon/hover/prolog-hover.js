@@ -17,6 +17,15 @@ var tokenHelp = {
     }
   },
 
+  "goal_global":  function(data, cm) {
+    if ( data ) {
+      return $.el.div(predName(data),
+		      cm.tokenInfo(data));
+    } else {
+      return "Global predicate";
+    }
+  },
+
   "goal_autoload":  function(data, cm) {
     if ( data ) {
       return $.el.div(predName(data), " (autoload from ",
