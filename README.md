@@ -58,7 +58,3 @@ using this command and reloading the page:
 
 The JavaScript is documented   using  [JsDoc](http://usejsdoc.org/). The
 generated documentation is available in `web/js/doc/index.html`.
-
-# Bugs
-
- - Examples dropup hides behind pane.
