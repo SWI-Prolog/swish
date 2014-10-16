@@ -7,11 +7,22 @@ dependencies using the following command:
 
     bower install
 
-Install [SWI-Prolog](http://www.swi-prolog.org) version 7.1.21  or later
-for your platform and open `run.pl`,   either  by running `swipl run.pl`
-(Unix) or opening `run.pl` from the Windows explorer.
+Install the latest  [SWI-Prolog](http://www.swi-prolog.org) _development
+version_. As SWISH is very  much  in   flux  and  depends  on the recent
+SWI-Prolog pengines and sandboxing libraries, it   is  quite common that
+you            need            the             [nightly            build
+(Windows)](http://www.swi-prolog.org/download/daily/bin/) or build   the
+system    from    the     current      git     development    repository
+[swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).   With   a
+sufficiently recent Prolog  installed,  start   the  system  by  opening
+`run.pl` either by running `swipl  run.pl`   (Unix)  or opening `run.pl`
+from the Windows explorer.
 
 Now direct your browser to http://localhost:3050/
+
+If you want  to  know  what  the   latest  version  looks  like,  go  to
+http://swish.swi-prolog.org/
+
 
 ## Design
 
@@ -29,12 +40,12 @@ in SWI-Prolog web applications.
 
 ## Development and debugging
 
-The  default  main  page   (`/swish/index.html`)    is   generated  from
-`lib/page.pl`.   It   uses   minified   JavaScript     and    CSS   from
-`web/js/swish-min.js`  `web/css/swish-min.css`  when   available.  These
-files are build by running `make`  in   this  directory. If the minified
-files are not present,  the  server   automatically  includes  the  full
-source.  The generated files may be removed using
+The default main page (`/`)  is   generated  from `lib/page.pl`. It uses
+minified    JavaScript    and    CSS      from     `web/js/swish-min.js`
+`web/css/swish-min.css` when available. These files are build by running
+`make` in this directory. If the  minified   files  are not present, the
+server automatically includes the full source.   The generated files may
+be removed using
 
     make clean
 
