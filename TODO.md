@@ -29,16 +29,6 @@
   - Get back to the associated source version (open new editor tab?).
     Fork/re-run.
 
-## Answers
-
-  - We must distinguish two types of queries:
-
-    - Relational queries that provide simple data per variable.  Such
-      queries require a table as output at the option to do next 10, 100, ...
-    - Queries that produce a complex datastructure.  E.g., a parse-tree,
-      a matrix, etc.  Here, just `next' is ok, and we need a pluggable
-      rendering framework.
-
 ## Rendering framework
 
   - Core from Prolog ok.
