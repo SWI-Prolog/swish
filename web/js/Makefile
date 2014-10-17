@@ -1,5 +1,6 @@
 JS=editor.js navbar.js answer.js pane.js query.js runner.js swish.js \
    config.js jswish.js
+CM=$(shell find codemirror -name '*.js')
 JQ=jquery.jsdoc
 CONF=conf.json
 MAIN=swish.js
@@ -11,7 +12,7 @@ doc::	$(CONF) $(JQ) $(JS)
 
 min:	swish-min.js
 
-swish-min.js:	build.js $(JS)
+swish-min.js:	build.js $(JS) $(CM)
 	r.js -o build.js
 	gzip -fk $@
 
