@@ -110,7 +110,7 @@ define([ "cm/lib/codemirror",
 	data.role            = options.role;
 
 	elem.data(pluginName, data);
-	elem.addClass("swish-event-receiver"); /* do this anyway? */
+	elem.addClass("swish-event-receiver");
 	elem.on("preference", function(ev, pref) {
 	  elem.prologEditor('preference', pref);
 	});

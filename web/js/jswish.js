@@ -206,8 +206,10 @@ preferences.setDefault("semantic-highlighting", true);
     },
 
     /**
-     * Extract examples from `$(".examples.prolog").text()`
-     * @returns {Array.String|null}
+     * Extract examples from `$(".examples.prolog").text()`.  If this
+     * does not exist, it returns a function that extracts the examples
+     * from the current Prolog source editor.
+     * @returns {Array.String|null|Function}
      */
     examples: function() {
       var text = $(".examples.prolog").text();
@@ -215,7 +217,9 @@ preferences.setDefault("semantic-highlighting", true);
       if ( text )
 	return $().prologEditor('getExamples', text, false);
       else
-	return function() { return $(".prolog-editor").prologEditor('getExamples'); };
+	return function() {
+	  return $(".prolog-editor").prologEditor('getExamples');
+	};
     },
 
     /**
