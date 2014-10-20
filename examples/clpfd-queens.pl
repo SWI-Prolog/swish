@@ -3,8 +3,8 @@
 
 %%	n_queens(?N, ?Cols) is nondet.
 %
-%	@param The n-th element of Cols tells the row in which the
-%	queen in the n-th column is placed.
+%	@param The k-th element of Cols is the column number of the
+%	queen in row k.
 %	@author Markus Triska
 
 :- use_module(library(clpfd)).
