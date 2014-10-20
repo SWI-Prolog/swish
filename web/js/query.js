@@ -21,8 +21,8 @@ define([ "jquery", "laconic", "editor" ],
      * @param {Object} options
      * @param {Runner} options.runner an object that understands
      * run(source, query), where source and query are strings.
-     * @param {Function} [options.examples] called to populate the
-     * _Examples_ menu.  Must return an array of strings.
+     * @param {Array.String|Function} [options.examples] called to
+     * populate the _Examples_ menu. Must return an array of strings.
      * @param {Integer} [options.maxHistoryLength=50] is the max number
      * of entries recalled by the history menu.
      */
@@ -66,6 +66,11 @@ define([ "jquery", "laconic", "editor" ],
 				  elem.queryEditor('run', q, tableSelected());
 				}
 		              });
+
+	if ( typeof(options.examples) == "object" &&
+	     options.examples[0] &&
+	     !$(qediv).prologEditor('getSource') )
+	  $(qediv).prologEditor('setSource', options.examples[0]);
 
 	elem.on("source", function(src) {
 	  if ( typeof(data.examples) == "function" ) {
