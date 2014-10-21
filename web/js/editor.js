@@ -89,6 +89,7 @@ define([ "cm/lib/codemirror",
 	  };
 	  if ( options.sourceID )
 	    options.prologHighlightServer.sourceID = options.sourceID;
+	  options.extraKeys["Ctrl-R"] = "refreshHighlight";
 	}
 
 	if ( options.role != "query" )
