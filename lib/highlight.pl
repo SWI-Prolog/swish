@@ -301,7 +301,7 @@ xref_source_id(TB, SourceId) :-
 
 xref_module(TB, Module) :-
 	get(TB, uuid, Module),
-	(   module_property(foobar, class(temporary))
+	(   module_property(Module, class(temporary))
 	->  true
 	;   set_module(Module:class(temporary)),
 	    add_import_module(Module, swish, start)
