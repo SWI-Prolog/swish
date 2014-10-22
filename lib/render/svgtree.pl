@@ -34,6 +34,9 @@
 :- use_module(library(http/html_write)).
 :- use_module(library(http/term_html)).
 :- use_module(library(http/js_write)).
+:- use_module(library(apply)).
+:- use_module(library(lists)).
+:- use_module(library(sandbox)).
 :- use_module('../render').
 
 :- register_renderer(svgtree, "Render term as a tree").
@@ -62,9 +65,12 @@ in a function to avoid conflicts.  JavaScript is fun!
 %
 %	  - list(Boolean)
 %	  If `false`, do not render lists.
-%
-%	@tbd:	recognise different tree formats. For example,
-%		node(Label, Children).  Possibly provide a hook?
+%	  - filter(:NodeFilter)
+%	  If present, use call(NodeFilter, Term, Label, Children)
+%	  to extract the label and children of a term.  Operates
+%	  on terms for which this call succeeds on the top node.
+%	  If the call fails on a child, the child is rendered as
+%	  a term.
 
 term_rendering(Term, _Vars, Options) -->
 	{ is_term_tree(Term, How, Options),
@@ -105,21 +111,29 @@ term_rendering(Term, _Vars, Options) -->
 %	  If present, this is a list of child nodes. If not, it is
 %	  a leaf node.
 
+is_term_tree(Term, filtered_tree(QFilter, Options), Options) :-
+	option(filter(Filter), Options),
+	callable(Filter),
+	Filter \= _:_,
+	option(module(Module), Options),
+	QFilter = Module:Filter,
+	catch(safe_filter(QFilter), _, fail),
+	call(QFilter, Term, _Label, _Children), !.
 is_term_tree(Term, compound_tree(Options), Options) :-
 	compound(Term),
 	(   is_list(Term)
 	->  \+ option(list(false), Options)
 	;   true
-	),
-	acyclic_term(Term), !.
+	), !.
+
+:- public
+	compound_tree/3,
+	filtered_tree/4.
 
 %%	compound_tree(+Options, +Term, -JSON) is det.
 %
 %	Render Term as a tree, considering every   compound term to be a
 %	node.  Renders leafs using term//1.
-
-:- public
-	compound_tree/3.
 
 compound_tree(Options, Term, Tree) :-
 	compound(Term), Term \= '$VAR'(_), !,
@@ -134,3 +148,26 @@ compound_tree(Options, Term, Simple) :-
 term_html_string(Term, String, Options) :-
 	phrase(term(Term, Options), Tokens),
 	with_output_to(string(String), print_html(Tokens)).
+
+%%	filtered_tree(:Filter, +Options, +Term, -JSON) is det.
+%
+%	Render a filtered tree.
+
+:- meta_predicate filtered_tree(3,+,+,-).
+
+filtered_tree(Filter, Options, Term, Tree) :-
+	nonvar(Term),
+	call(Filter, Term, Label, ChildNodes),
+	is_list(ChildNodes), !,
+	Tree = json{label:json{html:String}, children:Children},
+	term_html_string(Label, String, Options),
+	maplist(filtered_tree(Filter, Options), ChildNodes, Children).
+filtered_tree(_, Options, Term, Simple) :-
+	term_html_string(Term, Label, Options),
+	Simple = json{label:json{html:Label}}.
+
+safe_filter(Module:Filter) :-
+	Filter =.. List0,
+	append(List0, [_, _, _], List),
+	Filter1 =.. List,
+	safe_goal(Module:Filter1).
