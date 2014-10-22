@@ -66,11 +66,13 @@ define([ "jquery", "laconic" ],
 	if ( answerHasOutput(answer) ) {
 	  if ( elem.is("table") ) {
 	    var row = $.el.tr();
-	    $(row).html(renderTabledAnswer(answer, elem));
+	    row.innerHTML = renderTabledAnswer(answer, elem);
+	    evalScripts($(row));
 	    elem.append(row);
 	    $(row).find(".render-multi").renderMulti();
 	  } else {
-	    elem.append(renderAnswer(answer));
+	    elem[0].innerHTML = renderAnswer(answer);
+	    evalScripts(elem);
 	    elem.find(".render-multi").renderMulti();
 	  }
 	} else
@@ -184,6 +186,13 @@ define([ "jquery", "laconic" ],
       html.push("<td class='answer-nth'>", answer.nth, "</td>");
 
     return html.join("");
+  }
+
+  function evalScripts(elem) {
+    elem.find("script").each(function() {
+      if ( this.getAttribute('type') == "text/javascript" )
+	eval(this.textContent);
+    });
   }
 
 
