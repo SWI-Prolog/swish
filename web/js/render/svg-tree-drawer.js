@@ -334,6 +334,8 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 		g = document.createElementNS(svgns, 'g');
 		if(!treeNode.children || !treeNode.children.length)
 			g.setAttribute('class', 'leaf');
+		else
+			g.setAttribute('class', 'noleaf');
 		parentElement.appendChild(g);
 	}
 	var gClass = g.hasAttribute('class') ? g.getAttribute('class').replace(/\s*collapsed/) : '';
