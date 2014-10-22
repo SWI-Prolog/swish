@@ -391,7 +391,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 				// size of the foreignObject's contents, and use these as the width
 				// and height.
 				if(isNodeDisplayed){
-					labelRect = getDimensions(treeNode.label);
+					labelRect = getDimensions(sourceLabel);
 					label.setAttribute('width', labelRect.width);
 					label.setAttribute('height', labelRect.height);
 				}
