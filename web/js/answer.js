@@ -188,11 +188,22 @@ define([ "jquery", "laconic" ],
     return html.join("");
   }
 
+  /**
+   * Execute scripts that are embedded in the jQuery object elem.
+   * While executing a script, the property `$.ajaxScript` points
+   * to the executing script to enable the script to find elements
+   * in the ajax DOM extension in which the script is embedded.
+   * @param {jQuery} elem is the set in which scripts are searched
+   * and executed.
+   */
   function evalScripts(elem) {
     elem.find("script").each(function() {
       if ( this.getAttribute('type') == "text/javascript" )
+	$.ajaxScript = $(this);
 	eval(this.textContent);
     });
+    if ( $.ajaxScript )
+      delete $.ajaxScript;
   }
 
 
