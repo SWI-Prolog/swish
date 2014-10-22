@@ -56,10 +56,8 @@ term_rendering(Term, _Vars, _Options) -->
 		 [ span(id(Id), []),
 		   \js_script({|javascript(Id, Dict)||
 require(["render/svg-tree-drawer", "jquery"], function(svgtree) {
-
-  var tree = new TreeDrawer(
-		     document.getElementById(Id),
-		     Dict);
+  var span = document.getElementById(Id);
+  var tree = new TreeDrawer(span, Dict);
   tree.draw();
 });
 		  |})
