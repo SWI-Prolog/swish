@@ -413,7 +413,6 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 
 	//Get styles and dimensions
 	$label = $(label);
-	console.log($label.css("padding-top"));
 	labelFontSize = parseFloat($label.css("font-size")) || 0;
 	labelPadding = {
 		top:parseFloat($label.css("padding-top")) || 0,
