@@ -63,31 +63,8 @@ but that is rather expensive.
 
 /* General SVG Tree renderer */
 
-.render-svg-tree { padding: 5px; display: inline-block; }
-
-.render-svg-tree svg text {
-    padding: 5px 10px;
-/*    padding:0.5em;
-    padding-left:0.20em;
-    padding-right:0.20em; */
-}
-.render-svg-tree svg g.collapsed g text {
-    padding-left:0.5ex;
-    padding-right:0.5ex;
-}
-.render-svg-tree svg line,
-.render-svg-tree svg polyline {
-    font-size:1em; /*height not honored here by WebKit*/
-}
-.render-svg-tree svg polyline {
-    fill:none;
-}
-
-.render-svg-tree .shortTree line,
-.render-svg-tree .shortTree polyline {
-    font-size:0.25em;
-}
-.render-svg-tree .tallTree line,
-.render-svg-tree .tallTree polyline {
-    font-size:2em;
-}
+.render-svg-tree                        { padding: 5px; display: inline-block; }
+.render-svg-tree svg text               { padding:0.5em 0.2em; }
+.render-svg-tree svg g.collapsed g text { padding:0px 0.5ex; }
+.render-svg-tree svg polyline           { fill:none; }
+.render-svg-tree g.noleaf text		{ font-weight: bold; fill: blue;}
