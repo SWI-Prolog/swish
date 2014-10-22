@@ -1,3 +1,6 @@
+% Render parse trees using a tree, but ignore lists
+:- use_rendering(svgtree, [list(false)]).
+
 % A simple English DCG grammar
 % ============================
 
