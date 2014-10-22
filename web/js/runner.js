@@ -133,14 +133,17 @@ define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
      */
     // the "- 4" compensates for the prolog-runner top&bottom margin.
     scrollToBottom: function(onlydown) {
-      var data   = this.data('prologRunners');
-      var height = data.inner.height();
-      var room   = this.height() - height - 4 - 2;
+      this.each(function() {
+	var elem = $(this);
+	var data   = elem.data('prologRunners');
+	var height = data.inner.height();
+	var room   = elem.height() - height - 4 - 2;
 
-      if ( room > 0 || onlydown !== true ) {
-	data.stretch.height(room > 0 ? room : 0);
-	this.scrollTop(height);
-      }
+	if ( room > 0 || onlydown !== true ) {
+	  data.stretch.height(room > 0 ? room : 0);
+	  elem.scrollTop(height);
+	}
+      });
 
       return this;
     }
