@@ -32,6 +32,7 @@
 	  ]).
 :- use_module(library(option)).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/term_html)).
 :- use_module(library(http/js_write)).
 :- use_module('../render').
 
@@ -44,9 +45,13 @@ Render a term as an SVG tree
 
 %%	term_rendering(+Term, +Vars, +Options)//
 %
+%	Render a compound term as a tree.  Options processed:
+%
+%	  - list(Boolean)
+%	  If `false`, do not render lists.
 
-term_rendering(Term, _Vars, _Options) -->
-	{ is_term_tree(Term, How),
+term_rendering(Term, _Vars, Options) -->
+	{ is_term_tree(Term, How, Options),
 	  call(How, Term, Dict),
           gensym('svg-tree-', Id)
 	},
@@ -58,22 +63,37 @@ term_rendering(Term, _Vars, _Options) -->
 require(["render/svg-tree-drawer", "jquery"], function(svgtree) {
   var span = document.getElementById(Id);
   var tree = new TreeDrawer(span, Dict);
+  if ( !tree.filters.label ) {
+    tree.addFilter('label', function(label,node) {
+      return typeof(label) == "object" ? $(label.html)[0] : label;
+    });
+  }
   tree.draw();
 });
 		  |})
 		 ])).
 
-is_term_tree(Term, compound_tree) :-
+is_term_tree(Term, compound_tree(Options), Options) :-
 	compound(Term),
+	(   is_list(Term)
+	->  \+ option(list(false), Options)
+	;   true
+	),
 	acyclic_term(Term), !.
 
 :- public
-	compound_tree/2.
+	compound_tree/3.
 
-compound_tree(Term, Simple) :-
-	\+ compound(Term), !,
-	term_string(Term, Label),
-	Simple = json{label:Label}.
-compound_tree(Term, json{label: #(Label), children:Children}) :-
-	compound_name_arguments(Term, Label, Args),
-	maplist(compound_tree, Args, Children).
+compound_tree(Options, Term, Tree) :-
+	compound(Term), Term \= '$VAR'(_), !,
+	Tree = json{label:Label, children:Children},
+	compound_name_arguments(Term, Functor, Args),
+	term_string(Functor, Label),
+	maplist(compound_tree(Options), Args, Children).
+compound_tree(Options, Term, Simple) :-
+	term_html_string(Term, Label, Options),
+	Simple = json{label:json{html:Label}}.
+
+term_html_string(Term, String, Options) :-
+	phrase(term(Term, Options), Tokens),
+	with_output_to(string(String), print_html(Tokens)).
