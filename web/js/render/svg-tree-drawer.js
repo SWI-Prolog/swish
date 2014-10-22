@@ -412,13 +412,14 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 		labelRect = getDimensions(label);
 
 	//Get styles and dimensions
-	var labelStyle = window.getComputedStyle(label, null);
-	labelFontSize = parseFloat(labelStyle.fontSize) || 0;
+	$label = $(label);
+	console.log($label.css("padding-top"));
+	labelFontSize = parseFloat($label.css("font-size")) || 0;
 	labelPadding = {
-		top:parseFloat(labelStyle.paddingTop) || 0,
-		right:parseFloat(labelStyle.paddingRight) || 0,
-		bottom:parseFloat(labelStyle.paddingBottom) || 0,
-		left:parseFloat(labelStyle.paddingLeft) || 0
+		top:parseFloat($label.css("padding-top")) || 0,
+		right:parseFloat($label.css("padding-right")) || 2,
+		bottom:parseFloat($label.css("padding-bottom")) || 0,
+		left:parseFloat($label.css("padding-left")) || 2
 	};
 
 	//Process each of the children
