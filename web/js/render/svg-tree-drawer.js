@@ -117,7 +117,7 @@ T.prototype.isDrawn = false;
 //T.prototype.cssStylesheet = 'line, path { dominant-baseline:middle; }';
 T.prototype.cssStylesheet = [
 	"line, path, polyline { stroke-width:1px; stroke:black; }",
-	"text { dominant-baseline:text-after-edge !important; }", //TODO: Does not work in WebKit
+	//"text { dominant-baseline:text-after-edge !important; }", //TODO: Does not work in WebKit
 	//"svg {font-size:20px; }",
 	//"svg > g > g > text { font-size:120px; }"
 ].join("\n");
