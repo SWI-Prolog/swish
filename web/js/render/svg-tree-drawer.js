@@ -2,7 +2,7 @@
  * SVG Tree Drawer <http://github.com/westonruter/svg-tree-drawer/>
  * by Weston Ruter <http://weston.ruter.net/>, 2009
  * License: GPL 3.0 <http://www.gnu.org/licenses/gpl.html>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,10 +12,10 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @todo Diagrammer: SVG + XML + XSLT + MathML + ContentEditable + hashchange + JSON.parse/stringify
  * @todo Get the text vertical spacing working
  * @todo Add a style property which gets assigned to the <g>
@@ -40,9 +40,9 @@ var T = window.TreeDrawer = function(fallbackElement, treeData){
 	if(!fallbackElement || !fallbackElement.nodeType == 1)
 		throw Error("The param 'fallbackElement' is not valid.");
 	this.root = treeData;
-	
+
 	var isNativeSVG = !!document.createElementNS(svgns, 'text').getComputedTextLength;
-	
+
 	// Create the SVG document
 	if(isNativeSVG){
 		var svg = document.createElementNS(svgns, 'svg');
@@ -51,7 +51,7 @@ var T = window.TreeDrawer = function(fallbackElement, treeData){
 		svg.setAttribute('height', 0);
 		fallbackElement.parentNode.replaceChild(svg, fallbackElement);
 		this.svgElement = svg;
-		
+
 		// Add the stylesheet
 		var defs = document.createElementNS(svgns, 'defs');
 		var style = document.createElementNS(svgns, 'style');
@@ -64,7 +64,7 @@ var T = window.TreeDrawer = function(fallbackElement, treeData){
 			//style.sheet.insertRule(this.cssStyleRules[i], i);
 			//console.info(this.cssStyleRules[i])
 		//}
-		
+
 		//if(treeData)
 		//	this.populate(treeData);
 	}
@@ -72,7 +72,7 @@ var T = window.TreeDrawer = function(fallbackElement, treeData){
 	else {
 		//if(typeof svgweb == 'undefined')
 		throw Error("The SVGWeb implementation is not currently ready.");
-		
+
 		var obj = document.createElement('object', true);
 		obj.setAttribute('type', 'image/svg+xml');
 		//obj.setAttribute('data', 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>');
@@ -85,16 +85,16 @@ var T = window.TreeDrawer = function(fallbackElement, treeData){
 			try{
 				that.svgDocument = this.contentDocument;
 				that.svgElement = that.svgDocument.documentElement;
-			
+
 				// Add the stylesheet
 				var defs = document.createElementNS(svgns, 'defs');
 				var style = document.createElementNS(svgns, 'style');
 				style.setAttribute('type', 'text/css');
 				style.appendChild(document.createTextNode(that.cssStylesheet));
-				
+
 				defs.appendChild(style);
 				//that.svgElement.appendChild(defs); //TODO
-				
+
 				if(treeData)
 					that.populate(treeData);
 			}
@@ -142,7 +142,7 @@ T.prototype.empty = function empty(){
 			i--;
 		}
 	}
-	
+
 	//Now that all of the nodes have been removed from the document, make sure
 	// that references to those nodes are removed as well
 	function freeMemory(treeNode){
@@ -152,7 +152,7 @@ T.prototype.empty = function empty(){
 	};
 	freeMemory(this.root);
 	this.isDrawn = false;
-	
+
 	//Give the SVG image zero dimensions
 	this.width = 0;
 	this.height = 0;
@@ -176,7 +176,7 @@ T.prototype.empty = function empty(){
  */
 T.prototype.draw = function draw(treeData){
 	var isRefresh = (!treeData && this.isDrawn);
-	
+
 	//Get the tree data set up
 	if(treeData instanceof Object)
 		this.root = treeData;
@@ -184,19 +184,19 @@ T.prototype.draw = function draw(treeData){
 		throw Error("No tree data has been supplied.");
 	if(!(this.root instanceof TN))
 		this.root = new TN(this.root);
-	
+
 	//If we're not doing a refresh, the blow away the existing nodes
 	if(!isRefresh && this.isDrawn)
 		this.empty();
-	
+
 	//var fontSize = parseFloat(window.getComputedStyle(this.svgElement, null).fontSize);
 	this.height = this.width = 0; //reset
-	
+
 	var info = _drawNode(this, isRefresh, this.svgElement, 0, this.root, 0, 0, this.labelPadding, this.branchHeight);
-	
+
 	//Fire 'done' event
 	this.isDrawn = true;
-	
+
 	if(this.svgObject){
 		this.svgObject.width = this.width;
 		this.svgObject.height = this.height;
@@ -318,14 +318,14 @@ function getY(el){
  */
 function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, offsetLeft, offsetTop, isAncestorExtended, collapsedAncestor){
 	var g, label, labelRect, labelFontSize, branch, branchHeight, labelPadding;
-	
+
 	//if(collapsedAncestor && treeNode.children && treeNode.children.length)
 	//	throw Error("Unexpected that tree node has children; all of the leaf nodes have been gathered.");
-	
+
 	var isNodeDisplayed = !collapsedAncestor || collapsedAncestor && (!treeNode.children || !treeNode.children.length);
-	
+
 	treeNode.leafDecendantsInfo = []; //Reset
-	
+
 	//Get or create the node container
 	if(isRefresh){
 		g = treeNode.labelElement.parentNode;
@@ -338,7 +338,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 	}
 	var gClass = g.hasAttribute('class') ? g.getAttribute('class').replace(/\s*collapsed/) : '';
 	g.setAttribute('class', treeNode.collapsed ? gClass + " collapsed" : gClass);
-	
+
 	//Get or create the branch which will connect this label with the parent label
 	if(isRefresh){
 		branch = treeNode.branchElement;
@@ -356,7 +356,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 		branchHeight = parseFloat(branchStyle.fontSize) || 0;
 		offsetTop += branchHeight;
 	}
-	
+
 	//Get or make the label
 	if(isRefresh){
 		label = treeNode.labelElement;
@@ -386,7 +386,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 				label.setAttribute('height', 1);
 				label.appendChild(sourceLabel);
 				g.appendChild(label);
-				
+
 				// Now that element has been inserted into the DOM, calculate the
 				// size of the foreignObject's contents, and use these as the width
 				// and height.
@@ -402,7 +402,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 			label.appendChild(document.createTextNode(sourceLabel.toString(), true));
 			g.appendChild(label);
 		}
-		label.setAttribute('class', label.hasAttribute('class') ? label.getAttribute('class') + " label" : "label");
+		label.setAttribute('class', label.hasAttribute('class') ? label.getAttribute('class') + " tree-label" : "tree-label");
 		treeNode.labelElement = label;
 		g.svgTreeDrawerNode = treeNode;
 		//TODO: Allow this node to be filtered before insertion (i.e. replace with foreignobject)
@@ -410,7 +410,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 	label.style.display = isNodeDisplayed ? '' : 'none';
 	if(!labelRect)
 		labelRect = getDimensions(label);
-	
+
 	//Get styles and dimensions
 	var labelStyle = window.getComputedStyle(label, null);
 	labelFontSize = parseFloat(labelStyle.fontSize) || 0;
@@ -420,7 +420,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 		bottom:parseFloat(labelStyle.paddingBottom) || 0,
 		left:parseFloat(labelStyle.paddingLeft) || 0
 	};
-	
+
 	//Process each of the children
 	var subtreeElements = [label];
 	var leafNodes = []; //{label:, branch:}
@@ -429,10 +429,10 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 	var childrenWidth = 0;
 	var childrenInfo = [];
 	treeNode.maxOffsetTop = offsetTop;
-	
+
 	//Get the nodes that appear as children under this node
 	var childTreeNodes = treeNode.children;
-	
+
 	for(var i = 0, len = childTreeNodes.length; i < len; i++){ //forEach
 		var childInfo = _drawNode(
 			tree,
@@ -446,7 +446,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 			collapsedAncestor || (treeNode.collapsed ? treeNode : null)  //must be collapsed parent node!
 		);
 		childrenWidth += childInfo.width;
-		
+
 		forEach(childInfo.subtreeElements, function(el){
 			subtreeElements.push(el);
 		});
@@ -456,7 +456,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 		treeNode.maxOffsetTop = Math.max(treeNode.maxOffsetTop, childInfo.maxOffsetTop); //TODO
 		childrenInfo.push(childInfo);
 	}
-	
+
 	//Get coordinates for label and position
 	var labelY = offsetTop + labelPadding.top;
 	var labelX;
@@ -479,7 +479,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 			leftX + (rightX - leftX)/2 - labelRect.width/2,
 			offsetLeft + labelPadding.left
 		);
-		
+
 		// If the children were narrower than the the parent label, then distribute
 		// the children out under the parent. Requires that all subtree graphic
 		// elements to be shifted over to the right
@@ -529,8 +529,8 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 			offsetTop:offsetTop
 		});
 	}
-	
-	//Add to the x/y position 
+
+	//Add to the x/y position
 	if(label.namespaceURI == svgns){
 		switch(label.localName.toLowerCase()){
 			case 'text':
@@ -557,8 +557,8 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 	else {
 		throw Error("Expected an SVG element to position.");
 	}
-	
-	
+
+
 	//var rect = document.createElementNS(svgns, 'rect');
 	//rect.setAttribute('x', labelX + 'px');
 	//rect.setAttribute('y', (offsetTop + labelPadding.top) + 'px');
@@ -575,8 +575,8 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 	//line.setAttribute('y1', offsetTop + labelPadding.left + 'px');
 	//line.setAttribute('y2', offsetTop + labelPadding.left + labelRect.height + 'px');
 	//g.appendChild(line);
-	
-	
+
+
 	//Position branch directly above the label
 	var branchX = (labelX + labelRect.width/2);
 	if(branch){
@@ -589,45 +589,45 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 			branch.points.appendItem(point);
 		}
 	}
-	
+
 	if(isNodeDisplayed){
 		//Connect the triangle under collapsed node
 		if(treeNode.collapsed){
 			var point;
-			
+
 			//Set the left bottom point for each branch; this is to help with
-			// keeping track of the 
+			// keeping track of the
 			//forEach(treeNode.leafDecendantsInfo, function(info){
 			//	point = tree.svgElement.createSVGPoint();
 			//	point.x = getX(firstLeafInfo.label);
 			//	info.branch.points.appendItem(point);
 			//});
-			
+
 			var firstLeafInfo = treeNode.leafDecendantsInfo[0];
 			var lastLeafInfo = treeNode.leafDecendantsInfo[treeNode.leafDecendantsInfo.length-1];
-			
+
 			var leftBottomX = getX(firstLeafInfo.label);
 			var rightBottomX = getX(lastLeafInfo.label)+lastLeafInfo.labelRect.width;
-			
-			
+
+
 			//Left bottom
 			point = tree.svgElement.createSVGPoint();
 			point.x = leftBottomX;
 			point.y = firstLeafInfo.offsetTop;
 			firstLeafInfo.branch.points.appendItem(point);
-			
+
 			//Right bottom
 			point = tree.svgElement.createSVGPoint();
 			point.x = rightBottomX;
 			point.y = lastLeafInfo.offsetTop;
 			firstLeafInfo.branch.points.appendItem(point);
-			
+
 			//Top
 			point = tree.svgElement.createSVGPoint();
 			point.x = branchX;
 			point.y = offsetTop + labelPadding.top + labelPadding.bottom + labelRect.height;
 			firstLeafInfo.branch.points.appendItem(point);
-			
+
 			//Closepath
 			point = tree.svgElement.createSVGPoint();
 			point.x = leftBottomX;
@@ -642,7 +642,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 				point.x = branchX;
 				point.y = offsetTop + labelPadding.top + labelPadding.bottom + labelRect.height;
 				childBranch.points.appendItem(point);
-				
+
 				//If odd number, then this should be collapsed!
 				if(childBranch.points.numberOfItems % 2 == 1){
 					throw Error("Unexpected");
@@ -650,8 +650,8 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 			}
 		}
 	}
-	
-		
+
+
 	// If all of the leaves are supposed to be at the same vertical axis, then
 	// push them down now
 	if(childrenInfo.length && !isAncestorExtended && treeNode.extended){
@@ -667,7 +667,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 				return b.y - a.y;
 			});
 			bottomPoints.pop();
-			
+
 			//Reposition the branch bottom points and the label
 			var offsetTopDiff = treeNode.maxOffsetTop - leafNode.offsetTop;
 			var newOffsetTop = leafNode.offsetTop + offsetTopDiff;
@@ -681,7 +681,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 			}
 		});
 	}
-	
+
 	//Update the dimensions of the entire "canvas"
 	tree.height = Math.max(
 		tree.height,
@@ -694,7 +694,7 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 		offsetLeft + labelRect.width + labelPadding.left + labelPadding.right,
 		labelX + labelRect.width + labelPadding.left + labelPadding.right
 	);
-	
+
 	var info = {
 		label:label,
 		labelRect:labelRect,
@@ -707,10 +707,10 @@ function _drawNode(tree, isRefresh, parentElement, siblingPosition, treeNode, of
 		subtreeElements:subtreeElements,
 		width:Math.max(labelRect.width + labelPadding.left + labelPadding.right, childrenWidth)
 	};
-	
+
 	if(isNodeDisplayed && collapsedAncestor)
 		collapsedAncestor.leafDecendantsInfo.push(info);
-	
+
 	return info;
 }
 
@@ -722,7 +722,7 @@ var TN = T.Node = function(obj){
 	this.label = obj.label;
 	this.collapsed = !!obj.collapsed;
 	this.extended = !!obj.extended;
-	
+
 	if(obj.children && obj.children.length){
 		this.children = [];
 		for(var i = 0, len = obj.children.length; i < len; i++){
@@ -777,7 +777,7 @@ function _applyFilters(hookname, value /*...*/){
 		var filterArgs = [];
 		for(var i = 1; i < arguments.length; i++)
 			filterArgs.push(arguments[i]);
-		
+
 		var that = this;
 		forEach(filters, function(filter){
 			filterArgs[0] = filter.apply(that, filterArgs);
@@ -803,15 +803,15 @@ T.prototype.actions = {};
 
 
 /*
-1. Convert SVG to Canvas via standard canvas API informed by positions and dimensions 
-   available from SVG? Note Canvas has a measureText() method. 
+1. Convert SVG to Canvas via standard canvas API informed by positions and dimensions
+   available from SVG? Note Canvas has a measureText() method.
    http://uupaa-js-spinoff.googlecode.com/svn/trunk/uupaa-excanvas.js/demo/8_2_canvas_measureText.html
 2. Do SVG and the have a button to export to Canvas, which will iterate over all of the
    elements in the SVG document and draw them onto a corresponding canvas element.
 
 
- 
- 
+
+
 NOTE: Must be valid JSON, otherwise someone could inject some bad JavaScript in a bad URL
 QUESTION: Can we do Packer without the self-extraction code included? We can do a JavaScript implementation of GZip and then store result in hash after Base64
 
