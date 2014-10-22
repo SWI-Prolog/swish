@@ -40,7 +40,20 @@
 
 /** <module> SWISH SVG tree renderer
 
-Render a term as an SVG tree
+Render a term as an SVG tree.   This  renderer is intended to illustrate
+the shape of terms or display a simple parse tree.
+
+This renderer is also an illustration of  using a JavaScript library and
+SVG inside rendered elements. Note  that   the  use  of RequireJS avoids
+loading the library multiple times as   well  as poluting the namespace.
+
+Note that while the  script  is   being  evaluated,  `$.ajaxScript` is a
+jQuery object pointing to the executing script. This is used to find the
+`span`  element  without  using  an  `id`    attribute.  Using  `id`  is
+undesirable as it is hard  to   guarantee  their uniqueness. However, we
+must find the desired  element  immediately   and  not  in the RequireJS
+callback, so we need to put it in   a variable and scope the whole thing
+in a function to avoid conflicts.  JavaScript is fun!
 */
 
 %%	term_rendering(+Term, +Vars, +Options)//
@@ -49,29 +62,48 @@ Render a term as an SVG tree
 %
 %	  - list(Boolean)
 %	  If `false`, do not render lists.
+%
+%	@tbd:	recognise different tree formats. For example,
+%		node(Label, Children).  Possibly provide a hook?
 
 term_rendering(Term, _Vars, Options) -->
 	{ is_term_tree(Term, How, Options),
-	  call(How, Term, Dict),
-          gensym('svg-tree-', Id)
+	  call(How, Term, Dict)
 	},
 	html(div([ class('render-svg-tree'),
 		   'data-render'('Term as SVG tree')
 		 ],
-		 [ span(id(Id), []),
-		   \js_script({|javascript(Id, Dict)||
-require(["render/svg-tree-drawer", "jquery"], function(svgtree) {
-  var span = document.getElementById(Id);
-  var tree = new TreeDrawer(span, Dict);
-  if ( !tree.filters.label ) {
-    tree.addFilter('label', function(label,node) {
-      return typeof(label) == "object" ? $(label.html)[0] : label;
-    });
-  }
-  tree.draw();
-});
+		 [ span([]),
+		   \js_script({|javascript(Dict)||
+(function() {
+  var span = $.ajaxScript.parent().find("span")[0];
+
+  require(["render/svg-tree-drawer", "jquery"], function(svgtree) {
+    var tree = new TreeDrawer(span, Dict);
+    if ( !tree.filters.label ) {
+      tree.addFilter('label', function(label,node) {
+	return typeof(label) == "object" ? $(label.html)[0] : label;
+      });
+    }
+    tree.draw();
+  });
+})();
 		  |})
 		 ])).
+
+%%	is_term_tree(+Term, -Closure, +Options) is semidet.
+%
+%	True when Term  is  a  Prolog   term  that  can  meaningfully be
+%	displayed as a tree. The  actual   rendering  is done by calling
+%	call(Closure, Term, JSON), where the  called closure must return
+%	a nested dict and each node contains:
+%
+%	  * label
+%	  The label to display.  This is either a string or a dict
+%	  containing html:HTMLString
+%	  * children
+%	  If present, this is a list of child nodes. If not, it is
+%	  a leaf node.
 
 is_term_tree(Term, compound_tree(Options), Options) :-
 	compound(Term),
@@ -80,6 +112,11 @@ is_term_tree(Term, compound_tree(Options), Options) :-
 	;   true
 	),
 	acyclic_term(Term), !.
+
+%%	compound_tree(+Options, +Term, -JSON) is det.
+%
+%	Render Term as a tree, considering every   compound term to be a
+%	node.  Renders leafs using term//1.
 
 :- public
 	compound_tree/3.
