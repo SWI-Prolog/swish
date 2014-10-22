@@ -580,7 +580,12 @@ define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
        if ( !aliveState(state) )
 	 data.prolog.destroy();
      }
-     RS(this).prologRunners('scrollToBottom');
+     if ( state == "wait-next" || state == "true" ) {
+       var runners = RS(this);
+       setTimeout(function() { runners.prologRunners('scrollToBottom') }, 100);
+     } else {
+       RS(this).prologRunners('scrollToBottom');
+     }
      return this;
    },
 
