@@ -80,14 +80,21 @@ tokens_.
 %	    - text: list(atom) of inserted text
 %	    - origin: what caused this change event
 %	    - next: optional next change event.
+%
+%	Reply is JSON and either 200 with  `true` or 409 indicating that
+%	the editor is not known.
 
 codemirror_change(Request) :-
 	http_read_json_dict(Request, Change, []),
 	debug(cm(change), 'Change ~p', [Change]),
-	shadow_editor(Change, TB),
-	apply_change(TB, Change.change),
-	reply_json_dict(true).
-
+	(   shadow_editor(Change, TB)
+	->  apply_change(TB, Change.change),
+	    reply_json_dict(true)
+	;   reply_json_dict(json{ type:existence_error,
+				  object:Change.uuid
+				},
+			    [status(409)])	% HTTP Conflict
+	).
 
 apply_change(_, []) :- !.
 apply_change(TB, Change) :-
@@ -366,9 +373,8 @@ shadow_editor(Data, TB) :-
 	atom_string(UUID, Data.uuid),
 	create_editor(UUID, TB, Data).
 shadow_editor(Data, TB) :-
-	atom_string(UUID, Data.get(uuid)), !,
-	current_editor(UUID, TB).
-
+	atom_string(UUID, Data.get(uuid)),
+	current_editor(UUID, TB), !.
 
 :- thread_local
 	token/3.

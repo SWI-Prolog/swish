@@ -64,6 +64,11 @@ classification of tokens.
 	       if ( change.origin == "setValue" ||
 		    state.generationFromServer == -1 )
 		 cm.serverAssistedHighlight();
+	     },
+	     error: function(jqXHR) {
+	       if ( jqXHR.status == 409 ) {
+		 delete state.uuid;
+	       }
 	     }
 	   });
   }
