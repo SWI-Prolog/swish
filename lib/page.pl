@@ -213,7 +213,7 @@ swish_logo -->
 swish_content(Options) -->
 	swish_resources,
 	html(div([id(content), class([container, swish])],
-		 [ div([class([tile, horizontal]), 'data-split'('60%')],
+		 [ div([class([tile, horizontal]), 'data-split'('50%')],
 		       [ div(class('prolog-editor'), \source(Options)),
 			 div([class([tile, vertical]), 'data-split'('70%')],
 			     [ div(class('prolog-runners'), []),
