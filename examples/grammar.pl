@@ -1,4 +1,6 @@
-% Render parse trees using a tree, but ignore lists
+% Render parse trees using a tree, but ignore lists Relies on native SVG
+% support in the browser. IF THE ANSWER LOOKS EMPTY, COMMENT OR REMOVE
+% THE LINE BELOW.
 :- use_rendering(svgtree, [list(false)]).
 
 % A simple English DCG grammar

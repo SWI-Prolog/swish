@@ -34,6 +34,7 @@
 :- use_module(library(http/html_write)).
 :- use_module(library(http/term_html)).
 :- use_module(library(http/js_write)).
+:- use_module(library(http/http_wrapper)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(sandbox)).
@@ -111,20 +112,22 @@ term_rendering(Term, _Vars, Options) -->
 %	  If present, this is a list of child nodes. If not, it is
 %	  a leaf node.
 
-is_term_tree(Term, filtered_tree(QFilter, Options), Options) :-
+is_term_tree(Term, filtered_tree(QFilter, Options1), Options) :-
 	option(filter(Filter), Options),
 	callable(Filter),
 	Filter \= _:_,
 	option(module(Module), Options),
 	QFilter = Module:Filter,
 	catch(safe_filter(QFilter), _, fail),
-	call(QFilter, Term, _Label, _Children), !.
-is_term_tree(Term, compound_tree(Options), Options) :-
+	call(QFilter, Term, _Label, _Children), !,
+	browser_option(Options, Options1).
+is_term_tree(Term, compound_tree(Options1), Options) :-
 	compound(Term),
 	(   is_list(Term)
 	->  \+ option(list(false), Options)
 	;   true
-	), !.
+	), !,
+	browser_option(Options, Options1).
 
 :- public
 	compound_tree/3,
@@ -141,11 +144,20 @@ compound_tree(Options, Term, Tree) :-
 	compound_name_arguments(Term, Functor, Args),
 	term_string(Functor, Label),
 	maplist(compound_tree(Options), Args, Children).
-compound_tree(Options, Term, Simple) :-
-	term_html_string(Term, Label, Options),
-	Simple = json{label:json{html:Label}}.
+compound_tree(Options, Term, json{label:Label}) :-
+	term_label(Term, Label, Options).
 
-term_html_string(Term, String, Options) :-
+%%	term_label(+Term, -Label, +Options) is det.
+%
+%	Create a label for a term.  If   we  can, we generate HTML using
+%	term//2, which is translated into   an  SVG `foreignObject`. The
+%	Trident engine used by IE does  not support foreignObject though
+%	:-(
+
+term_label(Term, String, Options) :-
+	option(engine(trident), Options), !,
+	term_string(Term, String, Options).
+term_label(Term, json{html:String}, Options) :-
 	phrase(term(Term, Options), Tokens),
 	with_output_to(string(String), print_html(Tokens)).
 
@@ -157,17 +169,36 @@ term_html_string(Term, String, Options) :-
 
 filtered_tree(Filter, Options, Term, Tree) :-
 	nonvar(Term),
-	call(Filter, Term, Label, ChildNodes),
+	call(Filter, Term, LabelTerm, ChildNodes),
 	is_list(ChildNodes), !,
-	Tree = json{label:json{html:String}, children:Children},
-	term_html_string(Label, String, Options),
+	Tree = json{label:Label, children:Children},
+	term_label(LabelTerm, Label, Options),
 	maplist(filtered_tree(Filter, Options), ChildNodes, Children).
-filtered_tree(_, Options, Term, Simple) :-
-	term_html_string(Term, Label, Options),
-	Simple = json{label:json{html:Label}}.
+filtered_tree(_, Options, Term, json{label:Label}) :-
+	term_label(Term, Label, Options).
 
 safe_filter(Module:Filter) :-
 	Filter =.. List0,
 	append(List0, [_, _, _], List),
 	Filter1 =.. List,
 	safe_goal(Module:Filter1).
+
+
+		 /*******************************
+		 *	      BROWSER		*
+		 *******************************/
+
+browser_option(Options0, Options) :-
+	is_trident, !,
+	Options = [engine(trident)|Options0].
+browser_option(Options, Options).
+
+%%	is_trident is semidet.
+%
+%	True if we know that the client is Trident-based (IE)
+
+is_trident :-
+	http_current_request(Request),
+	option(user_agent(Agent), Request),
+	sub_string(Agent, _, _, _, " Trident/"), !.
+

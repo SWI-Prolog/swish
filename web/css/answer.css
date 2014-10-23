@@ -67,4 +67,5 @@ but that is rather expensive.
 .render-svg-tree svg text               { padding:0.5em 0.2em; }
 .render-svg-tree svg g.collapsed g text { padding:0px 0.5ex; }
 .render-svg-tree svg polyline           { fill:none; }
-.render-svg-tree g.noleaf text		{ font-weight: bold; fill: blue;}
+.render-svg-tree g.noleaf text		{ font-weight: bold;   fill: blue;}
+.render-svg-tree g.leaf text		{ font-weight: normal; fill: black;}
