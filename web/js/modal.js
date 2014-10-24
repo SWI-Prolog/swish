@@ -74,6 +74,7 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
       var title   = $.el.h2();
       var md      = $.el.div({class:"modal-content"},
 			     $.el.div({class:"modal-header"},
+				      notAgain(options),
 				      closeButton(),
 				      title),
 			     content);
@@ -85,10 +86,7 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
       if ( options.notagain && preferences.persistent() ) {
 	$(md).append($.el.div(
 	  {class:"modal-footer"},
-	  $.el.label($.el.input({type:"checkbox",
-				 'data-notagain':options.notagain,
-				 name:"dismiss"}),
-		     " Don't show again!")));
+	  notAgain(options)));
       }
       $(content).html(options.body);
       $(title).html(options.title);
@@ -117,6 +115,19 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 
     return button;
   }
+
+  function notAgain(options) {
+    if ( options.notagain && preferences.persistent() ) {
+      return $.el.label($.el.input({ type:"checkbox",
+				     'data-notagain':options.notagain,
+				     name:"dismiss"
+				   }),
+			" Don't show again!");
+    } else {
+      return "";
+    }
+  }
+
 
   /**
    * This class is a small layer around bootstrap $.modal that isolates
