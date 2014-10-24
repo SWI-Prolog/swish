@@ -38,7 +38,7 @@ define([ "jquery", "preferences", "laconic" ],
 	var elem = $(this);
 	var data = {};
 
-	elem.addClass("collapse navbar-collapse bs-navbar-collapse pull-left");
+	elem.addClass("collapse navbar-collapse");
 	elem.append($.el.ul({class:"nav navbar-nav"}));
 
 	for(var p in actions) {
