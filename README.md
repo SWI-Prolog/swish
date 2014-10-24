@@ -1,9 +1,16 @@
 # SWISH: A web based SWI-Prolog environment
 
-## Installation & Running
+## Installation
 
-Install  [bower](http://bower.io)  for  your  platform    and  get  the
-dependencies using the following command:
+Install [bower](http://bower.io) for your  platform.   On  Ubuntu,  this
+implies getting `node` and `npm` by installing two packages and next use
+`npm` to install `bower`:
+
+    sudo apt-get install npm nodejs-legacy
+    sudo npm install -g bower
+
+Once you have `bower`, run the following from the toplevel of `swish` to
+get the dependencies:
 
     bower install
 
@@ -13,8 +20,12 @@ SWI-Prolog pengines and sandboxing libraries, it   is  quite common that
 you            need            the             [nightly            build
 (Windows)](http://www.swi-prolog.org/download/daily/bin/) or build   the
 system    from    the     current      git     development    repository
-[swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).   With   a
-sufficiently recent Prolog  installed,  start   the  system  by  opening
+[swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
+
+
+## Running SWISH
+
+With a sufficiently recent Prolog installed, start the system by opening
 `run.pl` either by running `swipl  run.pl`   (Unix)  or opening `run.pl`
 from the Windows explorer.
 
@@ -22,6 +33,28 @@ Now direct your browser to http://localhost:3050/
 
 If you want  to  know  what  the   latest  version  looks  like,  go  to
 http://swish.swi-prolog.org/
+
+
+### Running SWISH without sandbox limitations
+
+By default, SWISH lets you only run _safe_  commands. If you want to use
+SWISH for unrestricted development, load the authentication module:
+
+    ?- [lib/authenticate].
+
+Next, for first usage, you need  to   create  a user. The authentication
+module defines swish_add_user/3, which updates or  creates a file called
+`passwd`:
+
+    ?- swish_add_user(guru, 'top secret', []).
+
+If you now try to run a command in   SWISH it will prompt for a user and
+password.  After authentication you can run any Prolog predicate.
+
+**NOTE** Authentication uses plain HTTP   basic authentication. Only use
+this is trusted networks and do not  use   a  password  that you use for
+other sensitive services. If you want to  setup a public server this way
+you are strongly adviced to use HTTPS.
 
 
 ## Design
@@ -38,14 +71,29 @@ There are two overal pages. `web/swish.html`  provides a static page and
 parts thereof dynamically. The latter   facilitates smoothless embedding
 in SWI-Prolog web applications.
 
+
 ## Development and debugging
+
+No building is needed  to  run  the   system  from  sources.  For public
+installations you probably want to create   the  minified JavaScript and
+CSS files to reduce network traffic and  the startup time. You need some
+more tools for that:
+
+    % [sudo] npm install -g jsdoc
+    % [sudo] npm install -g requirejs
+    % [sudo] npm install -g clean-css
+
+You also need GNU make installed as   `make`  and SWI-Prolog as `swipl`.
+With all that in  place,  the   following  command  creates the minified
+versions:
+
+    % make
 
 The default main page (`/`)  is   generated  from `lib/page.pl`. It uses
 minified    JavaScript    and    CSS      from     `web/js/swish-min.js`
-`web/css/swish-min.css` when available. These files are build by running
-`make` in this directory. If the  minified   files  are not present, the
-server automatically includes the full source.   The generated files may
-be removed using
+`web/css/swish-min.css` when available. If the   minified  files are not
+present,  the  server  automatically  includes   the  full  source.  The
+generated files may be removed using
 
     make clean
 
