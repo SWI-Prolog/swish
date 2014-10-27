@@ -712,6 +712,7 @@ define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
   function handleOutput() {
     var elem = this.pengine.options.runner;
 
+    this.data = this.data.replace(new RegExp("'[-0-9a-f]{36}':", 'g'), "")
     if ( this.location ) {
       this.data = this.data.replace(/pengine:\/\/[-0-9a-f]*\//, "");
       $(".swish-event-receiver").trigger("source-error", this);
