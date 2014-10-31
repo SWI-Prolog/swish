@@ -18,6 +18,7 @@ classification of tokens.
   "use strict";
 
   var DEFAULT_DELAY = 1000;
+  var USE_CHANGES_IF_LONGER_THEN = 1000;
 
   function State(options) {
     if (typeof options == "object") {
@@ -36,9 +37,17 @@ classification of tokens.
     }
   }
 
+  /**
+   * Trap CodeMirror change events. This asks for
+   * serverAssistedHighlight() after a configured delay.  If there
+   * is a mirror on the server, we collect the changes in an array
+   * and post them when we ask for server tokens.  Earlier versions
+   * posted immediately, but this is a waste of resources.  We might
+   * want to restore that behaviour if we want to forward changes to
+   * other users.
+   */
   function changeEditor(cm, change) {
     var state = cm.state.prologHighlightServer;
-    var msg = {change:change};
 
     if ( state == null || state.url == null || !state.enabled )
       return;
@@ -47,30 +56,12 @@ classification of tokens.
       cm.askRefresh();
     }
 
-    if ( state.uuid ) {
-      msg.uuid = state.uuid;
-    } else {
-      state.uuid = generateUUID();
-      msg.uuid   = state.uuid;
-      msg.role   = state.role;
-    }
+    if ( state.changes !== undefined )
+      state.changes.push(change);
 
-    $.ajax({ url: state.url.change,
-             dataType: "json",
-	     contentType: 'application/json',
-	     type: "POST",
-	     data: JSON.stringify(msg),
-	     success: function(data) {
-	       if ( change.origin == "setValue" ||
-		    state.generationFromServer == -1 )
-		 cm.serverAssistedHighlight();
-	     },
-	     error: function(jqXHR) {
-	       if ( jqXHR.status == 409 ) {
-		 delete state.uuid;
-	       }
-	     }
-	   });
+    if ( change.origin == "setValue" ||
+	 state.generationFromServer == -1 )
+      cm.serverAssistedHighlight();
   }
 
   function leaveEditor(cm) {
@@ -180,8 +171,16 @@ classification of tokens.
       return opts;
     }
 
-    if ( state.uuid ) {
+    if ( state.uuid ) {			/* server has a mirror */
       msg.uuid = state.uuid;
+      if ( state.changes == undefined ) {
+	msg.text = cm.getValue();
+	if ( msg.text.length > USE_CHANGES_IF_LONGER_THEN )
+	  state.changes = [];
+      } else {
+	msg.changes = state.changes;
+	state.changes = [];
+      }
     } else {
       msg.text   = cm.getValue();
       if ( msg.text.trim() == "" )
@@ -203,6 +202,15 @@ classification of tokens.
 	       var opts = modeOptions();
 	       opts.metainfo = data.tokens;
 	       cm.setOption("mode", opts);
+	     },
+	     error: function(jqXHR) {
+	       if ( jqXHR.status == 409 ) {
+		 delete state.uuid;
+		 /* And refresh?  problem is this might get us into
+		  * a loop.  We'd need some info from the server that
+		  * this won't happen again
+		  */
+	       }
 	     }
 	   });
   }
