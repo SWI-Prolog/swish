@@ -282,10 +282,16 @@ codemirror_tokens(Request) :-
 	http_read_json_dict(Request, Data, []),
 	debug(cm(tokens), 'Asking for tokens: ~p', [Data]),
 	(   shadow_editor(Data, TB)
-	->  enriched_tokens(TB, Data, Tokens)
-	;   Tokens = [[]]
-	),
-	reply_json_dict(json{tokens:Tokens}, [width(0)]).
+	->  enriched_tokens(TB, Data, Tokens),
+	    reply_json_dict(json{tokens:Tokens}, [width(0)])
+	;   UUID = Data.get(uuid)
+	->  reply_json_dict(json{ type:existence_error,
+				  object:UUID
+				},
+			    [status(409)])
+	;   reply_json_dict(json{tokens:[[]]})
+	).
+
 
 enriched_tokens(TB, _Data, Tokens) :-		% source window
 	current_editor(_UUID, TB, source), !,
@@ -301,6 +307,29 @@ enriched_tokens(TB, _Data, Tokens) :-
 	prolog_colourise_query(Query, swish, colour_item(TB)),
 	collect_tokens(TB, Tokens).
 
+%%	shadow_editor(+Data, -MemoryFile) is semidet.
+%
+%	Get our shadow editor:
+%
+%	  1. If we have one, it is updated from either the text or the changes.
+%	  2. If we have none, but there is a `text` property, create one
+%	     from the text.
+%	  3. If there is a `role` property, create an empty one.
+%
+%	This predicate fails if the server thinks we have an editor with
+%	state that must be reused, but  this   is  not true (for example
+%	because we have been restarted).
+
+shadow_editor(Data, TB) :-
+	atom_string(UUID, Data.get(uuid)),
+	current_editor(UUID, TB, _Role), !,
+	(   Text = Data.get(text)
+	->  size_memory_file(TB, Size),
+	    delete_memory_file(TB, 0, Size),
+	    insert_memory_file(TB, 0, Text)
+	;   Changes = Data.get(changes)
+	->  maplist(apply_change(TB), Changes)
+	).
 shadow_editor(Data, TB) :-
 	Text = Data.get(text), !,
 	atom_string(UUID, Data.uuid),
@@ -311,9 +340,6 @@ shadow_editor(Data, TB) :-
 	_{role:_} :< Data, !,
 	atom_string(UUID, Data.uuid),
 	create_editor(UUID, TB, Data).
-shadow_editor(Data, TB) :-
-	atom_string(UUID, Data.get(uuid)),
-	current_editor(UUID, TB, _Role), !.
 
 :- thread_local
 	token/3.
