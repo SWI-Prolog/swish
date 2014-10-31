@@ -25,7 +25,8 @@ CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
   var config = { quasiQuotations: true,		/* {|Syntax||Quotation|} */
 	         dicts: true,			/* tag{k:v, ...} */
 		 unicodeEscape: true,		/* \uXXXX and \UXXXXXXXX */
-		 multiLineQuoted: true		/* "...\n..." */
+		 multiLineQuoted: true,		/* "...\n..." */
+		 groupedIntegers: true		/* 10 000 or 10_000 */
 	       };
 
   var quoteType = { '"': "string",
@@ -308,7 +309,10 @@ CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
     }
 
     if ( /\d/.test(ch) || ch == "-" && stream.eat(/\d/)) {
-      stream.match(/^\d*(?:\.\d+)?(?:[eE][+\-]?\d+)?/);
+      if ( config.groupedIntegers )
+	stream.match(/^\d*((_|\s+)\d+)*(?:\.\d+)?(?:[eE][+\-]?\d+)?/);
+      else
+	stream.match(/^\d*(?:\.\d+)?(?:[eE][+\-]?\d+)?/);
       return ret(ch == "-" ? "neg-number" : "number", "number");
     }
 
