@@ -83,7 +83,7 @@ nrow(N, N, _) --> !.
 nrow(I, N, At) -->
 	{ I2 is I+1 },
 	(   { I2 == At }
-	->  html(td(&('#9818')))
+	->  html(td(&('#9819')))
 	;   html(td([]))
 	),
 	nrow(I2, N, At).
