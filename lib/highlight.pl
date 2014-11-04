@@ -88,15 +88,23 @@ tokens_.
 codemirror_change(Request) :-
 	http_read_json_dict(Request, Change, []),
 	debug(cm(change), 'Change ~p', [Change]),
+	UUID = Change.uuid,
 	(   shadow_editor(Change, TB)
 	->  mark_changed(TB),
-	    apply_change(TB, Change.change),
-	    reply_json_dict(true)
-	;   reply_json_dict(json{ type:existence_error,
-				  object:Change.uuid
-				},
-			    [status(409)])	% HTTP Conflict
+	    (	catch(apply_change(TB, Change.change), cm(outofsync), fail)
+	    ->  reply_json_dict(true)
+	    ;	destroy_editor(UUID),
+		change_failed(UUID, outofsync)
+	    )
+	;   change_failed(UUID, existence_error)
 	).
+
+change_failed(UUID, Reason) :-
+	reply_json_dict(json{ type:Reason,
+			      object:UUID
+			    },
+			[status(409)]).
+
 
 apply_change(_, []) :- !.
 apply_change(TB, Change) :-
@@ -120,7 +128,10 @@ remove([H|T], TB, ChPos) :-
 	(   DLen == 0
 	->  true
 	;   memory_file_substring(TB, ChPos, Len, _, Text),
-	    assertion(Text == H),
+	    (	Text == H
+	    ->	true
+	    ;	throw(cm(outofsync))
+	    ),
 	    delete_memory_file(TB, ChPos, DLen)
 	),
 	remove(T, TB, ChPos).
@@ -164,15 +175,21 @@ uuid_like(UUID) :-
 	maplist(string_length, Parts, [8,4,4,4,12]),
 	\+ current_editor(UUID, _, _).
 
-destroy_editor(UUID, Editor) :-
+%%	destroy_editor(+UUID)
+%
+%	Destroy source admin UUID: the shadow  text (a memory file), the
+%	XREF data and the module used for cross-referencing.
+
+destroy_editor(UUID) :-
 	must_be(atom, UUID),
+	retract(current_editor(UUID, Editor, _Role)), !,
 	(   xref_source_id(Editor, SourceID)
 	->  xref_clean(SourceID),
 	    '$destroy_module'(UUID)	% temp xref module
 	;   true
 	),
-	retractall(current_editor(UUID, Editor, _Role)),
 	free_memory_file(Editor).
+destroy_editor(_).
 
 
 :- multifile
@@ -197,8 +214,8 @@ codemirror_leave(Request) :-
 	http_read_json_dict(Request, Data, []),
 	debug(cm(leave), 'Leaving editor ~p', [Data]),
 	(   atom_string(UUID, Data.get(uuid))
-	->  forall(current_editor(UUID, TB, _Role),
-		   destroy_editor(UUID, TB))
+	->  forall(current_editor(UUID, _TB, _Role),
+		   destroy_editor(UUID))
 	;   true
 	),
 	reply_json_dict(true).
@@ -281,14 +298,12 @@ master_load_file(File, _, File).
 codemirror_tokens(Request) :-
 	http_read_json_dict(Request, Data, []),
 	debug(cm(tokens), 'Asking for tokens: ~p', [Data]),
-	(   shadow_editor(Data, TB)
-	->  enriched_tokens(TB, Data, Tokens),
-	    reply_json_dict(json{tokens:Tokens}, [width(0)])
-	;   UUID = Data.get(uuid)
-	->  reply_json_dict(json{ type:existence_error,
-				  object:UUID
-				},
-			    [status(409)])
+	(   catch(shadow_editor(Data, TB), cm(Reason), true)
+	->  (   var(Reason)
+	    ->	enriched_tokens(TB, Data, Tokens),
+		reply_json_dict(json{tokens:Tokens}, [width(0)])
+	    ;	change_failed(Data.uuid, Reason)
+	    )
 	;   reply_json_dict(json{tokens:[[]]})
 	).
 
@@ -307,7 +322,7 @@ enriched_tokens(TB, _Data, Tokens) :-
 	prolog_colourise_query(Query, swish, colour_item(TB)),
 	collect_tokens(TB, Tokens).
 
-%%	shadow_editor(+Data, -MemoryFile) is semidet.
+%%	shadow_editor(+Data, -MemoryFile) is det.
 %
 %	Get our shadow editor:
 %
@@ -319,6 +334,8 @@ enriched_tokens(TB, _Data, Tokens) :-
 %	This predicate fails if the server thinks we have an editor with
 %	state that must be reused, but  this   is  not true (for example
 %	because we have been restarted).
+%
+%	@throws cm(existence_error)
 
 shadow_editor(Data, TB) :-
 	atom_string(UUID, Data.get(uuid)),
@@ -340,6 +357,8 @@ shadow_editor(Data, TB) :-
 	_{role:_} :< Data, !,
 	atom_string(UUID, Data.uuid),
 	create_editor(UUID, TB, Data).
+shadow_editor(_Data, _TB) :-
+	throw(cm(existence_error)).
 
 :- thread_local
 	token/3.
