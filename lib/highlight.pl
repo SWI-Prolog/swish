@@ -39,6 +39,7 @@
 :- use_module(library(pairs)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
+:- use_module(library(prolog_xref)).
 :- use_module(library(memfile)).
 :- use_module(library(prolog_colour)).
 :- if(exists_source(library(helpidx))).
@@ -90,9 +91,10 @@ codemirror_change(Request) :-
 	debug(cm(change), 'Change ~p', [Change]),
 	UUID = Change.uuid,
 	(   shadow_editor(Change, TB)
-	->  mark_changed(TB),
-	    (	catch(apply_change(TB, Change.change), cm(outofsync), fail)
-	    ->  reply_json_dict(true)
+	->  (	catch(apply_change(TB, Changed, Change.change),
+		      cm(outofsync), fail)
+	    ->  mark_changed(TB, Changed),
+		reply_json_dict(true)
 	    ;	destroy_editor(UUID),
 		change_failed(UUID, outofsync)
 	    )
@@ -106,20 +108,29 @@ change_failed(UUID, Reason) :-
 			[status(409)]).
 
 
-apply_change(_, []) :- !.
-apply_change(TB, Change) :-
+%%	apply_change(+TB, -Changed, +Changes) is det.
+%
+%	Note that the argument order is like this to allow for maplist.
+%
+%	@arg Changed is left unbound if there are no changes or unified
+%	to =true= if something has changed.
+%
+%	@throws	cm(outofsync) if an inconsistent delete is observed.
+
+apply_change(_, _Changed, []) :- !.
+apply_change(TB, Changed, Change) :-
 	_{from:From} :< Change,
 	Line is From.line+1,
 	memory_file_line_position(TB, Line, From.ch, ChPos),
-	remove(Change.removed, TB, ChPos),
-	insert(Change.text, TB, ChPos, _End),
+	remove(Change.removed, TB, ChPos, Changed),
+	insert(Change.text, TB, ChPos, _End, Changed),
 	(   Next = Change.get(next)
-	->  apply_change(TB, Next)
+	->  apply_change(TB, Changed, Next)
 	;   true
 	).
 
-remove([], _, _) :- !.
-remove([H|T], TB, ChPos) :-
+remove([], _, _, _) :- !.
+remove([H|T], TB, ChPos, Changed) :-
 	string_length(H, Len),
 	(   T == []
 	->  DLen is Len
@@ -127,28 +138,34 @@ remove([H|T], TB, ChPos) :-
 	),
 	(   DLen == 0
 	->  true
-	;   memory_file_substring(TB, ChPos, Len, _, Text),
+	;   Changed = true,
+	    memory_file_substring(TB, ChPos, Len, _, Text),
 	    (	Text == H
 	    ->	true
 	    ;	throw(cm(outofsync))
 	    ),
 	    delete_memory_file(TB, ChPos, DLen)
 	),
-	remove(T, TB, ChPos).
+	remove(T, TB, ChPos, Changed).
 
-insert([], _, ChPos, ChPos) :- !.
-insert([H|T], TB, ChPos0, ChPos) :-
-	string_length(H, Len),
-	debug(swish(change), 'Insert ~q at ~d', [H, ChPos0]),
-	insert_memory_file(TB, ChPos0, H),
+insert([], _, ChPos, ChPos, _) :- !.
+insert([H|T], TB, ChPos0, ChPos, Changed) :-
+	(   H == ""
+	->  true
+	;   Changed = true,
+	    string_length(H, Len),
+	    debug(swish(change), 'Insert ~q at ~d', [H, ChPos0]),
+	    insert_memory_file(TB, ChPos0, H)
+	),
 	ChPos1 is ChPos0+Len,
 	(   T == []
 	->  ChPos2 = ChPos1
 	;   debug(swish(change), 'Adding newline at ~d', [ChPos1]),
+	    Changed = true,
 	    insert_memory_file(TB, ChPos1, '\n'),
 	    ChPos2 is ChPos1+1
 	),
-	insert(T, TB, ChPos2, ChPos).
+	insert(T, TB, ChPos2, ChPos, Changed).
 
 :- dynamic
 	current_editor/3,			% UUID, MemFile, Role
@@ -182,12 +199,15 @@ uuid_like(UUID) :-
 
 destroy_editor(UUID) :-
 	must_be(atom, UUID),
-	retract(current_editor(UUID, Editor, _Role)), !,
+	retractall(xref_upto_data(UUID)),
+	current_editor(UUID, Editor, _), !,
 	(   xref_source_id(Editor, SourceID)
 	->  xref_clean(SourceID),
-	    '$destroy_module'(UUID)	% temp xref module
+	    destroy_state_module(UUID)
 	;   true
 	),
+	% destroy late to make xref_source_identifier/2 work.
+	retractall(current_editor(UUID, Editor, _)),
 	free_memory_file(Editor).
 destroy_editor(_).
 
@@ -220,23 +240,25 @@ codemirror_leave(Request) :-
 	),
 	reply_json_dict(true).
 
-%%	mark_changed(+MemFile) is det.
+%%	mark_changed(+MemFile, ?Changed) is det.
 %
 %	Mark that our cross-reference data might be obsolete
 
-mark_changed(MemFile) :-
-	current_editor(UUID, MemFile, _Role),
-	retractall(xref_upto_data(UUID)).
+mark_changed(MemFile, Changed) :-
+	(   Changed == true
+	->  current_editor(UUID, MemFile, _Role),
+	    retractall(xref_upto_data(UUID))
+	;   true
+	).
 
-%%	xref(+MemoryFile) is det.
+%%	xref(+UUID) is det.
 
-xref(MemFile) :-
-	current_editor(UUID, MemFile, _Role),
+xref(UUID) :-
 	xref_upto_data(UUID), !.
-xref(MemFile) :-
-	current_editor(UUID, MemFile, _Role),
-	xref_source_id(TB, SourceId),
-	xref_module(TB, Module),
+xref(UUID) :-
+	current_editor(UUID, MF, _Role),
+	xref_source_id(MF, SourceId),
+	xref_state_module(MF, Module),
 	xref_source(SourceId,
 		    [ silent(true),
 		      module(Module)
@@ -260,18 +282,24 @@ xref(MemFile) :-
 xref_source_id(TB, UUID) :-
 	current_editor(UUID, TB, _Role).
 
-%%	xref_module(+TB, -Module) is semidet.
+%%	xref_state_module(+TB, -Module) is semidet.
 %
 %	True if we must run the cross-referencing   in  Module. We use a
 %	temporary module based on the UUID of the source.
 
-xref_module(TB, UUID) :-
+xref_state_module(TB, UUID) :-
 	current_editor(UUID, TB, _Role),
 	(   module_property(UUID, class(temporary))
 	->  true
 	;   set_module(UUID:class(temporary)),
 	    add_import_module(UUID, swish, start)
 	).
+
+destroy_state_module(UUID) :-
+	module_property(UUID, class(temporary)), !,
+	'$destroy_module'(UUID).
+destroy_state_module(_).
+
 
 %%	master_load_file(+File, +Seen, -MasterFile) is det.
 %
@@ -309,8 +337,8 @@ codemirror_tokens(Request) :-
 
 
 enriched_tokens(TB, _Data, Tokens) :-		% source window
-	current_editor(_UUID, TB, source), !,
-	xref(TB),
+	current_editor(UUID, TB, source), !,
+	xref(UUID),
 	server_tokens(TB, Tokens).
 enriched_tokens(TB, Data, Tokens) :-		% query window
 	atom_string(SourceID, Data.get(sourceID)),
@@ -343,9 +371,11 @@ shadow_editor(Data, TB) :-
 	(   Text = Data.get(text)
 	->  size_memory_file(TB, Size),
 	    delete_memory_file(TB, 0, Size),
-	    insert_memory_file(TB, 0, Text)
+	    insert_memory_file(TB, 0, Text),
+	    mark_changed(TB, true)
 	;   Changes = Data.get(changes)
-	->  maplist(apply_change(TB), Changes)
+	->  maplist(apply_change(TB, Changed), Changes),
+	    mark_changed(TB, Changed)
 	).
 shadow_editor(Data, TB) :-
 	Text = Data.get(text), !,
