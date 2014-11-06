@@ -22,6 +22,8 @@ you            need            the             [nightly            build
 system    from    the     current      git     development    repository
 [swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
 
+Nov 6, 2014: release 7.1.26 fully supports the current SWISH.
+
 
 ## Running SWISH
 
@@ -48,11 +50,11 @@ module defines swish_add_user/3, which updates or  creates a file called
 
     ?- swish_add_user(guru, 'top secret', []).
 
-If you now try to run a command in   SWISH it will prompt for a user and
-password.  After authentication you can run any Prolog predicate.
+If you now try to run a command in  SWISH, it will prompt for a user and
+password. After authentication you can run any Prolog predicate.
 
 **NOTE** Authentication uses plain HTTP   basic authentication. Only use
-this is trusted networks and do not  use   a  password  that you use for
+this on trusted networks and do not  use   a  password  that you use for
 other sensitive services. If you want to  setup a public server this way
 you are strongly adviced to use HTTPS.
 
@@ -76,8 +78,8 @@ in SWI-Prolog web applications.
 
 No building is needed  to  run  the   system  from  sources.  For public
 installations you probably want to create   the  minified JavaScript and
-CSS files to reduce network traffic and  the startup time. You need some
-more tools for that:
+CSS files to reduce network traffic and startup time. You need some more
+tools for that:
 
     % [sudo] npm install -g jsdoc
     % [sudo] npm install -g requirejs
