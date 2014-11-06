@@ -42,6 +42,7 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/js_write)).
 :- use_module(library(http/http_path)).
 :- if(exists_source(library(http/http_ssl_plugin))).
 :- use_module(library(http/http_ssl_plugin)).
@@ -372,9 +373,18 @@ include_swish_js -->
 	  http_absolute_location(swish(js/JS), SwishJS, []),
 	  http_absolute_location(swish(RJS),   SwishRJS, [])
 	},
+	rjs_timeout(JS),
 	html(script([ src(SwishRJS),
 		      'data-main'(SwishJS)
 		    ], [])).
+
+rjs_timeout('swish-min') --> !,
+	js_script({|javascript||
+// Override RequireJS timeout, until main file is loaded.
+window.require = { waitSeconds: 0 };
+		  |}).
+rjs_timeout(_) --> [].
+
 
 include_swish_css -->
 	{ swish_resource(css, CSS),
