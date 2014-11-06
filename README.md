@@ -2,6 +2,10 @@
 
 ## Installation
 
+### Get JavaScript requirements
+
+#### Using bower
+
 Install [bower](http://bower.io) for your  platform.   On  Ubuntu,  this
 implies getting `node` and `npm` by installing two packages and next use
 `npm` to install `bower`:
@@ -13,6 +17,17 @@ Once you have `bower`, run the following from the toplevel of `swish` to
 get the dependencies:
 
     bower install
+
+#### Download as zip
+
+As installing node and bower is not a pleasure on all operating systems,
+you can also download  the  dependencies  as   a  single  zip  file from
+http://www.swi-prolog.org/download/swish/swish-bower-components.zip.
+Unpack the zip file, maintaining the directory structure, from the swish
+root directory to create the directory web/bower_components.
+
+
+### Get the latest SWI-Prolog
 
 Install the latest  [SWI-Prolog](http://www.swi-prolog.org) _development
 version_. As SWISH is very  much  in   flux  and  depends  on the recent
