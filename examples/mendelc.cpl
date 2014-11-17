@@ -1,25 +1,36 @@
 /*
 Program describing the Mendelian rules of inheritance of teh color of pea 
-plants. It is a simplified version of Mendel that considers a family of parents
-and a child.
-The problem is, given the alleles of the parents, predict the
+plants. The problem is, given the alleles of the grandparents, predict the
 probability of the color (or of its alleles) of a pea plant.
 From
 H. Blockeel. Probabilistic logical models for mendel.s experiments: An exercise. In Inductive Logic Programming (ILP 2004), Work in Progress Track, 2004.
 */
+
 mother(m,s).
+mother(mm,m).
+mother(mf,f).
 father(f,s).
+father(fm,m).
+father(ff,f).
 
 
-cg(m,1,p).
-cg(m,2,w).
-cg(f,1,p).
-cg(f,2,p).
+cg(mm,1,p).
+cg(mm,2,w).
+cg(fm,1,p).
+cg(fm,2,p).
+cg(mf,1,w).
+cg(mf,2,w).
+cg(ff,1,w).
+cg(ff,2,p).
 
 
 cg(X,1,A):0.5 ; cg(X,1,B):0.5 :- mother(Y,X),cg(Y,1,A) , cg(Y,2,B).
  
 cg(X,2,A):0.5 ; cg(X,2,B):0.5 :- father(Y,X),cg(Y,1,A) , cg(Y,2,B).
+
+color(X,purple) :- cg(X,_,p).
+color(X,white) :- cg(X,1,w), cg(X,2,w).
+
 /** <examples>
 
 ?- color(s,purple).

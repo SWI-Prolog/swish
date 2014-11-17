@@ -1,41 +1,15 @@
 /*
-s([on(0,1)],P).
-P = 0.333333333333333 ?
-
-s([on(1,1)],P).
-P = 0.222222222222222 
-s([on(2,1)],P).
-P = 0.148148147703704 
-s([on(3,1)],P).
-% OUT OF DATABASE SPACE ERROR- Database crashed against Stacks
-s([on(4,1)],P).
-% OUT OF DATABASE SPACE ERROR- Database crashed against Stacks
-s([on(5,1)],P).
-% OUT OF DATABASE SPACE ERROR- Database crashed against Stacks
-
-s([on(0,1),on(1,1)],P).
-P = 0.111111111111111
-s([on(0,1),on(1,1),on(2,1)],P).
-P = 0.037037037037037
-sc([on(1,1)],[on(0,1)],P).
-P = 0.333333333333333
-
-sc([on(2,1)],[on(0,1)],P).
-P = 0.222222222222222
-
-sc([on(3,1)],[on(0,1)],P).
-P = 0.148148148148148
-
-sc([on(2,1)],[on(1,1)],P).
-P = 0.333333333333333 ?
-
+A three-sided die is repeatedly thrown until the outcome is three.
+on(T,F) means that on the Tth throw the face F came out.
+irom
+Riguzzi and Terrance Swift. The PITA system: Tabling and answer subsumption for reasoning under uncertainty. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, Lexington, Kentucky 6-10 July 2011, 11(4-5):433-449, 2011
 
 */
 on(0,1):1/3;on(0,2):1/3;on(0,3):1/3.
 
 on(X,1):1/3;on(X,2):1/3;on(X,3):1/3:-
   X1 is X-1,X1>=0,
-  on(X1,Y),
+  on(X1,_Y),
   \+ on(X1,3).
 /** <examples>
 

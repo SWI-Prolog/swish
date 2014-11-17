@@ -1,6 +1,8 @@
 /*
 A six-sided die is repeatedly thrown until the outcome is six.
 on(T,F) means that on the Tth throw the face F came out.
+From
+J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated disjunctions. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195.209. Springer, 2004.
 */
 
 on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;

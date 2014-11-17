@@ -1,10 +1,9 @@
 /*
-
-   ?- s([death],P).
-P = 0.305555555555556 ?
-yes
-   ?-
+Example showing the effect of noisy or. From
+J. Vennekens, Marc Denecker, and Maurice Bruynooghe. CP-logic: A language of causal probabilistic events and its relation to logic programming. Theory Pract. Log. Program., 9(3):245.308, 2009.
 */
+
+
 
 death : 1/6 :- pull_trigger(left_gun).
 death : 1/6 :- pull_trigger(right_gun).

@@ -1,0 +1,24 @@
+/*
+Computing the probability of a path between two nodes in a probabilistic graph.
+Each edge has a probability of being present
+From
+L. De Raedt, A. Kimmig, and H. Toivonen. ProbLog: A probabilistic Prolog and its application in link discovery. In International Joint Conference on Artificial Intelligence, pages 2462.2467, 2007.
+*/
+
+
+path(X,X).
+
+path(X,Y):-
+  edge(X,Z),path(Z,Y).
+
+edge(a,b):0.2.
+edge(a,c):0.3.
+edge(c,d):0.4.
+edge(d,e):0.4.
+edge(a,e):0.1.
+
+/** <examples>
+
+?- path(a,e).
+
+*/

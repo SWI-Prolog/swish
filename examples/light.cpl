@@ -1,34 +1,17 @@
 /*
-   ?- p(light).
-yes
-   ?- s([push,replace],P).
-P = 0.5 ?
-yes
-   ?- s([push,light],P).
-P = 0.5 ?
-yes
-   ?- s([push,light,replace],P).
-P = 0 ?
-yes
-   ?- s([light,replace],P).
-P = 0 ?
-yes
-   ?- s([light],P).
-P = 0.5 ?
-yes
-   ?- s([replace],P).
-P = 0.5 ?
-yes
+Example showing the use of negation.  From
+J. Vennekens, Marc Denecker, and Maurice Bruynooghe. CP-logic: A language of causal probabilistic events and its relation to logic programming. Theory Pract. Log. Program., 9(3):245.308, 2009.
 */
 
+
 push.
-light : 0.5 :- push.
+light : 0.4 :- push.
 replace :- \+ light.
 
 /** <examples>
 
-?- light.
 ?- replace.
+?- light.
 
 */
  
