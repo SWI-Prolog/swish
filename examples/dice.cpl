@@ -1,25 +1,8 @@
 /*
-s([on(0,1)],P).
-P = 0.166666666666667 ?;
-s([\+ on(0,6)],P).
-P = 0.833333333333333  ?;
-
-
-s([on(1,1)],P).
-P = 0.138888888888889 ?
-s([on(1,6)],P).
-P = 0.138888888888889 ?
-s([on(2,1)],P).
-out of memory
-s([on(0,1),on(1,1)],P).
-P = 0.0277777777777778 ?
-s([on(0,1),on(1,1),on(2,1)],P).
-P = 0.00462962962962963 ?
-
-
-
-
+A six-sided die is repeatedly thrown until the outcome is six.
+on(T,F) means that on the Tth throw the face F came out.
 */
+
 on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;
 on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
 
@@ -33,6 +16,7 @@ on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
 
 ?- on(0,1).
 ?- on(1,1).
+>- on(2,1).
 
 */
  

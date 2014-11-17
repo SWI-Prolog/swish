@@ -1,19 +1,5 @@
 /*
-   ?- s([heads(C)],P).
-C = coin1
-P = 0.51 ? ;
-C = coin2
-P = 0.51 ? ;
-no
-   ?- s([tails(C)],P).
-C = coin1
-P = 0.49 ? ;
-C = coin2
-P = 0.49 ? ;
-no
-
-s([tails(coin1)],P).
-P = 0.49 ?
+Throwing two coins with uncertainty on their fairness
 */
 
 heads(Coin): 0.5; tails(Coin) : 0.5:-toss(Coin),fair(Coin).

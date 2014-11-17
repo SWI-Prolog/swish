@@ -1,14 +1,5 @@
 /*
-s([heads(C)],P).
-C = coin
-P = 0.51 ?;
-no
-s([tails(C)],P).
-C = coin
-P = 0.49 ?;
-no
-
-
+Throwing a coin with uncertainty on its fairness
 */
 
 heads(Coin): 1/2; tails(Coin) : 1/2:-toss(Coin),\+biased(Coin).
