@@ -28,7 +28,9 @@ cg(X,1,A):0.5 ; cg(X,1,B):0.5 :- mother(Y,X),cg(Y,1,A) , cg(Y,2,B).
  
 cg(X,2,A):0.5 ; cg(X,2,B):0.5 :- father(Y,X),cg(Y,1,A) , cg(Y,2,B).
 
+
 color(X,purple) :- cg(X,_,p).
+
 color(X,white) :- cg(X,1,w), cg(X,2,w).
 
 /** <examples>
