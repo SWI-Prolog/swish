@@ -1,0 +1,7 @@
+
+burg(t):0.1; burg(f):0.9.
+earthq(t):0.2; earthq(f):0.8.
+alarm(t):-burg(t),earthq(t).
+alarm(t):0.8 ; alarm(f):0.2:-burg(t),earthq(f).
+alarm(t):0.8 ; alarm(f):0.2:-burg(f),earthq(t).
+alarm(t):0.1 ; alarm(f):0.9:-burg(f),earthq(f).

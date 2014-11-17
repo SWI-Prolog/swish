@@ -327,7 +327,7 @@ define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
 	    server: config.http.locations.pengines,
 	    runner: elem,
 	    application: "swish",
-	    src: query.source,
+	    src: ":-use_module(library(pita)). :-style_check(-discontiguous).  :-set(compiling,on). "+query.source,
 	    destroy: false,
 	    format: 'json-html',
 	    oncreate: handleCreate,
@@ -658,7 +658,7 @@ define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
     var elem = this.pengine.options.runner;
     var data = elem.data('prologRunner');
 
-    this.pengine.ask(termNoFullStop(data.query.query));
+    this.pengine.ask("ignore(s("+termNoFullStop(data.query.query)+",Prob)),set(compiling,off)");
     elem.prologRunner('setState', "running");
   }
 

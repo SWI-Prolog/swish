@@ -1,6 +1,14 @@
 // list of examples, represented as a JSON list
 
 [
+{ "file":"coin.cpl",		  "title":"Coin" },
+{ "file":"coin2.cpl",		  "title":"Coins" },
+{ "file":"dice.cpl",		  "title":"Dice" },
+{ "file":"light.cpl",		  "title":"Light" },
+{ "file":"mendel.cpl",		  "title":"Mendel" },
+{ "file":"mendels.cpl",		  "title":"Mendels" },
+{ "file":"threesideddice.cpl",	  "title":"Three sided dice" },
+{ "file":"trigger.cpl",		  "title":"Trigger" },
 { "file":"kb.pl",		  "title":"Knowledge bases" },
 { "file":"movies.pl",		  "title":"Movie database" },
 { "file":"lists.pl",		  "title":"Lists" },

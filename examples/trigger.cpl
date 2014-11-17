@@ -1,0 +1,19 @@
+/*
+
+   ?- s([death],P).
+P = 0.305555555555556 ?
+yes
+   ?-
+*/
+
+death : 1/6 :- pull_trigger(left_gun).
+death : 1/6 :- pull_trigger(right_gun).
+
+pull_trigger(left_gun).
+pull_trigger(right_gun).
+
+/** <examples>
+
+?- death.
+*/
+ 

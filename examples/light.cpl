@@ -1,0 +1,34 @@
+/*
+   ?- p(light).
+yes
+   ?- s([push,replace],P).
+P = 0.5 ?
+yes
+   ?- s([push,light],P).
+P = 0.5 ?
+yes
+   ?- s([push,light,replace],P).
+P = 0 ?
+yes
+   ?- s([light,replace],P).
+P = 0 ?
+yes
+   ?- s([light],P).
+P = 0.5 ?
+yes
+   ?- s([replace],P).
+P = 0.5 ?
+yes
+*/
+
+push.
+light : 0.5 :- push.
+replace :- \+ light.
+
+/** <examples>
+
+?- light.
+?- replace.
+
+*/
+ 

@@ -1,0 +1,34 @@
+/*
+   ?- s([heads(C)],P).
+C = coin1
+P = 0.51 ? ;
+C = coin2
+P = 0.51 ? ;
+no
+   ?- s([tails(C)],P).
+C = coin1
+P = 0.49 ? ;
+C = coin2
+P = 0.49 ? ;
+no
+
+s([tails(coin1)],P).
+P = 0.49 ?
+*/
+
+heads(Coin): 0.5; tails(Coin) : 0.5:-toss(Coin),fair(Coin).
+heads(Coin): 0.6 ; tails(Coin) : 0.4:-toss(Coin),biased(Coin).
+fair(Coin):0.9 ; biased(Coin):0.1.
+toss(coin1).
+toss(coin2).
+
+/** <examples>
+
+?- heads(coin2).
+?- tails(coin2).
+?- heads(coin1).
+?- tails(coin1).
+
+
+*/
+ 

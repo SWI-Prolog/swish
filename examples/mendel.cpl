@@ -1,0 +1,47 @@
+/*
+this file can not be used with s.pl: it generates too many programs
+s([cg(s,1,p)],P).
+P = 0.75 ? 
+s([cg(s,1,w)],P).
+P = 0.25 ?
+s([cg(s,2,p)],P).
+P = 0.25 ?  
+s([cg(s,2,w)],P).
+P = 0.75 ?
+s([cg(f,2,w)],P).
+P = 0.5
+s([cg(s,2,w)],P).
+P = 0.75
+
+*/
+
+mother(m,s).
+mother(mm,m).
+mother(mf,f).
+father(f,s).
+father(fm,m).
+father(ff,f).
+
+
+cg(mm,1,p).
+cg(mm,2,w).
+cg(fm,1,p).
+cg(fm,2,p).
+cg(mf,1,w).
+cg(mf,2,w).
+cg(ff,1,w).
+cg(ff,2,p).
+
+
+cg(X,1,A):0.5 ; cg(X,1,B):0.5 :- mother(Y,X),cg(Y,1,A) , cg(Y,2,B).
+ 
+cg(X,2,A):0.5 ; cg(X,2,B):0.5 :- father(Y,X),cg(Y,1,A) , cg(Y,2,B).
+
+/** <examples>
+
+?- cg(s,1,p).
+?- cg(s,1,w).
+?- cg(s,2,p).
+?- cg(s,2,w).
+*/
+ 
