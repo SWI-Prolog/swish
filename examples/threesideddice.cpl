@@ -2,7 +2,10 @@
 A three-sided die is repeatedly thrown until the outcome is three.
 on(T,F) means that on the Tth throw the face F came out.
 irom
-Riguzzi and Terrance Swift. The PITA system: Tabling and answer subsumption for reasoning under uncertainty. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, Lexington, Kentucky 6-10 July 2011, 11(4-5):433-449, 2011
+Riguzzi and Terrance Swift. The PITA system: Tabling and answer subsumption for 
+reasoning under uncertainty. Theory and Practice of Logic Programming, 
+27th International Conference on Logic Programming (ICLP'11) Special Issue, 
+Lexington, Kentucky 6-10 July 2011, 11(4-5):433-449, 2011
 
 */
 on(0,1):1/3;on(0,2):1/3;on(0,3):1/3.

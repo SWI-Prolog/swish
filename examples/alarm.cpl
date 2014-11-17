@@ -1,6 +1,8 @@
 /*
 A simple Bayesian network from Figure 2 in
-J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated disjunctions. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195.209. Springer, 2004.
+J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated 
+disjunctions. In International Conference on Logic Programming, 
+volume 3131 of LNCS, pages 195.209. Springer, 2004.
 */
 burg(t):0.1; burg(f):0.9.
 earthq(t):0.2; earthq(f):0.8.
