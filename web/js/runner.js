@@ -658,7 +658,7 @@ define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
     var elem = this.pengine.options.runner;
     var data = elem.data('prologRunner');
 
-    this.pengine.ask("ignore(s("+termNoFullStop(data.query.query)+",Prob)),set(compiling,off)");
+    this.pengine.ask("set(compiling,off),s("+termNoFullStop(data.query.query)+",Prob)");
     elem.prologRunner('setState', "running");
   }
 
