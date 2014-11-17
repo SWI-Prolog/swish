@@ -13,7 +13,7 @@ father(f,s).
 
 cg(m,1,p).
 cg(m,2,w).
-cg(f,1,p).
+cg(f,1,w).
 cg(f,2,p).
 
 
