@@ -7,8 +7,13 @@ Theory Pract. Log. Program., 9(3):245-308, 2009.
 
 
 push.
+% we surely push the switch
+
 light : 0.4 :- push.
+% if the switch is pushed, the light goes on with probability 0.4
+
 replace :- \+ light.
+% if there is no light we must replace the bulb
 
 /** <examples>
 
