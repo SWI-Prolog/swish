@@ -18,8 +18,9 @@ toss(coin).
 
 /** <examples>
 
-?- heads(coin).
-?- tails(coin).
+?- heads(coin).  % what is the probability that coin lands heads?
+?- tails(coin).  % what is the probability that coin lands tails?
+
 
 */
  
