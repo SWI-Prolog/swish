@@ -26,6 +26,6 @@ edge(a,e):0.1.
 
 /** <examples>
 
-?- path(a,e).
+?- path(a,e). % what is the probability that a and e are connected?
 
 */

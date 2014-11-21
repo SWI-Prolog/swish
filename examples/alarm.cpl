@@ -19,7 +19,7 @@ alarm(t):0.1 ; alarm(f):0.9:-burg(f),earthq(f).
 
 /** <examples>
 
-?- alarm(t).
-?- alarm(f).
+?- alarm(t).  % what is the probability that the alarm goes off
+?- alarm(f).  % what is the probability that the alarm doesn't go off
 
 */

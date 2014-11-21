@@ -22,9 +22,9 @@ on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
 
 /** <examples>
 
-?- on(0,1).
-?- on(1,1).
-?- on(2,1).
+?- on(0,1). % what is the probability that the dice lands on face 1 at time 0?
+?- on(1,1). % what is the probability that the dice lands on face 1 at time 1?
+?- on(2,1). % what is the probability that the dice lands on face 1 at time 2?
 
 */
  

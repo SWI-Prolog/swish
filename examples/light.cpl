@@ -17,8 +17,8 @@ replace :- \+ light.
 
 /** <examples>
 
-?- replace.
-?- light.
+?- replace. % what is the probability that we replace the bulb?
+?- light.   % what is the probability that the light is on?
 
 */
  

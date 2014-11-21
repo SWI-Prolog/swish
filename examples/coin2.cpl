@@ -20,10 +20,12 @@ toss(coin2).
 
 /** <examples>
 
-?- heads(coin2).
-?- tails(coin2).
-?- heads(coin1).
-?- tails(coin1).
+?- heads(coin2).  % what is the probability that coin1 lands heads? 
+?- tails(coin2).  % what is the probability that coin1 lands tails?
+?- heads(coin1).  % what is the probability that coin2 lands heads? 
+?- tails(coin1).  % what is the probability that coin2 lands tails?
+
+
 
 
 */
