@@ -7,6 +7,7 @@
 { "file":"path.cpl",		  "title":"Path" },
 { "file":"hmm.cpl",		  "title":"Hidden Markov Model" },
 { "file":"pcfg.cpl",		  "title":"Probabilistic Context Free Grammar" },
+{ "file":"uwcse.cpl",		  "title":"UWCSE" },
 { "file":"trigger.cpl",		  "title":"Trigger" },
 { "file":"light.cpl",		  "title":"Light" },
 { "file":"coin2.cpl",		  "title":"Coins" },
