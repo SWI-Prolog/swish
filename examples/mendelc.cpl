@@ -1,6 +1,7 @@
 /*
 Program describing the Mendelian rules of inheritance of the color of pea 
-plants. The problem is, given the alleles of the grandparents, predict the
+plants. It considers a family of four grandparents, two parents and a child.
+The problem is, given the alleles of the grandparents, predict the
 probability of the color (or of its alleles) of a pea plant.
 From
 H. Blockeel. Probabilistic logical models for mendel's experiments: An exercise.

@@ -1,7 +1,6 @@
 /*
 Program describing the Mendelian rules of inheritance of the color of pea 
-plants. It is a simplified version of Mendel that considers a family of parents
-and a child.
+plants. It considers a family of two parents and a child.
 The problem is, given the alleles of the parents, predict the
 probability of the color (or of its alleles) of a pea plant.
 From
