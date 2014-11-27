@@ -1,0 +1,44 @@
+% CP-theory for size 2
+
+mchrom(Person,a):0.90 ; mchrom(Person,b):0.05 ; mchrom(Person,null):0.05 :- mother(Mother,Person), pchrom(Mother,a   ), mchrom(Mother,a   ).
+mchrom(Person,a):0.49 ; mchrom(Person,b):0.49 ; mchrom(Person,null):0.02 :- mother(Mother,Person), pchrom(Mother,b   ), mchrom(Mother,a   ).
+mchrom(Person,a):0.49 ; mchrom(Person,b):0.02 ; mchrom(Person,null):0.49 :- mother(Mother,Person), pchrom(Mother,null), mchrom(Mother,a   ).
+mchrom(Person,a):0.49 ; mchrom(Person,b):0.49 ; mchrom(Person,null):0.02 :- mother(Mother,Person), pchrom(Mother,a   ), mchrom(Mother,b   ).
+mchrom(Person,a):0.05 ; mchrom(Person,b):0.90 ; mchrom(Person,null):0.05 :- mother(Mother,Person), pchrom(Mother,b   ), mchrom(Mother,b   ).
+mchrom(Person,a):0.02 ; mchrom(Person,b):0.49 ; mchrom(Person,null):0.49 :- mother(Mother,Person), pchrom(Mother,null), mchrom(Mother,b   ).
+mchrom(Person,a):0.49 ; mchrom(Person,b):0.02 ; mchrom(Person,null):0.49 :- mother(Mother,Person), pchrom(Mother,a   ), mchrom(Mother,null).
+mchrom(Person,a):0.02 ; mchrom(Person,b):0.49 ; mchrom(Person,null):0.49 :- mother(Mother,Person), pchrom(Mother,b   ), mchrom(Mother,null).
+mchrom(Person,a):0.05 ; mchrom(Person,b):0.05 ; mchrom(Person,null):0.90 :- mother(Mother,Person), pchrom(Mother,null), mchrom(Mother,null).
+                                                                                                                                            
+                                                                                                                                            
+pchrom(Person,a):0.90 ; pchrom(Person,b):0.05 ; pchrom(Person,null):0.05 :- father(Father,Person), pchrom(Father,a   ), mchrom(Father,a   ).
+pchrom(Person,a):0.49 ; pchrom(Person,b):0.49 ; pchrom(Person,null):0.02 :- father(Father,Person), pchrom(Father,b   ), mchrom(Father,a   ).
+pchrom(Person,a):0.49 ; pchrom(Person,b):0.02 ; pchrom(Person,null):0.49 :- father(Father,Person), pchrom(Father,null), mchrom(Father,a   ).
+pchrom(Person,a):0.49 ; pchrom(Person,b):0.49 ; pchrom(Person,null):0.02 :- father(Father,Person), pchrom(Father,a   ), mchrom(Father,b   ).
+pchrom(Person,a):0.05 ; pchrom(Person,b):0.90 ; pchrom(Person,null):0.05 :- father(Father,Person), pchrom(Father,b   ), mchrom(Father,b   ).
+pchrom(Person,a):0.02 ; pchrom(Person,b):0.49 ; pchrom(Person,null):0.49 :- father(Father,Person), pchrom(Father,null), mchrom(Father,b   ).
+pchrom(Person,a):0.49 ; pchrom(Person,b):0.02 ; pchrom(Person,null):0.49 :- father(Father,Person), pchrom(Father,a   ), mchrom(Father,null).
+pchrom(Person,a):0.02 ; pchrom(Person,b):0.49 ; pchrom(Person,null):0.49 :- father(Father,Person), pchrom(Father,b   ), mchrom(Father,null).
+pchrom(Person,a):0.05 ; pchrom(Person,b):0.05 ; pchrom(Person,null):0.90 :- father(Father,Person), pchrom(Father,null), mchrom(Father,null).
+                                                                                                                                            
+                                                                                                                                            
+bloodtype(Person,a):0.90 ; bloodtype(Person,b):0.03 ; bloodtype(Person,ab):0.03 ; bloodtype(Person,null):0.04 :- pchrom(Person,a   ),mchrom(Person,a   ).
+bloodtype(Person,a):0.03 ; bloodtype(Person,b):0.03 ; bloodtype(Person,ab):0.90 ; bloodtype(Person,null):0.04 :- pchrom(Person,b   ),mchrom(Person,a   ).
+bloodtype(Person,a):0.90 ; bloodtype(Person,b):0.04 ; bloodtype(Person,ab):0.03 ; bloodtype(Person,null):0.03 :- pchrom(Person,null),mchrom(Person,a   ).
+bloodtype(Person,a):0.03 ; bloodtype(Person,b):0.03 ; bloodtype(Person,ab):0.90 ; bloodtype(Person,null):0.04 :- pchrom(Person,a   ),mchrom(Person,b   ).
+bloodtype(Person,a):0.04 ; bloodtype(Person,b):0.90 ; bloodtype(Person,ab):0.03 ; bloodtype(Person,null):0.03 :- pchrom(Person,b   ),mchrom(Person,b   ).
+bloodtype(Person,a):0.03 ; bloodtype(Person,b):0.09 ; bloodtype(Person,ab):0.04 ; bloodtype(Person,null):0.03 :- pchrom(Person,null),mchrom(Person,b   ).
+bloodtype(Person,a):0.90 ; bloodtype(Person,b):0.03 ; bloodtype(Person,ab):0.03 ; bloodtype(Person,null):0.04 :- pchrom(Person,a   ),mchrom(Person,null).
+bloodtype(Person,a):0.03 ; bloodtype(Person,b):0.90 ; bloodtype(Person,ab):0.04 ; bloodtype(Person,null):0.03 :- pchrom(Person,b   ),mchrom(Person,null).
+bloodtype(Person,a):0.03 ; bloodtype(Person,b):0.04 ; bloodtype(Person,ab):0.03 ; bloodtype(Person,null):0.90 :- pchrom(Person,null),mchrom(Person,null).
+	
+father(p_f, p).
+mother(p_m, p).			
+father(p_f_f, p_f).
+mother(p_f_m, p_f).			
+mchrom(p_m,a):0.3 ; mchrom(p_m,b):0.3 ; mchrom(p_m,null):0.4.
+pchrom(p_m,a):0.3 ; pchrom(p_m,b):0.3 ; pchrom(p_m,null):0.4.			
+mchrom(p_f_f,a):0.3 ; mchrom(p_f_f,b):0.3 ; mchrom(p_f_f,null):0.4.
+pchrom(p_f_f,a):0.3 ; pchrom(p_f_f,b):0.3 ; pchrom(p_f_f,null):0.4.			
+mchrom(p_f_m,a):0.3 ; mchrom(p_f_m,b):0.3 ; mchrom(p_f_m,null):0.4.
+pchrom(p_f_m,a):0.3 ; pchrom(p_f_m,b):0.3 ; pchrom(p_f_m,null):0.4.			
