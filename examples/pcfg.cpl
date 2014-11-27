@@ -31,7 +31,13 @@ pcfg([A|R],[A|L1],L2):-
 pcfg([],L,L).
 % there are no more symbols to expand
 
-rule('S',_L,[a,'S']):0.2; rule('S',_L,[b,'S']):0.2; rule('S',_L,[a]):0.3; rule('S',_L,[b]):0.3.
+rule('S',L,[a,'S']):0.2; rule('S',L,[b,'S']):0.2; rule('S',L,[a]):0.3; rule('S',L,[b]):0.3.
 % encodes the three rules of the grammar
 
+/** <examples>
+
+?- pcfg([a,b,a,a]). % what is the probability that the string abaa belongs to the language?
+
+
+*/
 
