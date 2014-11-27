@@ -3,7 +3,8 @@
 [
 { "file":"coin.cpl",		  "title":"Coin" },
 { "file":"dice.cpl",		  "title":"Dice" },
-{ "file":"mendel.cpl",		  "title":"Mendel" },
+{ "file":"mendel.cpl",		  "title":"Mendel inheritance of pea plants color" },
+{ "file":"bloodtype.cpl",	  "title":"Mendel inheritance of bloodtype" },
 { "file":"path.cpl",		  "title":"Path" },
 { "file":"hmm.cpl",		  "title":"Hidden Markov Model" },
 { "file":"pcfg.cpl",		  "title":"Probabilistic Context Free Grammar" },
