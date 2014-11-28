@@ -6,7 +6,9 @@ The problem is to predict the probability of the bloodtype of a person.
 From
 http://dtai.cs.kuleuven.be/cplve/ilp09/
 Reference:
-Wannes Meert, Jan Struyf, Hendrik Blockeel: CP-Logic Theory Inference with Contextual Variable Elimination and Comparison to BDD Based Inference Methods. ILP 2009:96-109
+Wannes Meert, Jan Struyf, and Hendrik Blockeel. "CP-Logic theory inference with
+contextual variable elimination and comparison to BDD based inference methods."
+Inductive Logic Programming. Springer Berlin Heidelberg, 2010. 96-109.
 */
 
 % mchrom(Person,C) means that the chromosome of Person inherited from his mother

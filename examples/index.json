@@ -9,6 +9,8 @@
 { "file":"hmm.cpl",		  "title":"Hidden Markov Model" },
 { "file":"pcfg.cpl",		  "title":"Probabilistic Context Free Grammar" },
 { "file":"uwcse.cpl",		  "title":"UWCSE" },
+{ "file":"monty.cpl",		  "title":"Monty Hall puzzle" },
+{ "file":"jail.cpl",		  "title":"Three-prisoners puzzle" },
 { "file":"trigger.cpl",		  "title":"Trigger" },
 { "file":"light.cpl",		  "title":"Light" },
 { "file":"coin2.cpl",		  "title":"Coins" },
