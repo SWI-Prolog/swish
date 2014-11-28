@@ -140,7 +140,7 @@ div.wait-input input  { width: 100%; box-sizing: border-box; }
 pre.prolog-message {
   white-space: pre-wrap;
   padding: 2px 2px;
-  margin: 0 0 -2px;
+  margin: 0;
 }
 
 pre.msg-information   { color: #060; font-style: italic; }
