@@ -99,7 +99,7 @@ swish_reply(SwishOptions, Request) :-
 	->  true
 	;   reply_html_page(
 		swish(main),
-		[ title('SWISH -- SWI-Prolog for SHaring'),
+		[ title('cplint on SWISH -- SWI-Prolog for SHaring'),
 		  link([ rel('shortcut icon'),
 			 href('/icons/favicon.ico')
 		       ]),
