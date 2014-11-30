@@ -6,6 +6,7 @@
 { "file":"mendel.cpl",		  "title":"Mendel inheritance of the color of pea plants" },
 { "file":"bloodtype.cpl",	  "title":"Mendel inheritance of human bloodtype" },
 { "file":"path.cpl",		  "title":"Path" },
+{ "file":"alarm.cpl",		  "title":"Bayesian network" },
 { "file":"hmm.cpl",		  "title":"Hidden Markov Model" },
 { "file":"pcfg.cpl",		  "title":"Probabilistic Context Free Grammar" },
 { "file":"uwcse.cpl",		  "title":"UWCSE" },
