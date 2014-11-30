@@ -2,7 +2,7 @@
 
 <html>
   <head>
-  <title>SWISH: SWI-Prolog for SHaring</title>
+  <title>cplnt on SWISH</title>
   </head>
 <body>
 <h4>Table of Contents</h4>
@@ -11,18 +11,17 @@
     <li><a href="#help-examples">Embedding examples in the program text</a></li>
     <li><a href="#help-share">Save or share your program</a></li>
     <li><a href="#help-preload">Preload SWISH with data</a></li>
+    <li><a href="help.html#help-LPAD">LPAD syntax</a></li>
+    <li><a href="http://ds.ing.unife.it/~friguzzi/software/cplint/manual.html" target="_blank">cplint manual</a></li>
   </ul>
 
 <h4 id="help-basics">Basic operation</h4>
 <p>
-Prolog is about running a <i>query</i> against a <i>program</i>. The
+cplint is about running a <i>query</i> against a <i>program</i>. 
+The program is a Logic Program with Annotated Disjunction (LPAD) or a CP-logic theory.
+The
 <i>query</i> goes into the bottom-left editor and the <i>program</i>
-into the left editor.  The program can be empty, executing queries
-against the <i>built-in</i> predicates of Prolog.  For example:
-
-<pre style="font-size:80%">
-?- format("Hello world!~n").</pre>
-
+into the left editor.  
 <p>
 A query can be executed by hitting <code>RETURN</code> if the query
 is complete and the caret is behind the '.' that terminates the query
@@ -49,8 +48,11 @@ or by using the <b>Run!</b> button.  At this moment, the following happens:
 Note that <b>you do not have to save your program to execute it</b>.  If
 your are not satisfied with the answer to a query, you can simply
 edit the program and use the <b>Run!</b> again.  The new query is
-executed in a completely new environment.  In particular, data that
-you asserted in a previous query is not available in the next.
+executed in a completely new environment. 
+<p> The answer to the query contains the variable 'Prob' that gives the 
+probability of the query instantiated with the values for the other variables
+that are returned. At the moment it is not possible to ask for alternative 
+solutions to a non ground-query, only the first will be returned.
 
 <h4 id="help-examples">Embedding examples in the program text</h4>
 <p>
@@ -61,8 +63,8 @@ first goal show in the Goal input field.
 <pre style="font-size:80%">
 /** &lt;examples&gt;
 
-?- loves(X, mia).
-?- jealous(X, Y).
+?- loves(jay, mia).
+?- jealous(jay, mia).
 
 */</pre>
 
@@ -82,8 +84,9 @@ that provides shared editing, chat and voice communication.
 
 <h4 id="help-preload">Preload SWISH with data</h4>
 <p>
-You can make <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
-start with a loaded program using the URL <code>http://swish.swi-prolog.org/</code> and
+You can make <span style="color:maroon">cplint on </span>
+<span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
+start with a loaded program using the URL <code>http://cplint.lamping.unife.it/</code> and
 providing the parameters below.  The URL accepts both `GET` and `POST` requests.
 
   <dl>
@@ -103,11 +106,75 @@ providing the parameters below.  The URL accepts both `GET` and `POST` requests.
   </dd>
   </dl>
 
-<p>The URL below opens <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> on a file from GitHub with a default query.
+<p>The URL below opens <span style="color:maroon">cplint on </span>
+<span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> on a file from GitHub with a default query.
 
 <pre>
-http://swish.swi-prolog.org/?code=https://github.com/SWI-Prolog/swipl-devel/raw/master/demo/likes.pl&amp;q=likes(sam,Food).</pre>
+http://cplint.lamping.unife.it/?code=https://github.com/friguzzi/swish/raw/master/examples/alarm.cpl&amp;q=alarm(t).</pre>
 
+ <h4><a  name="help-LPAD">LPAD and CP-logic syntax</a></h4>
+<p>LPAD and CP-logic programs consist of a set of annotated disjunctive clauses.
+Disjunction in the head is represented with a semicolon and atoms in the head are
+separated from probabilities by a colon. For the rest, the usual syntax of Prolog is
+used. For example, a general CP-logic clause could be
+
+ <pre style="font-size:80%">
+h1:p1 ; ... ; hn:pn :- b1,...,bm,\+ c1,....,\+ cl.
+</pre>
+<!--l. 78--><p> No parentheses are necessary. The <span 
+class="cmtt-10">pi </span>are numeric expressions. It is up to the user to
+ensure that the numeric expressions are legal, i.e. that they sum up to less or equal to
+one.
+<!--l. 81--><p>   If the clause has an empty body, it can be represented like this
+ <pre style="font-size:80%">
+h1:p1 ; ... ; hn:pn.
+</pre>
+<!--l. 84--><p> If the clause has a single head with probability 1, the annotation can be omitted and
+the clause takes the form of a normal Prolog clause, i.e.
+
+ <pre style="font-size:80%">
+h1:- b1,...,bm,\+ c1,...,\+ cl.
+</pre>
+<!--l. 88--><p> stands for
+
+  <pre style="font-size:80%">
+h1:1 :- b1,...,bm,\+ c1,...,\+ cl.
+</pre>
+<!--l. 94--><p>  Consider the coin example 
+
+ <pre style="font-size:80%">
+heads(Coin):1/2 ; tails(Coin):1/2:-  
+     toss(Coin),\+biased(Coin).  
+heads(Coin):0.6 ; tails(Coin):0.4:-  
+     toss(Coin),biased(Coin).  
+fair(Coin):0.9 ; biased(Coin):0.1.  
+toss(coin).
+</pre>
+<!--l. 105--><p> The first clause states that if we toss a coin that is not biased it has equal
+probability of landing heads and tails. The second states that if the coin is biased it
+has a slightly higher probability of landing heads. The third states that the coin is
+fair with probability 0.9 and biased with probability 0.1 and the last clause states
+that we toss a coin for certain.
+<!--l. 108--><p>   Moreover, the bodies of rules can contain the built-in predicates:
+
+ <pre style="font-size:80%">
+is/2, &#x003E;/2, &#x003C;/2, &#x003E;=/2, =&#x003C;/2,
+=:=/2, =\=/2, true/0, false/0,
+=/2, ==/2, \=/2, \==/2, length/2
+</pre>
+<!--l. 113--><p> The bodies can also contain the following library predicates:
+
+ <pre style="font-size:80%">
+member/2, max_list/2, min_list/2  
+nth0/3, nth/3
+</pre>
+<!--l. 119--><p > plus the predicate
+
+ <pre style="font-size:80%">
+average/2
+</pre>
+<!--l. 123--><p > that, given a list of numbers, computes its arithmetic mean.
+See the <a href="http://ds.ing.unife.it/~friguzzi/software/cplint/manual.html" target="_blank">cplint manual</a> for more information.
 </body>
 </html>
 

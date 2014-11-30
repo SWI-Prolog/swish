@@ -76,13 +76,13 @@ preferences.setDefault("semantic-highlighting", true);
 	  menuBroadcast("help", {file:"runner.html"});
 	},
 	"Background": "--",
-	"Beware! ...": function() {
+	"SWISH Beware! ...": function() {
 	  menuBroadcast("help", {file:"beware.html"});
 	},
-	"Caveats ...": function() {
+	"SWISH Caveats ...": function() {
 	  menuBroadcast("help", {file:"caveats.html"});
 	},
-	"Background ...": function() {
+	"Prolog Background ...": function() {
 	  menuBroadcast("help", {file:"background.html"});
 	},
       }

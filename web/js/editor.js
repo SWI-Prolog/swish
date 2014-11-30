@@ -68,7 +68,7 @@ define([ "cm/lib/codemirror",
 
 	options = $.extend({
 	  role: "source",
-	  placeholder: "Your Prolog program goes here ...",
+	  placeholder: "Your Logic Program with Annotated Disjunctions goes here ...",
 	  lineNumbers: true,
 	  mode: "prolog",
 	  theme: "prolog",
