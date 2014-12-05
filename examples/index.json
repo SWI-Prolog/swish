@@ -3,6 +3,9 @@
 [
 { "file":"coin.cpl",		  "title":"Coin" },
 { "file":"dice.cpl",		  "title":"Dice" },
+{ "file":"epidemic.cpl",	  "title":"Epidemic" },
+{ "file":"earthquake.cpl",	  "title":"Earthquake" },
+
 { "file":"mendel.cpl",		  "title":"Mendel inheritance of the color of pea plants" },
 { "file":"bloodtype.cpl",	  "title":"Mendel inheritance of human bloodtype" },
 { "file":"path.cpl",		  "title":"Path" },
