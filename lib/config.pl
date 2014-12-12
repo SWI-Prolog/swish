@@ -67,8 +67,12 @@ http_locations(JSON) :-
 
 remove_duplicate_ids([], []).
 remove_duplicate_ids([Id-Path1,Id-Path2|T], [Id-Path1|Cleaned]) :- !,
-	same_ids(T, Id, T1, Paths),
-	print_message(warning, http(duplicate_handlers(Id, [Path1,Path2|Paths]))),
+	same_ids(T, Id, T1, Paths0),
+	sort([Path1,Path2|Paths0], Unique),
+	(   Unique = [_]
+	->  true
+	;   print_message(warning, http(duplicate_handlers(Id, Unique)))
+	),
 	remove_duplicate_ids(T1, Cleaned).
 remove_duplicate_ids([H|T0], [H|T]) :-
 	remove_duplicate_ids(T0, T).
