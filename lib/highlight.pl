@@ -682,7 +682,7 @@ goal_arity(Goal, Arity) :-
 	swish_config:config/2,
 	css/3.				% ?Context, ?Selector, -Attributes
 
-%%	swish_config:config(-Name, -Styles) is det.
+%%	swish_config:config(-Name, -Styles) is nondet.
 %
 %	Provides the object `config.swish.style`,  a   JSON  object that
 %	maps   style   properties   of    user-defined   extensions   of
@@ -859,7 +859,7 @@ predicate_info(PI, Info) :-
 
 					% ISO predicates
 predicate_info(Module:Name/Arity, Key, Value) :-
-	compound_name_arity(Head, Name, Arity),
+	functor(Head, Name, Arity),
 	predicate_property(system:Head, iso), !,
 	ignore(Module = system),
 	(   catch(predicate(Name, Arity, Summary, _, _), _, fail),
