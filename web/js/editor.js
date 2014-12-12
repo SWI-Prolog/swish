@@ -12,6 +12,8 @@ define([ "cm/lib/codemirror",
 	 "config",
 	 "preferences",
 
+	 "cm/mode/prolog/prolog-template-hint",
+
 	 "cm/mode/prolog/prolog",
 	 "cm/mode/prolog/prolog_keys",
 	 "cm/mode/prolog/prolog_query",
@@ -28,9 +30,12 @@ define([ "cm/lib/codemirror",
 	 "cm/addon/hover/text-hover",
 	 "cm/addon/hover/prolog-hover",
 
+	 "cm/addon/hint/templates-hint",
+	 "cm/addon/hint/show-context-info",
+
          "jquery", "laconic"
        ],
-       function(CodeMirror, config, preferences) {
+       function(CodeMirror, config, preferences, templateHint) {
 
 (function($) {
   var pluginName = 'prologEditor';
@@ -78,6 +83,10 @@ define([ "cm/lib/codemirror",
 	  extraKeys: {
 	    "Ctrl-Space": "autocomplete",
 	    "Alt-/": "autocomplete",
+	  },
+	  hintOptions: {
+	    hint: templateHint.getHints,
+	    completeSingle: false
 	  }
 	}, options);
 
