@@ -31,7 +31,8 @@
 	  [ use_rendering/1,		% +Renderer
 	    use_rendering/2,		% +Renderer, +Options
 
-	    register_renderer/2		% Declare a rendering module
+	    register_renderer/2,	% Declare a rendering module
+	    current_renderer/2		% Name, Comment
 	  ]).
 :- use_module(library(pengines_io), []).
 :- use_module(library(http/html_write)).
@@ -191,6 +192,13 @@ tokens([H|T]) --> [H], tokens(T).
 
 :- multifile
 	renderer/3.
+
+%%	current_renderer(Name, Comment) is nondet.
+%
+%	True when renderer Name is declared with Comment.
+
+current_renderer(Name, Comment) :-
+	renderer(Name, _Module, Comment).
 
 %%	register_renderer(:Name, +Comment)
 %
