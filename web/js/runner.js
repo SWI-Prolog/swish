@@ -183,16 +183,17 @@ define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
 (function($) {
   var pluginName = 'prologRunner';
 
-  var keyBindings = { ";":     'next',
-//		      " ":     'next',	reported JsDoc bug.  Binding below.
-		      ".":     'stop',
-		      "Enter": 'stop',
-		      "a":     'stopOrAbort',
-		      "Esc":   'stopOrAbort',
-		      "Del":   'close',
-		      "F1":    'help'
+  // keyBindings rely on the jQuery normalized `which` field
+  var keyBindings = { 59:      'next',		/* ; (FF) */
+		      186:     'next',		/* ; (Chromium) */
+		      32:      'next',		/* space */
+		      190:     'stop',		/* . */
+		      13:      'stop',		/* Enter */
+		      65:      'stopOrAbort',	/* a */
+		      27:      'stopOrAbort',	/* Esc */
+		      46:      'close',		/* Del */
+		      112:     'help'		/* F1 */
                     };
-  keyBindings[" "] = 'next';
 
   /** @lends $.fn.prologRunner */
   var methods = {
@@ -302,10 +303,10 @@ define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
 	elem.data('prologRunner', data);
 
 	elem.prologRunner('populateActionMenu');
-	elem.keypress(function(ev) {
-	  if ( keyBindings[ev.key] ) {
+	elem.keydown(function(ev) {
+	  if ( keyBindings[ev.which] ) {
 	    ev.preventDefault();
-	    elem.prologRunner(keyBindings[ev.key]);
+	    elem.prologRunner(keyBindings[ev.which]);
 	  }
 	});
 
