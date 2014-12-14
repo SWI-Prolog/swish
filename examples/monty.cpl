@@ -27,7 +27,7 @@ selected(1).
 open_door(A):0.5; open_door(B):0.5:- 
   member(A,[1,2,3]),
   member(B,[1,2,3]),
-  A\=B,
+  A<B,
   \+ prize(A),
   \+ prize(B),
   \+ selected(A),
