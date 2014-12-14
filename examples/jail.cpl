@@ -17,15 +17,10 @@ Peter D. Grunwald and Joseph Y. Halpern. "Updating Probabilities." Journal of Ar
 safe(a):1/3; safe(b):1/3; safe(c):1/3.
 % a, b and c are safe with probability 1/3
 
-tell_executed(A):1/2; tell_executed(B):1/2:-
-  member(A,[b,c]),
-  member(B,[b,c]),
-  A\=B,
-  \+ safe(A),
-  \+ safe(B).
-% the jailer says that A will be executed with probability 1/2 or B will be
-% executed with probability 1/2 if A and B are different and are both to
-% be executed
+tell_executed(b):1/2; tell_executed(c):1/2:-
+  safe(a).
+% the jailer says that b will be executed with probability 1/2 or c will be
+% executed with probability 1/2 if a is safe
 
 tell_executed(A):-
   member(A,[b,c]),
@@ -35,18 +30,24 @@ tell_executed(A):-
 % the jailer says that A will be executed with certainty if there is a prisoner
 % B in {b,c} different from A that is safe
 
+tell:-
+  tell_executed(_).
+% the jailers speaks if there is a prisoner for which he says that he will be
+% executed
+
 safe_after_tell:-
   safe(a),
-  tell_executed(_B).
+  tell.
 % a is safe after the jailer has spoken if he is safe and the jailer has told
 % that someone is going to be executed
   
 /** <examples>
 
-?- safe(a). % what is the probability that a is not executed
 ?- safe_after_tell. % what is the probability that a is not executed after the jailer has spoken
 % the result, 1/3, means that the jailer communication did not change the 
 % probability of a being safe
+?- tell. % what is the probability that the jailer speaks? 
+?- safe(a). % what is the probability that a is not executed
 ?- tell_executed(b). % what is the probability that the jailer says b is going to be executed?
 ?- tell_executed(c). % what is the probability that the jailer says b is going to be executed?
 
