@@ -59,7 +59,9 @@ grammer rules. This allows for server-side   generated  pages to include
 swish or parts of swish easily into a page.
 */
 
-:- http_handler(swish(.), swish_reply([]), [id(swish), prefix]).
+http:location(pldoc, swish(pldoc), [priority(100)]).
+
+:- http_handler(swish(.), swish_reply([]), [id(swish), prefix, priority(100)]).
 
 :- multifile
 	swish_config:source_alias/1,
