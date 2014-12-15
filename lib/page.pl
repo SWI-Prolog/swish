@@ -195,7 +195,8 @@ swish_navbar(Options) -->
 		   div([ class([collapse, 'navbar-collapse']),
 			 id(navbar)
 		       ],
-		       [ ul([class([nav, 'navbar-nav'])], [])
+		       [ ul([class([nav, 'navbar-nav'])], []),
+			 \search_box(Options)
 		       ])
 		 ])).
 
@@ -223,6 +224,24 @@ swish_logo(_Options) -->
 	{ http_absolute_location(swish('index.html'), HREF, [])
 	},
 	html(a([href(HREF), class('swish-logo')], &(nbsp))).
+
+%%	search_box(+Options)//
+%
+%	Add search box to the navigation bar
+
+search_box(_Options) -->
+	html(div(class(['col-sm-3', 'col-md-3', 'pull-right']),
+		 form([class('navbar-form'), role(search)],
+		      div(class('input-group'),
+			  [ input([type(text), class('form-control'),
+				   placeholder('Search'), id('search')]),
+			    div(class('input-group-btn'),
+				button([ class([btn, 'btn-default']),
+					 type(submit)],
+				       i(class([glyphicon, 'glyphicon-search']),
+					 [])))
+			  ])))).
+
 
 %%	swish_content(+Options)//
 %
