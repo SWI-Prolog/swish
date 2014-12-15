@@ -183,24 +183,43 @@ swish_page(Options) -->
 %
 %	Generate the swish navigation bar.
 
-swish_navbar(_Options) -->
+swish_navbar(Options) -->
 	swish_resources,
-	html(header(class([navbar, 'navbar-default']),
-		    div(class([container, 'pull-left']),
-			[ div(class('navbar-header'),
-			      \swish_logos),
-			  nav(id(navbar), [])
-			]))).
+	html(nav([ class([navbar, 'navbar-default']),
+		   role(navigation)
+		 ],
+		 [ div(class('navbar-header'),
+		       [ \collapsed_button,
+			 \swish_logos(Options)
+		       ]),
+		   div([ class([collapse, 'navbar-collapse']),
+			 id(navbar)
+		       ],
+		       [ ul([class([nav, 'navbar-nav'])], [])
+		       ])
+		 ])).
 
-swish_logos -->
-	pengine_logo,
-	swish_logo.
+collapsed_button -->
+	html(button([type(button),
+		     class('navbar-toggle'),
+		     'data-toggle'(collapse),
+		     'data-target'('#navbar')
+		    ],
+		    [ span(class('sr-only'), 'Toggle navigation'),
+		      span(class('icon-bar'), []),
+		      span(class('icon-bar'), []),
+		      span(class('icon-bar'), [])
+		    ])).
 
-pengine_logo -->
+swish_logos(Options) -->
+	pengine_logo(Options),
+	swish_logo(Options).
+
+pengine_logo(_Options) -->
 	{ http_absolute_location(root(.), HREF, [])
 	},
 	html(a([href(HREF), class('pengine-logo')], &(nbsp))).
-swish_logo -->
+swish_logo(_Options) -->
 	{ http_absolute_location(swish('index.html'), HREF, [])
 	},
 	html(a([href(HREF), class('swish-logo')], &(nbsp))).
