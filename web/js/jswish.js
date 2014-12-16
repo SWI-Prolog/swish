@@ -43,6 +43,9 @@ preferences.setDefault("semantic-highlighting", true);
 	"Save": function() {
 	  menuBroadcast("saveProgram");
 	},
+	"Save as ...": function() {
+	  menuBroadcast("form", {file:"save_as.html"});
+	},
 	"Collaborate ...": function() {
 	  $("body").swish('collaborate');
 	},
