@@ -19,9 +19,7 @@
 
 ## Editor
 
-  - Advanced completion.  This seems possible.  See e.g.,
-    - https://groups.google.com/forum/#!topic/codemirror/9OvD5cMz_uA
-    - can we do menu-based completions?
+  - Template based completion					[OK]
 
 ## Runners
 
@@ -91,6 +89,11 @@ _not_ see exactly the same UI for cooperation.  What about
   - Look at [Dillinger markup editor](http://dillinger.io/)
   - Server saves:
 
-    - Save under content hash?  Would mean that `Back' actually goes back
-      a version!  Provide meta-information (who, previous).
-    - Use GIT?  We have most of that!
+    - lib/gitty.pl saves individual files versioned with meta-data.	[OK]
+    - Public (flag)
+    - Save as
+      - Public
+      - Name
+      - Summary/Title
+      - Description (codemirror/markdown?)
+      - Keywords
