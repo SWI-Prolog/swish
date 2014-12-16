@@ -50,7 +50,10 @@
 :- use_module(library(debug)).
 :- use_module(library(time)).
 :- use_module(library(option)).
+
 :- use_module(config).
+:- use_module(help).
+:- use_module(form).
 
 /** <module> Provide the SWISH application as Prolog HTML component
 
@@ -167,6 +170,7 @@ serve_resource(Request) :-
 
 resource_prefix('css/').
 resource_prefix('help/').
+resource_prefix('form/').
 resource_prefix('icons/').
 resource_prefix('js/').
 resource_prefix('bower_components/').

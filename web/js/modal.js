@@ -27,6 +27,9 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 	elem.on("help", function(ev, data) {
 	  elem.swishModal('showHelp', data);
 	});
+	elem.on("form", function(ev, data) {
+	  elem.swishModal('showForm', data);
+	});
 	elem.on("error", function(ev, data) {
 	  elem.swishModal('show', data);
 	});
@@ -55,6 +58,29 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 		 that.swishModal('show',
 				 $.extend(
 				   { title: container.find("title").text(),
+				     body:  container
+				   }, options));
+	       }
+             });
+    },
+
+    /**
+     * Show a form.  The form is an HTML document.
+     * @param {Object} options
+     * @param {String} options.file file help file.
+     * @param {String} options.notagain Identifier to stop this dialog
+     */
+    showForm: function(options) {
+      var that = this;
+
+      $.ajax({ url: config.http.locations.form + "/" + options.file,
+	       dataType: "html",
+	       success: function(data) {
+		 var container = $("<div>");
+		 container.html(data);
+		 that.swishModal('show',
+				 $.extend(
+				   { title: container.find("legend").text(),
 				     body:  container
 				   }, options));
 	       }
