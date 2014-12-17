@@ -76,35 +76,46 @@ storage(get, Request) :-
 			]),
 	storage_get(Request, Format).
 storage(post, Request) :-
-	http_parameters(Request,
-			[   data(Data, [default(''),
-					description('Data to be saved')]),
-			    type(Type, [default(pl)])
-			]),
-	authentity(Request, Authentity),
+	http_read_json_dict(Request, Dict),
+	option(data(Data), Dict, ""),
+	option(type(Type), Dict, pl),
+	meta_data(Request, Dict, Meta),
 	setting(directory, Dir),
 	make_directory_path(Dir),
-	(   repeat,
-	    random_filename(Base),
-	    file_name_extension(Base, Type, File),
-	    catch(gitty_create(Dir, File, Data, Authentity, Commit),
-		  error(gitty(file_exists(File)),_),
-		  fail)
-	->  true
+	(   Base = Dict.get(meta).get(name)
+	->  file_name_extension(Base, Type, File),
+	    (	catch(gitty_create(Dir, File, Data, Meta, Commit),
+		      error(gitty(file_exists(File)),_),
+		      fail)
+	    ->	true
+	    ;	Error = json{error:file_exists,
+			     file:File}
+	    )
+	;   (   repeat,
+	        random_filename(Base),
+		file_name_extension(Base, Type, File),
+		catch(gitty_create(Dir, File, Data, Meta, Commit),
+		      error(gitty(file_exists(File)),_),
+		      fail)
+	    ->  true
+	    )
 	),
-	debug(storage, 'Created: ~p', [Commit]),
-	storage_url(File, URL),
-	reply_json_dict(json{url:URL, file:File}).
+	(   var(Error)
+	->  debug(storage, 'Created: ~p', [Commit]),
+	    storage_url(File, URL),
+	    reply_json_dict(json{url:URL, file:File, meta:Meta})
+	;   reply_json_dict(Error)
+	).
 storage(put, Request) :-
-	http_read_data(Request, Form, []),
-	option(data(Data), Form, ''),
-	authentity(Request, Meta),
+	http_read_json_dict(Request, Dict),
+	option(data(Data), Dict, ""),
+	meta_data(Request, Dict, Meta),
 	setting(directory, Dir),
 	request_file(Request, Dir, File),
 	storage_url(File, URL),
 	gitty_update(Dir, File, Data, Meta, Commit),
 	debug(storage, 'Updated: ~p', [Commit]),
-	reply_json_dict(json{url:URL, file:File}).
+	reply_json_dict(json{url:URL, file:File, meta:Meta}).
 storage(delete, Request) :-
 	authentity(Request, Meta),
 	setting(directory, Dir),
@@ -122,6 +133,40 @@ request_file(Request, Dir, File) :-
 
 storage_url(File, HREF) :-
 	http_link_to_id(web_storage, path_postfix(File), HREF).
+
+%%	meta_data(+Request, +Dict, -Meta) is det.
+%
+%	Gather meta-data from the  Request   (user,  peer)  and provided
+%	meta-data. Illegal and unknown values are ignored.
+
+meta_data(Request, Dict, Meta) :-
+	authentity(Request, Meta0),	% user, peer
+	(   filter_meta(Dict.get(meta), Meta1)
+	->  Meta = Meta0.put(Meta1)
+	;   Meta = Meta0
+	).
+
+filter_meta(Dict0, Dict) :-
+	dict_pairs(Dict0, Tag, Pairs0),
+	filter_pairs(Pairs0, Pairs),
+	dict_pairs(Dict, Tag, Pairs).
+
+filter_pairs([], []).
+filter_pairs([H|T0], [H|T]) :-
+	H = K-V,
+	meta_allowed(K, Type),
+	is_of_type(Type, V), !,
+	filter_pairs(T0, T).
+filter_pairs([_|T0], T) :-
+	filter_pairs(T0, T).
+
+meta_allowed(public,      boolean).
+meta_allowed(author,      string).
+meta_allowed(email,       string).
+meta_allowed(title,       string).
+meta_allowed(keywords,    list(string)).
+meta_allowed(description, string).
+
 
 %%	storage_get(+Request, +Format) is det.
 
