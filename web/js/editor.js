@@ -127,10 +127,10 @@ define([ "cm/lib/codemirror",
 
 	if ( data.role == "source" ) {
 	  elem.on("source", function(ev, src) {
-	    elem.prologEditor('setSource', src.data);
+	    elem.prologEditor('setSource', src);
 	  });
 	  elem.on("saveProgram", function(ev, data) {
-	    elem.prologEditor('save');
+	    elem.prologEditor('save', data);
 	  });
 	  elem.on("source-error", function(ev, error) {
 	    elem.prologEditor('highlightError', error);
@@ -175,10 +175,23 @@ define([ "cm/lib/codemirror",
      },
 
     /**
-     * @param {String} src becomes the new contents of the editor
+     * @param {String|Object} src becomes the new contents of the editor
+     * @param {String} Object.data contains the data in the case that
+     * `src` is an object.
      */
     setSource: function(src) {
-      this.data(pluginName).cm.setValue(src);
+      var options = this.data(pluginName);
+
+      if ( typeof(src) == "string" )
+	src = {data:src};
+
+      this.data(pluginName).cm.setValue(src.data);
+
+      if ( src.type == "new" ) {
+	options.file = null;
+	updateHistory({url:config.http.locations.swish});
+      }
+
       return this;
     },
 
@@ -206,8 +219,12 @@ define([ "cm/lib/codemirror",
 
     /**
      * Save the current document to the server
+     * @param {Object} [meta] provides additional meta-information.
+     * Currently defined fields are `author`, `email`,
+     * `title`, `keywords` and `description`. Illegal fields are ignored
+     * by the server.
      */
-    save: function() {
+    save: function(meta) {
       var source  = this.prologEditor('getSource');
       var options = this.data(pluginName);
       var data    = { data: source, type: "pl" };
@@ -219,6 +236,9 @@ define([ "cm/lib/codemirror",
 	return this;
       }
 
+      if ( meta )
+	data.meta = meta;
+
       if ( options.file ) {
 	url += "/" + encodeURI(options.file);
 	method = "PUT";
@@ -226,12 +246,17 @@ define([ "cm/lib/codemirror",
 
       $.ajax({ url: url,
                dataType: "json",
+	       contentType: "application/json",
 	       type: method,
-	       data: data,
+	       data: JSON.stringify(data),
 	       success: function(reply) {
-		 options.url = reply.url;
-		 options.file = reply.file;
-		 updateHistory(reply);
+		 if ( reply.error ) {
+		   alert(reply);
+		 } else {
+		   options.url  = reply.url;
+		   options.file = reply.file;
+		   updateHistory(reply);
+		 }
 	       },
 	       error: function() {
 		 alert("Failed to save document");
