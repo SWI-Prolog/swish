@@ -90,10 +90,19 @@ _not_ see exactly the same UI for cooperation.  What about
   - Server saves:
 
     - lib/gitty.pl saves individual files versioned with meta-data.	[OK]
-    - Public (flag)
     - Save as
-      - Public
-      - Name
-      - Summary/Title
-      - Description (codemirror/markdown?)
-      - Keywords
+      - Meta data
+        - Public
+	- Name
+	- Title
+	- Description (codemirror/markdown?)
+	- Keywords
+      - Handle errors
+      - Keep current meta-data and use to fill the dialog
+    - Load
+      - Record meta-data
+    - Info
+      - Display meta-data
+      - Access history
+    - New
+      - Remove current file notion					[OK]
