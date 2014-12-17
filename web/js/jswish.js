@@ -35,8 +35,8 @@ preferences.setDefault("semantic-highlighting", true);
     menu: {
       "File":
       { "New": function() {
-	  menuBroadcast("source", { type: "new", data:
-				    defaults.newProgramText
+	  menuBroadcast("source", { type: "new",
+				    data: defaults.newProgramText
 	                          });
 	},
 	"Share group": "--",
