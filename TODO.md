@@ -92,17 +92,19 @@ _not_ see exactly the same UI for cooperation.  What about
     - lib/gitty.pl saves individual files versioned with meta-data.	[OK]
     - Save as
       - Meta data
-        - Public
-	- Name
-	- Title
-	- Description (codemirror/markdown?)
-	- Keywords
+        - Public							[OK]
+	- Name								[OK]
+	- Title								[OK]
+	- Author, E-mail
+	- Description (codemirror/markdown?)				[OK]
+	- Keywords (using `tagit', auto-completion)
       - Handle errors
-      - Keep current meta-data and use to fill the dialog
+      - Keep current meta-data						[OK]
+      - Use current to fill the dialog
     - Load
-      - Record meta-data
+      - Record meta-data						[OK]
     - Info
-      - Display meta-data
+      - Display meta-data						[OK]
       - Access history
     - New
       - Remove current file notion					[OK]
