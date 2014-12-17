@@ -11,6 +11,7 @@
 define([ "cm/lib/codemirror",
 	 "config",
 	 "preferences",
+	 "form",
 
 	 "cm/mode/prolog/prolog-template-hint",
 
@@ -35,7 +36,7 @@ define([ "cm/lib/codemirror",
 
          "jquery", "laconic"
        ],
-       function(CodeMirror, config, preferences, templateHint) {
+       function(CodeMirror, config, preferences, form, templateHint) {
 
 (function($) {
   var pluginName = 'prologEditor';
@@ -133,6 +134,9 @@ define([ "cm/lib/codemirror",
 	  });
 	  elem.on("saveProgram", function(ev, data) {
 	    elem.prologEditor('save', data);
+	  });
+	  elem.on("fileInfo", function() {
+	    elem.prologEditor('info');
 	  });
 	  elem.on("source-error", function(ev, error) {
 	    elem.prologEditor('highlightError', error);
@@ -266,6 +270,23 @@ define([ "cm/lib/codemirror",
 		 alert("Failed to save document");
 	       }
 	     });
+
+      return this;
+    },
+
+    /**
+     * Provide information about the current source in a modal
+     * dialog.
+     */
+    info: function() {
+      var options = this.data(pluginName);
+      var meta = options.meta||{};
+
+      form.showDialog({ title: "File info",
+			body: function() {
+			  this.append(form.fields.fileName(meta.name, meta.public));
+			}
+		      });
 
       return this;
     },

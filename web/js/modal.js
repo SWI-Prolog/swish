@@ -30,7 +30,10 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 	elem.on("form", function(ev, data) {
 	  elem.swishModal('showForm', data);
 	});
-	elem.on("error", function(ev, data) {
+	elem.on("dialog", function(ev, data) {
+	  elem.swishModal('show', data);
+	});
+	elem.on("error", function(ev, data) { /* still needed? */
 	  elem.swishModal('show', data);
 	});
       });
@@ -91,7 +94,10 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
      * Show a modal dialog.
      * @param {Object} options
      * @param {String} options.title HTML rendered as title
-     * @param {String} options.body  HTML rendered as body
+     * @param {String|function} options.body  If this is a string the
+     * content is set using `$.html()`, else the function is called,
+     * where `this` refers to the jQuery content element and the
+     * function result is added to the content using `$.append()`.
      * @param {String} options.notagain Identifier to stop this dialog
      * showing
      */
@@ -114,7 +120,14 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 	  {class:"modal-footer"},
 	  notAgain(options)));
       }
-      $(content).html(options.body);
+      content = $(content);
+      if ( typeof(options.body) == "function" ) {
+	var c = options.body.call(content);
+	if ( c )
+	  content.apppend(c);
+      } else {
+	content.html(options.body);
+      }
       $(title).html(options.title);
       $(modalel).modal({show: true})
 	        .on("hidden.bs.modal", function() {

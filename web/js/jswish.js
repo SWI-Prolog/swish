@@ -39,13 +39,17 @@ preferences.setDefault("semantic-highlighting", true);
 				    data: defaults.newProgramText
 	                          });
 	},
-	"Share group": "--",
+	"File group": "--",
 	"Save": function() {
 	  menuBroadcast("saveProgram");
 	},
 	"Save as ...": function() {
 	  menuBroadcast("form", {file:"save_as.html"});
 	},
+	"Info ...": function() {
+	  menuBroadcast("fileInfo");
+	},
+	"Share": "--",
 	"Collaborate ...": function() {
 	  $("body").swish('collaborate');
 	},
