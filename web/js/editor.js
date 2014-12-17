@@ -109,6 +109,8 @@ define([ "cm/lib/codemirror",
 
 	  if ( file )
 	    data.file = file;
+	  if ( window.swish && window.swish.meta_data )
+	    data.meta = window.swish.meta_data;
 	} else {
 	  ta = $.el.textarea({placeholder:options.placeholder},
 			     elem.text());
@@ -189,6 +191,7 @@ define([ "cm/lib/codemirror",
 
       if ( src.type == "new" ) {
 	options.file = null;
+	options.meta = null;
 	updateHistory({url:config.http.locations.swish});
       }
 
@@ -251,10 +254,11 @@ define([ "cm/lib/codemirror",
 	       data: JSON.stringify(data),
 	       success: function(reply) {
 		 if ( reply.error ) {
-		   alert(reply);
+		   alert(JSON.stringify(reply));
 		 } else {
 		   options.url  = reply.url;
 		   options.file = reply.file;
+		   options.meta = reply.meta;
 		   updateHistory(reply);
 		 }
 	       },
