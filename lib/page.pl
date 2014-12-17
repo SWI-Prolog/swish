@@ -289,6 +289,7 @@ source(Options) -->
 	  ;   Extra = []
 	  )
 	},
+	source_meta_data(File, Options),
 	html(textarea([ class([source,prolog]),
 			style('display:none')
 		      | Extra
@@ -296,6 +297,19 @@ source(Options) -->
 		      Source)).
 source(_) --> [].
 
+%%	source_meta_data(+File, +Options)//
+%
+%	Dump the meta-data of the provided file into swish.meta_data.
+
+source_meta_data(File, Options) -->
+	{ nonvar(File),
+	  option(meta(Meta), Options)
+	}, !,
+	js_script({|javascript(Meta)||
+		   window.swish = window.swish||{};
+		   window.swish.meta_data = Meta;
+		   |}).
+source_meta_data(_, _) --> [].
 
 background(Options) -->
 	{ option(background(Spec), Options), !,

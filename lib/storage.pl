@@ -175,8 +175,8 @@ storage_get(Request, swish) :-
 storage_get(Request, swish) :- !,
 	setting(directory, Dir),
 	request_file(Request, Dir, File),
-	gitty_data(Dir, File, Code, _Meta),
-	swish_reply([code(Code),file(File)], Request).
+	gitty_data(Dir, File, Code, Meta),
+	swish_reply([code(Code),file(File),meta(Meta)], Request).
 storage_get(Request, _) :-
 	setting(directory, Dir),
 	request_file(Request, Dir, File),
