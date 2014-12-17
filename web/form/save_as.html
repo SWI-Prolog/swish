@@ -12,7 +12,7 @@
   <div class="controls">
     <div class="input-group">
       <span class="input-group-addon">
-          <input type="checkbox">
+          <input name="public" type="checkbox">
       </span>
       <input name="name" class="form-control" placeholder="Name" type="text">
     </div>
@@ -46,4 +46,16 @@
 </div>
 
 </fieldset>
+<script>
+require(["jquery", "form"], function($, form) {
+$("#form-save-as").on("submit", function (ev) {
+   ev.preventDefault();
+
+   var data = form.serializeAsObject($(this));
+   form.formBroadcast('saveProgram', data);
+   $("#ajaxModal").modal('hide');
+   return false;
+});
+});
+</script>
 </form>
