@@ -284,7 +284,9 @@ define([ "cm/lib/codemirror",
 
       form.showDialog({ title: "File info",
 			body: function() {
-			  this.append(form.fields.fileName(meta.name, meta.public));
+			  this.append(form.fields.fileName(meta.name, meta.public),
+				      form.fields.title(meta.title),
+				      form.fields.description(meta.description));
 			}
 		      });
 

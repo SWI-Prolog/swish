@@ -65,6 +65,21 @@ define([ "jquery", "laconic" ], function($) {
       },
 
       title: function(title) {
+	var elem =
+	$.el.div({class:"control-group"},
+		 label("title", "Title"),
+		 $.el.div({class:"controls"},
+			  textInput("title", "Title", title)));
+	return elem;
+      },
+
+      description: function(description) {
+	var elem =
+	$.el.div({class:"control-group"},
+		 label("description", "Description"),
+		 $.el.div({class:"controls"},
+			  textarea("description", description)));
+	return elem;
       }
     }
   };
@@ -89,6 +104,10 @@ define([ "jquery", "laconic" ], function($) {
   function helpBlock(help) {
     return $.el.p({class:"help-block"},
 		  "Make saved file public and give it a meaningful name");
+  }
+
+  function textarea(name, text) {
+    return $.el.textarea({name:name, class:"form-control"}, text||"");
   }
 
   return form;
