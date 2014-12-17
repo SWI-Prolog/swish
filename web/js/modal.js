@@ -116,7 +116,10 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
       }
       $(content).html(options.body);
       $(title).html(options.title);
-      $(modalel).modal({show: true});
+      $(modalel).modal({show: true})
+	        .on("hidden.bs.modal", function() {
+		  $(this).remove();
+		});
 
       return this
     }
