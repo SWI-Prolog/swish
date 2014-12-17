@@ -36,6 +36,7 @@
 	    gitty_history/4,		% +Store, +Name, +Max, -History
 	    gitty_scan/1,		% +Store
 	    gitty_hash/2,		% +Store, ?Hash
+	    gitty_reserved_meta/1,	% ?Key
 
 	    data_diff/3,		% +String1, +String2, -Diff
 	    udiff_string/2		% +Diff, -String
@@ -334,6 +335,15 @@ hash_file(Store, Hash, Path) :-
 	sub_atom(Hash, 2, 2, _, Dir1),
 	sub_atom(Hash, 4, _, 0, File),
 	atomic_list_concat([Store, Dir0, Dir1, File], /, Path).
+
+%%	gitty_reserved_meta(?Key) is nondet.
+%
+%	True when Key is a gitty reserved key for the commit meta-data
+
+gitty_reserved_meta(name).
+gitty_reserved_meta(time).
+gitty_reserved_meta(data).
+gitty_reserved_meta(previous).
 
 
 		 /*******************************
