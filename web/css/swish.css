@@ -37,3 +37,11 @@ a.pengine-logo {
     overflow: visible;
 }
 
+/* Modal */
+
+body .modal-dialog {
+  width: 80%;
+  max-width: 800px;
+  margin-left:auto;
+  margin-right:auto;
+}
