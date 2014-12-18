@@ -280,14 +280,24 @@ define([ "cm/lib/codemirror",
      */
     info: function() {
       var options = this.data(pluginName);
-      var meta = options.meta||{};
+      var meta = options.meta;
 
-      form.showDialog({ title: "File info",
-			body: function() {
-			  this.append(form.fields.fileName(meta.name, meta.public),
-				      form.fields.title(meta.title),
-				      form.fields.description(meta.description));
-			}
+      function infoBody() {
+	if ( options.meta ) {
+	  var meta = options.meta;
+	  this.append(form.fields.fileName(meta.name, meta.public),
+		      form.fields.title(meta.title),
+		      form.fields.description(meta.description));
+	} else
+	  this.append($.el.p("The source is not associated with a file. ",
+			     "Use ",
+			     $.el.b("Save As ..."),
+			     " to save the source with meta information."
+			    ));
+      }
+
+      form.showDialog({ title: options.meta ? "File info" : "Local source",
+			body:  infoBody
 		      });
 
       return this;
