@@ -17,6 +17,7 @@ require.config({
     laconic:     "../bower_components/laconic/laconic",
     bootstrap:   "../bower_components/bootstrap/dist/js/bootstrap.min",
     splitter:    "../bower_components/jquery.splitter/js/jquery.splitter-0.14.0",
+    tagmanager:  "../bower_components/tagmanager/tagmanager",
 
     "cm/lib/codemirror": "../bower_components/codemirror/lib/codemirror",
 					/* CodeMirror standard extensions */
@@ -48,6 +49,9 @@ require.config({
     { deps:["jquery"]
     },
     laconic:
+    { deps:["jquery"]
+    },
+    tagmanager:
     { deps:["jquery"]
     }
   }

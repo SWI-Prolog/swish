@@ -9,7 +9,7 @@
  * @requires jquery
  */
 
-define([ "jquery", "laconic" ], function($) {
+define([ "jquery", "laconic", "tagmanager" ], function($) {
   var form = {
     /**
      * Serialize a form as an object. Form fields that have an empty
@@ -80,6 +80,15 @@ define([ "jquery", "laconic" ], function($) {
 		 $.el.div({class:"controls"},
 			  textarea("description", description)));
 	return elem;
+      },
+
+      tags: function(tags) {
+	var elem =
+	$.el.div({class:"control-group"},
+		 label("tags", "Tags"),
+		 $.el.div({class:"controls"},
+			  tagInput("tags", "Tag", tags)));
+	return elem;
       }
     }
   };
@@ -99,6 +108,17 @@ define([ "jquery", "laconic" ], function($) {
     if ( placeholder ) attrs.placeholder = placeholder;
     if ( value )       attrs.value       = value;
     return $.el.input(attrs);
+  }
+
+  function tagInput(name, placeholder, tags) {
+    var attrs = { name:name, type:"text",
+                  class:"tm-input"
+                };
+    if ( placeholder ) attrs.placeholder = placeholder;
+    var elem = $.el.input(attrs);
+    if ( tags )
+      $(elem).data("prefilled", tags);
+    return elem;
   }
 
   function helpBlock(help) {

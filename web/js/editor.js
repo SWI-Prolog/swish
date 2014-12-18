@@ -287,7 +287,8 @@ define([ "cm/lib/codemirror",
 	  var meta = options.meta;
 	  this.append(form.fields.fileName(meta.name, meta.public),
 		      form.fields.title(meta.title),
-		      form.fields.description(meta.description));
+		      form.fields.description(meta.description),
+		      form.fields.tags(meta.keywords));
 	} else
 	  this.append($.el.p("The source is not associated with a file. ",
 			     "Use ",

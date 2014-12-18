@@ -11,6 +11,7 @@
     "bootstrap": "*",
     "laconic": "*",
     "requirejs": "*",
-    "codemirror": "*"
+    "codemirror": "*",
+    "tagmanager": "*"
   }
 }

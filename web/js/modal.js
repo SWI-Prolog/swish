@@ -130,6 +130,7 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
       }
       $(title).html(options.title);
       $(modalel).modal({show: true})
+	        .on("shown.bs.modal", initTagsManagers)
 	        .on("hidden.bs.modal", function() {
 		  $(this).remove();
 		});
@@ -168,6 +169,24 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
     } else {
       return "";
     }
+  }
+
+  /**
+   * Tags managers must be initialised after the DOM is complete.
+   * This cooperates with `tagInput()` from `form.js`
+   */
+  function initTagsManagers() {
+    var set = $(this).find(".tm-input");
+
+    set.each(function() {
+      var elem = $(this);
+      var tags = elem.data("prefilled");
+      var options = {};
+
+      if ( tags ) options.prefilled = tags;
+
+      elem.tagsManager(options);
+    });
   }
 
 
