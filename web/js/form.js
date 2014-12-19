@@ -53,9 +53,9 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
     fields: {
       fileName: function(name, public) {
 	var elem =
-	$.el.div({class:"control-group"},
+	$.el.div({class:"form-group"},
 		 label("name", "Public name"),
-		 $.el.div({class:"controls"},
+		 $.el.div({class:"col-xs-10"},
 			  $.el.div({class:"input-group"},
 				   $.el.span({class:"input-group-addon"},
 					     checkbox("public", public)),
@@ -66,35 +66,49 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 
       title: function(title) {
 	var elem =
-	$.el.div({class:"control-group"},
+	$.el.div({class:"form-group"},
 		 label("title", "Title"),
-		 $.el.div({class:"controls"},
+		 $.el.div({class:"col-xs-10"},
 			  textInput("title", "Title", title)));
 	return elem;
       },
 
       description: function(description) {
 	var elem =
-	$.el.div({class:"control-group"},
+	$.el.div({class:"form-group"},
 		 label("description", "Description"),
-		 $.el.div({class:"controls"},
+		 $.el.div({class:"col-xs-10"},
 			  textarea("description", description)));
 	return elem;
       },
 
       tags: function(tags) {
 	var elem =
-	$.el.div({class:"control-group"},
+	$.el.div({class:"form-group"},
 		 label("tags", "Tags"),
-		 $.el.div({class:"controls"},
+		 $.el.div({class:"col-xs-10"},
 			  tagInput("tags", "Tag", tags)));
+	return elem;
+      },
+
+      buttons: function() {
+	var elem =
+	$.el.div({class:"form-group"},
+		 $.el.div({class:"col-xs-offset-2 col-xs-10"},
+			  $.el.button({name:"save",
+				       class:"btn btn-primary"},
+				      "Save program"),
+			  $.el.button({name:"cancel",
+				       class:"btn btn-danger",
+				       'data-dismiss':"modal"},
+				      "Cancel")));
 	return elem;
       }
     }
   };
 
   function label(elemName, text) {
-    return $.el.label({class:"control-label", for:elemName}, text);
+    return $.el.label({class:"control-label col-xs-2", for:elemName}, text);
   }
 
   function checkbox(name, checked) {

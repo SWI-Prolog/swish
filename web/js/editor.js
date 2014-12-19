@@ -243,6 +243,11 @@ define([ "cm/lib/codemirror",
 	return this;
       }
 
+      if ( meta == "as" ) {
+	this.prologEditor('saveAs');
+	return this;
+      }
+
       if ( meta )
 	data.meta = meta;
 
@@ -275,6 +280,12 @@ define([ "cm/lib/codemirror",
     },
 
     /**
+     * Provide a Save As dialog
+     */
+    saveAs: function() {
+    },
+
+    /**
      * Provide information about the current source in a modal
      * dialog.
      */
@@ -285,10 +296,12 @@ define([ "cm/lib/codemirror",
       function infoBody() {
 	if ( options.meta ) {
 	  var meta = options.meta;
-	  this.append(form.fields.fileName(meta.name, meta.public),
-		      form.fields.title(meta.title),
-		      form.fields.description(meta.description),
-		      form.fields.tags(meta.keywords));
+	  this.append($.el.form({class:"form-horizontal"},
+				form.fields.fileName(meta.name, meta.public),
+				form.fields.title(meta.title),
+				form.fields.description(meta.description),
+				form.fields.tags(meta.keywords),
+				form.fields.buttons()));
 	} else
 	  this.append($.el.p("The source is not associated with a file. ",
 			     "Use ",

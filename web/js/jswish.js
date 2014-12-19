@@ -44,7 +44,7 @@ preferences.setDefault("semantic-highlighting", true);
 	  menuBroadcast("saveProgram");
 	},
 	"Save as ...": function() {
-	  menuBroadcast("form", {file:"save_as.html"});
+	  menuBroadcast("saveProgram", "as");
 	},
 	"Info ...": function() {
 	  menuBroadcast("fileInfo");
