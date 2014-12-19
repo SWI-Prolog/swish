@@ -304,9 +304,11 @@ define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
 
 	elem.prologRunner('populateActionMenu');
 	elem.keydown(function(ev) {
-	  if ( keyBindings[ev.which] ) {
-	    ev.preventDefault();
-	    elem.prologRunner(keyBindings[ev.which]);
+	  if ( elem.prologRunner('getState') != "wait-input" ) {
+	    if ( keyBindings[ev.which] ) {
+	      ev.preventDefault();
+	      elem.prologRunner(keyBindings[ev.which]);
+	    }
 	  }
 	});
 
