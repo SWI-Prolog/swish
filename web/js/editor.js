@@ -283,6 +283,30 @@ define([ "cm/lib/codemirror",
      * Provide a Save As dialog
      */
     saveAs: function() {
+      var options = this.data(pluginName);
+      var meta = options.meta||{};
+      var editor = this;
+
+      function infoBody() {
+	this.append($.el.form({class:"form-horizontal"},
+			      form.fields.fileName(meta.name, meta.public),
+			      form.fields.title(meta.title),
+			      form.fields.description(meta.description),
+			      form.fields.tags(meta.keywords),
+			      form.fields.buttons(
+				{ action: function(ev,data) {
+					    console.log(data);
+				            editor.prologEditor('save', data);
+					    return false;
+				          }
+				})));
+      }
+
+      form.showDialog({ title: "Save program as",
+			body:  infoBody
+		      });
+
+      return this;
     },
 
     /**
@@ -301,7 +325,9 @@ define([ "cm/lib/codemirror",
 				form.fields.title(meta.title),
 				form.fields.description(meta.description),
 				form.fields.tags(meta.keywords),
-				form.fields.buttons()));
+				form.fields.buttons(
+				  { label: "Update meta data"
+				  })));
 	} else
 	  this.append($.el.p("The source is not associated with a file. ",
 			     "Use ",

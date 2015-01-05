@@ -32,8 +32,6 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 	}
       }
 
-      console.log(obj);
-
       return obj;
     },
 
@@ -91,13 +89,35 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 	return elem;
       },
 
-      buttons: function() {
+      /**
+       * @param {Object} options
+       * @param {String} options.label is the label used for the
+       * primary button.
+       * @param {Function} options.action is called with two arguments,
+       * the _event_ and the serialized data from the embedded form
+       */
+      buttons: function(options) {
+	options    = options||{};
+	var label  = options.label||"Save program";
+	var button = $.el.button({ name:"save",
+				   class:"btn btn-primary"
+				 },
+				 label);
+
+	$(button).on("click", function(ev) {
+	  var elem = $(ev.target).parents("form")[0];
+	  var data = form.serializeAsObject($(elem));
+
+	  options.action(ev, data);
+	  $(ev.target).parents(".modal").modal('hide');
+	  ev.preventDefault();
+	  return false;
+	});
+
 	var elem =
 	$.el.div({class:"form-group"},
 		 $.el.div({class:"col-xs-offset-2 col-xs-10"},
-			  $.el.button({name:"save",
-				       class:"btn btn-primary"},
-				      "Save program"),
+			  button,
 			  $.el.button({name:"cancel",
 				       class:"btn btn-danger",
 				       'data-dismiss':"modal"},
