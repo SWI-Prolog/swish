@@ -230,22 +230,30 @@ define([ "cm/lib/codemirror",
      * Currently defined fields are `author`, `email`,
      * `title`, `keywords` and `description`. Illegal fields are ignored
      * by the server.
+     * @param {String} [what] If `"only-meta-data"`, only the meta-data
+     * is updated.
      */
-    save: function(meta) {
-      var source  = this.prologEditor('getSource');
+    save: function(meta, what) {
       var options = this.data(pluginName);
-      var data    = { data: source, type: "pl" };
       var url     = config.http.locations.web_storage;
       var method  = "POST";
-
-      if ( options.cm.isClean(options.cleanGeneration) ) {
-	alert("No change");
-	return this;
-      }
+      var data;
 
       if ( meta == "as" ) {
 	this.prologEditor('saveAs');
 	return this;
+      }
+
+      if ( !options.file || what != "only-meta-data" )
+      { if ( options.cm.isClean(options.cleanGeneration) ) {
+	  alert("No change");
+	  return this;
+        }
+	data = { data: this.prologEditor('getSource'),
+	         type: "pl"
+               }
+      } else {
+	data = { update: "meta-data" }
       }
 
       if ( meta )
@@ -289,10 +297,10 @@ define([ "cm/lib/codemirror",
 
       function infoBody() {
 	this.append($.el.form({class:"form-horizontal"},
-			      form.fields.fileName(meta.name, meta.public),
+			      form.fields.fileName(options.file, meta.public),
 			      form.fields.title(meta.title),
 			      form.fields.description(meta.description),
-			      form.fields.tags(meta.keywords),
+			      form.fields.tags(meta.tags),
 			      form.fields.buttons(
 				{ action: function(ev,data) {
 					    console.log(data);
@@ -316,17 +324,24 @@ define([ "cm/lib/codemirror",
     info: function() {
       var options = this.data(pluginName);
       var meta = options.meta;
+      var editor = this;
 
       function infoBody() {
 	if ( options.meta ) {
 	  var meta = options.meta;
 	  this.append($.el.form({class:"form-horizontal"},
-				form.fields.fileName(meta.name, meta.public),
+				form.fields.fileName(options.file, meta.public),
 				form.fields.title(meta.title),
 				form.fields.description(meta.description),
-				form.fields.tags(meta.keywords),
+				form.fields.tags(meta.tags),
 				form.fields.buttons(
-				  { label: "Update meta data"
+				  { label: "Update meta data",
+				    action: function(ev,data) {
+					      console.log(data);
+				              editor.prologEditor('save', data,
+								  "only-meta-data");
+					      return false;
+				            }
 				  })));
 	} else
 	  this.append($.el.p("The source is not associated with a file. ",

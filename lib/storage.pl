@@ -108,10 +108,13 @@ storage(post, Request) :-
 	).
 storage(put, Request) :-
 	http_read_json_dict(Request, Dict),
-	option(data(Data), Dict, ""),
-	meta_data(Request, Dict, Meta),
 	setting(directory, Dir),
 	request_file(Request, Dir, File),
+	(   Dict.get(update) == "meta-data"
+	->  gitty_data(Dir, File, Data, _OldMeta)
+	;   option(data(Data), Dict, "")
+	),
+	meta_data(Request, Dict, Meta),
 	storage_url(File, URL),
 	gitty_update(Dir, File, Data, Meta, Commit),
 	debug(storage, 'Updated: ~p', [Commit]),
@@ -164,7 +167,7 @@ meta_allowed(public,      boolean).
 meta_allowed(author,      string).
 meta_allowed(email,       string).
 meta_allowed(title,       string).
-meta_allowed(keywords,    list(string)).
+meta_allowed(tags,        list(string)).
 meta_allowed(description, string).
 
 

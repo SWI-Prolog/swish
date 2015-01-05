@@ -12,9 +12,12 @@
 define([ "jquery", "laconic", "tagmanager" ], function($) {
   var form = {
     /**
-     * Serialize a form as an object. Form fields that have an empty
-     * string are ignored and the value from a `<input type="checkbox">`
-     * is converted into a JavaScript boolean.
+     * Serialize a form as an object. The following normalizations are
+     * performed:
+     *   - Form fields that have an empty string are ignored
+     *   - The value from a `<input type="checkbox">`is converted
+     *     into a JavaScript boolean.
+     *	 - The value of a tag-list is converted into a list of strings.
      * @returns {Object} holding the name/value pairs of the form
      */
     serializeAsObject: function(form) {
@@ -22,13 +25,32 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
       var obj = {};
 
       for(var i=0; i<arr.length; i++) {
+	var name  = arr[i].name;
 	var value = arr[i].value;
+	var input = form.find('[name="'+name+'"]');
+	var type  = input.prop("type");
 
 	if ( value != "" ) {
-	  if ( form.find('[name="'+arr[i].name+'"]').prop("type") == "checkbox" ) {
+	  // deal with tag lists
+	  if ( type == "hidden" && name.indexOf("hidden-") == 0 ) {
+	    name = name.slice("hidden-".length);
+	    if ( obj[name] == undefined ) {
+	      obj[name] = value.split(",");
+	    } else {
+	      obj[name] = value.split(",").concat(obj[name]);
+	    }
+	  } else if ( type == "text" && input.hasClass("tag-list") ) {
+	    if ( value != "" ) {
+	      if ( obj[name] !== undefined )
+		obj[name].push(value);
+	      else
+		obj[name] = [value];
+	    }
+	  } else if ( type == "checkbox" ) {
 	    value = value == "on" ? true : false;
+	  } else {
+	    obj[name] = value;
 	  }
-	  obj[arr[i].name] = value;
 	}
       }
 
@@ -146,7 +168,7 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 
   function tagInput(name, placeholder, tags) {
     var attrs = { name:name, type:"text",
-                  class:"tm-input"
+                  class:"tm-input tag-list"
                 };
     if ( placeholder ) attrs.placeholder = placeholder;
     var elem = $.el.input(attrs);
