@@ -71,7 +71,7 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
     },
 
     fields: {
-      fileName: function(name, public) {
+      fileName: function(name, public, disabled) {
 	var elem =
 	$.el.div({class:"form-group"},
 		 label("name", "Public name"),
@@ -79,7 +79,7 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 			  $.el.div({class:"input-group"},
 				   $.el.span({class:"input-group-addon"},
 					     checkbox("public", public)),
-				   textInput("name", "Name", name)),
+				   textInput("name", "Name", name, disabled)),
 			  helpBlock("Make saved file public and give it a meaningful name")));
 	return elem;
       },
@@ -159,10 +159,11 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
     return $.el.input(attrs);
   }
 
-  function textInput(name, placeholder, value) {
+  function textInput(name, placeholder, value, disabled) {
     var attrs = {name:name, type:"text", class:"form-control"};
     if ( placeholder ) attrs.placeholder = placeholder;
     if ( value )       attrs.value       = value;
+    if ( disabled )    attrs.disabled    = disabled;
     return $.el.input(attrs);
   }
 

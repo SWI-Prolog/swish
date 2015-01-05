@@ -302,7 +302,9 @@ define([ "cm/lib/codemirror",
 			      form.fields.description(meta.description),
 			      form.fields.tags(meta.tags),
 			      form.fields.buttons(
-				{ action: function(ev,data) {
+				{ label: options.meta ? "Update program"
+						      : "Save program",
+				  action: function(ev,data) {
 					    console.log(data);
 				            editor.prologEditor('save', data);
 					    return false;
@@ -330,7 +332,8 @@ define([ "cm/lib/codemirror",
 	if ( options.meta ) {
 	  var meta = options.meta;
 	  this.append($.el.form({class:"form-horizontal"},
-				form.fields.fileName(options.file, meta.public),
+				form.fields.fileName(options.file, meta.public,
+						     true), // disabled
 				form.fields.title(meta.title),
 				form.fields.description(meta.description),
 				form.fields.tags(meta.tags),
@@ -338,6 +341,7 @@ define([ "cm/lib/codemirror",
 				  { label: "Update meta data",
 				    action: function(ev,data) {
 					      console.log(data);
+					      data.name = options.file;
 				              editor.prologEditor('save', data,
 								  "only-meta-data");
 					      return false;
