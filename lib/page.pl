@@ -54,6 +54,7 @@
 :- use_module(config).
 :- use_module(help).
 :- use_module(form).
+:- use_module(search).
 
 /** <module> Provide the SWISH application as Prolog HTML component
 
@@ -200,7 +201,7 @@ swish_navbar(Options) -->
 			 id(navbar)
 		       ],
 		       [ ul([class([nav, 'navbar-nav'])], []),
-			 \search_box(Options)
+			 \search_form(Options)
 		       ])
 		 ])).
 
@@ -229,22 +230,13 @@ swish_logo(_Options) -->
 	},
 	html(a([href(HREF), class('swish-logo')], &(nbsp))).
 
-%%	search_box(+Options)//
+%%	search_form(+Options)//
 %
 %	Add search box to the navigation bar
 
-search_box(_Options) -->
+search_form(Options) -->
 	html(div(class(['col-sm-3', 'col-md-3', 'pull-right']),
-		 form([class('navbar-form'), role(search)],
-		      div(class('input-group'),
-			  [ input([type(text), class('form-control'),
-				   placeholder('Search'), id('search')]),
-			    div(class('input-group-btn'),
-				button([ class([btn, 'btn-default']),
-					 type(submit)],
-				       i(class([glyphicon, 'glyphicon-search']),
-					 [])))
-			  ])))).
+		 \search_box(Options))).
 
 
 %%	swish_content(+Options)//
