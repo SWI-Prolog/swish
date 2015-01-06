@@ -13,9 +13,9 @@ define([ "jquery",
 	 "jquery-ui",
 	 "splitter",
 	 "bootstrap",
-	 "typeahead",
 	 "pane",
 	 "navbar",
+	 "search",
 	 "editor",
 	 "query",
 	 "runner",
@@ -113,7 +113,7 @@ preferences.setDefault("semantic-highlighting", true);
       swishLogo();
       setupModal();
       setupPanes();
-      setupSearch();
+      $("#search").search();
 
       options = options||{};
 
@@ -290,62 +290,6 @@ preferences.setDefault("semantic-highlighting", true);
       closePane($(this).parent());
     });
   }
-
-  /**
-   * Setup the search box.  We search for the following objects:
-   *
-   *   - Predicates (manual)		[TBD]
-   *   - Source code (line)		[TBD]
-   *   - Saved programs by		[TBD]
-   *     - Name				[TBD]
-   *     - Tag				[TBD]
-   *     - Description			[TBD]
-   */
-  function setupSearch() {
-    var elem = $("#search");
-
-    var engine = new Bloodhound({
-      name: "built-in",
-      remote: config.http.locations.typeahead + "?q=%QUERY",
-      datumTokenizer: function(d) {
-	return Bloodhound.tokenizers.whitespace(d.name);
-      },
-      queryTokenizer: Bloodhound.tokenizers.whitespace
-    });
-
-    engine.initialize();
-
-    elem.typeahead({ minLength: 1,
-		     highlight: true
-		   },
-		   [ { name: "built-in",
-		       displayKey: 'label',
-		       source: engine.ttAdapter()
-		     }
-		   ])
-	.on('typeahead:selected typeahead:autocompleted',
-	    function(ev, datum, set) {
-	      elem.data("target", {datum:datum, set:set});
-	      console.log(elem.data("target"));
-	    });
-
-    elem.parents("form").submit(function(ev) {
-      var data = elem.data("target");
-      var str  = elem.val();
-
-      if ( !(data && data.datum && data.datum.label == str) )
-	data = str;
-
-      elem.val("");
-      elem.data("target", null);
-
-      console.log(data);
-
-      ev.preventDefault();
-      return false;
-    });
-  }
-
 
   /**
    * <Class description>
