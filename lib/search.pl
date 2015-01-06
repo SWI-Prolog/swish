@@ -31,7 +31,25 @@
 	  [ search_box//1		% +Options
 	  ]).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_parameters)).
+:- use_module(library(http/http_json)).
 
+
+/** <module> SWISH search from the navigation bar
+
+This library supports both typeahead of the   search  box and the actual
+search from the server side. What do we want to search for?
+
+  - Predicates (built-in, library)
+    - How should we handle documentation?  PlDoc?  Manual?
+  - Source files (name, tags, meta-data, content?)
+    - Show matching sources in modal dialog and allow switching to
+      these?
+*/
+
+:- http_handler(swish(typeahead), typeahead, [id(typeahead)]).
+:- http_handler(swish(search),    search,    [id(search)]).
 
 %%	search_box(+Options)//
 %
@@ -48,3 +66,34 @@ search_box(_Options) -->
 				   i(class([glyphicon, 'glyphicon-search']),
 				     [])))
 		      ]))).
+
+
+%%	typeahead(+Request)
+%
+%	Support the search typeahead widget. The  handler returns a JSON
+%	array of matches. Each match is an object that contains at least
+%	a label.
+
+typeahead(Request) :-
+	http_parameters(Request,
+			[ q(Query, [default('')])
+			]),
+	findall(Match, match(built_in, Query, Match), Matches),
+	reply_json_dict(Matches).
+
+match(built_in, Query, json{label:Label}) :-
+	predicate_property(system:Head, built_in),
+	functor(Head, Name, Arity),
+	sub_atom(Name, 0, _, _, Query),
+	atomic_list_concat([Name, Arity], /, Label).
+
+%%	search(+Request)
+%
+%	Handle an actual search  request  from   the  SWISH  search box.
+%	Returns an HTML  document  with  the   actual  results  that  is
+%	displayed in a modal dialog.
+
+search(_Request) :-
+	reply_html_page(search,
+			[],
+			h1('Search results')).

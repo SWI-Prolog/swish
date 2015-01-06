@@ -9,6 +9,7 @@
     "jquery-ui": "*",
     "jquery.splitter": "*",
     "bootstrap": "*",
+    "typeahead": "*",
     "laconic": "*",
     "requirejs": "*",
     "codemirror": "*",

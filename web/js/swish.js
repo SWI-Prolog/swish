@@ -16,6 +16,7 @@ require.config({
     "jquery-ui": "../bower_components/jquery-ui/jquery-ui.min",
     laconic:     "../bower_components/laconic/laconic",
     bootstrap:   "../bower_components/bootstrap/dist/js/bootstrap.min",
+    typeahead:   "../bower_components/typeahead.js/dist/typeahead.bundle.min",
     splitter:    "../bower_components/jquery.splitter/js/jquery.splitter-0.14.0",
     tagmanager:  "../bower_components/tagmanager/tagmanager",
 
@@ -43,6 +44,9 @@ require.config({
   },
   shim:
   { bootstrap:
+    { deps:["jquery"]
+    },
+    typeahead:
     { deps:["jquery"]
     },
     splitter:
