@@ -4,9 +4,9 @@
  *
  *   - Predicates (manual)		[TBD]
  *   - Source code (line)		[TBD]
- *   - Saved programs by		[TBD]
- *     - Name				[TBD]
- *     - Tag				[TBD]
+ *   - Saved programs by
+ *     - Name				[OK]
+ *     - Tag				[OK]
  *     - Description			[TBD]
  *
  * @version 0.2.0
