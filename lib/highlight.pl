@@ -301,19 +301,6 @@ destroy_state_module(UUID) :-
 destroy_state_module(_).
 
 
-%%	master_load_file(+File, +Seen, -MasterFile) is det.
-%
-%	If file is included into another  file, find the outermost file.
-%	This is the file that needs to  be reloaded instead of reloading
-%	File.
-
-master_load_file(File0, Seen, File) :-
-	source_file_property(File0, included_in(File1, _Line)),
-	\+ memberchk(File1, Seen), !,
-	master_load_file(File1, [File0|Seen], File).
-master_load_file(File, _, File).
-
-
 		 /*******************************
 		 *	  SERVER TOKENS		*
 		 *******************************/
