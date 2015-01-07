@@ -84,7 +84,7 @@ typeahead(Request) :-
 	findall(Match, typeahead(Set, Query, Match), Matches),
 	reply_json_dict(Matches).
 
-typeahead(built_in, Query, json{name:Name, arity:Arity}) :-
+typeahead(built_in, Query, json{name:Name, arity:Arity, pldoc:true}) :-
 	predicate_property(system:Head, built_in),
 	functor(Head, Name, Arity),
 	sub_atom(Name, 0, _, _, Query).

@@ -103,6 +103,8 @@ define([ "jquery", "config", "typeahead" ],
 	      function(ev, datum, set) {
 		if ( datum.url ) {
 		  window.location = datum.url;
+		} else if ( datum.pldoc ) {
+		  $(".swish-event-receiver").trigger("pldoc", datum);
 		} else {
 		  elem.data("target", {datum:datum, set:set});
 		  console.log(elem.data("target"));

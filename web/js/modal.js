@@ -27,6 +27,9 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 	elem.on("help", function(ev, data) {
 	  elem.swishModal('showHelp', data);
 	});
+	elem.on("pldoc", function(ev, data) {
+	  elem.swishModal('showPlDoc', data);
+	});
 	elem.on("form", function(ev, data) {
 	  elem.swishModal('showForm', data);
 	});
@@ -90,6 +93,37 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
              });
     },
 
+    /** Show PlDoc manual page
+     * @param {Object} options
+     * @param {String} options.name is the name of the predicate to show
+     * @param {String} options.arity arity of the predicate
+     * @param {String} [options.module] module of the predicate
+     */
+    showPlDoc: function(options) {
+      function docURL(options) {
+	var term = options.name+"/"+options.arity;
+	return   config.http.locations.pldoc_doc_for
+	       + "?header=false&object="
+	       + encodeURIComponent(term);
+      }
+
+      function docBody(content, url) {
+	content.parents("div.modal-dialog").addClass("swish-embedded-manual");
+	return "<iframe class='swish-embedded-manual' " +
+		       "onload='javascript:resizeIframe(this);' " +
+                       "src='"+url+"'>" +
+	       "</iframe>";
+      }
+
+      var data = { title: "SWI-Prolog manual",
+                   body:  function() {
+		     return docBody(this, docURL(options))
+		   }
+                 };
+
+      return this.swishModal('show', data);
+    },
+
     /**
      * Show a modal dialog.
      * @param {Object} options
@@ -124,7 +158,7 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
       if ( typeof(options.body) == "function" ) {
 	var c = options.body.call(content);
 	if ( c )
-	  content.apppend(c);
+	  content.append(c);
       } else {
 	content.html(options.body);
       }
@@ -189,6 +223,15 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
     });
   }
 
+  /**
+   * See http://stackoverflow.com/questions/9975810/make-iframe-automatically-adjust-height-according-to-the-contents-without-using
+   */
+  window.resizeIframe = function(iframe) {
+    console.log("resize", iframe);
+    iframe.style.height = 0;
+    iframe.style.height = iframe.contentWindow.document.body.scrollHeight+20
+                          + 'px';
+  }
 
   /**
    * This class is a small layer around bootstrap $.modal that isolates
