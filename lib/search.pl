@@ -35,6 +35,8 @@
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
 
+:- multifile
+	typeahead/3.			% +Set, +Query, -Match
 
 /** <module> SWISH search from the navigation bar
 
@@ -76,16 +78,18 @@ search_box(_Options) -->
 
 typeahead(Request) :-
 	http_parameters(Request,
-			[ q(Query, [default('')])
+			[ q(Query, [default('')]),
+			  set(Set, [default(built_in)])
 			]),
-	findall(Match, match(built_in, Query, Match), Matches),
+	findall(Match, typeahead(Set, Query, Match), Matches),
 	reply_json_dict(Matches).
 
-match(built_in, Query, json{label:Label}) :-
+typeahead(built_in, Query, json{label:Label}) :-
 	predicate_property(system:Head, built_in),
 	functor(Head, Name, Arity),
 	sub_atom(Name, 0, _, _, Query),
 	atomic_list_concat([Name, Arity], /, Label).
+
 
 %%	search(+Request)
 %

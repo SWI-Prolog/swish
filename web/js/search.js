@@ -31,19 +31,34 @@ define([ "jquery", "config", "typeahead" ],
 
 	var builtIn = new Bloodhound({
 			name: "built-in",
-			remote: config.http.locations.typeahead + "?q=%QUERY",
+			remote: config.http.locations.typeahead +
+				"?set=built_in&q=%QUERY",
 			datumTokenizer: function(d) {
-			  return Bloodhound.tokenizers.whitespace(d.name);
+			  return Bloodhound.tokenizers.whitespace(d.label);
 			},
 			queryTokenizer: Bloodhound.tokenizers.whitespace
 	               });
-
 	builtIn.initialize();
+
+	var files = new Bloodhound({
+			name: "built-in",
+			remote: config.http.locations.typeahead +
+				"?set=file&q=%QUERY",
+			datumTokenizer: function(d) {
+			  return Bloodhound.tokenizers.whitespace(d.label);
+			},
+			queryTokenizer: Bloodhound.tokenizers.whitespace
+	               });
+	files.initialize();
 
 	elem.typeahead({ minLength: 1,
 			 highlight: true
 		       },
-		       [ { name: "built-in",
+		       [ { name: "files",
+			   displayKey: 'label',
+			   source: files.ttAdapter()
+		         },
+			 { name: "built-in",
 			   displayKey: 'label',
 			   source: builtIn.ttAdapter()
 		         }

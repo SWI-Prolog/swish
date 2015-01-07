@@ -231,3 +231,31 @@ random_char(Char) :-
 	Max is Len - 1,
 	random_between(0, Max, I),
 	sub_atom(From, I, 1, _, Char).
+
+
+		 /*******************************
+		 *	 SEARCH SUPPORT		*
+		 *******************************/
+
+:- multifile
+	swish_search:typeahead/3.	% +Set, +Query, -Match
+
+%%	swish_search:typeahead(+Set, +Query, -Match) is nondet.
+%
+%	Find files using typeahead from the SWISH search box.
+%
+%	@tbd: caching, search other meta-fields
+
+swish_search:typeahead(file, Query, json{label:File, type:file}) :-
+	setting(directory, Dir),
+	gitty_file(Dir, File, Head),
+	(   sub_atom(File, 0, _, _, Query) % find only public
+	->  true
+	;   gitty_commit(Dir, Head, Meta),
+	    meta_match_query(Query, Meta)
+	->  true
+	).
+
+meta_match_query(Query, Meta) :-
+	member(Tag, Meta.get(tags)),
+	sub_atom(Tag, 0, _, _, Query).
