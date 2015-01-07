@@ -31,9 +31,9 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
-:- use_module(library(http/http_client)).
 :- use_module(library(http/http_wrapper)).
 :- use_module(library(http/mimetype)).
+:- use_module(library(lists)).
 :- use_module(library(settings)).
 :- use_module(library(random)).
 :- use_module(library(apply)).
@@ -246,15 +246,17 @@ random_char(Char) :-
 %
 %	@tbd: caching, search other meta-fields
 
-swish_search:typeahead(file, Query, json{label:File, type:file}) :-
+swish_search:typeahead(file, Query, FileInfo) :-
 	setting(directory, Dir),
 	gitty_file(Dir, File, Head),
+	gitty_commit(Dir, Head, Meta),
 	(   sub_atom(File, 0, _, _, Query) % find only public
 	->  true
-	;   gitty_commit(Dir, Head, Meta),
-	    meta_match_query(Query, Meta)
+	;   meta_match_query(Query, Meta)
 	->  true
-	).
+	),
+	storage_url(File, URL),
+	FileInfo = Meta.put(_{url:URL,name:File}).
 
 meta_match_query(Query, Meta) :-
 	member(Tag, Meta.get(tags)),

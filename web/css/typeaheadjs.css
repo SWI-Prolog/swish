@@ -5,7 +5,7 @@ span.twitter-typeahead .tt-dropdown-menu {
   z-index: 1000;
   display: none;
   float: left;
-  min-width: 160px;
+  min-width: 250px;
   padding: 5px 0;
   margin: 2px 0 0;
   list-style: none;
@@ -55,3 +55,42 @@ span.twitter-typeahead {
   top: 28px !important;
 }
 
+/** SWISH styling of typeahead hits
+ */
+
+.tt-suggestion .tt-label {
+  padding-left: 1.5em;
+}
+
+.tt-suggestion .tt-label.file {
+  background-image: url("file-icon.png");
+  background-size: 1em;
+  background-repeat: no-repeat;
+  background-position: 5px 5px;
+}
+
+.tt-suggestion .tt-title {
+  color: #555555;
+  white-space: nowrap;
+  overflow: hidden;
+  font-style: italic;
+  font-size: 80%;
+}
+
+.tt-suggestion .tt-label.pred-built-in {
+  color: blue;
+}
+
+.tt-suggestion .tt-tags {
+  max-width: 100px;
+  float: right;
+}
+
+.tt-suggestion .tt-tag {
+  max-width: 30px;
+  border: 1px solid #ddd;
+  padding: 0px 4px;
+  margin-left: 2px;
+  border-radius: 5px;
+  background-color: #e1edff;
+}

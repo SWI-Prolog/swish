@@ -29,44 +29,84 @@ define([ "jquery", "config", "typeahead" ],
       return this.each(function() {
 	var elem = $(this);
 
-	var builtIn = new Bloodhound({
-			name: "built-in",
-			remote: config.http.locations.typeahead +
-				"?set=built_in&q=%QUERY",
-			datumTokenizer: function(d) {
-			  return Bloodhound.tokenizers.whitespace(d.label);
-			},
-			queryTokenizer: Bloodhound.tokenizers.whitespace
-	               });
-	builtIn.initialize();
-
 	var files = new Bloodhound({
 			name: "built-in",
 			remote: config.http.locations.typeahead +
 				"?set=file&q=%QUERY",
-			datumTokenizer: function(d) {
-			  return Bloodhound.tokenizers.whitespace(d.label);
-			},
+			datumTokenizer: fileTokenizer,
 			queryTokenizer: Bloodhound.tokenizers.whitespace
 	               });
 	files.initialize();
+
+	function fileTokenizer(f) {
+	  return (f.tags||[]).push(f.name);
+	}
+
+	function renderFile(f) {
+	  var str = "<div class=\"tt-label file\">"
+		  + htmlEncode(f.name);
+
+	  if ( f.tags ) {
+	    str += "<span class=\"tt-tags\">";
+	    for(var i=0; i<f.tags.length; i++) {
+	      var tag = f.tags[i];
+	      str += "<span class=\"tt-tag\">"
+		   + htmlEncode(tag)
+		   + "</span>";
+	    }
+	    str += "</span>";
+	  }
+
+	  if ( f.title )
+	    str += "<div class=\"tt-title file\">"
+		 + htmlEncode(f.title)
+		 + "</div>";
+	  str += "</div>";
+
+	  return str;
+	}
+
+	var builtIn = new Bloodhound({
+			name: "built-in",
+			remote: config.http.locations.typeahead +
+				"?set=built_in&q=%QUERY",
+			datumTokenizer: predicateTokenizer,
+			queryTokenizer: Bloodhound.tokenizers.whitespace
+	               });
+	builtIn.initialize();
+
+	function predicateTokenizer(p) {
+	  return p.name.split("_");
+	}
+
+	function renderPredicate(p) {
+	  return   "<div class=\"tt-label pred-built-in\">"
+                 + htmlEncode(p.name)
+		 + "/"
+                 + p.arity
+		 + "</div>";
+	}
 
 	elem.typeahead({ minLength: 1,
 			 highlight: true
 		       },
 		       [ { name: "files",
-			   displayKey: 'label',
-			   source: files.ttAdapter()
+			   source: files.ttAdapter(),
+			   templates: { suggestion: renderFile }
 		         },
 			 { name: "built-in",
-			   displayKey: 'label',
-			   source: builtIn.ttAdapter()
+			   source: builtIn.ttAdapter(),
+			   templates: { suggestion: renderPredicate }
 		         }
 		       ])
 	  .on('typeahead:selected typeahead:autocompleted',
 	      function(ev, datum, set) {
-		elem.data("target", {datum:datum, set:set});
-		console.log(elem.data("target"));
+		if ( datum.url ) {
+		  window.location = datum.url;
+		} else {
+		  elem.data("target", {datum:datum, set:set});
+		  console.log(elem.data("target"));
+		}
 	      });
 
 	elem.parents("form").submit(function(ev) {
@@ -98,6 +138,14 @@ define([ "jquery", "config", "typeahead" ],
       console.log(q);
     }
   }; // methods
+
+  function htmlEncode(html) {
+    if ( !html ) return "";
+    return document.createElement('a')
+                   .appendChild(document.createTextNode(html))
+		   .parentNode
+		   .innerHTML;
+  };
 
   /**
    * <Class description>
