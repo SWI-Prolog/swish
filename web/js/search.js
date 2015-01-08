@@ -30,7 +30,7 @@ define([ "jquery", "config", "typeahead" ],
 	var elem = $(this);
 
 	var files = new Bloodhound({
-			name: "built-in",
+			name: "files",
 			remote: config.http.locations.typeahead +
 				"?set=file&q=%QUERY",
 			datumTokenizer: fileTokenizer,
@@ -43,8 +43,10 @@ define([ "jquery", "config", "typeahead" ],
 	}
 
 	function renderFile(f) {
-	  var str = "<div class=\"tt-label file\">"
+	  var str = "<div class=\"tt-match file\">"
+		  + "<span class=\"tt-label\">"
 		  + htmlEncode(f.name);
+	          + "</span>";
 
 	  if ( f.tags ) {
 	    str += "<span class=\"tt-tags\">";
@@ -66,25 +68,50 @@ define([ "jquery", "config", "typeahead" ],
 	  return str;
 	}
 
-	var builtIn = new Bloodhound({
-			name: "built-in",
+	var predicates = new Bloodhound({
+			name: "predicates",
 			remote: config.http.locations.typeahead +
-				"?set=built_in&q=%QUERY",
+				"?set=predicates&q=%QUERY",
 			datumTokenizer: predicateTokenizer,
 			queryTokenizer: Bloodhound.tokenizers.whitespace
 	               });
-	builtIn.initialize();
+	predicates.initialize();
 
 	function predicateTokenizer(p) {
 	  return p.name.split("_");
 	}
 
 	function renderPredicate(p) {
-	  return   "<div class=\"tt-label pred-built-in\">"
-                 + htmlEncode(p.name)
-		 + "/"
-                 + p.arity
+	  var str = "<div class=\"tt-match predicate";
+
+	  if ( p.type ) str += " " + p.type;
+
+	  str += "\">"
+               + "<span class=\"tt-label\">"
+	       + htmlEncode(p.name)
+	       + "/"
+	       + p.arity
+	       + "</span>";
+
+	  if ( p.iso ) {
+	    str += "<span class=\"tt-tags\">";
+	    if ( p.iso )
+	      str += "<span class=\"tt-tag\">ISO</span>";
+	    str += "</span>";
+	  }
+
+	  if ( p.summary )
+	    str += "<div class=\"tt-title file\">"
+		 + htmlEncode(p.summary)
 		 + "</div>";
+	  str += "</div>";
+
+
+	  str += "</div>";
+
+	  console.log(str);
+
+	  return str;
 	}
 
 	elem.typeahead({ minLength: 1,
@@ -94,8 +121,8 @@ define([ "jquery", "config", "typeahead" ],
 			   source: files.ttAdapter(),
 			   templates: { suggestion: renderFile }
 		         },
-			 { name: "built-in",
-			   source: builtIn.ttAdapter(),
+			 { name: "predicates",
+			   source: predicates.ttAdapter(),
 			   templates: { suggestion: renderPredicate }
 		         }
 		       ])
@@ -103,7 +130,7 @@ define([ "jquery", "config", "typeahead" ],
 	      function(ev, datum, set) {
 		if ( datum.url ) {
 		  window.location = datum.url;
-		} else if ( datum.pldoc ) {
+		} else if ( datum.arity !== undefined ) {
 		  $(".swish-event-receiver").trigger("pldoc", datum);
 		} else {
 		  elem.data("target", {datum:datum, set:set});

@@ -62,11 +62,15 @@ span.twitter-typeahead {
   padding-left: 1.5em;
 }
 
-.tt-suggestion .tt-label.file {
+.tt-suggestion .tt-match.file {
   background-image: url("file-icon.png");
   background-size: 1em;
   background-repeat: no-repeat;
   background-position: 5px 5px;
+}
+
+.tt-match.predicate.built_in .tt-label {
+  color: blue;
 }
 
 .tt-suggestion .tt-title {
@@ -77,13 +81,10 @@ span.twitter-typeahead {
   font-size: 80%;
 }
 
-.tt-suggestion .tt-label.pred-built-in {
-  color: blue;
-}
-
 .tt-suggestion .tt-tags {
   max-width: 100px;
   float: right;
+  margin-right: 2px;
 }
 
 .tt-suggestion .tt-tag {

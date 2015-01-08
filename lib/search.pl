@@ -79,14 +79,15 @@ search_box(_Options) -->
 typeahead(Request) :-
 	http_parameters(Request,
 			[ q(Query, [default('')]),
-			  set(Set, [default(built_in)])
+			  set(Set, [default(predicates)])
 			]),
 	findall(Match, typeahead(Set, Query, Match), Matches),
 	reply_json_dict(Matches).
 
-typeahead(built_in, Query, json{name:Name, arity:Arity, pldoc:true}) :-
-	predicate_property(system:Head, built_in),
-	functor(Head, Name, Arity),
+typeahead(predicates, Query, Template) :-
+	swish_config:config(templates, Templates),
+	member(Template, Templates),
+	_{name:Name, arity:_} :< Template,
 	sub_atom(Name, 0, _, _, Query).
 
 %%	search(+Request)
