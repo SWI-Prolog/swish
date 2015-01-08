@@ -237,9 +237,8 @@ define([ "jquery", "config", "typeahead" ],
 	  elem.val("");
 	  elem.data("target", null);
 
-	  elem.search('q', data);
+	  elem.search('search', data);
 
-	  ev.preventDefault();
 	  return false;
 	});
       });
@@ -253,7 +252,7 @@ define([ "jquery", "config", "typeahead" ],
      * is the object returned by Bloodhound
      */
     search: function(q) {
-      console.log(q);
+      console.log(q);			/* TBD */
     }
   }; // methods
 
