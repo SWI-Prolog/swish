@@ -29,6 +29,10 @@ define([ "jquery", "config", "typeahead" ],
       return this.each(function() {
 	var elem = $(this);
 
+		 /*******************************
+		 *	 FILE COMPLETION	*
+		 *******************************/
+
 	var files = new Bloodhound({
 			name: "files",
 			remote: config.http.locations.typeahead +
@@ -68,18 +72,36 @@ define([ "jquery", "config", "typeahead" ],
 	  return str;
 	}
 
-	var predicates = new Bloodhound({
-			name: "predicates",
-			remote: config.http.locations.typeahead +
-				"?set=predicates&q=%QUERY",
-			datumTokenizer: predicateTokenizer,
-			queryTokenizer: Bloodhound.tokenizers.whitespace
-	               });
-	predicates.initialize();
+		 /*******************************
+		 *    PREDICATE COMPLETION	*
+		 *******************************/
 
-	function predicateTokenizer(p) {
-	  return p.name.split("_");
+	function predicateMatcher(q, cb) {
+	  var templates = config.swish.templates;
+	  var matches = [];
+	  var ql = q.split(" ");
+	  var pl = [];
+
+	  for(var i=0; i<ql.length; i++)
+	    pl.push({prefix:ql[i], regex:new RegExp("_"+ql[i])});
+
+	  for(var i=0; i<templates.length; i++) {
+	    var templ = templates[i];
+
+	    if ( templ.arity !== undefined ) {
+	      for(var j=0, match=true; j<pl.length && match; j++) {
+		if ( !(templ.name.startsWith(pl[j].prefix) ||
+		       templ.name.match(pl[j].regex)) )
+		  match=false;
+	      }
+	      if ( match )
+	        matches.push(templ);
+	    }
+	  }
+
+	  cb(matches);
 	}
+
 
 	function renderPredicate(p) {
 	  var str = "<div class=\"tt-match predicate";
@@ -122,7 +144,7 @@ define([ "jquery", "config", "typeahead" ],
 			   templates: { suggestion: renderFile }
 		         },
 			 { name: "predicates",
-			   source: predicates.ttAdapter(),
+			   source: predicateMatcher,
 			   templates: { suggestion: renderPredicate }
 		         }
 		       ])
@@ -175,6 +197,12 @@ define([ "jquery", "config", "typeahead" ],
 		   .parentNode
 		   .innerHTML;
   };
+
+  if (typeof String.prototype.startsWith != 'function') {
+    String.prototype.startsWith = function(str) {
+      return this.lastIndexOf(str, 0) === 0;
+    };
+  }
 
   /**
    * <Class description>
