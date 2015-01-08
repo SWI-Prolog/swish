@@ -2,11 +2,11 @@
  * @fileOverview
  * Support the SWISH search box.  This we want to find:
  *
- *   - Predicates (manual)		[TBD]
+ *   - Predicates based on templates we also use for template completion
  *   - Source code (line)		[TBD]
  *   - Saved programs by
- *     - Name				[OK]
- *     - Tag				[OK]
+ *     - Name
+ *     - Tag
  *     - Description			[TBD]
  *
  * @version 0.2.0
