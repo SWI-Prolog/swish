@@ -60,8 +60,12 @@ search from the server side. What do we want to search for?
 search_box(_Options) -->
 	html(form([class('navbar-form'), role(search)],
 		  div(class('input-group'),
-		      [ input([type(text), class('form-control'),
-			       placeholder('Search'), id('search')]),
+		      [ input([ type(text),
+				class('form-control'),
+				placeholder('Search'),
+				title('Searches code, documentation and files'),
+				id('search')
+			      ]),
 			div(class('input-group-btn'),
 			    button([ class([btn, 'btn-default']),
 				     type(submit)],
