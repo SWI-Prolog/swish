@@ -85,6 +85,8 @@ define([ "jquery", "config", "typeahead" ],
 	  var str = "<div class=\"tt-match predicate";
 
 	  if ( p.type ) str += " " + p.type;
+	  if ( p.mode ) str += "\" title=\""
+                             + p.mode;
 
 	  str += "\">"
                + "<span class=\"tt-label\">"
@@ -108,8 +110,6 @@ define([ "jquery", "config", "typeahead" ],
 
 
 	  str += "</div>";
-
-	  console.log(str);
 
 	  return str;
 	}
