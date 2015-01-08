@@ -502,7 +502,47 @@ define([ "cm/lib/codemirror",
       }
 
       return exlist;
+    },
+
+    /**
+     * @param {RegExp} re is the regular expression to search for
+     * @param {Object} [options]
+     * @param {number} [options.max] is the max number of hits to return
+     * @returns {Array.object} list of objects holding the matching line
+     * content and line number.
+     */
+    search: function(re, options) {
+      var cm      = this.data(pluginName).cm;
+      var start   = cm.firstLine();
+      var end     = cm.lastLine();
+      var matches = [];
+
+      for(var i=start; i<end; i++) {
+	var line = cm.getLine(i);
+	if ( line.search(re) >= 0 ) {
+	  matches.push({line:i+1, text:line});
+	  if ( options.max && options.max === matches.length )
+	    return matches;
+	}
+      }
+
+      return matches;
+    },
+
+    /**
+     * Go to a given 1-based line number
+     * @param {number} line
+     */
+    gotoLine: function(line) {
+      var cm = this.data(pluginName).cm;
+
+      line = line -1;
+      cm.setCursor({line:line,ch:0});
+      var myHeight = cm.getScrollInfo().clientHeight;
+      var coords = cm.charCoords({line: line, ch: 0}, "local");
+      cm.scrollTo(null, (coords.top + coords.bottom - myHeight) / 2);
     }
+
   }; // methods
 
   function updateHistory(reply) {

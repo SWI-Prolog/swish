@@ -95,3 +95,28 @@ span.twitter-typeahead {
   border-radius: 5px;
   background-color: #e1edff;
 }
+
+.tt-suggestion .tt-line {
+  white-space: nowrap;
+}
+
+.tt-suggestion .tt-lineno {
+  display: inline-block;
+  width: 40px;
+  min-width: 20px;
+  font-family: monospace;
+  color: #999;
+  background-color: #eee;
+  border-right: 1px solid #ddd;
+  padding: 0 3px 0 5px;
+  text-align: right;
+}
+
+.tt-suggestion .tt-text {
+  padding-left: 5px;
+  white-space: nowrap;
+}
+
+div.tt-match.source {
+  overflow: hidden;
+}

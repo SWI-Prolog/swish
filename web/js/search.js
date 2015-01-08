@@ -28,6 +28,7 @@ define([ "jquery", "config", "typeahead" ],
     _init: function(options) {
       return this.each(function() {
 	var elem = $(this);
+	var query;			/* current query */
 
 		 /*******************************
 		 *	 FILE COMPLETION	*
@@ -136,10 +137,69 @@ define([ "jquery", "config", "typeahead" ],
 	  return str;
 	}
 
+		 /*******************************
+		 *	   SEARCH SOURCE	*
+		 *******************************/
+
+	var sourceRE;
+
+	function sourceMatcher(q, cb) {
+	  query = q;
+	  if ( q.length < 2 ) return [];
+
+	  var matches = [];
+	  var re = new RegExp("\\b"+q, "g");
+	  sourceRE = re;
+
+	  $(".prolog-editor").each(function() {
+	    var editor = this;
+	    var m = $(editor).prologEditor('search', re, {max: 7});
+
+	    for(var i=0; i<m.length; i++) {
+	      m[i].editor = editor;
+	      matches.push(m[i]);
+	    }
+	  });
+
+	  cb(matches);
+	}
+
+
+	function renderSourceMatch(hit) {
+	  var text = hit.text;
+	  var i;
+
+	  if ( (i=text.search(sourceRE)) > 20 )
+	    text = "..."+text.slice(i-17);
+	  if ( text.length > 80 )
+	    text = text.substring(0,80);
+
+	  var str = "<div class=\"tt-match source\">"
+	          + "<span class=\"tt-line\">"
+		  + "<span class=\"tt-lineno\">"
+		  + hit.line
+		  + "</span>"
+		  + "<span class=\"tt-text\">"
+		  + htmlEncode(text)
+	          + "</span>"
+	          + "</span>";
+
+	  return str;
+	}
+
+
+		 /*******************************
+		 *	     TYPEAHEAD		*
+		 *******************************/
+
 	elem.typeahead({ minLength: 1,
 			 highlight: true
 		       },
-		       [ { name: "files",
+		       [ { name: "source",
+			   source: sourceMatcher,
+			   templates: { suggestion: renderSourceMatch }
+		         },
+			 { name: "files",
 			   source: files.ttAdapter(),
 			   templates: { suggestion: renderFile }
 		         },
@@ -154,6 +214,9 @@ define([ "jquery", "config", "typeahead" ],
 		  window.location = datum.url;
 		} else if ( datum.arity !== undefined ) {
 		  $(".swish-event-receiver").trigger("pldoc", datum);
+		} else if ( datum.editor !== undefined &&
+			    datum.line !== undefined ) {
+		  $(datum.editor).prologEditor('gotoLine', datum.line);
 		} else {
 		  elem.data("target", {datum:datum, set:set});
 		  console.log(elem.data("target"));
