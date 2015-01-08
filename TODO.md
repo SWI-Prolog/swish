@@ -90,6 +90,8 @@ _not_ see exactly the same UI for cooperation.  What about
   - Server saves:
 
     - lib/gitty.pl saves individual files versioned with meta-data.	[OK]
+    - Save
+      - Ask for commit message if saved again
     - Save as
       - Meta data
         - Public							[OK]
@@ -108,3 +110,11 @@ _not_ see exactly the same UI for cooperation.  What about
       - Access history
     - New
       - Remove current file notion					[OK]
+
+## Search
+
+  - Implement typeahead search
+    - For lines of the source code					[OK]
+    - For predicates							[OK]
+    - For public files							[OK]
+  - Implement string search with result page
