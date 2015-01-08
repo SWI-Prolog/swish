@@ -517,7 +517,7 @@ define([ "cm/lib/codemirror",
       var end     = cm.lastLine();
       var matches = [];
 
-      for(var i=start; i<end; i++) {
+      for(var i=start; i<=end; i++) {
 	var line = cm.getLine(i);
 	if ( line.search(re) >= 0 ) {
 	  matches.push({line:i+1, text:line});
@@ -530,17 +530,77 @@ define([ "cm/lib/codemirror",
     },
 
     /**
-     * Go to a given 1-based line number
+     * Go to a given 1-based line number and optionally highlight the
+     * match(es).
+     *
      * @param {number} line
+     * @param {Object} [options]
+     * @param {RegExp} [options.regex] If provided, highlight the
+     * matches.
+     * @param {Boolean} [options.showAllMatches] if `true`, show all
+     * matches in the viewport.
      */
-    gotoLine: function(line) {
-      var cm = this.data(pluginName).cm;
+    gotoLine: function(line, options) {
+      var data = this.data(pluginName);
+      var cm   = data.cm;
+      var ch   = 0;
+      var re;
 
-      line = line -1;
-      cm.setCursor({line:line,ch:0});
+      function clearSearchMarkers(cm) {
+	if ( cm._searchMarkers !== undefined ) {
+	  for(var i=0; i<cm._searchMarkers.length; i++)
+	    cm._searchMarkers[i].clear();
+	  cm.off("cursorActivity", clearSearchMarkers);
+	}
+	cm._searchMarkers = [];
+      }
+
+      line = line-1;
+      re   = options.regex;
+      clearSearchMarkers(cm);
+      options = options||{};
+
+      if ( re ) {
+	ch = cm.getLine(line).search(re);
+	if ( ch < 0 )
+	  ch = 0;
+      }
+
+      cm.setCursor({line:line,ch:ch});
       var myHeight = cm.getScrollInfo().clientHeight;
       var coords = cm.charCoords({line: line, ch: 0}, "local");
       cm.scrollTo(null, (coords.top + coords.bottom - myHeight) / 2);
+
+      if ( re ) {
+	function markMatches(line, className) {
+	  var match;
+
+	  while( (match=re.exec(cm.getLine(line))) ) {
+	    cm._searchMarkers.push(
+	      cm.markText({line:line,ch:match.index},
+			  {line:line,ch:match.index+match[0].length},
+			  {className:className,
+			   clearOnEnter: true,
+			   clearWhenEmpty: true,
+			   title: "Search match"
+			  }));
+	  }
+	}
+
+	markMatches(line, "CodeMirror-search-match");
+	if ( options.showAllMatches ) {
+	  var vp = cm.getViewport();
+
+	  for(var i=vp.from; i<vp.to; i++) {
+	    if ( i != line ) {
+	      markMatches(i, "CodeMirror-search-alt-match");
+	    }
+	  }
+	}
+
+	if ( cm._searchMarkers.length > 0 )
+	  cm.on("cursorActivity", clearSearchMarkers);
+      }
     }
 
   }; // methods

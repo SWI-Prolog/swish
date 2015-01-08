@@ -34,3 +34,12 @@
 .CodeMirror-hover {
   outline:1px solid grey;
 }
+
+.CodeMirror-search-match {
+  background-color: yellow;
+}
+
+.CodeMirror-search-alt-match {
+  background-color: #bee;
+}
+

@@ -157,6 +157,7 @@ define([ "jquery", "config", "typeahead" ],
 
 	    for(var i=0; i<m.length; i++) {
 	      m[i].editor = editor;
+	      m[i].regex  = sourceRE;
 	      matches.push(m[i]);
 	    }
 	  });
@@ -216,7 +217,10 @@ define([ "jquery", "config", "typeahead" ],
 		  $(".swish-event-receiver").trigger("pldoc", datum);
 		} else if ( datum.editor !== undefined &&
 			    datum.line !== undefined ) {
-		  $(datum.editor).prologEditor('gotoLine', datum.line);
+		  $(datum.editor).prologEditor('gotoLine', datum.line,
+					       { regex: datum.regex,
+						 showAllMatches: true
+					       });
 		} else {
 		  elem.data("target", {datum:datum, set:set});
 		  console.log(elem.data("target"));
