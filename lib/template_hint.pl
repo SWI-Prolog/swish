@@ -250,11 +250,14 @@ man_predicate_info(PI, Name-Value) :-
 	normalize_space(string(ModeLine), ModeLine0),
 	(   atom_string(PName, PString),
 	    Name-Value = name-PString
+	;   Name-Value = arity-Arity
 	;   Name-Value = mode-ModeLine
 	;   once(catch(predicate(PName, Arity, Summary, _, _), _, fail)),
 	    Name-Value = summary-Summary
-	;   predicate_property(system:PHead, iso)
-	->  Name-Value = iso:true
+	;   predicate_property(system:PHead, iso),
+	    Name-Value = iso-true
+	;   predicate_property(system:PHead, built_in),
+	    Name-Value = type-built_in
 	).
 
 %%	pldoc_predicate_info(+PI, -ModeLine) is semidet.
@@ -262,7 +265,7 @@ man_predicate_info(PI, Name-Value) :-
 pldoc_predicate_info(PI, Name-Value) :-
 	pi_head(PI, Head),
 	strip_module(Head, _, PHead),
-	functor(PHead, PName, _Arity),
+	functor(PHead, PName, Arity),
 	implementation_module(Head, Module),
 	doc_comment(PI, Pos, Summary, Comment), !,
 	is_structured_comment(Comment, Prefixes),
@@ -281,6 +284,7 @@ pldoc_predicate_info(PI, Name-Value) :-
 		    ]),
 	(   atom_string(PName, PString),
 	    Name-Value = name-PString
+	;   Name-Value = arity-Arity
 	;   Name-Value = mode-ModeLine
 	;   Name-Value = summary-Summary
 	;   Det \== unknown,
