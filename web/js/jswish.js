@@ -41,10 +41,7 @@ preferences.setDefault("semantic-highlighting", true);
 	                          });
 	},
 	"File group": "--",
-	"Save": function() {
-	  menuBroadcast("saveProgram");
-	},
-	"Save as ...": function() {
+	"Save ...": function() {
 	  menuBroadcast("saveProgram", "as");
 	},
 	"Info ...": function() {
