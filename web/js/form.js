@@ -177,6 +177,20 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 				      "Cancel")));
 	return elem;
       }
+    },
+
+    widgets: {
+      glyphIconButton: function(glyph, options) {
+	var attrs = {class:"btn btn-info", type:"button"};
+
+	if ( options.action ) attrs['data-action'] = options.action;
+	if ( options.title )  attrs.title          = options.title;
+
+	elem =
+	$.el.button(attrs,
+		    $.el.span({class:"glyphicon "+glyph}));
+	return elem;
+      }
     }
   };
 
