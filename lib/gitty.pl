@@ -38,6 +38,8 @@
 	    gitty_hash/2,		% +Store, ?Hash
 	    gitty_reserved_meta/1,	% ?Key
 
+	    gitty_diff/4,		% +Store, ?Start, +End, -Diff
+
 	    data_diff/3,		% +String1, +String2, -Diff
 	    udiff_string/2		% +Diff, -String
 	  ]).
@@ -350,6 +352,49 @@ gitty_reserved_meta(previous).
 
 		 /*******************************
 		 *	       DIFF		*
+		 *******************************/
+
+%%	gitty_diff(+Store, ?Hash1, +FileOrHash2, -Dict) is det.
+%
+%	True if Dict representeds the changes   in Hash1 to FileOrHash2.
+%	If Hash1 is unbound,  it  is   unified  with  the  `previous` of
+%	FileOrHash2. Returns _{initial:true} if  Hash1   is  unbound and
+%	FileOrHash2 is the initial commit.
+
+gitty_diff(Store, C1, C2, Dict) :-
+	gitty_data(Store, C2, Data2, Meta2),
+	(   var(C1)
+	->  C1 = Meta2.get(previous)
+	;   true
+	), !,
+	gitty_data(Store, C1, Data1, Meta1),
+	(   Data1 \== Data2
+	->  data_diff(Data1, Data2, Diff),
+	    udiff_string(Diff, String),
+	    memberchk(data-String, Pairs)
+	;   true
+	),
+	meta_tag_set(Meta1, Tags1),
+	meta_tag_set(Meta2, Tags2),
+	(   Tags1 \== Tags2
+	->  ord_subtract(Tags1, Tags2, Deleted),
+	    ord_subtract(Tags2, Tags1, Added),
+	    memberchk(tags-_{added:Added, deleted:Deleted}, Pairs)
+	;   true
+	),
+	once(length(Pairs,_)),
+	dict_pairs(Dict, json, Pairs).
+gitty_diff(_Store, '0000000000000000000000000000000000000000', _C2,
+	   json{initial:true}).
+
+
+meta_tag_set(Meta, Tags) :-
+	sort(Meta.get(tags), Tags), !.
+meta_tag_set(_, []).
+
+
+		 /*******************************
+		 *	   PROLOG DIFF		*
 		 *******************************/
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
