@@ -75,6 +75,10 @@
    https://www.cs.umd.edu/users/ben/papers/Shneiderman1996eyes.pdf
  - "Information Visualization and Visual Data Mining", Daniel A. Keim
 
+## Export results
+
+ - Provide save-as-CSV from a runner?
+
 ## Sharing
 
 First option was TogetherJS.  Now doubting, as it my be much better to
