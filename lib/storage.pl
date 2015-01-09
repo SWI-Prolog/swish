@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014, VU University Amsterdam
+    Copyright (C): 2015, VU University Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -69,11 +69,18 @@ web_storage(Request) :-
 
 storage(get, Request) :-
 	http_parameters(Request,
-			[ format(Format, [ oneof([swish,raw]),
-					   default(swish),
-					   description('How to render')
-					 ])
+			[ format(Fmt,  [ oneof([swish,raw,history]),
+					 default(swish),
+					 description('How to render')
+				       ]),
+			  depth(Depth, [ default(5),
+					 description('History depth')
+				       ])
 			]),
+	(   Fmt == history
+	->  Format = history(Depth)
+	;   Format = Fmt
+	),
 	storage_get(Request, Format).
 storage(post, Request) :-
 	http_read_json_dict(Request, Dict),
@@ -172,21 +179,36 @@ meta_allowed(description, string).
 
 
 %%	storage_get(+Request, +Format) is det.
+%
+%	HTTP handler that returns information a given gitty file.
+%
+%	@arg Format is one of
+%
+%	     - swish
+%	     Serve file embedded in a SWISH application
+%	     - raw
+%	     Serve the row file
+%	     - history(Depth)
+%	     Return a JSON description with the change log
 
 storage_get(Request, swish) :-
 	swish_reply_config(Request), !.
-storage_get(Request, swish) :- !,
+storage_get(Request, Format) :-
 	setting(directory, Dir),
 	request_file(Request, Dir, File),
+	storage_get(Format, Dir, File, Request).
+
+storage_get(swish, Dir, File, Request) :-
 	gitty_data(Dir, File, Code, Meta),
 	swish_reply([code(Code),file(File),meta(Meta)], Request).
-storage_get(Request, _) :-
-	setting(directory, Dir),
-	request_file(Request, Dir, File),
+storage_get(raw, Dir, File, _Request) :-
 	gitty_data(Dir, File, Code, _Meta),
 	file_mime_type(File, MIME),
 	format('Content-type: ~w~n~n', [MIME]),
 	format('~s', [Code]).
+storage_get(history(Depth), Dir, File, _Request) :-
+	gitty_history(Dir, File, Depth, History),
+	reply_json_dict(History).
 
 
 %%	authentity(+Request, -Authentity:dict) is det.
