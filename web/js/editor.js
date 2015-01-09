@@ -12,8 +12,9 @@ define([ "cm/lib/codemirror",
 	 "config",
 	 "preferences",
 	 "form",
-
 	 "cm/mode/prolog/prolog-template-hint",
+
+	 "gitty",
 
 	 "cm/mode/prolog/prolog",
 	 "cm/mode/prolog/prolog_keys",
@@ -344,12 +345,15 @@ define([ "cm/lib/codemirror",
       function infoBody() {
 	if ( options.meta ) {
 	  var meta = options.meta;
+	  var history;
+
 	  this.append($.el.form({class:"form-horizontal"},
 				form.fields.fileName(options.file, meta.public,
 						     true), // disabled
 				form.fields.title(meta.title),
 				form.fields.author(meta.author),
 				form.fields.tags(meta.tags),
+				history = $.el.div(),
 				form.fields.buttons(
 				  { label: "Update meta data",
 				    action: function(ev,data) {
@@ -360,10 +364,11 @@ define([ "cm/lib/codemirror",
 					      return false;
 				            }
 				  })));
+	  $(history).gitty({file:options.file});
 	} else
 	  this.append($.el.p("The source is not associated with a file. ",
 			     "Use ",
-			     $.el.b("Save As ..."),
+			     $.el.b("Save ..."),
 			     " to save the source with meta information."
 			    ));
       }
