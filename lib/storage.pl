@@ -195,21 +195,38 @@ storage_get(Request, swish) :-
 	swish_reply_config(Request), !.
 storage_get(Request, Format) :-
 	setting(directory, Dir),
-	request_file(Request, Dir, File),
-	storage_get(Format, Dir, File, Request).
+	request_file_or_hash(Request, Dir, FileOrHash),
+	storage_get(Format, Dir, FileOrHash, Request).
 
-storage_get(swish, Dir, File, Request) :-
-	gitty_data(Dir, File, Code, Meta),
-	swish_reply([code(Code),file(File),meta(Meta)], Request).
-storage_get(raw, Dir, File, _Request) :-
-	gitty_data(Dir, File, Code, _Meta),
-	file_mime_type(File, MIME),
+storage_get(swish, Dir, FileOrHash, Request) :-
+	gitty_data(Dir, FileOrHash, Code, Meta),
+	swish_reply([code(Code),file(FileOrHash),meta(Meta)], Request).
+storage_get(raw, Dir, FileOrHash, _Request) :-
+	gitty_data(Dir, FileOrHash, Code, Meta),
+	file_mime_type(Meta.name, MIME),
 	format('Content-type: ~w~n~n', [MIME]),
 	format('~s', [Code]).
 storage_get(history(Depth), Dir, File, _Request) :-
 	gitty_history(Dir, File, Depth, History),
 	reply_json_dict(History).
 
+request_file_or_hash(Request, Dir, FileOrHash) :-
+	option(path_info(PathInfo), Request),
+	atom_concat(/, FileOrHash, PathInfo),
+	(   gitty_file(Dir, FileOrHash, _Hash)
+	->  true
+	;   is_sha1(FileOrHash)
+	->  true
+	;   http_404([], Request)
+	).
+
+is_sha1(SHA1) :-
+	atom_length(SHA1, 40),
+	atom_codes(SHA1, Codes),
+	maplist(hex_digit, Codes).
+
+hex_digit(C) :- between(0'0, 0'9, C), !.
+hex_digit(C) :- between(0'a, 0'f, C).
 
 %%	authentity(+Request, -Authentity:dict) is det.
 %
