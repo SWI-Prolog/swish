@@ -77,10 +77,18 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 		 label("name", "Public name"),
 		 $.el.div({class:"col-xs-10"},
 			  $.el.div({class:"input-group"},
-				   $.el.span({class:"input-group-addon"},
-					     checkbox("public", public)),
-				   textInput("name", "Name", name, disabled)),
-			  helpBlock("Make saved file public and give it a meaningful name")));
+				   $.el.span({class:"input-group-addon",
+				              title:"If checked, other users can find this program"
+				             },
+					     checkbox("public",
+						      { checked: public
+						      })),
+				   textInput("name",
+					     {placeholder:"Name",
+					      title:"If empty, the server generates a name",
+					      value:name,
+					      disabled:disabled})),
+			  helpBlock("Make saved file public or give it a meaningful name")));
 	return elem;
       },
 
@@ -89,7 +97,18 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 	$.el.div({class:"form-group"},
 		 label("title", "Title"),
 		 $.el.div({class:"col-xs-10"},
-			  textInput("title", "Title", title)));
+			  textInput("title",
+				    {placeholder:"Title", value:title})));
+	return elem;
+      },
+
+      author: function(author) {
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("author", "Author"),
+		 $.el.div({class:"col-xs-10"},
+			  textInput("author",
+				    {placeholder:"Your name", value:author})));
 	return elem;
       },
 
@@ -98,7 +117,19 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 	$.el.div({class:"form-group"},
 		 label("description", "Description"),
 		 $.el.div({class:"col-xs-10"},
-			  textarea("description", description)));
+			  textarea("description", {value:description})));
+	return elem;
+      },
+
+      commit_message: function(msg) {
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("commit_message", "Changes"),
+		 $.el.div({class:"col-xs-10"},
+			  textarea("commit_message",
+				   { value:msg,
+				     placeholder:"Describe your changes here"
+				   })));
 	return elem;
       },
 
@@ -153,17 +184,21 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
     return $.el.label({class:"control-label col-xs-2", for:elemName}, text);
   }
 
-  function checkbox(name, checked) {
+  function checkbox(name, options) {
     var attrs = {name:name, type:"checkbox"};
-    if ( checked ) attrs.checked = "checked";
+    options = options||{};
+    if ( options.checked ) attrs.checked = "checked";
+    if ( options.title   ) attrs.title	 = options.title;
     return $.el.input(attrs);
   }
 
-  function textInput(name, placeholder, value, disabled) {
+  function textInput(name, options) {
     var attrs = {name:name, type:"text", class:"form-control"};
-    if ( placeholder ) attrs.placeholder = placeholder;
-    if ( value )       attrs.value       = value;
-    if ( disabled )    attrs.disabled    = disabled;
+    options = options||{};
+    if ( options.placeholder ) attrs.placeholder = options.placeholder;
+    if ( options.title )       attrs.title       = options.title;
+    if ( options.value )       attrs.value       = options.value;
+    if ( options.disabled )    attrs.disabled    = options.disabled;
     return $.el.input(attrs);
   }
 
@@ -183,8 +218,13 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 		  "Make saved file public and give it a meaningful name");
   }
 
-  function textarea(name, text) {
-    return $.el.textarea({name:name, class:"form-control"}, text||"");
+  function textarea(name, options) {
+    var attrs = {name:name, class:"form-control"};
+    options = options||{};
+
+    if ( options.placeholder ) attrs.placeholder = options.placeholder;
+
+    return $.el.textarea(attrs, options.value||"");
   }
 
   return form;

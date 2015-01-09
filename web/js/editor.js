@@ -225,7 +225,17 @@ define([ "cm/lib/codemirror",
     },
 
     /**
-     * Save the current document to the server
+     * Save the current document to the server.  Depending on the
+     * arguments, this function implements several forms of saving:
+     *
+     *   - Without arguments arguments, it implements "Save".
+     *   - With ("as"), it implements "Save as", which opens a
+     *     dialog which calls this method again, but now with
+     *     meta-data in the first argument.
+     *   - With ({...}) it performs the save operation of "Save as"
+     *   - With ({...}, "only-meta-data") it only updates the meta
+     *     data on the server.
+     *
      * @param {Object} [meta] provides additional meta-information.
      * Currently defined fields are `author`, `email`,
      * `title`, `keywords` and `description`. Illegal fields are ignored
@@ -251,15 +261,16 @@ define([ "cm/lib/codemirror",
         }
 	data = { data: this.prologEditor('getSource'),
 	         type: "pl"
-               }
+               };
       } else {
-	data = { update: "meta-data" }
+	data = { update: "meta-data" };
       }
 
       if ( meta )
 	data.meta = meta;
 
-      if ( options.file ) {
+      if ( options.file &&
+	   (!meta || meta.name == options.file) ) {
 	url += "/" + encodeURI(options.file);
 	method = "PUT";
       }
@@ -294,16 +305,18 @@ define([ "cm/lib/codemirror",
       var options = this.data(pluginName);
       var meta = options.meta||{};
       var editor = this;
+      var update = (options.meta !== undefined);
 
-      function infoBody() {
+      function saveAsBody() {
 	this.append($.el.form({class:"form-horizontal"},
 			      form.fields.fileName(options.file, meta.public),
 			      form.fields.title(meta.title),
-			      form.fields.description(meta.description),
+			      form.fields.author(meta.author),
+			      update ? form.fields.commit_message() : undefined,
 			      form.fields.tags(meta.tags),
 			      form.fields.buttons(
-				{ label: options.meta ? "Update program"
-						      : "Save program",
+				{ label: update ? "Update program"
+						: "Save program",
 				  action: function(ev,data) {
 					    console.log(data);
 				            editor.prologEditor('save', data);
@@ -312,8 +325,8 @@ define([ "cm/lib/codemirror",
 				})));
       }
 
-      form.showDialog({ title: "Save program as",
-			body:  infoBody
+      form.showDialog({ title: update ? "Save new version" : "Save program as",
+			body:  saveAsBody
 		      });
 
       return this;
@@ -335,7 +348,7 @@ define([ "cm/lib/codemirror",
 				form.fields.fileName(options.file, meta.public,
 						     true), // disabled
 				form.fields.title(meta.title),
-				form.fields.description(meta.description),
+				form.fields.author(meta.author),
 				form.fields.tags(meta.tags),
 				form.fields.buttons(
 				  { label: "Update meta data",
