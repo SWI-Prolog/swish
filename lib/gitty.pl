@@ -159,7 +159,8 @@ gitty_data(Store, Hash, Data, Meta) :-
 
 %%	gitty_commit(+Store, +NameOrHash, -Meta) is semidet.
 %
-%	True if Meta holds the commit data of NameOrHash.
+%	True if Meta holds the commit data of NameOrHash. A key =commit=
+%	is added to the meta-data to specify the commit hash.
 
 gitty_commit(Store, Name, Meta) :-
 	gitty_scan(Store),
@@ -169,9 +170,10 @@ gitty_commit(Store, Hash, Meta) :-
 	load_commit(Store, Hash, Meta).
 
 
-load_commit(Store, Head, Meta) :-
-	load_object(Store, Head, String),
-	term_string(Meta, String, []).
+load_commit(Store, Hash, Meta) :-
+	load_object(Store, Hash, String),
+	term_string(Meta0, String, []),
+	Meta = Meta0.put(commit, Hash).
 
 %%	gitty_history(+Store, +NameOrHash, +Max, -History) is det.
 %
