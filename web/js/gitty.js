@@ -83,8 +83,13 @@ define([ "jquery", "config", "form", "laconic" ],
       table.on("click", "button", function(ev) {
 	var button = $(ev.target);
 	var commit = button.parents("tr").data("commit");
+	var action = button.data("action");
 
-	console.log(button.data("action"), commit);
+	if ( action == "play" ) {
+	  window.location = config.http.locations.web_storage + "/" + commit;
+	}
+
+	console.log(action, commit);
       });
     }
 
