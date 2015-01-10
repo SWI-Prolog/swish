@@ -195,28 +195,28 @@ storage_get(Request, swish) :-
 	swish_reply_config(Request), !.
 storage_get(Request, Format) :-
 	setting(directory, Dir),
-	request_file_or_hash(Request, Dir, FileOrHash),
-	storage_get(Format, Dir, FileOrHash, Request).
+	request_file_or_hash(Request, Dir, FileOrHash, Type),
+	storage_get(Format, Dir, Type, FileOrHash, Request).
 
-storage_get(swish, Dir, FileOrHash, Request) :-
+storage_get(swish, Dir, _, FileOrHash, Request) :-
 	gitty_data(Dir, FileOrHash, Code, Meta),
 	swish_reply([code(Code),file(FileOrHash),meta(Meta)], Request).
-storage_get(raw, Dir, FileOrHash, _Request) :-
+storage_get(raw, Dir, _, FileOrHash, _Request) :-
 	gitty_data(Dir, FileOrHash, Code, Meta),
 	file_mime_type(Meta.name, MIME),
 	format('Content-type: ~w~n~n', [MIME]),
 	format('~s', [Code]).
-storage_get(history(Depth), Dir, File, _Request) :-
+storage_get(history(Depth), Dir, _, File, _Request) :-
 	gitty_history(Dir, File, Depth, History),
 	reply_json_dict(History).
 
-request_file_or_hash(Request, Dir, FileOrHash) :-
+request_file_or_hash(Request, Dir, FileOrHash, Type) :-
 	option(path_info(PathInfo), Request),
 	atom_concat(/, FileOrHash, PathInfo),
 	(   gitty_file(Dir, FileOrHash, _Hash)
-	->  true
+	->  Type = file
 	;   is_sha1(FileOrHash)
-	->  true
+	->  Type = hash
 	;   http_404([], Request)
 	).
 
