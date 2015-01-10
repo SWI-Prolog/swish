@@ -23,12 +23,15 @@ define([ "jquery", "config", "form", "laconic" ],
     _init: function(options) {
       return this.each(function() {
 	var elem = $(this);
-	var data = {};			/* private data */
+	var data = elem.data(pluginName)||{};	/* private data */
 	var url  = config.http.locations.web_storage
 		 + "/" + encodeURI(options.file);
 
+	if ( data.file == options.file )
+	  return;
 	data.file = options.file;
 
+	elem.html("");
 	elem.append($.el.table({class:"table table-striped table-condensed gitty-history"},
 			       $.el.tr($.el.th("Changed"),
 				       $.el.th("Date"),
