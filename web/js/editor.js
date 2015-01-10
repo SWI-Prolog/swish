@@ -390,7 +390,9 @@ define([ "cm/lib/codemirror",
 
 	  history = $.el.div({class:"tab-pane", id:"gitty-history"}),
 	  tabs.append(history);
-	  $(history).gitty({file:options.file});
+	  this.find('[href="#gitty-history"]').on("show.bs.tab", function(ev) {
+	    $(history).gitty({file:options.file});
+	  });
 
 	  tabs.append($.el.div({class:"tab-pane", id:"gitty-changes"}));
 	} else {
