@@ -369,8 +369,9 @@ gitty_diff(Store, C1, C2, Dict) :-
 	), !,
 	gitty_data(Store, C1, Data1, Meta1),
 	(   Data1 \== Data2
-	->  data_diff(Data1, Data2, Diff),
-	    udiff_string(Diff, String),
+	->  data_diff(Data1, Data2, Diffs),
+	    maplist(udiff_string, Diffs, Strings),
+	    atomics_to_string(Strings, String),
 	    memberchk(data-String, Pairs)
 	;   true
 	),
@@ -533,7 +534,7 @@ block_lines(=(U), Lines) :- maplist(string_concat(' '), U, Lines).
 block_lines(+(U), Lines) :- maplist(string_concat('+'), U, Lines).
 block_lines(-(U), Lines) :- maplist(string_concat('-'), U, Lines).
 
-udiff_blocks([], []).
+udiff_blocks([], []) :- !.
 udiff_blocks([=(H)|T0], [=([H|E])|T]) :- !,
 	udiff_cp(T0, E, T1),
 	udiff_blocks(T1, T).

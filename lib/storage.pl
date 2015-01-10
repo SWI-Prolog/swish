@@ -69,16 +69,21 @@ web_storage(Request) :-
 
 storage(get, Request) :-
 	http_parameters(Request,
-			[ format(Fmt,  [ oneof([swish,raw,history]),
+			[ format(Fmt,  [ oneof([swish,raw,history,diff]),
 					 default(swish),
 					 description('How to render')
 				       ]),
 			  depth(Depth, [ default(5),
 					 description('History depth')
+				       ]),
+			  to(RelTo,    [ optional(true),
+					 description('Diff relative to')
 				       ])
 			]),
 	(   Fmt == history
 	->  Format = history(Depth)
+	;   Fmt == diff
+	->  Format = diff(RelTo)
 	;   Format = Fmt
 	),
 	storage_get(Request, Format).
@@ -170,13 +175,13 @@ filter_pairs([H|T0], [H|T]) :-
 filter_pairs([_|T0], T) :-
 	filter_pairs(T0, T).
 
-meta_allowed(public,      boolean).
-meta_allowed(author,      string).
-meta_allowed(email,       string).
-meta_allowed(title,       string).
-meta_allowed(tags,        list(string)).
-meta_allowed(description, string).
-
+meta_allowed(public,	     boolean).
+meta_allowed(author,	     string).
+meta_allowed(email,	     string).
+meta_allowed(title,	     string).
+meta_allowed(tags,	     list(string)).
+meta_allowed(description,    string).
+meta_allowed(commit_message, string).
 
 %%	storage_get(+Request, +Format) is det.
 %
@@ -190,6 +195,9 @@ meta_allowed(description, string).
 %	     Serve the row file
 %	     - history(Depth)
 %	     Return a JSON description with the change log
+%	     - diff(RelTo)
+%	     Reply with diff relative to RelTo.  Default is the
+%	     previous commit.
 
 storage_get(Request, swish) :-
 	swish_reply_config(Request), !.
@@ -209,6 +217,9 @@ storage_get(raw, Dir, _, FileOrHash, _Request) :-
 storage_get(history(Depth), Dir, _, File, _Request) :-
 	gitty_history(Dir, File, Depth, History),
 	reply_json_dict(History).
+storage_get(diff(RelTo), Dir, _, File, _Request) :-
+	gitty_diff(Dir, RelTo, File, Diff),
+	reply_json_dict(Diff).
 
 request_file_or_hash(Request, Dir, FileOrHash, Type) :-
 	option(path_info(PathInfo), Request),
