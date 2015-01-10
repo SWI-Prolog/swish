@@ -367,7 +367,7 @@ define([ "cm/lib/codemirror",
 	  this.append($.el.ul({class:"nav nav-tabs"},
 			      tab("Meta data", true,  "gitty-meta-data"),
 			      tab("History",   false, "gitty-history"),
-			      tab("Changes",   false, "gitty-changes")));
+			      tab("Changes",   false, "gitty-diff")));
 	  this.append(tabs=$($.el.div({class:"tab-content"})));
 
 	  tabs.append($.el.div({class:"tab-pane active", id:"gitty-meta-data"},
@@ -391,10 +391,10 @@ define([ "cm/lib/codemirror",
 	  history = $.el.div({class:"tab-pane", id:"gitty-history"}),
 	  tabs.append(history);
 	  this.find('[href="#gitty-history"]').on("show.bs.tab", function(ev) {
-	    $(history).gitty({file:options.file});
+	    $(history).gitty('showHistory', {file:options.file});
 	  });
 
-	  tabs.append($.el.div({class:"tab-pane", id:"gitty-changes"}));
+	  tabs.append($.el.div({class:"tab-pane", id:"gitty-diff"}));
 	} else {
 	  this.append($.el.p("The source is not associated with a file. ",
 			     "Use ",

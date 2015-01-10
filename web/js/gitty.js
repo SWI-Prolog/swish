@@ -15,12 +15,21 @@ define([ "jquery", "config", "form", "laconic" ],
 
   /** @lends $.fn.gitty */
   var methods = {
+    _init: function(options) {
+      // use .gitty('showHistory', options) or
+      //     .gitty('showDiff', options)
+    },
+
+		 /*******************************
+		 *	     COMMIT LOG		*
+		 *******************************/
+
     /**
-     * Initialize gitty store vizualization.
+     * Show a commit log for options.file.
      * @param {Object} options
      * @param {String} options.file is the file name in the gitty store
      */
-    _init: function(options) {
+    showHistory: function(options) {
       return this.each(function() {
 	var elem = $(this);
 	var data = elem.data(pluginName)||{};	/* private data */
@@ -90,12 +99,80 @@ define([ "jquery", "config", "form", "laconic" ],
 
 	if ( action == "play" ) {
 	  window.location = config.http.locations.web_storage + "/" + commit;
+	} else if ( action == "diff" ) {
+	  var diffTab = button.parents("div.tab-content").find("div.gitty-diff");
+	  $("#gitty-diff").gitty('showDiff', { file:commit });
 	}
 
 	console.log(action, commit);
       });
-    }
+    },
 
+		 /*******************************
+		 *	       DIFFS		*
+		 *******************************/
+
+    /**
+     * Show diff of a given file
+     * @param {Object} options
+     * @param {String} options.file is the file for which to show diffs
+     * @param {String} [options.base] is the base SHA1 (defaults to
+     * HEAD^)
+     */
+
+    showDiff: function(options) {
+      return this.each(function() {
+	var elem = $(this);
+	var data = elem.data(pluginName)||{};	/* private data */
+	var url  = config.http.locations.web_storage
+		 + "/" + encodeURI(options.file);
+
+	if ( data.file == options.file && data.base == options.base )
+	  return;
+	data.file = options.file;
+	data.base = options.base;
+
+	elem.html("");
+
+	$.ajax({ url: url,
+		 contentType: "application/json",
+		 type: "GET",
+		 data: { format: "diff"
+		 },
+		 success: function(reply) {
+		   elem.gitty('fillDiff', reply);
+		 },
+		 error: function() {
+		   alert("Failed to fetch diff");
+		 }
+	       });
+
+	elem.data(pluginName, data);	/* store with element */
+      });
+    },
+
+    fillDiff: function(diff) {
+      if ( diff.data )
+	this.gitty('udiffData', diff.data);
+    },
+
+    udiffData: function(diff) {
+      var lines = diff.split("\n");
+      var pre = $($.el.pre({class:"udiff"}));
+
+      for(var i=0; i<lines.length; i++) {
+	var line = lines[i];
+	var classmap = { '@': 'udiff-hdr',
+			 ' ': 'udiff-ctx',
+			 '+': 'udiff-add',
+			 '-': 'udiff-del'
+		       };
+	pre.append($.el.span({class:classmap[line.charAt(0)]}, line),
+		   $.el.br());
+      }
+
+      this.append(pre);
+    }
   }; // methods
 
   // <private functions>
