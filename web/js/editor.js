@@ -341,39 +341,68 @@ define([ "cm/lib/codemirror",
       var options = this.data(pluginName);
       var meta = options.meta;
       var editor = this;
+      var title;
+
+      if ( options.meta ) {
+	title = $.el.span("File ", $.el.span({class:"filename"}, meta.name));
+	if ( options.file == meta.commit )
+	  $(title).append("@", span({class:"sha1"}, meta.commit));
+      } else {
+	title = "Local source";
+      }
 
       function infoBody() {
 	if ( options.meta ) {
 	  var meta = options.meta;
-	  var history;
+	  var history, tabs;
 
-	  this.append($.el.form({class:"form-horizontal"},
-				form.fields.fileName(options.file, meta.public,
-						     true), // disabled
-				form.fields.title(meta.title),
-				form.fields.author(meta.author),
-				form.fields.tags(meta.tags),
-				history = $.el.div(),
-				form.fields.buttons(
-				  { label: "Update meta data",
-				    action: function(ev,data) {
-					      console.log(data);
-					      data.name = options.file;
-				              editor.prologEditor('save', data,
-								  "only-meta-data");
-					      return false;
-				            }
-				  })));
+	  function tab(label, active, id) {
+	    var attrs = {role:"presentation"};
+	    if ( active ) attrs.class = "active";
+	    var elem =
+	    $.el.li(attrs, $.el.a({href:"#"+id, 'data-toggle':"tab"}, label));
+	    return elem;
+	  }
+
+	  this.append($.el.ul({class:"nav nav-tabs"},
+			      tab("Meta data", true,  "gitty-meta-data"),
+			      tab("History",   false, "gitty-history"),
+			      tab("Changes",   false, "gitty-changes")));
+	  this.append(tabs=$($.el.div({class:"tab-content"})));
+
+	  tabs.append($.el.div({class:"tab-pane active", id:"gitty-meta-data"},
+			       $.el.form({class:"form-horizontal"},
+					 form.fields.fileName(options.file, meta.public,
+							      true), // disabled
+					 form.fields.title(meta.title),
+					 form.fields.author(meta.author),
+					 form.fields.tags(meta.tags),
+					 form.fields.buttons(
+					   { label: "Update meta data",
+					     action: function(ev,data) {
+					       console.log(data);
+					       data.name = options.file;
+					       editor.prologEditor('save', data,
+								   "only-meta-data");
+					       return false;
+					     }
+					   }))));
+
+	  history = $.el.div({class:"tab-pane", id:"gitty-history"}),
+	  tabs.append(history);
 	  $(history).gitty({file:options.file});
-	} else
+
+	  tabs.append($.el.div({class:"tab-pane", id:"gitty-changes"}));
+	} else {
 	  this.append($.el.p("The source is not associated with a file. ",
 			     "Use ",
 			     $.el.b("Save ..."),
 			     " to save the source with meta information."
 			    ));
+	}
       }
 
-      form.showDialog({ title: options.meta ? "File info" : "Local source",
+      form.showDialog({ title: title,
 			body:  infoBody
 		      });
 
