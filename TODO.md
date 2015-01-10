@@ -115,6 +115,15 @@ _not_ see exactly the same UI for cooperation.  What about
     - New
       - Remove current file notion					[OK]
 
+## File info
+
+  - Three tabs
+    - Meta info shows meta info of current version
+    - History shows commit log and allows switching version
+      - Selecting a version using `zoom-in` updates `Meta data`
+        and `Changes` and changes the title to "File <name>@hash"
+    - Changes shows the diff
+
 ## Search
 
   - Implement typeahead search
