@@ -324,16 +324,25 @@ define([ "jquery", "config", "form", "laconic" ],
     diffTags: function(diff) {
       var tab  = this.find(".gitty-diff");
       var div = $($.el.div({class:"diff-tags"},
-			    $.el.label("Edited tags")));
+			    $.el.label("Tags")));
+      var span = $($.el.span({class:"diff-tags"}));
+
+      div.append(span);
 
       function addTag(tag, className) {
-	div.append($.el.span({class: "diff-tag "+className}, tag));
+	span.append($.el.span({class: "diff-tag "+className}, tag));
       }
 
-      for(var i=0; i<diff.deleted.length; i++)
-	addTag(diff.deleted[i], "deleted");
-      for(var i=0; i<diff.added.length; i++)
-	addTag(diff.added[i], "added");
+      if ( diff.deleted.length ) {
+	span.append("Removed: ");
+	for(var i=0; i<diff.deleted.length; i++)
+	  addTag(diff.deleted[i], "deleted");
+      }
+      if ( diff.added.length ) {
+	span.append(diff.deleted.length ? ", " : "", "Added: ");
+	for(var i=0; i<diff.added.length; i++)
+	  addTag(diff.added[i], "added");
+      }
 
       tab.append(div);
 
