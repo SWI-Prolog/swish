@@ -93,6 +93,8 @@ gitty_file(Store, Head, Hash) :-
 %%	gitty_create(+Store, +Name, +Data, +Meta, -Commit) is det.
 %
 %	Create a new object Name from Data and meta information.
+%
+%	@arg Commit is a dit describing the new Commit
 
 gitty_create(Store, Name, _Data, _Meta, _) :-
 	gitty_scan(Store),
@@ -218,7 +220,10 @@ read_history_depth(_, _, 0, []) :- !.
 read_history_depth(Store, Hash, Left, [H|T]) :-
 	load_commit(Store, Hash, H), !,
 	Left1 is Left-1,
-	read_history_depth(Store, H.get(previous), Left1, T).
+	(   read_history_depth(Store, H.get(previous), Left1, T)
+	->  true
+	;   T = []
+	).
 read_history_depth(_, _, _, []).
 
 %%	read_history_to_hash(+Store, +Start, +Upto, -History)

@@ -255,26 +255,35 @@ define([ "cm/lib/codemirror",
 	return this;
       }
 
-      if ( !options.file || what != "only-meta-data" )
-      { if ( options.cm.isClean(options.cleanGeneration) ) {
-	  alert("No change");
-	  return this;
-        }
-	data = { data: this.prologEditor('getSource'),
-	         type: "pl"
-               };
-      } else {
+
+      if ( options.file &&
+	   (!meta || !meta.name || meta.name == options.file) ) {
+	url += "/" + encodeURI(options.file);
+	method = "PUT";
+      }
+
+      if ( what == "only-meta-data" ) {
 	data = { update: "meta-data" };
+      } else if ( method == "POST" ) {
+	data = { data: this.prologEditor('getSource'),
+		 type: "pl"
+	       };
+	if ( options.meta ) {			/* rename */
+	  data.previous = options.meta.commit;
+	}
+      } else {
+	if ( !options.cm.isClean(options.cleanGeneration) ) {
+	  data = { data: this.prologEditor('getSource'),
+		   type: "pl"
+		 };
+	} else if ( sameSet(options.meta.tags, meta.tags) ) {
+	  alert("No change");
+	  return;
+	}
       }
 
       if ( meta )
 	data.meta = meta;
-
-      if ( options.file &&
-	   (!meta || meta.name == options.file) ) {
-	url += "/" + encodeURI(options.file);
-	method = "PUT";
-      }
 
       $.ajax({ url: url,
                dataType: "json",
@@ -306,7 +315,7 @@ define([ "cm/lib/codemirror",
       var options = this.data(pluginName);
       var meta = options.meta||{};
       var editor = this;
-      var update = (options.meta !== undefined);
+      var update = Boolean(options.file);
 
       function saveAsBody() {
 	this.append($.el.form({class:"form-horizontal"},
@@ -351,6 +360,7 @@ define([ "cm/lib/codemirror",
 
       function infoBody() {
 	if ( options.meta ) {
+	  options.editor = editor;		/* circular reference */
 	  this.gitty(options);
 	} else {
 	  this.append($.el.p("The source is not associated with a file. ",

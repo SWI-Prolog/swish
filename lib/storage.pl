@@ -94,10 +94,10 @@ storage(post, Request) :-
 	http_read_json_dict(Request, Dict),
 	option(data(Data), Dict, ""),
 	option(type(Type), Dict, pl),
-	meta_data(Request, Dict, Meta),
 	setting(directory, Dir),
 	make_directory_path(Dir),
-	(   Base = Dict.get(meta).get(name)
+	meta_data(Request, Dir, Dict, Meta),
+	(   atom_string(Base, Dict.get(meta).get(name))
 	->  file_name_extension(Base, Type, File),
 	    (	catch(gitty_create(Dir, File, Data, Meta, Commit),
 		      error(gitty(file_exists(File)),_),
@@ -118,7 +118,11 @@ storage(post, Request) :-
 	(   var(Error)
 	->  debug(storage, 'Created: ~p', [Commit]),
 	    storage_url(File, URL),
-	    reply_json_dict(json{url:URL, file:File, meta:Meta})
+
+	    reply_json_dict(json{url:URL,
+				 file:File,
+				 meta:Commit.put(symbolic, "HEAD")
+				})
 	;   reply_json_dict(Error)
 	).
 storage(put, Request) :-
@@ -133,7 +137,10 @@ storage(put, Request) :-
 	storage_url(File, URL),
 	gitty_update(Dir, File, Data, Meta, Commit),
 	debug(storage, 'Updated: ~p', [Commit]),
-	reply_json_dict(json{url:URL, file:File, meta:Meta}).
+	reply_json_dict(json{url:URL,
+			     file:File,
+			     meta:Commit.put(symbolic, "HEAD")
+			    }).
 storage(delete, Request) :-
 	authentity(Request, Meta),
 	setting(directory, Dir),
@@ -153,6 +160,7 @@ storage_url(File, HREF) :-
 	http_link_to_id(web_storage, path_postfix(File), HREF).
 
 %%	meta_data(+Request, +Dict, -Meta) is det.
+%%	meta_data(+Request, Store, +Dict, -Meta) is det.
 %
 %	Gather meta-data from the  Request   (user,  peer)  and provided
 %	meta-data. Illegal and unknown values are ignored.
@@ -162,6 +170,15 @@ meta_data(Request, Dict, Meta) :-
 	(   filter_meta(Dict.get(meta), Meta1)
 	->  Meta = Meta0.put(Meta1)
 	;   Meta = Meta0
+	).
+
+meta_data(Request, Store, Dict, Meta) :-
+	meta_data(Request, Dict, Meta1),
+	(   atom_string(Previous, Dict.get(previous)),
+	    is_sha1(Previous),
+	    gitty_commit(Store, Previous, _PrevMeta)
+	->  Meta = Meta1.put(previous, Previous)
+	;   Meta = Meta1
 	).
 
 filter_meta(Dict0, Dict) :-

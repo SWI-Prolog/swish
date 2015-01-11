@@ -29,6 +29,7 @@ define([ "jquery", "config", "form", "laconic" ],
 	data.commits = [];
 	data.commits[meta.commit] = meta;
 	data.commit  = meta.commit;
+	data.editor  = options.editor;
 
 	function tab(label, active, id, disabled) {
 	  var attrs = {role:"presentation"};
@@ -128,10 +129,8 @@ define([ "jquery", "config", "form", "laconic" ],
 	  $(formel).append(
 	      form.fields.buttons(
 		{ label: "Update meta data",
-		  action: function(ev,data) {
-		    console.log(data);
-		    data.name = options.file;
-		    editor.prologEditor('save', data, "only-meta-data");
+		  action: function(ev, newMetaData) {
+		    data.editor.prologEditor('save', newMetaData, "only-meta-data");
 		    return false;
 		  }
 		}));
