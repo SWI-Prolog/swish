@@ -24,7 +24,7 @@ define([ "jquery", "config", "form", "laconic" ],
 	var elem = $(this);
 	var data = elem.data(pluginName)||{};
 	var meta = options.meta;
-	var history, tabs, formel;
+	var tabs, formel;
 	var henabled;
 
 	function tab(label, active, id, disabled) {
@@ -75,15 +75,19 @@ define([ "jquery", "config", "form", "laconic" ],
 	}
 
 	/* history tab */
-	history = $.el.div({ class:"tab-pane fade",
-			     id:"gitty-history"}),
-	tabs.append(history);
+	tabs.append($.el.div({ class:"tab-pane fade gitty-history", id:"gitty-history"}));
 	elem.find('[href="#gitty-history"]').on("show.bs.tab", function(ev) {
-	  $(history).gitty('showHistory', {file:options.file});
+	  elem.gitty('showHistory');
 	});
 
 	/* diff/changes tab */
-	tabs.append($.el.div({class:"tab-pane fade", id:"gitty-diff"}));
+	tabs.append($.el.div({class:"tab-pane fade gitty-diff", id:"gitty-diff"}));
+	elem.find('[href="#gitty-diff"]').on("show.bs.tab", function(ev) {
+	  elem.gitty('showDiff');
+	});
+
+	data.meta = meta;
+	elem.data(pluginName, data);
       });
 
       return this;
@@ -108,27 +112,28 @@ define([ "jquery", "config", "form", "laconic" ],
 		 *******************************/
 
     /**
-     * Show a commit log for options.file.
-     * @param {Object} options
-     * @param {String} options.file is the file name in the gitty store
+     * Fill the commit log tab
      */
-    showHistory: function(options) {
+    showHistory: function() {
       return this.each(function() {
 	var elem = $(this);
-	var data = elem.data(pluginName)||{};	/* private data */
+	var data = elem.data(pluginName);
 	var url  = config.http.locations.web_storage
-		 + "/" + encodeURI(options.file);
+		 + "/" + encodeURI(data.meta.name);
+	var tab  = elem.find(".gitty-history");
 
-	if ( data.file == options.file )
+	if ( data.history == "shown" )
 	  return;
-	data.file = options.file;
 
-	elem.html("");
-	elem.append($.el.table({class:"table table-striped table-condensed gitty-history"},
-			       $.el.tr($.el.th("Changed"),
-				       $.el.th("Date"),
-				       $.el.th("Author"),
-				       $.el.th("Actions"))));
+	tab.html("");
+	tab.append($.el.table({class:"table table-striped table-condensed gitty-history",
+			       'data-click-to-select':true,
+			       'data-single-select':true
+			      },
+			      $.el.tr($.el.th("Changed"),
+				      $.el.th("Date"),
+				      $.el.th("Author"),
+				      $.el.th("Actions"))));
 
 	$.ajax({ url: url,
 		 contentType: "application/json",
@@ -142,8 +147,6 @@ define([ "jquery", "config", "form", "laconic" ],
 		   alert("Failed to fetch history");
 		 }
 	       });
-
-	elem.data(pluginName, data);	/* store with element */
       });
     },
 
@@ -151,12 +154,13 @@ define([ "jquery", "config", "form", "laconic" ],
      * Fill the history table
      */
     fillHistoryTable: function(history) {
+      gitty = this;
       var table = this.find(".table.gitty-history");
 
       function versionActions(h) {
 	return $.el.span(form.widgets.glyphIconButton("glyphicon-zoom-in",
-						      {action:"diff",
-						       title:"Show changes"}),
+						      {action:"setVersion",
+						       title:"Examine version"}),
 			 form.widgets.glyphIconButton("glyphicon-play",
 						      {action:"play",
 						       title:"Open in SWISH"}));
@@ -164,32 +168,49 @@ define([ "jquery", "config", "form", "laconic" ],
 
       for(var i=0; i<history.length; i++) {
 	var h = history[i];
+	var tr;
 
-	table.append($.el.tr({"data-commit":h.commit},
-			     $.el.td({class:"commit-message"},
-				     h.commit_message||"No comment"),
-			     $.el.td({class:"date"},
-				     new Date(h.time*1000).toLocaleString()),
-			     $.el.td({class:"author"},
-				     h.author||"No author"),
-			     $.el.td(versionActions(h))));
+	tr = $.el.tr({'data-commit':h.commit},
+		     $.el.td({class:"commit-message"},
+			     h.commit_message||"No comment"),
+		     $.el.td({class:"date"},
+			     new Date(h.time*1000).toLocaleString()),
+		     $.el.td({class:"author"},
+			     h.author||"No author"),
+		     $.el.td(versionActions(h)));
+	$(tr).data('meta', h);
+        table.append(tr);
       }
 
       table.on("click", "button", function(ev) {
 	var button = $(ev.target);
-	var commit = button.parents("tr").data("commit");
+	var meta   = button.parents("tr").data('meta');
 	var action = button.data("action");
 
 	if ( action == "play" ) {
 	  window.location = config.http.locations.web_storage + "/" + commit;
-	} else if ( action == "diff" ) {
-	  var diffA = button.parents("div.tab-content")
-                            .parent()
-			    .find("[href='#gitty-diff']");
-	  $("#gitty-diff").gitty('showDiff', { file:commit });
-          diffA.tab('show');
+	} else if ( action == "setVersion" ) {
+	  gitty.gitty('setVersion', meta);
 	}
       });
+    },
+
+    /**
+     * Select a row in the table and set the title.
+     * @param {Object} version is the history object that describes the
+     * version.
+     */
+
+    setVersion: function(version) {
+      var data = this.data(pluginName);	/* private data */
+      var h2   = this.parent(".modal-content").find("h2");
+
+      h2.html("");
+      h2.append(this.gitty('title', version));
+      this.find("tr.success").removeClass("success");
+      this.find("tr[data-commit="+version.commit+"]").addClass("success");
+
+      return this;
     },
 
 		 /*******************************
@@ -204,20 +225,19 @@ define([ "jquery", "config", "form", "laconic" ],
      * HEAD^)
      */
 
-    showDiff: function(options) {
+    showDiff: function() {
       return this.each(function() {
 	var elem = $(this);
-	var data = elem.data(pluginName)||{};	/* private data */
+	var data = elem.data(pluginName);
 	var url  = config.http.locations.web_storage
-		 + "/" + encodeURI(options.file);
+		 + "/" + encodeURI(data.meta.commit);
 
-	if ( data.file == options.file && data.base == options.base )
+	if ( data.diff == data.meta.commit )
 	  return;
-	data.file = options.file;
-	data.base = options.base;
 
-	elem.html("");
+	data.diff = data.meta.commit;
 
+	elem.find(".gitty-diff").html("");
 	$.ajax({ url: url,
 		 contentType: "application/json",
 		 type: "GET",
@@ -230,8 +250,6 @@ define([ "jquery", "config", "form", "laconic" ],
 		   alert("Failed to fetch diff");
 		 }
 	       });
-
-	elem.data(pluginName, data);	/* store with element */
       });
     },
 
@@ -241,6 +259,7 @@ define([ "jquery", "config", "form", "laconic" ],
     },
 
     diffTags: function(diff) {
+      var tab  = this.find(".gitty-diff");
       var div = $($.el.div({class:"diff-tags"},
 			    $.el.label("Edited tags")));
 
@@ -253,12 +272,13 @@ define([ "jquery", "config", "form", "laconic" ],
       for(var i=0; i<diff.added.length; i++)
 	addTag(diff.added[i], "added");
 
-      this.append(div);
+      tab.append(div);
 
       return this;
     },
 
     udiffData: function(diff) {
+      var tab  = this.find(".gitty-diff");
       var lines = diff.split("\n");
       var pre = $($.el.pre({class:"udiff"}));
 
@@ -273,7 +293,7 @@ define([ "jquery", "config", "form", "laconic" ],
 		   $.el.br());
       }
 
-      this.append(pre);
+      tab.append(pre);
     }
   }; // methods
 
