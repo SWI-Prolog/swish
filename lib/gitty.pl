@@ -359,7 +359,16 @@ gitty_reserved_meta(previous).
 %	True if Dict representeds the changes   in Hash1 to FileOrHash2.
 %	If Hash1 is unbound,  it  is   unified  with  the  `previous` of
 %	FileOrHash2. Returns _{initial:true} if  Hash1   is  unbound and
-%	FileOrHash2 is the initial commit.
+%	FileOrHash2 is the initial commit.  Dict contains:
+%
+%	  - from:Meta1
+%	  - to:Meta2
+%	  Meta-data for the two diffed versions
+%	  - data:UDiff
+%	  String holding unified diff representation of changes to the
+%	  data.  Only present of data has changed
+%	  - tags:_{added:AddedTags, deleted:DeletedTags}
+%	  If tags have changed, the added and deleted ones.
 
 gitty_diff(Store, C1, C2, Dict) :-
 	gitty_data(Store, C2, Data2, Meta2),
@@ -368,6 +377,7 @@ gitty_diff(Store, C1, C2, Dict) :-
 	;   true
 	), !,
 	gitty_data(Store, C1, Data1, Meta1),
+	Pairs = [ from-Meta1, to-Meta2|_],
 	(   Data1 \== Data2
 	->  data_diff(Data1, Data2, Diffs),
 	    maplist(udiff_string, Diffs, Strings),
@@ -383,7 +393,7 @@ gitty_diff(Store, C1, C2, Dict) :-
 	    memberchk(tags-_{added:Added, deleted:Deleted}, Pairs)
 	;   true
 	),
-	once(length(Pairs,_)),
+	once(length(Pairs,_)),			% close list
 	dict_pairs(Dict, json, Pairs).
 gitty_diff(_Store, '0000000000000000000000000000000000000000', _C2,
 	   json{initial:true}).
@@ -426,11 +436,11 @@ different solution for the real thing.  Options are:
 %	`Diff` is a list holding
 %
 %	  - +(Line)
-%	  Line as added to Data1 to get Data2
+%	  Line was added to Data1 to get Data2
 %	  - -(Line)
 %	  Line was deleted from Data1 to get Data2
 %	  - -(Line1,Line2)
-%	  Line as replaced
+%	  Line was replaced
 %	  - =(Line)
 %	  Line is identical (context line).
 
