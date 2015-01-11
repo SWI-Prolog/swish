@@ -344,9 +344,7 @@ define([ "cm/lib/codemirror",
       var title;
 
       if ( options.meta ) {
-	title = $.el.span("File ", $.el.span({class:"filename"}, meta.name));
-	if ( options.file == meta.commit )
-	  $(title).append("@", span({class:"sha1"}, meta.commit));
+	title = $().gitty('title', options.meta);
       } else {
 	title = "Local source";
       }

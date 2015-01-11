@@ -171,11 +171,14 @@ gitty_commit(Store, Name, Meta) :-
 gitty_commit(Store, Hash, Meta) :-
 	load_commit(Store, Hash, Meta).
 
-
 load_commit(Store, Hash, Meta) :-
 	load_object(Store, Hash, String),
 	term_string(Meta0, String, []),
-	Meta = Meta0.put(commit, Hash).
+	Meta1 = Meta0.put(commit, Hash),
+	(   head(Store, Meta0.name, Hash)
+	->  Meta = Meta1.put(symbolic, "HEAD")
+	;   Meta = Meta1
+	).
 
 %%	gitty_history(+Store, +NameOrHash, +Max, -History) is det.
 %

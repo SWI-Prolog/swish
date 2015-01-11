@@ -84,6 +84,19 @@ define([ "jquery", "config", "form", "laconic" ],
       return this;
     },
 
+    /**
+     * @param is the gitty meta-object
+     * @return {DOM} node holding the title
+     */
+    title: function(meta) {
+      var title = $.el.span("File ", $.el.span({class:"filename"}, meta.name));
+      if ( meta.symbolic != "HEAD" && meta.commit )
+	$(title).append("@", $.el.span({class:"sha1 abbrev"},
+				       meta.commit.substring(0,7)));
+
+      return title;
+    },
+
 
 		 /*******************************
 		 *	     COMMIT LOG		*
