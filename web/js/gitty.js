@@ -24,8 +24,7 @@ define([ "jquery", "config", "form", "laconic" ],
 	var elem = $(this);
 	var data = elem.data(pluginName)||{};
 	var meta = options.meta;
-	var tabs, formel;
-	var henabled;
+	var tabs;
 
 	function tab(label, active, id, disabled) {
 	  var attrs = {role:"presentation"};
@@ -50,44 +49,30 @@ define([ "jquery", "config", "form", "laconic" ],
 	elem.append(tabs);
 
 	/* meta-data tab */
-	tabs.append($.el.div(
-	  { class:"tab-pane fade in active",
-	    id:"gitty-meta-data"},
-	  formel = $.el.form({class:"form-horizontal"},
-		      form.fields.fileName(options.file, meta.public,
-					   true), // disabled
-		      form.fields.title(meta.title),
-		      form.fields.author(meta.author),
-		      form.fields.date(meta.time, "Date", "date"),
-		      form.fields.tags(meta.tags))));
-
-	if ( meta.symbolic == "HEAD" ) {
-	  $(formel).append(
-	      form.fields.buttons(
-		{ label: "Update meta data",
-		  action: function(ev,data) {
-		    console.log(data);
-		    data.name = options.file;
-		    editor.prologEditor('save', data, "only-meta-data");
-		    return false;
-		  }
-		}));
-	}
+	tabs.append($.el.div({ class:"tab-pane fade in active gitty-meta-data",
+	                       id:"gitty-meta-data"}));
+	elem.find('[href="#gitty-meta-data"]').on("show.bs.tab", function(ev) {
+	  elem.gitty('showMetaData');
+	});
 
 	/* history tab */
-	tabs.append($.el.div({ class:"tab-pane fade gitty-history", id:"gitty-history"}));
+	tabs.append($.el.div({ class:"tab-pane fade gitty-history",
+	                       id:"gitty-history"}));
 	elem.find('[href="#gitty-history"]').on("show.bs.tab", function(ev) {
 	  elem.gitty('showHistory');
 	});
 
 	/* diff/changes tab */
-	tabs.append($.el.div({class:"tab-pane fade gitty-diff", id:"gitty-diff"}));
+	tabs.append($.el.div({ class:"tab-pane fade gitty-diff",
+	                       id:"gitty-diff"}));
 	elem.find('[href="#gitty-diff"]').on("show.bs.tab", function(ev) {
 	  elem.gitty('showDiff');
 	});
 
 	data.meta = meta;
 	elem.data(pluginName, data);
+
+	elem.gitty('showMetaData');
       });
 
       return this;
@@ -104,6 +89,54 @@ define([ "jquery", "config", "form", "laconic" ],
 				       meta.commit.substring(0,7)));
 
       return title;
+    },
+
+
+		 /*******************************
+		 *	     META DATA		*
+		 *******************************/
+
+    /**
+     * Show meta data for the current version.  If this is the HEAD,
+     * allow updating the meta-data
+     */
+    showMetaData: function() {
+      return this.each(function() {
+	var elem = $(this);
+	var data = elem.data(pluginName);
+	var tab  = elem.find(".gitty-meta-data");
+	var formel;
+	var meta = data.meta;
+
+	if ( data.metaData == meta.commit )
+	  return;
+	data.metaData = meta.commit;
+
+	formel = $.el.form({class:"form-horizontal"},
+		      form.fields.fileName(meta.name, meta.public,
+					   true), // disabled
+		      form.fields.title(meta.title),
+		      form.fields.author(meta.author),
+		      form.fields.date(meta.time, "Date", "date"),
+		      form.fields.tags(meta.tags));
+
+	if ( meta.symbolic == "HEAD" ) {
+	  $(formel).append(
+	      form.fields.buttons(
+		{ label: "Update meta data",
+		  action: function(ev,data) {
+		    console.log(data);
+		    data.name = options.file;
+		    editor.prologEditor('save', data, "only-meta-data");
+		    return false;
+		  }
+		}));
+	}
+
+	tab.append(formel);
+      });
+
+      return this;
     },
 
 
