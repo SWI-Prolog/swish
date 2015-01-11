@@ -353,61 +353,7 @@ define([ "cm/lib/codemirror",
 
       function infoBody() {
 	if ( options.meta ) {
-	  var meta = options.meta;
-	  var history, tabs;
-	  var henabled;
-
-	  function tab(label, active, id, disabled) {
-	    var attrs = {role:"presentation"};
-	    var classes = [];
-	    if ( active   ) classes.push("active");
-	    if ( disabled ) classes.push("disabled");
-	    if ( classes != [] )
-	      attrs.class = classes.join(" ");
-	    var elem =
-	    $.el.li(attrs, $.el.a({href:"#"+id, 'data-toggle':"tab"}, label));
-	    return elem;
-	  }
-
-	  henabled = Boolean(meta.previous);
-
-	  this.append($.el.ul(
-            {class:"nav nav-tabs"},
-	    tab("Meta data", true,  "gitty-meta-data"),
-	    tab("History",   false, "gitty-history",  henabled),
-	    tab("Changes",   false, "gitty-diff",     henabled)));
-	  this.append(tabs=$($.el.div({class:"tab-content"})));
-
-	  /* meta-data tab */
-	  tabs.append($.el.div(
-            { class:"tab-pane fade in active",
-	      id:"gitty-meta-data"},
-	    $.el.form({class:"form-horizontal"},
-		      form.fields.fileName(options.file, meta.public,
-					   true), // disabled
-		      form.fields.title(meta.title),
-		      form.fields.author(meta.author),
-		      form.fields.tags(meta.tags),
-		      form.fields.buttons(
-			{ label: "Update meta data",
-			  action: function(ev,data) {
-			    console.log(data);
-			    data.name = options.file;
-			    editor.prologEditor('save', data, "only-meta-data");
-			    return false;
-			  }
-			}))));
-
-	  /* history tab */
-	  history = $.el.div({ class:"tab-pane fade",
-			       id:"gitty-history"}),
-	  tabs.append(history);
-	  this.find('[href="#gitty-history"]').on("show.bs.tab", function(ev) {
-	    $(history).gitty('showHistory', {file:options.file});
-	  });
-
-	  /* diff/changes tab */
-	  tabs.append($.el.div({class:"tab-pane fade", id:"gitty-diff"}));
+	  this.gitty(options);
 	} else {
 	  this.append($.el.p("The source is not associated with a file. ",
 			     "Use ",
