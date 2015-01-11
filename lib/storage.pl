@@ -81,7 +81,10 @@ storage(get, Request) :-
 				       ])
 			]),
 	(   Fmt == history
-	->  Format = history(Depth)
+	->  (   nonvar(RelTo)
+	    ->	Format = history(Depth, RelTo)
+	    ;	Format = history(Depth)
+	    )
 	;   Fmt == diff
 	->  Format = diff(RelTo)
 	;   Format = Fmt
@@ -193,7 +196,7 @@ meta_allowed(commit_message, string).
 %	     Serve file embedded in a SWISH application
 %	     - raw
 %	     Serve the row file
-%	     - history(Depth)
+%	     - history(Depth, IncludeHASH)
 %	     Return a JSON description with the change log
 %	     - diff(RelTo)
 %	     Reply with diff relative to RelTo.  Default is the
@@ -214,8 +217,11 @@ storage_get(raw, Dir, _, FileOrHash, _Request) :-
 	file_mime_type(Meta.name, MIME),
 	format('Content-type: ~w~n~n', [MIME]),
 	format('~s', [Code]).
+storage_get(history(Depth, Includes), Dir, _, File, _Request) :-
+	gitty_history(Dir, File, History, [depth(Depth),includes(Includes)]),
+	reply_json_dict(History).
 storage_get(history(Depth), Dir, _, File, _Request) :-
-	gitty_history(Dir, File, Depth, History),
+	gitty_history(Dir, File, History, [depth(Depth)]),
 	reply_json_dict(History).
 storage_get(diff(RelTo), Dir, _, File, _Request) :-
 	gitty_diff(Dir, RelTo, File, Diff),
