@@ -112,6 +112,19 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 	return elem;
       },
 
+      date: function(stamp, labels, name) {
+	name = name||label;
+	var elem =
+	$.el.div({class:"form-group"},
+		 label(name, labels),
+		 $.el.div({class:"col-xs-10"},
+			  textInput(name,
+				    {disabled: true,
+				     value:new Date(stamp*1000).toLocaleString()
+				    })));
+	return elem;
+      },
+
       description: function(description) {
 	var elem =
 	$.el.div({class:"form-group"},

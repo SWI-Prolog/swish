@@ -24,7 +24,7 @@ define([ "jquery", "config", "form", "laconic" ],
 	var elem = $(this);
 	var data = elem.data(pluginName)||{};
 	var meta = options.meta;
-	var history, tabs;
+	var history, tabs, formel;
 	var henabled;
 
 	function tab(label, active, id, disabled) {
@@ -53,21 +53,26 @@ define([ "jquery", "config", "form", "laconic" ],
 	tabs.append($.el.div(
 	  { class:"tab-pane fade in active",
 	    id:"gitty-meta-data"},
-	  $.el.form({class:"form-horizontal"},
-		    form.fields.fileName(options.file, meta.public,
-					 true), // disabled
-		    form.fields.title(meta.title),
-		    form.fields.author(meta.author),
-		    form.fields.tags(meta.tags),
-		    form.fields.buttons(
-		      { label: "Update meta data",
-			action: function(ev,data) {
-			  console.log(data);
-			  data.name = options.file;
-			  editor.prologEditor('save', data, "only-meta-data");
-			  return false;
-			}
-		      }))));
+	  formel = $.el.form({class:"form-horizontal"},
+		      form.fields.fileName(options.file, meta.public,
+					   true), // disabled
+		      form.fields.title(meta.title),
+		      form.fields.author(meta.author),
+		      form.fields.date(meta.time, "Date", "date"),
+		      form.fields.tags(meta.tags))));
+
+	if ( meta.symbolic == "HEAD" ) {
+	  $(formel).append(
+	      form.fields.buttons(
+		{ label: "Update meta data",
+		  action: function(ev,data) {
+		    console.log(data);
+		    data.name = options.file;
+		    editor.prologEditor('save', data, "only-meta-data");
+		    return false;
+		  }
+		}));
+	}
 
 	/* history tab */
 	history = $.el.div({ class:"tab-pane fade",
