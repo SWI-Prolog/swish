@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014, VU University Amsterdam
+    Copyright (C): 2015, VU University Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -33,7 +33,7 @@
 	    gitty_update/5,		% +Store, +Name, +Data, +Meta, -Commit
 	    gitty_commit/3,		% +Store, +Name, -Meta
 	    gitty_data/4,		% +Store, +Name, -Data, -Meta
-	    gitty_history/4,		% +Store, +Name, +Max, -History
+	    gitty_history/4,		% +Store, +Name, -History, +Options
 	    gitty_scan/1,		% +Store
 	    gitty_hash/2,		% +Store, ?Hash
 	    gitty_reserved_meta/1,	% ?Key
@@ -48,6 +48,7 @@
 :- use_module(library(sha)).
 :- use_module(library(lists)).
 :- use_module(library(apply)).
+:- use_module(library(option)).
 :- use_module(library(dcg/basics)).
 
 /** <module> Single-file GIT like version system
@@ -180,26 +181,64 @@ load_commit(Store, Hash, Meta) :-
 	;   Meta = Meta1
 	).
 
-%%	gitty_history(+Store, +NameOrHash, +Max, -History) is det.
+%%	gitty_history(+Store, +NameOrHash, -History, +Options) is det.
 %
 %	History is a list of dicts representating the history of Name in
-%	Store.
+%	Store.  Options:
+%
+%	  - depth(+Depth)
+%	  Number of entries in the history.  If not present, defaults
+%	  to 5.
+%	  - includes(+HASH)
+%	  Ensure Hash is included in the history.  This means that the
+%	  history includes the entry with HASH an (depth+1)//2 entries
+%	  after the requested HASH.
 
-gitty_history(Store, Name, Max, [Meta|History]) :-
+gitty_history(Store, Name, History, Options) :-
+	history_hash_start(Store, Name, Hash0),
+	option(depth(Depth), Options, 5),
+	(   option(includes(Hash), Options)
+	->  read_history_to_hash(Store, Hash0, Hash, History0),
+	    length(History0, Before),
+	    After is max(Depth-Before, (Depth+1)//2),
+	    read_history_depth(Store, Hash, After, History1),
+	    append(History0, History1, History2),
+	    list_prefix(Depth, History2, History)
+	;   read_history_depth(Store, Hash0, Depth, History)
+	).
+
+history_hash_start(Store, Name, Hash) :-
 	gitty_scan(Store),
 	head(Store, Name, Head), !,
-	load_commit(Store, Head, Meta),
-	history(Store, Meta, Max, History).
-gitty_history(Store, Hash, Max, [Meta|History]) :-
-	load_commit(Store, Hash, Meta),
-	history(Store, Meta, Max, History).
+	Hash = Head.
+history_hash_start(_, Hash, Hash).
 
 
-history(Store, Meta, Max, [Prev|History]) :-
-	succ(Max1, Max),
-	load_commit(Store, Meta.get(previous), Prev), !,
-	history(Store, Prev, Max1, History).
-history(_, _, _, []).
+read_history_depth(_, _, 0, []) :- !.
+read_history_depth(Store, Hash, Left, [H|T]) :-
+	load_commit(Store, Hash, H), !,
+	Left1 is Left-1,
+	read_history_depth(Store, H.get(previous), Left1, T).
+read_history_depth(_, _, _, []).
+
+%%	read_history_to_hash(+Store, +Start, +Upto, -History)
+%
+%	Read the history upto, but NOT including Upto.
+
+read_history_to_hash(Store, Hash, Upto, [H|T]) :-
+	Upto \== Hash,
+	load_commit(Store, Hash, H),
+	(   read_history_to_hash(Store, H.get(previous), Upto, T)
+	->  true
+	;   T = []
+	).
+read_history_to_hash(_, _, _, []).
+
+list_prefix(0, _, []) :- !.
+list_prefix(_, [], []) :- !.
+list_prefix(N, [H|T0], [H|T]) :-
+	N2 is N - 1,
+	list_prefix(N2, T0, T).
 
 
 %%	save_object(+Store, +Data, +Type, -Hash)
