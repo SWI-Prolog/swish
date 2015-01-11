@@ -100,8 +100,11 @@ define([ "jquery", "config", "form", "laconic" ],
 	if ( action == "play" ) {
 	  window.location = config.http.locations.web_storage + "/" + commit;
 	} else if ( action == "diff" ) {
-	  var diffTab = button.parents("div.tab-content").find("div.gitty-diff");
+	  var diffA = button.parents("div.tab-content")
+                            .parent()
+			    .find("[href='#gitty-diff']");
 	  $("#gitty-diff").gitty('showDiff', { file:commit });
+          diffA.tab('show');
 	}
 
 	console.log(action, commit);
@@ -152,8 +155,26 @@ define([ "jquery", "config", "form", "laconic" ],
     },
 
     fillDiff: function(diff) {
-      if ( diff.data )
-	this.gitty('udiffData', diff.data);
+      if ( diff.tags ) this.gitty('diffTags', diff.tags);
+      if ( diff.data ) this.gitty('udiffData', diff.data);
+    },
+
+    diffTags: function(diff) {
+      var div = $($.el.div({class:"diff-tags"},
+			    $.el.label("Edited tags")));
+
+      function addTag(tag, className) {
+	div.append($.el.span({class: "diff-tag "+className}, tag));
+      }
+
+      for(var i=0; i<diff.deleted.length; i++)
+	addTag(diff.deleted[i], "deleted");
+      for(var i=0; i<diff.added.length; i++)
+	addTag(diff.added[i], "added");
+
+      this.append(div);
+
+      return this;
     },
 
     udiffData: function(diff) {
