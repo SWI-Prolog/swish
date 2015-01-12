@@ -357,6 +357,7 @@ gitty_scan_sync(Store) :-
 
 gitty_hash(Store, Hash) :-
 	var(Hash), !,
+	access_file(Store, exist),
 	directory_files(Store, Level0),
 	member(E0, Level0),
 	E0 \== '..',
