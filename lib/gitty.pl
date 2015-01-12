@@ -49,6 +49,8 @@
 :- use_module(library(lists)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
+:- use_module(library(process)).
+:- use_module(library(debug)).
 :- use_module(library(dcg/basics)).
 
 /** <module> Single-file GIT like version system
@@ -426,10 +428,8 @@ gitty_diff(Store, C1, C2, Dict) :-
 	gitty_data(Store, C1, Data1, Meta1),
 	Pairs = [ from-Meta1, to-Meta2|_],
 	(   Data1 \== Data2
-	->  data_diff(Data1, Data2, Diffs),
-	    maplist(udiff_string, Diffs, Strings),
-	    atomics_to_string(Strings, String),
-	    memberchk(data-String, Pairs)
+	->  udiff_string(Data1, Data2, UDIFF),
+	    memberchk(data-UDIFF, Pairs)
 	;   true
 	),
 	meta_tag_set(Meta1, Tags1),
@@ -449,6 +449,54 @@ gitty_diff(_Store, '0000000000000000000000000000000000000000', _C2,
 meta_tag_set(Meta, Tags) :-
 	sort(Meta.get(tags), Tags), !.
 meta_tag_set(_, []).
+
+%%	udiff_string(+Data1, +Data2, -UDIFF) is det.
+%
+%	Produce a unified difference between two   strings. Note that we
+%	can avoid one temporary file using diff's `-` arg and the second
+%	by    passing    =/dev/fd/NNN=    on    Linux    systems.    See
+%	http://stackoverflow.com/questions/3800202
+
+:- if(true).
+
+udiff_string(Data1, Data2, UDIFF) :-
+	setup_call_cleanup(
+	    save_string(Data1, File1),
+	    setup_call_cleanup(
+		save_string(Data2, File2),
+		process_diff(File1, File2, UDIFF),
+		delete_file(File2)),
+	    delete_file(File1)).
+
+save_string(String, File) :-
+	tmp_file_stream(utf8, File, TmpOut),
+	format(TmpOut, '~s', [String]),
+	close(TmpOut).
+
+process_diff(File1, File2, String) :-
+	setup_call_cleanup(
+	    process_create(path(diff),
+			   ['-u', file(File1), file(File2)],
+			   [ stdout(pipe(Out)),
+			     process(PID)
+			   ]),
+	    read_string(Out, _, String),
+	    ( close(Out),
+	      process_wait(PID, Status)
+	    )),
+	assertion(normal_diff_exit(Status)).
+
+normal_diff_exit(exit(0)).		% equal
+normal_diff_exit(exit(1)).		% different
+
+:- else.
+
+udiff_string(Data1, Data2, UDIFF) :-
+	data_diff(Data1, Data2, Diffs),
+	maplist(udiff_string, Diffs, Strings),
+	atomics_to_string(Strings, UDIFF).
+
+:- endif.
 
 
 		 /*******************************
