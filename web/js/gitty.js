@@ -169,8 +169,7 @@ define([ "jquery", "config", "form", "laconic" ],
 	  },
 	  $.el.tr($.el.th("Changed"),
 		  $.el.th("Date"),
-		  $.el.th("Author"),
-		  $.el.th("Actions"))));
+		  $.el.th("Author"))));
 
 	playButton = form.widgets.glyphIconButton("glyphicon-play",
 						  {title:"Open in SWISH"});
@@ -218,12 +217,6 @@ define([ "jquery", "config", "form", "laconic" ],
       var data  = this.data(pluginName);
       var table = this.find(".table.gitty-history");
 
-      function versionActions(h) {
-	return $.el.span(form.widgets.glyphIconButton("glyphicon-zoom-in",
-						      {action:"setCommit",
-						       title:"Examine version"}));
-      }
-
       for(var i=0; i<history.length; i++) {
 	var h = history[i];
 	var tr;
@@ -241,19 +234,15 @@ define([ "jquery", "config", "form", "laconic" ],
 		     $.el.td({class:"date"},
 			     new Date(h.time*1000).toLocaleString()),
 		     $.el.td({class:"author"},
-			     h.author||"No author"),
-		     $.el.td(versionActions(h)));
+			     h.author||"No author"));
         table.append(tr);
       }
 
-      table.on("click", "button", function(ev) {
-	var button = $(ev.target);
-	var commit = button.parents("tr").data('commit');
-	var action = button.data("action");
+      table.on("click", "tr", function(ev) {
+	var tr = $(ev.target).parents("tr");
+	var commit = tr.data('commit');
 
-	if ( action == "setCommit" ) {
-	  gitty.gitty('setCommit', commit);
-	}
+	gitty.gitty('setCommit', commit);
       });
     },
 
