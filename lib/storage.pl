@@ -74,6 +74,7 @@ storage(get, Request) :-
 					 description('How to render')
 				       ]),
 			  depth(Depth, [ default(5),
+					 integer,
 					 description('History depth')
 				       ]),
 			  to(RelTo,    [ optional(true),

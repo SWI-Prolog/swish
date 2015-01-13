@@ -101,12 +101,14 @@ _not_ see exactly the same UI for cooperation.  What about
         - Public							[OK]
 	- Name								[OK]
 	- Title								[OK]
-	- Author, E-mail
-	- Description (codemirror/markdown?)				[OK]
-	- Keywords (using `tagit', auto-completion)
+	- Author, E-mail						[OK]
+	- Keywords (using `tagit', auto-completion)			[OK]
       - Handle errors
       - Keep current meta-data						[OK]
-      - Use current to fill the dialog
+      - Use current to fill the dialog					[OK]
+      - Create fork (save non-head)
+        - Force to give new name if it has a name, otherwise
+	  generate a new name.
     - Load
       - Record meta-data						[OK]
     - Info
@@ -118,11 +120,9 @@ _not_ see exactly the same UI for cooperation.  What about
 ## File info
 
   - Three tabs
-    - Meta info shows meta info of current version
-    - History shows commit log and allows switching version
-      - Selecting a version using `zoom-in` updates `Meta data`
-        and `Changes` and changes the title to "File <name>@hash"
-    - Changes shows the diff
+    - Meta info shows meta info of current version			[OK]
+    - History shows commit log and allows switching version		[OK]
+    - Changes shows the diff						[OK]
 
 ## Search
 

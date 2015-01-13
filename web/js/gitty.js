@@ -167,9 +167,10 @@ define([ "jquery", "config", "form", "laconic" ],
 	    'data-click-to-select':true,
 	    'data-single-select':true
 	  },
-	  $.el.tr($.el.th("Changed"),
+	  $.el.tr($.el.th("Comment"),
 		  $.el.th("Date"),
-		  $.el.th("Author"))));
+		  $.el.th("Author"),
+		  $.el.th("Changed"))));
 
 	playButton = form.widgets.glyphIconButton("glyphicon-play",
 						  {title:"Open in SWISH"});
@@ -196,6 +197,7 @@ define([ "jquery", "config", "form", "laconic" ],
 		 contentType: "application/json",
 		 type: "GET",
 		 data: { format: "history",
+		         depth: 6,		/* might skip last */
 		         to: data.commit
 		       },
 		 success: function(reply) {
@@ -219,10 +221,38 @@ define([ "jquery", "config", "form", "laconic" ],
 
       for(var i=0; i<history.length; i++) {
 	var h = history[i];
-	var tr;
 
 	if ( !data.commits[h.commit] )
 	  data.commits[h.commit] = h;
+      }
+
+      function changedAttributes(m1) {
+	var m2, diff;
+	var elem = $.el.span();
+
+	if ( m1.previous ) {
+	  if ( (m2 = data.commits[m1.previous]) &&
+	       (diff = diffMeta(m1, m2)) ) {
+	    for( var d in diff ) {
+	      if ( diff.hasOwnProperty(d) ) {
+		$(elem).append($.el.span({class:"change-type"}, d));
+	      }
+	    }
+	  }
+	} else {
+	  $(elem).append("initial");
+	}
+
+	return elem;
+      }
+
+      for(var i=0; i<history.length; i++) {
+	var h = history[i];
+	var tr;
+
+	if ( i == history.length-1 &&
+	     h.previous && !data.commit[h.previous] )
+	  break;
 
 	var attrs = {'data-commit':h.commit};
 	if ( data.commit == h.commit )
@@ -234,8 +264,10 @@ define([ "jquery", "config", "form", "laconic" ],
 		     $.el.td({class:"date"},
 			     new Date(h.time*1000).toLocaleString()),
 		     $.el.td({class:"author"},
-			     h.author||"No author"));
-        table.append(tr);
+			     h.author||"No author"),
+		     $.el.td({class:"changes"},
+			     changedAttributes(h)));
+	table.append(tr);
       }
 
       table.on("click", "tr", function(ev) {
@@ -357,15 +389,56 @@ define([ "jquery", "config", "form", "laconic" ],
     }
   }; // methods
 
-  if ( !Array.prototype.unique ) {
-    Array.prototype.unique = function() {
-      var unique = [];
-      for (var i = 0; i < this.length; i++) {
-	  var current = this[i];
-	  if (unique.indexOf(current) < 0) unique.push(current);
-      }
-      return unique;
+  /**
+   * Diff meta data
+   * @returns {Object|null}, where object holds `author`, `title` and/or
+   * `tags`
+   */
+
+  function diffMeta(m1, m2) {
+    var diff = {};
+
+    function diffAttr(a) {
+      if ( (m1[a] || m2[a]) && m1[a] != m2[a] )
+	diff[a] = {from: m1[a], to: m2[a]};
     }
+
+    diffAttr("author");
+    diffAttr("title");
+    diffAttr("data");
+
+    if ( (d=diffTags(m1.tags, m2.tags)) )
+      diff.tags = d;
+
+    return $.isEmptyObject(diff) ? null : diff;
+  }
+
+  /**
+   * Diff two tag arrays (arrays of strings)
+   * @returns {Object|null}, where object.added is an array with new
+   * tags and object.deleted contains deleted tags.
+   */
+  function diffTags(t1, t2) {
+    var d, diff = {};
+
+    t1 = t1||[];
+    t2 = t2||[];
+
+    function added(t1, t2) {
+      var a = [];
+
+      for(var i=0; i<t2.length; i++) {
+	if ( t1.indexOf(t2[i]) < 0 )
+	  a.push(t2[i]);
+      }
+
+      return a;
+    }
+
+    if ( (d=added(t1,t2)).length > 0 ) diff.added = d;
+    if ( (d=added(t2,t1)).length > 0 ) diff.deleted = d;
+
+    return $.isEmptyObject(diff) ? null : diff;
   }
 
   /**
