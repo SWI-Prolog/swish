@@ -357,7 +357,16 @@ define([ "jquery", "config", "form", "laconic" ],
     }
   }; // methods
 
-  // <private functions>
+  if ( !Array.prototype.unique ) {
+    Array.prototype.unique = function() {
+      var unique = [];
+      for (var i = 0; i < this.length; i++) {
+	  var current = this[i];
+	  if (unique.indexOf(current) < 0) unique.push(current);
+      }
+      return unique;
+    }
+  }
 
   /**
    * <Class description>
