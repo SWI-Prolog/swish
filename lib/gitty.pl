@@ -131,7 +131,7 @@ gitty_update(Store, Name, Data, Meta, CommitRet) :-
 	->  true
 	;   throw(error(gitty(commit_version(OldHead, Meta.previous)), _))
 	),
-	load_commit(Store, OldHead, OldMeta),
+	load_plain_commit(Store, OldHead, OldMeta),
 	get_time(Now),
 	save_object(Store, Data, blob, Hash),
 	Commit = gitty{}.put(OldMeta)
@@ -177,13 +177,16 @@ gitty_commit(Store, Hash, Meta) :-
 	load_commit(Store, Hash, Meta).
 
 load_commit(Store, Hash, Meta) :-
-	load_object(Store, Hash, String),
-	term_string(Meta0, String, []),
+	load_plain_commit(Store, Hash, Meta0),
 	Meta1 = Meta0.put(commit, Hash),
 	(   head(Store, Meta0.name, Hash)
 	->  Meta = Meta1.put(symbolic, "HEAD")
 	;   Meta = Meta1
 	).
+
+load_plain_commit(Store, Hash, Meta) :-
+	load_object(Store, Hash, String),
+	term_string(Meta, String, []).
 
 %%	gitty_history(+Store, +NameOrHash, -History, +Options) is det.
 %
