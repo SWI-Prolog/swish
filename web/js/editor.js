@@ -194,21 +194,20 @@ define([ "cm/lib/codemirror",
 
       this.data(pluginName).cm.setValue(src.data);
 
-      if ( src.meta ) {
-	options.file = src.meta.name;
-	options.meta = src.meta;
-      } else {
-	options.file = null;
-	options.meta = null;
-      }
+      if ( options.role == "source" ) {
+	if ( src.meta ) {
+	  options.file = src.meta.name;
+	  options.meta = src.meta;
+	} else {
+	  options.file = null;
+	  options.meta = null;
+	}
 
-      if ( src.url )
-      { //window.location.pathname = src.url;	/* TBD: Update without refresh */
-      } else
-      { src.url = config.http.locations.swish;
-      }
+	if ( !src.url )
+	  src.url = config.http.locations.swish;
 
-      updateHistory(src);
+	updateHistory(src);
+      }
 
       return this;
     },
