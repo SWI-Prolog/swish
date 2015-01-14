@@ -36,9 +36,7 @@ preferences.setDefault("semantic-highlighting", true);
     menu: {
       "File":
       { "New": function() {
-	  menuBroadcast("source", { type: "new",
-				    data: defaults.newProgramText
-	                          });
+	  menuBroadcast("source", { data: defaults.newProgramText });
 	},
 	"File group": "--",
 	"Save ...": function() {
@@ -159,12 +157,28 @@ preferences.setDefault("semantic-highlighting", true);
     },
 
     /**
-     * @param {String} ex is the name of the example
+     * @param {Object} ex
+     * @param {String} ex.title is the title of the example
+     * @param {String} ex.file is the (file) name of the example
+     * @param {String} ex.href is the URL from which to download the
+     * program.
      * @returns {Function} function that loads an example
      */
     openExampleFunction: function(ex) {
       return function() {
-	window.location = ex.href;
+	$.ajax({ url: ex.href,
+	         type: "GET",
+		 data: {format: "raw"},
+		 success: function(source) {
+		   menuBroadcast("source",
+				 { data: source,
+				   url: ex.href
+				 });
+		 },
+		 error: function() {
+		   alert("Failed to load example");
+		 }
+	       });
       };
     },
 

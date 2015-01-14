@@ -194,11 +194,21 @@ define([ "cm/lib/codemirror",
 
       this.data(pluginName).cm.setValue(src.data);
 
-      if ( src.type == "new" ) {
+      if ( src.meta ) {
+	options.file = src.meta.name;
+	options.meta = src.meta;
+      } else {
 	options.file = null;
 	options.meta = null;
-	updateHistory({url:config.http.locations.swish});
       }
+
+      if ( src.url )
+      { //window.location.pathname = src.url;	/* TBD: Update without refresh */
+      } else
+      { src.url = config.http.locations.swish;
+      }
+
+      updateHistory(src);
 
       return this;
     },
@@ -628,7 +638,9 @@ define([ "cm/lib/codemirror",
       window.history.pushState({location:reply.url},
 			       "",
 			       reply.url);
-      document.title = "SWISH -- "+reply.file;
+      document.title = "SWISH -- "
+                     + (reply.file ? reply.file
+			           : "SWI-Prolog for SHaring");
     }
   }
 
