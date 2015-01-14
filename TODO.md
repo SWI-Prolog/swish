@@ -99,6 +99,8 @@ _not_ see exactly the same UI for cooperation.  What about
         - Will do
 	  - Load new data
 	  - Save, clearing name.
+    - Indicate branch points in history?
+      - Requires complete graph in memory.
     - Play from history
       - Avoid reload (also for examples)
         - Fill program and meta-data
