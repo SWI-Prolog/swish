@@ -95,26 +95,34 @@ swish_reply(SwishOptions, Request) :-
 	Params = [ code(_,	 [optional(true)]),
 		   background(_, [optional(true)]),
 		   examples(_,   [optional(true)]),
-		   q(_,          [optional(true)])
+		   q(_,          [optional(true)]),
+		   format(_,     [oneof([swish,raw]), default(swish)])
 		 ],
 	http_parameters(Request, Params),
 	params_options(Params, Options0),
 	merge_options(Options0, SwishOptions, Options1),
-	source_option(Request, Options1, Options),
-	(   swish_config:reply_page(Options)
-	->  true
-	;   reply_html_page(
-		swish(main),
-		[ title('SWISH -- SWI-Prolog for SHaring'),
-		  link([ rel('shortcut icon'),
-			 href('/icons/favicon.ico')
-		       ]),
-		  link([ rel('apple-touch-icon'),
-			 href('/icons/swish-touch-icon.png')
-		       ])
-		],
-		\swish_page(Options))
-	).
+	source_option(Request, Options1, Options2),
+	swish_reply1(Options2).
+
+swish_reply1(Options) :-
+	option(code(Code), Options),
+	option(format(raw), Options), !,
+	format('Content-type: text/x-prolog~n~n'),
+	format('~s~n', [Code]).
+swish_reply1(Options) :-
+	swish_config:reply_page(Options), !.
+swish_reply1(Options) :-
+	reply_html_page(
+	    swish(main),
+	    [ title('SWISH -- SWI-Prolog for SHaring'),
+	      link([ rel('shortcut icon'),
+		     href('/icons/favicon.ico')
+		   ]),
+	      link([ rel('apple-touch-icon'),
+		     href('/icons/swish-touch-icon.png')
+		   ])
+	    ],
+	    \swish_page(Options)).
 
 params_options([], []).
 params_options([H0|T0], [H|T]) :-
@@ -132,7 +140,8 @@ params_options([_|T0], T) :-
 %	Alias(File).
 
 source_option(_Request, Options, Options) :-
-	option(code(_), Options), !.
+	option(code(_), Options),
+	option(format(swish), Options), !.
 source_option(Request, Options0, Options) :-
 	option(path_info(Info), Request),
 	Info \== 'index.html', !,	% Backward compatibility
