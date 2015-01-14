@@ -334,8 +334,7 @@ swish_search:typeahead(file, Query, FileInfo) :-
 	;   meta_match_query(Query, Meta)
 	->  true
 	),
-	storage_url(File, URL),
-	FileInfo = Meta.put(_{url:URL,name:File}).
+	FileInfo = Meta.put(_{type:"store", file:File}).
 
 meta_match_query(Query, Meta) :-
 	member(Tag, Meta.get(tags)),

@@ -185,7 +185,8 @@ define([ "jquery", "config", "form", "laconic" ],
 	    else
 	      file = commit;
 
-	    window.location = config.http.locations.web_storage + "/" + file;
+	    elem.parents(".swish").swish('playFile', file);
+	    $("#ajaxModal").modal('hide');
 	  }
 	  return false;
 	});

@@ -111,6 +111,7 @@ preferences.setDefault("semantic-highlighting", true);
       $("#search").search();
 
       options = options||{};
+      this.addClass("swish");
 
       return this.each(function() {
 	var elem = $(this);
@@ -153,6 +154,27 @@ preferences.setDefault("semantic-highlighting", true);
      */
     trigger: function(name, data) {
       menuBroadcast(name, data);
+      return this;
+    },
+
+    /**
+     * Play a file from the webstore, loading it through ajax
+     * @param {String} name is the name of the file in the web storage
+     */
+    playFile: function(file) {
+      var url = config.http.locations.web_storage + "/" + file;
+      $.ajax({ url: url,
+	       type: "GET",
+	       data: {format: "json"},
+	       success: function(reply) {
+		 reply.url = url;
+		 menuBroadcast("source", reply);
+	       },
+	       error: function() {
+		 alert("Failed to load example");
+	       }
+	     });
+
       return this;
     },
 

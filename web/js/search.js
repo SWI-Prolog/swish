@@ -211,8 +211,8 @@ define([ "jquery", "config", "typeahead" ],
 		       ])
 	  .on('typeahead:selected typeahead:autocompleted',
 	      function(ev, datum, set) {
-		if ( datum.url ) {
-		  window.location = datum.url;
+		if ( datum.type == "store" ) {
+		  $(ev.target).parents(".swish").swish('playFile', datum.file);
 		} else if ( datum.arity !== undefined ) {
 		  $(".swish-event-receiver").trigger("pldoc", datum);
 		} else if ( datum.editor !== undefined &&
