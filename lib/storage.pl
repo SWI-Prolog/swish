@@ -69,7 +69,7 @@ web_storage(Request) :-
 
 storage(get, Request) :-
 	http_parameters(Request,
-			[ format(Fmt,  [ oneof([swish,raw,history,diff]),
+			[ format(Fmt,  [ oneof([swish,raw,json,history,diff]),
 					 default(swish),
 					 description('How to render')
 				       ]),
@@ -213,7 +213,9 @@ meta_allowed(commit_message, string).
 %	     - swish
 %	     Serve file embedded in a SWISH application
 %	     - raw
-%	     Serve the row file
+%	     Serve the raw file
+%	     - json
+%	     Return a JSON object with the keys `data` and `meta`
 %	     - history(Depth, IncludeHASH)
 %	     Return a JSON description with the change log
 %	     - diff(RelTo)
@@ -235,6 +237,9 @@ storage_get(raw, Dir, _, FileOrHash, _Request) :-
 	file_mime_type(Meta.name, MIME),
 	format('Content-type: ~w~n~n', [MIME]),
 	format('~s', [Code]).
+storage_get(json, Dir, _, FileOrHash, _Request) :-
+	gitty_data(Dir, FileOrHash, Code, Meta),
+	reply_json_dict(json{data:Code, meta:Meta}).
 storage_get(history(Depth, Includes), Dir, _, File, _Request) :-
 	gitty_history(Dir, File, History, [depth(Depth),includes(Includes)]),
 	reply_json_dict(History).
