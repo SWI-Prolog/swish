@@ -91,38 +91,22 @@ _not_ see exactly the same UI for cooperation.  What about
 ## Saving files
 
   - Look at [Dillinger markup editor](http://dillinger.io/)
-  - Server saves:
+    - Save to github
+  - Save/Info dialogs
+    - Fork from history
+      - Now: Play, Save, clear/fill name.
+      - New: Fork button?
+        - Will do
+	  - Load new data
+	  - Save, clearing name.
+    - Play from history
+      - Avoid reload (also for examples)
+        - Fill program and meta-data
+        - Update Window URL
 
-    - lib/gitty.pl saves individual files versioned with meta-data.	[OK]
-    - Save
-      - Ask for commit message if saved again
-    - Save as
-      - Meta data
-        - Public							[OK]
-	- Name								[OK]
-	- Title								[OK]
-	- Author, E-mail						[OK]
-	- Keywords (using `tagit', auto-completion)			[OK]
-      - Handle errors
-      - Keep current meta-data						[OK]
-      - Use current to fill the dialog					[OK]
-      - Create fork (save non-head)
-        - Force to give new name if it has a name, otherwise
-	  generate a new name.
-    - Load
-      - Record meta-data						[OK]
-    - Info
-      - Display meta-data						[OK]
-      - Access history
-    - New
-      - Remove current file notion					[OK]
+## Login
 
-## File info
-
-  - Three tabs
-    - Meta info shows meta info of current version			[OK]
-    - History shows commit log and allows switching version		[OK]
-    - Changes shows the diff						[OK]
+  - Deal with login-with-google (oauth2)
 
 ## Search
 
