@@ -47,7 +47,7 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 		obj[name] = [value];
 	    }
 	  } else if ( type == "checkbox" ) {
-	    value = value == "on" ? true : false;
+	    obj[name] = (value == "on" ? true : false);
 	  } else {
 	    obj[name] = value;
 	  }
@@ -74,7 +74,7 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
       fileName: function(name, public, disabled) {
 	var elem =
 	$.el.div({class:"form-group"},
-		 label("name", "Public name"),
+		 label("name", "Public | name"),
 		 $.el.div({class:"col-xs-10"},
 			  $.el.div({class:"input-group"},
 				   $.el.span({class:"input-group-addon",
