@@ -322,20 +322,23 @@ define([ "cm/lib/codemirror",
      */
     saveAs: function() {
       var options = this.data(pluginName);
-      var meta = options.meta||{};
-      var editor = this;
-      var update = Boolean(options.file);
+      var meta    = options.meta||{};
+      var editor  = this;
+      var update  = Boolean(options.file);
+      var fork    = options.meta && meta.symbolic != "HEAD";
 
       function saveAsBody() {
 	this.append($.el.form({class:"form-horizontal"},
-			      form.fields.fileName(options.file, meta.public),
+			      form.fields.fileName(fork ? null: options.file,
+						   meta.public),
 			      form.fields.title(meta.title),
 			      form.fields.author(meta.author),
 			      update ? form.fields.commit_message() : undefined,
 			      form.fields.tags(meta.tags),
 			      form.fields.buttons(
-				{ label: update ? "Update program"
-						: "Save program",
+				{ label: fork   ? "Fork program" :
+					 update ? "Update program" :
+						  "Save program",
 				  action: function(ev,data) {
 					    console.log(data);
 				            editor.prologEditor('save', data);
@@ -344,7 +347,9 @@ define([ "cm/lib/codemirror",
 				})));
       }
 
-      form.showDialog({ title: update ? "Save new version" : "Save program as",
+      form.showDialog({ title: fork   ? "Fork from "+meta.commit.substring(0,7) :
+			       update ? "Save new version" :
+			                "Save program as",
 			body:  saveAsBody
 		      });
 
