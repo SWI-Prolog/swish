@@ -101,10 +101,6 @@ _not_ see exactly the same UI for cooperation.  What about
 	  - Save, clearing name.
     - Indicate branch points in history?
       - Requires complete graph in memory.
-    - Play from history
-      - Avoid reload (also for examples)
-        - Fill program and meta-data
-        - Update Window URL
 
 ## Login
 
