@@ -323,12 +323,14 @@ random_char(Char) :-
 %
 %	Find files using typeahead from the SWISH search box.
 %
-%	@tbd: caching, search other meta-fields
+%	@tbd caching?
+%	@tbd We should only demand public on public servers.
 
 swish_search:typeahead(file, Query, FileInfo) :-
 	setting(directory, Dir),
 	gitty_file(Dir, File, Head),
 	gitty_commit(Dir, Head, Meta),
+	Meta.get(public) == true,
 	(   sub_atom(File, 0, _, _, Query) % find only public
 	->  true
 	;   meta_match_query(Query, Meta)
@@ -339,3 +341,14 @@ swish_search:typeahead(file, Query, FileInfo) :-
 meta_match_query(Query, Meta) :-
 	member(Tag, Meta.get(tags)),
 	sub_atom(Tag, 0, _, _, Query).
+meta_match_query(Query, Meta) :-
+	sub_atom(Meta.get(author), 0, _, _, Query).
+meta_match_query(Query, Meta) :-
+	Title = Meta.get(title),
+	sub_atom_icasechk(Title, Start, Query),
+	(   Start =:= 0
+	->  true
+	;   Before is Start-1,
+	    sub_atom(Title, Before, 1, _, C),
+	    \+ char_type(C, csym)
+	).
