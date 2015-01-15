@@ -42,7 +42,7 @@ preferences.setDefault("semantic-highlighting", true);
 	"Save ...": function() {
 	  menuBroadcast("saveProgram", "as");
 	},
-	"Info ...": function() {
+	"Info & history ...": function() {
 	  menuBroadcast("fileInfo");
 	},
 	"Share": "--",

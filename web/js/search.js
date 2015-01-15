@@ -252,7 +252,8 @@ define([ "jquery", "config", "typeahead" ],
      * is the object returned by Bloodhound
      */
     search: function(q) {
-      console.log(q);			/* TBD */
+      alert("Full search not yet implemented\n"+
+	    "Please select from auto completion list");
     }
   }; // methods
 
