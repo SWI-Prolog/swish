@@ -32,7 +32,7 @@ preferences.setDefault("semantic-highlighting", true);
   var defaults = {
     newProgramText: "% Your program goes here\n\n\n\n"+
 		     "/** <examples>\n\n\n"+
-		     "*/",
+		     "*/\n",
     menu: {
       "File":
       { "New": function() {
