@@ -13,8 +13,8 @@ define([ "cm/lib/codemirror",
 	 "preferences",
 	 "form",
 	 "cm/mode/prolog/prolog-template-hint",
-
 	 "gitty",
+
 
 	 "cm/mode/prolog/prolog",
 	 "cm/mode/prolog/prolog_keys",
@@ -37,7 +37,7 @@ define([ "cm/lib/codemirror",
 
          "jquery", "laconic"
        ],
-       function(CodeMirror, config, preferences, form, templateHint) {
+       function(CodeMirror, config, preferences, form, templateHint, gitty) {
 
 (function($) {
   var pluginName = 'prologEditor';
@@ -264,7 +264,6 @@ define([ "cm/lib/codemirror",
 	return this;
       }
 
-
       if ( options.file &&
 	   (!meta || !meta.name || meta.name == options.file) ) {
 	url += "/" + encodeURI(options.file);
@@ -272,6 +271,11 @@ define([ "cm/lib/codemirror",
       }
 
       if ( what == "only-meta-data" ) {
+	meta = gitty.reduceMeta(meta, options.meta)
+	if ( $.isEmptyObject(meta) ) {
+	  alert("No change");
+	  return;
+	}
 	data = { update: "meta-data" };
       } else if ( method == "POST" ) {
 	data = { data: this.prologEditor('getSource'),
@@ -326,6 +330,9 @@ define([ "cm/lib/codemirror",
       var editor  = this;
       var update  = Boolean(options.file);
       var fork    = options.meta && meta.symbolic != "HEAD";
+
+      if ( meta.public === undefined )
+	meta.public = true;
 
       function saveAsBody() {
 	this.append($.el.form({class:"form-horizontal"},

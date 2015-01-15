@@ -54,6 +54,14 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 	}
       }
 
+      // unchecked checkboxes are not reported
+      form.find("[type=checkbox]").each(function() {
+	var checkbox = $(this);
+	var name = checkbox.prop('name');
+	if ( obj[name] === undefined )
+	  obj[name] = false;
+      });
+
       return obj;
     },
 
@@ -84,8 +92,8 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 						      { checked: public
 						      })),
 				   textInput("name",
-					     {placeholder:"Name",
-					      title:"If empty, the server generates a name",
+					     {placeholder:"Name (leave empty for generated random name)",
+					      title:"Public name of your program",
 					      value:name,
 					      disabled:disabled})),
 			  helpBlock("Make saved file public or give it a meaningful name")));
@@ -98,7 +106,8 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 		 label("title", "Title"),
 		 $.el.div({class:"col-xs-10"},
 			  textInput("title",
-				    {placeholder:"Title", value:title})));
+				    {placeholder:"Descriptive title",
+				     value:title})));
 	return elem;
       },
 
@@ -151,7 +160,7 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 	$.el.div({class:"form-group"},
 		 label("tags", "Tags"),
 		 $.el.div({class:"col-xs-10"},
-			  tagInput("tags", "Tag", tags)));
+			  tagInput("tags", "Tags help finding this code", tags)));
 	return elem;
       },
 

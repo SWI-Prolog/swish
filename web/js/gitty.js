@@ -392,6 +392,29 @@ define([ "jquery", "config", "form", "laconic" ],
   }; // methods
 
   /**
+   * <Class description>
+   *
+   * @class gitty
+   * @tutorial jquery-doc
+   * @memberOf $.fn
+   * @param {String|Object} [method] Either a method name or the jQuery
+   * plugin initialization object.
+   * @param [...] Zero or more arguments passed to the jQuery `method`
+   */
+
+  $.fn.gitty = function(method) {
+    if ( methods[method] ) {
+      return methods[method]
+	.apply(this, Array.prototype.slice.call(arguments, 1));
+    } else if ( typeof method === 'object' || !method ) {
+      return methods._init.apply(this, arguments);
+    } else {
+      $.error('Method ' + method + ' does not exist on jQuery.' + pluginName);
+    }
+  };
+}(jQuery));
+
+  /**
    * Diff meta data
    * @returns {Object|null}, where object holds `author`, `title` and/or
    * `tags`
@@ -414,6 +437,31 @@ define([ "jquery", "config", "form", "laconic" ],
       diff.tags = d;
 
     return $.isEmptyObject(diff) ? null : diff;
+  }
+
+  function reduceMeta(meta, old) {
+    var r = {};
+
+    for( var k in meta ) {
+      if ( meta.hasOwnProperty(k) ) {
+	switch(typeof(meta[k])) {
+	  case "object":
+	    if ( $.isArray(meta[k]) ) {
+	      if ( !diffTags(meta[k], old[k]) )
+		continue;
+	    }
+	    break;
+	  case "string":
+	  case "boolean":
+	    if ( old[k] == meta[k] )
+	      continue;
+	}
+
+	r[k] = meta[k];
+      }
+    }
+
+    return r;
   }
 
   /**
@@ -444,26 +492,8 @@ define([ "jquery", "config", "form", "laconic" ],
     return $.isEmptyObject(diff) ? null : diff;
   }
 
-  /**
-   * <Class description>
-   *
-   * @class gitty
-   * @tutorial jquery-doc
-   * @memberOf $.fn
-   * @param {String|Object} [method] Either a method name or the jQuery
-   * plugin initialization object.
-   * @param [...] Zero or more arguments passed to the jQuery `method`
-   */
-
-  $.fn.gitty = function(method) {
-    if ( methods[method] ) {
-      return methods[method]
-	.apply(this, Array.prototype.slice.call(arguments, 1));
-    } else if ( typeof method === 'object' || !method ) {
-      return methods._init.apply(this, arguments);
-    } else {
-      $.error('Method ' + method + ' does not exist on jQuery.' + pluginName);
-    }
+  return {
+    diffMeta:   diffMeta,
+    reduceMeta: reduceMeta
   };
-}(jQuery));
 });
