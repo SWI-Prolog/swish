@@ -172,8 +172,9 @@ define([ "jquery", "config", "form", "laconic" ],
 		  $.el.th("Author"),
 		  $.el.th("Changed"))));
 
-	playButton = form.widgets.glyphIconButton("glyphicon-play",
-						  {title:"Open in SWISH"});
+	playButton = form.widgets.glyphIconButton(
+           "glyphicon-play",
+	   {title:"Open the highlighted version in SWISH"});
 	tab.append(playButton);
 	$(playButton).on("click", function(ev) {
 	  var row = elem.find("tr.success");
@@ -407,6 +408,7 @@ define([ "jquery", "config", "form", "laconic" ],
     diffAttr("author");
     diffAttr("title");
     diffAttr("data");
+    diffAttr("public");
 
     if ( (d=diffTags(m1.tags, m2.tags)) )
       diff.tags = d;
