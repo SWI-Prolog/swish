@@ -258,6 +258,7 @@ search_form(Options) -->
 
 swish_content(Options) -->
 	swish_resources,
+	swish_config_hash,
 	html(div([id(content), class([container, swish])],
 		 [ div([class([tile, horizontal]), 'data-split'('50%')],
 		       [ div(class('prolog-editor'), \source(Options)),
@@ -269,6 +270,21 @@ swish_content(Options) -->
 		   \background(Options),
 		   \examples(Options)
 		 ])).
+
+
+%%	swish_config_hash//
+%
+%	Set `window.swish.config_hash` to a  hash   that  represents the
+%	current configuration. This is used by   config.js  to cache the
+%	configuration in the browser's local store.
+
+swish_config_hash -->
+	{ swish_config_hash(Hash) },
+	js_script({|javascript(Hash)||
+		   window.swish = window.swish||{};
+		   window.swish.config_hash = Hash;
+		   |}).
+
 
 %%	source(+Options)//
 %

@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014, VU University Amsterdam
+    Copyright (C): 2014-2015, VU University Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -28,7 +28,8 @@
 */
 
 :- module(swish_config,
-	  [ swish_reply_config/1
+	  [ swish_reply_config/1,		% +Request
+	    swish_config_hash/1			% -HASH
 	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
@@ -49,12 +50,23 @@
 swish_reply_config(Request) :-
 	option(path(Path), Request),
 	file_base_name(Path, 'swish_config.json'),
+	json_config(JSON),
+	reply_json(JSON).
+
+%%	swish_config_hash(-Hash) is det.
+%
+%	True if Hash is the SHA1 of the SWISH config.
+
+swish_config_hash(Hash) :-
+	json_config(Config),
+	variant_sha1(Config, Hash).
+
+json_config(json{ http: json{ locations:JSON
+			    },
+		  swish: SWISHConfig
+		}) :-
 	http_locations(JSON),
-	swish_config(SWISHConfig),
-	reply_json(json{ http: json{ locations:JSON
-				   },
-			 swish: SWISHConfig
-		       }).
+	swish_config(SWISHConfig).
 
 http_locations(JSON) :-
 	findall(ID-Path,
