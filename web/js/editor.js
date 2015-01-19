@@ -38,7 +38,9 @@ define([ "cm/lib/codemirror",
 	 "cm/addon/hint/templates-hint",
 	 "cm/addon/hint/show-context-info",
 
-         "jquery", "laconic"
+         "jquery", "laconic",
+
+	 "cm/keymap/emacs",
        ],
        function(CodeMirror, config, preferences, form, templateHint,
 		gitty, history, modal) {
@@ -107,6 +109,9 @@ define([ "cm/lib/codemirror",
 	  options.extraKeys["Ctrl-R"] = "refreshHighlight";
 	}
 
+	if ( preferences.getVal("emacs-keybinding") )
+	  options.keyMap = "emacs";
+
 	if ( options.role != "query" )
 	  options.continueComments = "Enter";
 
@@ -172,8 +177,19 @@ define([ "cm/lib/codemirror",
      */
 
     getOption: function(opt) {
-      var elem = this;
-      return elem.data(pluginName)[opt];
+      return this.data(pluginName)[opt];
+    },
+
+    /**
+     * @example // Set the keybinding for the editor
+     * $(element).prologEditor('setKeybinding', 'emacs') set
+     * keybinding schema emacs.
+     * @param {String} schema Name of the keybinding
+     * return {*}
+     */
+    setKeybinding: function(schema) {
+      schema = schema || "default";
+      this.data(pluginName).cm.options.keyMap = schema;
     },
 
     /**
@@ -517,6 +533,14 @@ define([ "cm/lib/codemirror",
       if ( pref.name == "semantic-highlighting" ) {
 	data.cm.setOption("prologHighlightServer",
 			  { enabled: pref.value });
+      }
+
+      if ( pref.name == "emacs-keybinding") {
+	if (pref.value == true) {
+	  data.cm.setOption("keyMap", "emacs");
+	} else {
+	  data.cm.setOption("keyMap", "default");
+	}
       }
 
       return this;

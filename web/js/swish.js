@@ -29,6 +29,8 @@ require.config({
     "cm/addon/hint/anyword-hint": "../bower_components/codemirror/addon/hint/anyword-hint",
     "cm/addon/display/placeholder": "../bower_components/codemirror/addon/display/placeholder",
     "cm/addon/runmode/runmode": "../bower_components/codemirror/addon/runmode/runmode",
+    "cm/keymap/emacs" : "../bower_components/codemirror/keymap/emacs",
+
 					/* Our own Prolog mode */
     "cm/mode/prolog/prolog": "codemirror/mode/prolog/prolog",
     "cm/mode/prolog/prolog_keys": "codemirror/mode/prolog/prolog_keys",
