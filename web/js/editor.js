@@ -35,7 +35,9 @@ define([ "cm/lib/codemirror",
 	 "cm/addon/hint/templates-hint",
 	 "cm/addon/hint/show-context-info",
 
-         "jquery", "laconic"
+         "jquery", "laconic",
+
+	 "cm/keymap/emacs",
        ],
        function(CodeMirror, config, preferences, form, templateHint, gitty) {
 

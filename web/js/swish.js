@@ -40,7 +40,8 @@ require.config({
 
     "cm/addon/hint/templates-hint": "codemirror/addon/hint/templates-hint",
     "cm/addon/hint/show-context-info": "codemirror/addon/hint/show-context-info",
-    "cm/mode/prolog/prolog-template-hint": "codemirror/mode/prolog/prolog-template-hint"
+    "cm/mode/prolog/prolog-template-hint": "codemirror/mode/prolog/prolog-template-hint",
+    "cm/keymap/emacs" : "codemirror/keymap/emacs"
   },
   shim:
   { bootstrap:
