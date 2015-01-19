@@ -30,10 +30,13 @@
 :- module(swish_search,
 	  [ search_box//1		% +Options
 	  ]).
+:- use_module(library(lists)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
+
+:- use_module(config).
 
 :- multifile
 	typeahead/3.			% +Set, +Query, -Match
@@ -89,7 +92,7 @@ typeahead(Request) :-
 	reply_json_dict(Matches).
 
 typeahead(predicates, Query, Template) :-
-	swish_config:config(templates, Templates),
+	swish_config(templates, Templates),
 	member(Template, Templates),
 	_{name:Name, arity:_} :< Template,
 	sub_atom(Name, 0, _, _, Query).

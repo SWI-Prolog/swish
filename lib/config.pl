@@ -28,8 +28,9 @@
 */
 
 :- module(swish_config,
-	  [ swish_reply_config/1,		% +Request
-	    swish_config_hash/1			% -HASH
+	  [ swish_reply_config/1,	% +Request
+	    swish_config/2,		% ?Type, ?Config
+	    swish_config_hash/1		% -HASH
 	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
@@ -104,11 +105,15 @@ swish_config(Config) :-
 	dict_pairs(Config, json, Pairs).
 
 %%	config(-Key, -Value) is nondet.
+%%	swish_config(-Key, -Value) is nondet.
 %
 %	Define a name/value pair that will end   up  in the SWISH config
 %	object (see =web/js/config.js=)
 
 :- multifile config/2.
+
+swish_config(Key, Value) :-
+	config(Key, Value).
 
 
 		 /*******************************
