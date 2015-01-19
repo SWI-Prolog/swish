@@ -64,6 +64,12 @@ preferences.setDefault("semantic-highlighting", true);
 	  type: "checkbox"
 	}
       },
+      "Keybinding":
+      {
+	"Emacs": function() {
+	  $(".prolog-editor").prologEditor('setEmacs', 'cm');
+	}
+      },
       "Examples": function(navbar, dropdown) {
 	$("body").swish('populateExamples', navbar, dropdown);
       },

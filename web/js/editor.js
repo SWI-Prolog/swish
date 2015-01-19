@@ -164,6 +164,15 @@ define([ "cm/lib/codemirror",
     },
 
     /**
+     * Print code mirror options function
+     */
+    setEmacs: function(opt) {
+      var elem = this;
+      elem.data(pluginName)[opt]["options"]["keyMap"] = "emacs";
+      console.log(elem.data(pluginName)[opt]["options"]);
+    },
+
+    /**
      * @returns {String} current contents of the editor
      */
     getSource: function() {
