@@ -66,8 +66,11 @@ preferences.setDefault("semantic-highlighting", true);
       },
       "Keybinding":
       {
+	"Default": function() {
+	  $(".prolog-editor").prologEditor('setKeybinding', 'default');
+	},
 	"Emacs": function() {
-	  $(".prolog-editor").prologEditor('setEmacs', 'cm');
+	  $(".prolog-editor").prologEditor('setKeybinding', 'emacs');
 	}
       },
       "Examples": function(navbar, dropdown) {

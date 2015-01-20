@@ -164,12 +164,19 @@ define([ "cm/lib/codemirror",
     },
 
     /**
-     * Print code mirror options function
+     * @example // Set the keybinding for the editor
+     * $(element).prologEditor('setKeybinding', 'emacs') set
+     * keybinding schema emacs.
+     * @param {String} schema Name of the keybinding
+     * return {*}
      */
-    setEmacs: function(opt) {
+    setKeybinding: function(schema) {
       var elem = this;
-      elem.data(pluginName)[opt]["options"]["keyMap"] = "emacs";
-      console.log(elem.data(pluginName)[opt]["options"]);
+      if (schema === 'emacs') {
+      	elem.data(pluginName)['cm']['options']['keyMap'] = "emacs";
+      } else if (schema === 'default') {
+	elem.data(pluginName)['cm']['options']['keyMap'] = "default";
+      }
     },
 
     /**
