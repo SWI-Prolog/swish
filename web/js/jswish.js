@@ -15,6 +15,7 @@ define([ "jquery",
 	 "bootstrap",
 	 "pane",
 	 "navbar",
+	 "search",
 	 "editor",
 	 "query",
 	 "runner",
@@ -31,18 +32,20 @@ preferences.setDefault("semantic-highlighting", true);
   var defaults = {
     newProgramText: "% Your program goes here\n\n\n\n"+
 		     "/** <examples>\n\n\n"+
-		     "*/",
+		     "*/\n",
     menu: {
       "File":
       { "New": function() {
-	  menuBroadcast("source", { type: "new", data:
-				    defaults.newProgramText
-	                          });
+	  menuBroadcast("source", { data: defaults.newProgramText });
 	},
-	"Share group": "--",
-	"Save": function() {
-	  menuBroadcast("saveProgram");
+	"File group": "--",
+	"Save ...": function() {
+	  menuBroadcast("saveProgram", "as");
 	},
+	"Info & history ...": function() {
+	  menuBroadcast("fileInfo");
+	},
+	"Share": "--",
 	"Collaborate ...": function() {
 	  $("body").swish('collaborate');
 	},
@@ -105,8 +108,10 @@ preferences.setDefault("semantic-highlighting", true);
       swishLogo();
       setupModal();
       setupPanes();
+      $("#search").search();
 
       options = options||{};
+      this.addClass("swish");
 
       return this.each(function() {
 	var elem = $(this);
@@ -153,12 +158,49 @@ preferences.setDefault("semantic-highlighting", true);
     },
 
     /**
-     * @param {String} ex is the name of the example
+     * Play a file from the webstore, loading it through ajax
+     * @param {String} name is the name of the file in the web storage
+     */
+    playFile: function(file) {
+      var url = config.http.locations.web_storage + "/" + file;
+      $.ajax({ url: url,
+	       type: "GET",
+	       data: {format: "json"},
+	       success: function(reply) {
+		 reply.url = url;
+		 menuBroadcast("source", reply);
+	       },
+	       error: function() {
+		 alert("Failed to load example");
+	       }
+	     });
+
+      return this;
+    },
+
+    /**
+     * @param {Object} ex
+     * @param {String} ex.title is the title of the example
+     * @param {String} ex.file is the (file) name of the example
+     * @param {String} ex.href is the URL from which to download the
+     * program.
      * @returns {Function} function that loads an example
      */
     openExampleFunction: function(ex) {
       return function() {
-	window.location = ex.href;
+	$.ajax({ url: ex.href,
+	         type: "GET",
+		 data: {format: "raw"},
+		 success: function(source) {
+		   menuBroadcast("source",
+				 { data: source,
+				   url: ex.href
+				 });
+		 },
+		 error: function() {
+		   alert("Failed to load example");
+		 }
+	       });
       };
     },
 

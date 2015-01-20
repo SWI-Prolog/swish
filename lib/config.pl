@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014, VU University Amsterdam
+    Copyright (C): 2014-2015, VU University Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -28,7 +28,9 @@
 */
 
 :- module(swish_config,
-	  [ swish_reply_config/1
+	  [ swish_reply_config/1,	% +Request
+	    swish_config/2,		% ?Type, ?Config
+	    swish_config_hash/1		% -HASH
 	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
@@ -49,12 +51,23 @@
 swish_reply_config(Request) :-
 	option(path(Path), Request),
 	file_base_name(Path, 'swish_config.json'),
+	json_config(JSON),
+	reply_json(JSON).
+
+%%	swish_config_hash(-Hash) is det.
+%
+%	True if Hash is the SHA1 of the SWISH config.
+
+swish_config_hash(Hash) :-
+	json_config(Config),
+	variant_sha1(Config, Hash).
+
+json_config(json{ http: json{ locations:JSON
+			    },
+		  swish: SWISHConfig
+		}) :-
 	http_locations(JSON),
-	swish_config(SWISHConfig),
-	reply_json(json{ http: json{ locations:JSON
-				   },
-			 swish: SWISHConfig
-		       }).
+	swish_config(SWISHConfig).
 
 http_locations(JSON) :-
 	findall(ID-Path,
@@ -67,8 +80,12 @@ http_locations(JSON) :-
 
 remove_duplicate_ids([], []).
 remove_duplicate_ids([Id-Path1,Id-Path2|T], [Id-Path1|Cleaned]) :- !,
-	same_ids(T, Id, T1, Paths),
-	print_message(warning, http(duplicate_handlers(Id, [Path1,Path2|Paths]))),
+	same_ids(T, Id, T1, Paths0),
+	sort([Path1,Path2|Paths0], Unique),
+	(   Unique = [_]
+	->  true
+	;   print_message(warning, http(duplicate_handlers(Id, Unique)))
+	),
 	remove_duplicate_ids(T1, Cleaned).
 remove_duplicate_ids([H|T0], [H|T]) :-
 	remove_duplicate_ids(T0, T).
@@ -88,11 +105,15 @@ swish_config(Config) :-
 	dict_pairs(Config, json, Pairs).
 
 %%	config(-Key, -Value) is nondet.
+%%	swish_config(-Key, -Value) is nondet.
 %
 %	Define a name/value pair that will end   up  in the SWISH config
 %	object (see =web/js/config.js=)
 
 :- multifile config/2.
+
+swish_config(Key, Value) :-
+	config(Key, Value).
 
 
 		 /*******************************

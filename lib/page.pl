@@ -50,7 +50,11 @@
 :- use_module(library(debug)).
 :- use_module(library(time)).
 :- use_module(library(option)).
+
 :- use_module(config).
+:- use_module(help).
+:- use_module(form).
+:- use_module(search).
 
 /** <module> Provide the SWISH application as Prolog HTML component
 
@@ -59,7 +63,9 @@ grammer rules. This allows for server-side   generated  pages to include
 swish or parts of swish easily into a page.
 */
 
-:- http_handler(swish(.), swish_reply([]), [id(swish), prefix]).
+http:location(pldoc, swish(pldoc), [priority(100)]).
+
+:- http_handler(swish(.), swish_reply([]), [id(swish), prefix, priority(100)]).
 
 :- multifile
 	swish_config:source_alias/1,
@@ -89,26 +95,34 @@ swish_reply(SwishOptions, Request) :-
 	Params = [ code(_,	 [optional(true)]),
 		   background(_, [optional(true)]),
 		   examples(_,   [optional(true)]),
-		   q(_,          [optional(true)])
+		   q(_,          [optional(true)]),
+		   format(_,     [oneof([swish,raw]), default(swish)])
 		 ],
 	http_parameters(Request, Params),
 	params_options(Params, Options0),
 	merge_options(Options0, SwishOptions, Options1),
-	source_option(Request, Options1, Options),
-	(   swish_config:reply_page(Options)
-	->  true
-	;   reply_html_page(
-		swish(main),
-		[ title('cplint on SWISH -- SWI-Prolog for SHaring'),
-		  link([ rel('shortcut icon'),
-			 href('/icons/favicon.ico')
-		       ]),
-		  link([ rel('apple-touch-icon'),
-			 href('/icons/swish-touch-icon.png')
-		       ])
-		],
-		\swish_page(Options))
-	).
+	source_option(Request, Options1, Options2),
+	swish_reply1(Options2).
+
+swish_reply1(Options) :-
+	option(code(Code), Options),
+	option(format(raw), Options), !,
+	format('Content-type: text/x-prolog~n~n'),
+	format('~s~n', [Code]).
+swish_reply1(Options) :-
+	swish_config:reply_page(Options), !.
+swish_reply1(Options) :-
+	reply_html_page(
+	    swish(main),
+            [ title('cplint on SWISH -- SWI-Prolog for SHaring'),
+	      link([ rel('shortcut icon'),
+		     href('/icons/favicon.ico')
+		   ]),
+	      link([ rel('apple-touch-icon'),
+		     href('/icons/swish-touch-icon.png')
+		   ])
+	    ],
+	    \swish_page(Options)).
 
 params_options([], []).
 params_options([H0|T0], [H|T]) :-
@@ -126,7 +140,8 @@ params_options([_|T0], T) :-
 %	Alias(File).
 
 source_option(_Request, Options, Options) :-
-	option(code(_), Options), !.
+	option(code(_), Options),
+	option(format(swish), Options), !.
 source_option(Request, Options0, Options) :-
 	option(path_info(Info), Request),
 	Info \== 'index.html', !,	% Backward compatibility
@@ -165,6 +180,7 @@ serve_resource(Request) :-
 
 resource_prefix('css/').
 resource_prefix('help/').
+resource_prefix('form/').
 resource_prefix('icons/').
 resource_prefix('js/').
 resource_prefix('bower_components/').
@@ -181,27 +197,56 @@ swish_page(Options) -->
 %
 %	Generate the swish navigation bar.
 
-swish_navbar(_Options) -->
+swish_navbar(Options) -->
 	swish_resources,
-	html(header(class([navbar, 'navbar-default']),
-		    div(class([container, 'pull-left']),
-			[ div(class('navbar-header'),
-			      \swish_logos),
-			  nav(id(navbar), [])
-			]))).
+	html(nav([ class([navbar, 'navbar-default']),
+		   role(navigation)
+		 ],
+		 [ div(class('navbar-header'),
+		       [ \collapsed_button,
+			 \swish_logos(Options)
+		       ]),
+		   div([ class([collapse, 'navbar-collapse']),
+			 id(navbar)
+		       ],
+		       [ ul([class([nav, 'navbar-nav'])], []),
+			 \search_form(Options)
+		       ])
+		 ])).
 
-swish_logos -->
-	pengine_logo,
-	swish_logo.
+collapsed_button -->
+	html(button([type(button),
+		     class('navbar-toggle'),
+		     'data-toggle'(collapse),
+		     'data-target'('#navbar')
+		    ],
+		    [ span(class('sr-only'), 'Toggle navigation'),
+		      span(class('icon-bar'), []),
+		      span(class('icon-bar'), []),
+		      span(class('icon-bar'), [])
+		    ])).
 
-pengine_logo -->
+swish_logos(Options) -->
+	pengine_logo(Options),
+	swish_logo(Options).
+
+pengine_logo(_Options) -->
 	{ http_absolute_location(root(.), HREF, [])
 	},
 	html(a([href(HREF), class('pengine-logo')], &(nbsp))).
-swish_logo -->
+swish_logo(_Options) -->
 	{ http_absolute_location(swish('index.html'), HREF, [])
 	},
 	html(a([href(HREF), class('swish-logo')], &(nbsp))).
+
+%%	search_form(+Options)//
+%
+%	Add search box to the navigation bar
+
+search_form(Options) -->
+	html(div(class(['col-sm-3', 'col-md-3', 'pull-right']),
+		 \search_box(Options))).
+
 
 %%	swish_content(+Options)//
 %
@@ -213,6 +258,7 @@ swish_logo -->
 
 swish_content(Options) -->
 	swish_resources,
+	swish_config_hash,
 	html(div([id(content), class([container, swish])],
 		 [ div([class([tile, horizontal]), 'data-split'('50%')],
 		       [ div(class('prolog-editor'), \source(Options)),
@@ -224,6 +270,21 @@ swish_content(Options) -->
 		   \background(Options),
 		   \examples(Options)
 		 ])).
+
+
+%%	swish_config_hash//
+%
+%	Set `window.swish.config_hash` to a  hash   that  represents the
+%	current configuration. This is used by   config.js  to cache the
+%	configuration in the browser's local store.
+
+swish_config_hash -->
+	{ swish_config_hash(Hash) },
+	js_script({|javascript(Hash)||
+		   window.swish = window.swish||{};
+		   window.swish.config_hash = Hash;
+		   |}).
+
 
 %%	source(+Options)//
 %
@@ -245,6 +306,7 @@ source(Options) -->
 	  ;   Extra = []
 	  )
 	},
+	source_meta_data(File, Options),
 	html(textarea([ class([source,prolog]),
 			style('display:none')
 		      | Extra
@@ -252,6 +314,19 @@ source(Options) -->
 		      Source)).
 source(_) --> [].
 
+%%	source_meta_data(+File, +Options)//
+%
+%	Dump the meta-data of the provided file into swish.meta_data.
+
+source_meta_data(File, Options) -->
+	{ nonvar(File),
+	  option(meta(Meta), Options)
+	}, !,
+	js_script({|javascript(Meta)||
+		   window.swish = window.swish||{};
+		   window.swish.meta_data = Meta;
+		   |}).
+source_meta_data(_, _) --> [].
 
 background(Options) -->
 	{ option(background(Spec), Options), !,

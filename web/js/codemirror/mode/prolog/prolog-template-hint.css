@@ -1,0 +1,22 @@
+.CodeMirror-hints {
+  overflow-x: visible;
+}
+
+.CodeMirror-hint {
+  position: relative;
+  max-width: none;
+  overflow: visible;
+}
+
+.CodeMirror-hint-description {
+  display: none;
+}
+
+.CodeMirror-hint-description.active {
+  display: block;
+  position: absolute;
+  z-index: 20;
+  left: 10px;
+  top: 0px;
+}
+

@@ -282,7 +282,7 @@ define([ "jquery", "laconic", "editor" ],
     var button =
       $.el.button(
 	{class:"run-btn-query",
-	 class:"btn btn-default btn-xs"
+	 class:"btn btn-default btn-primary btn-xs"
 	},
 	"Run!");
 

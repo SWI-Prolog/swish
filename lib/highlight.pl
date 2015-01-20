@@ -301,19 +301,6 @@ destroy_state_module(UUID) :-
 destroy_state_module(_).
 
 
-%%	master_load_file(+File, +Seen, -MasterFile) is det.
-%
-%	If file is included into another  file, find the outermost file.
-%	This is the file that needs to  be reloaded instead of reloading
-%	File.
-
-master_load_file(File0, Seen, File) :-
-	source_file_property(File0, included_in(File1, _Line)),
-	\+ memberchk(File1, Seen), !,
-	master_load_file(File1, [File0|Seen], File).
-master_load_file(File, _, File).
-
-
 		 /*******************************
 		 *	  SERVER TOKENS		*
 		 *******************************/
@@ -682,7 +669,7 @@ goal_arity(Goal, Arity) :-
 	swish_config:config/2,
 	css/3.				% ?Context, ?Selector, -Attributes
 
-%%	swish_config:config(-Name, -Styles) is det.
+%%	swish_config:config(-Name, -Styles) is nondet.
 %
 %	Provides the object `config.swish.style`,  a   JSON  object that
 %	maps   style   properties   of    user-defined   extensions   of
@@ -859,7 +846,7 @@ predicate_info(PI, Info) :-
 
 					% ISO predicates
 predicate_info(Module:Name/Arity, Key, Value) :-
-	compound_name_arity(Head, Name, Arity),
+	functor(Head, Name, Arity),
 	predicate_property(system:Head, iso), !,
 	ignore(Module = system),
 	(   catch(predicate(Name, Arity, Summary, _, _), _, fail),

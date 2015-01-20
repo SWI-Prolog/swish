@@ -1,0 +1,17 @@
+span.diff-tags {
+  margin-left: 2em;
+}
+
+.diff-tag {
+  border: 1px solid #ddd;
+  padding: 0px 4px;
+  margin-left: 2px;
+  border-radius: 5px;
+  background-color: #e1edff;
+}
+
+.diff-tag.added   { color: green; }
+.diff-tag.deleted { text-decoration: line-through; color: red; }
+
+pre.udiff .udiff-del { color: red; }
+pre.udiff .udiff-add { color: green; }

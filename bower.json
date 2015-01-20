@@ -9,8 +9,10 @@
     "jquery-ui": "*",
     "jquery.splitter": "*",
     "bootstrap": "*",
+    "typeahead.js": "*",
     "laconic": "*",
     "requirejs": "*",
-    "codemirror": "*"
+    "codemirror": "*",
+    "tagmanager": "*"
   }
 }

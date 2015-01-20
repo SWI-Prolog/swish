@@ -19,9 +19,7 @@
 
 ## Editor
 
-  - Advanced completion.  This seems possible.  See e.g.,
-    - https://groups.google.com/forum/#!topic/codemirror/9OvD5cMz_uA
-    - can we do menu-based completions?
+  - Template based completion					[OK]
 
 ## Runners
 
@@ -77,6 +75,10 @@
    https://www.cs.umd.edu/users/ben/papers/Shneiderman1996eyes.pdf
  - "Information Visualization and Visual Data Mining", Daniel A. Keim
 
+## Export results
+
+ - Provide save-as-CSV from a runner?
+
 ## Sharing
 
 First option was TogetherJS.  Now doubting, as it my be much better to
@@ -89,8 +91,25 @@ _not_ see exactly the same UI for cooperation.  What about
 ## Saving files
 
   - Look at [Dillinger markup editor](http://dillinger.io/)
-  - Server saves:
+    - Save to github
+  - Save/Info dialogs
+    - Fork from history
+      - Now: Play, Save, clear/fill name.
+      - New: Fork button?
+        - Will do
+	  - Load new data
+	  - Save, clearing name.
+    - Indicate branch points in history?
+      - Requires complete graph in memory.
 
-    - Save under content hash?  Would mean that `Back' actually goes back
-      a version!  Provide meta-information (who, previous).
-    - Use GIT?  We have most of that!
+## Login
+
+  - Deal with login-with-google (oauth2)
+
+## Search
+
+  - Implement typeahead search
+    - For lines of the source code					[OK]
+    - For predicates							[OK]
+    - For public files							[OK]
+  - Implement string search with result page

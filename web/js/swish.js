@@ -16,7 +16,9 @@ require.config({
     "jquery-ui": "../bower_components/jquery-ui/jquery-ui.min",
     laconic:     "../bower_components/laconic/laconic",
     bootstrap:   "../bower_components/bootstrap/dist/js/bootstrap.min",
+    typeahead:   "../bower_components/typeahead.js/dist/typeahead.bundle.min",
     splitter:    "../bower_components/jquery.splitter/js/jquery.splitter-0.14.0",
+    tagmanager:  "../bower_components/tagmanager/tagmanager",
 
     "cm/lib/codemirror": "../bower_components/codemirror/lib/codemirror",
 					/* CodeMirror standard extensions */
@@ -32,17 +34,28 @@ require.config({
     "cm/mode/prolog/prolog_keys": "codemirror/mode/prolog/prolog_keys",
     "cm/mode/prolog/prolog_query": "codemirror/mode/prolog/prolog_query",
     "cm/mode/prolog/prolog_server": "codemirror/mode/prolog/prolog_server",
+
     "cm/addon/hover/text-hover": "codemirror/addon/hover/text-hover",
-    "cm/addon/hover/prolog-hover": "codemirror/addon/hover/prolog-hover"
+    "cm/addon/hover/prolog-hover": "codemirror/addon/hover/prolog-hover",
+
+    "cm/addon/hint/templates-hint": "codemirror/addon/hint/templates-hint",
+    "cm/addon/hint/show-context-info": "codemirror/addon/hint/show-context-info",
+    "cm/mode/prolog/prolog-template-hint": "codemirror/mode/prolog/prolog-template-hint"
   },
   shim:
   { bootstrap:
+    { deps:["jquery"]
+    },
+    typeahead:
     { deps:["jquery"]
     },
     splitter:
     { deps:["jquery"]
     },
     laconic:
+    { deps:["jquery"]
+    },
+    tagmanager:
     { deps:["jquery"]
     }
   }

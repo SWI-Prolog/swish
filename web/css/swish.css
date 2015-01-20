@@ -5,9 +5,12 @@
 @import url("runner.css");
 @import url("answer.css");
 @import url("term.css");
+@import url("gitty.css");
 @import url("../bower_components/jquery-ui/themes/smoothness/jquery-ui.css");
 @import url("../bower_components/jquery.splitter/css/jquery.splitter.css");
 @import url("../bower_components/bootstrap/dist/css/bootstrap.css");
+@import url("../bower_components/tagmanager/tagmanager.css");
+@import url("typeaheadjs.css");
 
 /* Logos */
 
@@ -36,3 +39,25 @@ a.pengine-logo {
     overflow: visible;
 }
 
+/* Modal */
+
+body .modal-dialog {
+  width: 80%;
+  max-width: 800px;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+body .modal-dialog.swish-embedded-manual {
+  width: 90%;
+  max-width: 1000px;
+}
+
+body .modal-dialog.swish-embedded-manual div.modal-body {
+  padding: 0px;
+}
+
+iframe.swish-embedded-manual {
+  width: 100%;
+  border: 0px;
+}

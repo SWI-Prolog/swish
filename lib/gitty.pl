@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014, VU University Amsterdam
+    Copyright (C): 2015, VU University Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -33,9 +33,12 @@
 	    gitty_update/5,		% +Store, +Name, +Data, +Meta, -Commit
 	    gitty_commit/3,		% +Store, +Name, -Meta
 	    gitty_data/4,		% +Store, +Name, -Data, -Meta
-	    gitty_history/4,		% +Store, +Name, +Max, -History
+	    gitty_history/4,		% +Store, +Name, -History, +Options
 	    gitty_scan/1,		% +Store
 	    gitty_hash/2,		% +Store, ?Hash
+	    gitty_reserved_meta/1,	% ?Key
+
+	    gitty_diff/4,		% +Store, ?Start, +End, -Diff
 
 	    data_diff/3,		% +String1, +String2, -Diff
 	    udiff_string/2		% +Diff, -String
@@ -45,6 +48,9 @@
 :- use_module(library(sha)).
 :- use_module(library(lists)).
 :- use_module(library(apply)).
+:- use_module(library(option)).
+:- use_module(library(process)).
+:- use_module(library(debug)).
 :- use_module(library(dcg/basics)).
 
 /** <module> Single-file GIT like version system
@@ -89,6 +95,8 @@ gitty_file(Store, Head, Hash) :-
 %%	gitty_create(+Store, +Name, +Data, +Meta, -Commit) is det.
 %
 %	Create a new object Name from Data and meta information.
+%
+%	@arg Commit is a dit describing the new Commit
 
 gitty_create(Store, Name, _Data, _Meta, _) :-
 	gitty_scan(Store),
@@ -123,7 +131,7 @@ gitty_update(Store, Name, Data, Meta, CommitRet) :-
 	->  true
 	;   throw(error(gitty(commit_version(OldHead, Meta.previous)), _))
 	),
-	load_commit(Store, OldHead, OldMeta),
+	load_plain_commit(Store, OldHead, OldMeta),
 	get_time(Now),
 	save_object(Store, Data, blob, Hash),
 	Commit = gitty{}.put(OldMeta)
@@ -158,7 +166,8 @@ gitty_data(Store, Hash, Data, Meta) :-
 
 %%	gitty_commit(+Store, +NameOrHash, -Meta) is semidet.
 %
-%	True if Meta holds the commit data of NameOrHash.
+%	True if Meta holds the commit data of NameOrHash. A key =commit=
+%	is added to the meta-data to specify the commit hash.
 
 gitty_commit(Store, Name, Meta) :-
 	gitty_scan(Store),
@@ -167,31 +176,79 @@ gitty_commit(Store, Name, Meta) :-
 gitty_commit(Store, Hash, Meta) :-
 	load_commit(Store, Hash, Meta).
 
+load_commit(Store, Hash, Meta) :-
+	load_plain_commit(Store, Hash, Meta0),
+	Meta1 = Meta0.put(commit, Hash),
+	(   head(Store, Meta0.name, Hash)
+	->  Meta = Meta1.put(symbolic, "HEAD")
+	;   Meta = Meta1
+	).
 
-load_commit(Store, Head, Meta) :-
-	load_object(Store, Head, String),
+load_plain_commit(Store, Hash, Meta) :-
+	load_object(Store, Hash, String),
 	term_string(Meta, String, []).
 
-%%	gitty_history(+Store, +NameOrHash, +Max, -History) is det.
+%%	gitty_history(+Store, +NameOrHash, -History, +Options) is det.
 %
 %	History is a list of dicts representating the history of Name in
-%	Store.
+%	Store.  Options:
+%
+%	  - depth(+Depth)
+%	  Number of entries in the history.  If not present, defaults
+%	  to 5.
+%	  - includes(+HASH)
+%	  Ensure Hash is included in the history.  This means that the
+%	  history includes the entry with HASH an (depth+1)//2 entries
+%	  after the requested HASH.
 
-gitty_history(Store, Name, Max, [Meta|History]) :-
+gitty_history(Store, Name, History, Options) :-
+	history_hash_start(Store, Name, Hash0),
+	option(depth(Depth), Options, 5),
+	(   option(includes(Hash), Options)
+	->  read_history_to_hash(Store, Hash0, Hash, History0),
+	    length(History0, Before),
+	    After is max(Depth-Before, (Depth+1)//2),
+	    read_history_depth(Store, Hash, After, History1),
+	    append(History0, History1, History2),
+	    list_prefix(Depth, History2, History)
+	;   read_history_depth(Store, Hash0, Depth, History)
+	).
+
+history_hash_start(Store, Name, Hash) :-
 	gitty_scan(Store),
 	head(Store, Name, Head), !,
-	load_commit(Store, Head, Meta),
-	history(Store, Meta, Max, History).
-gitty_history(Store, Hash, Max, [Meta|History]) :-
-	load_commit(Store, Hash, Meta),
-	history(Store, Meta, Max, History).
+	Hash = Head.
+history_hash_start(_, Hash, Hash).
 
 
-history(Store, Meta, Max, [Prev|History]) :-
-	succ(Max1, Max),
-	load_commit(Store, Meta.get(previous), Prev), !,
-	history(Store, Prev, Max1, History).
-history(_, _, _, []).
+read_history_depth(_, _, 0, []) :- !.
+read_history_depth(Store, Hash, Left, [H|T]) :-
+	load_commit(Store, Hash, H), !,
+	Left1 is Left-1,
+	(   read_history_depth(Store, H.get(previous), Left1, T)
+	->  true
+	;   T = []
+	).
+read_history_depth(_, _, _, []).
+
+%%	read_history_to_hash(+Store, +Start, +Upto, -History)
+%
+%	Read the history upto, but NOT including Upto.
+
+read_history_to_hash(Store, Hash, Upto, [H|T]) :-
+	Upto \== Hash,
+	load_commit(Store, Hash, H),
+	(   read_history_to_hash(Store, H.get(previous), Upto, T)
+	->  true
+	;   T = []
+	).
+read_history_to_hash(_, _, _, []).
+
+list_prefix(0, _, []) :- !.
+list_prefix(_, [], []) :- !.
+list_prefix(N, [H|T0], [H|T]) :-
+	N2 is N - 1,
+	list_prefix(N2, T0, T).
 
 
 %%	save_object(+Store, +Data, +Type, -Hash)
@@ -303,6 +360,7 @@ gitty_scan_sync(Store) :-
 
 gitty_hash(Store, Hash) :-
 	var(Hash), !,
+	access_file(Store, exist),
 	directory_files(Store, Level0),
 	member(E0, Level0),
 	E0 \== '..',
@@ -335,9 +393,118 @@ hash_file(Store, Hash, Path) :-
 	sub_atom(Hash, 4, _, 0, File),
 	atomic_list_concat([Store, Dir0, Dir1, File], /, Path).
 
+%%	gitty_reserved_meta(?Key) is nondet.
+%
+%	True when Key is a gitty reserved key for the commit meta-data
+
+gitty_reserved_meta(name).
+gitty_reserved_meta(time).
+gitty_reserved_meta(data).
+gitty_reserved_meta(previous).
+
 
 		 /*******************************
 		 *	       DIFF		*
+		 *******************************/
+
+%%	gitty_diff(+Store, ?Hash1, +FileOrHash2, -Dict) is det.
+%
+%	True if Dict representeds the changes   in Hash1 to FileOrHash2.
+%	If Hash1 is unbound,  it  is   unified  with  the  `previous` of
+%	FileOrHash2. Returns _{initial:true} if  Hash1   is  unbound and
+%	FileOrHash2 is the initial commit.  Dict contains:
+%
+%	  - from:Meta1
+%	  - to:Meta2
+%	  Meta-data for the two diffed versions
+%	  - data:UDiff
+%	  String holding unified diff representation of changes to the
+%	  data.  Only present of data has changed
+%	  - tags:_{added:AddedTags, deleted:DeletedTags}
+%	  If tags have changed, the added and deleted ones.
+
+gitty_diff(Store, C1, C2, Dict) :-
+	gitty_data(Store, C2, Data2, Meta2),
+	(   var(C1)
+	->  C1 = Meta2.get(previous)
+	;   true
+	), !,
+	gitty_data(Store, C1, Data1, Meta1),
+	Pairs = [ from-Meta1, to-Meta2|_],
+	(   Data1 \== Data2
+	->  udiff_string(Data1, Data2, UDIFF),
+	    memberchk(data-UDIFF, Pairs)
+	;   true
+	),
+	meta_tag_set(Meta1, Tags1),
+	meta_tag_set(Meta2, Tags2),
+	(   Tags1 \== Tags2
+	->  ord_subtract(Tags1, Tags2, Deleted),
+	    ord_subtract(Tags2, Tags1, Added),
+	    memberchk(tags-_{added:Added, deleted:Deleted}, Pairs)
+	;   true
+	),
+	once(length(Pairs,_)),			% close list
+	dict_pairs(Dict, json, Pairs).
+gitty_diff(_Store, '0000000000000000000000000000000000000000', _C2,
+	   json{initial:true}).
+
+
+meta_tag_set(Meta, Tags) :-
+	sort(Meta.get(tags), Tags), !.
+meta_tag_set(_, []).
+
+%%	udiff_string(+Data1, +Data2, -UDIFF) is det.
+%
+%	Produce a unified difference between two   strings. Note that we
+%	can avoid one temporary file using diff's `-` arg and the second
+%	by    passing    =/dev/fd/NNN=    on    Linux    systems.    See
+%	http://stackoverflow.com/questions/3800202
+
+:- if(true).
+
+udiff_string(Data1, Data2, UDIFF) :-
+	setup_call_cleanup(
+	    save_string(Data1, File1),
+	    setup_call_cleanup(
+		save_string(Data2, File2),
+		process_diff(File1, File2, UDIFF),
+		delete_file(File2)),
+	    delete_file(File1)).
+
+save_string(String, File) :-
+	tmp_file_stream(utf8, File, TmpOut),
+	format(TmpOut, '~s', [String]),
+	close(TmpOut).
+
+process_diff(File1, File2, String) :-
+	setup_call_cleanup(
+	    process_create(path(diff),
+			   ['-u', file(File1), file(File2)],
+			   [ stdout(pipe(Out)),
+			     process(PID)
+			   ]),
+	    read_string(Out, _, String),
+	    ( close(Out),
+	      process_wait(PID, Status)
+	    )),
+	assertion(normal_diff_exit(Status)).
+
+normal_diff_exit(exit(0)).		% equal
+normal_diff_exit(exit(1)).		% different
+
+:- else.
+
+udiff_string(Data1, Data2, UDIFF) :-
+	data_diff(Data1, Data2, Diffs),
+	maplist(udiff_string, Diffs, Strings),
+	atomics_to_string(Strings, UDIFF).
+
+:- endif.
+
+
+		 /*******************************
+		 *	   PROLOG DIFF		*
 		 *******************************/
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -368,11 +535,11 @@ different solution for the real thing.  Options are:
 %	`Diff` is a list holding
 %
 %	  - +(Line)
-%	  Line as added to Data1 to get Data2
+%	  Line was added to Data1 to get Data2
 %	  - -(Line)
 %	  Line was deleted from Data1 to get Data2
 %	  - -(Line1,Line2)
-%	  Line as replaced
+%	  Line was replaced
 %	  - =(Line)
 %	  Line is identical (context line).
 
@@ -476,7 +643,7 @@ block_lines(=(U), Lines) :- maplist(string_concat(' '), U, Lines).
 block_lines(+(U), Lines) :- maplist(string_concat('+'), U, Lines).
 block_lines(-(U), Lines) :- maplist(string_concat('-'), U, Lines).
 
-udiff_blocks([], []).
+udiff_blocks([], []) :- !.
 udiff_blocks([=(H)|T0], [=([H|E])|T]) :- !,
 	udiff_cp(T0, E, T1),
 	udiff_blocks(T1, T).

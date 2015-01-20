@@ -60,8 +60,10 @@ classification of tokens.
       state.changes.push(change);
 
     if ( change.origin == "setValue" ||
-	 state.generationFromServer == -1 )
+	 state.generationFromServer == -1 ) {
+      state.changes = undefined;	/* force a clean start */
       cm.serverAssistedHighlight();
+    }
   }
 
   function leaveEditor(cm) {

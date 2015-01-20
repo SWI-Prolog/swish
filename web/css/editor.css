@@ -2,6 +2,9 @@
 @import url("../bower_components/codemirror/addon/hint/show-hint.css");
 @import url("../js/codemirror/theme/prolog.css");
 @import url("../js/codemirror/addon/hover/prolog-hover.css");
+@import url("../js/codemirror/addon/hint/templates-hint.css");
+@import url("../js/codemirror/addon/hint/show-context-info.css");
+@import url("../js/codemirror/mode/prolog/prolog-template-hint.css");
 
 .prolog-editor, .CodeMirror { height: 100%; }
 .CodeMirror pre.CodeMirror-placeholder { color: #999; }
@@ -31,3 +34,12 @@
 .CodeMirror-hover {
   outline:1px solid grey;
 }
+
+.CodeMirror-search-match {
+  background-color: yellow;
+}
+
+.CodeMirror-search-alt-match {
+  background-color: #bee;
+}
+
