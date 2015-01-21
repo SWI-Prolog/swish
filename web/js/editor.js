@@ -105,6 +105,9 @@ define([ "cm/lib/codemirror",
 	  options.extraKeys["Ctrl-R"] = "refreshHighlight";
 	}
 
+	if ( preferences.getVal("emacs-keybinding") )
+	  options["keyMap"] = "emacs";
+
 	if ( options.role != "query" )
 	  options.continueComments = "Enter";
 
@@ -468,6 +471,14 @@ define([ "cm/lib/codemirror",
 			  { enabled: pref.value });
       }
 
+      if ( pref.name == "emacs-keybinding") {
+      	if (pref.value == true) {
+      	  data.cm.setOption("keyMap", "emacs");
+      	} else {
+      	  data.cm.setOption("keyMap", "default");
+      	}
+      }
+      
       return this;
     },
 

@@ -25,6 +25,7 @@ define([ "jquery",
        ], function($, config, preferences) {
 
 preferences.setDefault("semantic-highlighting", true);
+preferences.setDefault("emacs-keybinding", true);
 
 (function($) {
   var pluginName = 'swish';
@@ -62,15 +63,10 @@ preferences.setDefault("semantic-highlighting", true);
 	"Semantic highlighting": {
 	  preference: "semantic-highlighting",
 	  type: "checkbox"
-	}
-      },
-      "Keybinding":
-      {
-	"Default": function() {
-	  $(".prolog-editor").prologEditor('setKeybinding', 'default');
 	},
-	"Emacs": function() {
-	  $(".prolog-editor").prologEditor('setKeybinding', 'emacs');
+	"Emacs Keybinding": {
+	  preference: "emacs-keybinding",
+	  type: "checkbox"
 	}
       },
       "Examples": function(navbar, dropdown) {
