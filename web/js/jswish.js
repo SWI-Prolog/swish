@@ -25,7 +25,7 @@ define([ "jquery",
        ], function($, config, preferences) {
 
 preferences.setDefault("semantic-highlighting", true);
-preferences.setDefault("emacs-keybinding", true);
+preferences.setDefault("emacs-keybinding", false);
 
 (function($) {
   var pluginName = 'swish';
@@ -66,7 +66,8 @@ preferences.setDefault("emacs-keybinding", true);
 	},
 	"Emacs Keybinding": {
 	  preference: "emacs-keybinding",
-	  type: "checkbox"
+	  type: "checkbox",
+	  value: "false"
 	}
       },
       "Examples": function(navbar, dropdown) {
