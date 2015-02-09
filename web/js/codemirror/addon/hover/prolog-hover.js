@@ -78,6 +78,15 @@ var tokenHelp = {
     }
   },
 
+  "error": function(data, cm) {
+    if ( data ) {
+      if ( data.expected )
+	return $.el.div("error: ", $.el.strong(data.expected), " expected");
+    }
+
+    return "error";
+  },
+
   "singleton": "Variable appearing only once",
   "codes":     "List of Unicode code points (integers)",
   "chars":     "List of one-character atoms",

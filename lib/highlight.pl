@@ -571,7 +571,7 @@ style(control,		 control,			   [text]).
 style(identifier,	 identifier,			   [text]).
 style(module(_Module),   module,			   [text]).
 style(error,		 error,				   [text]).
-style(type_error(_Expect), error,			   [text]).
+style(type_error(Expect), error,		      [text,expected(Expect)]).
 style(syntax_error(_Msg,_Pos), syntax_error,		   []).
 style(predicate_indicator, atom,			   [text]).
 style(predicate_indicator, atom,			   [text]).
