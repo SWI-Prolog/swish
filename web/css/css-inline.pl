@@ -15,6 +15,7 @@ Copyright: Public domain
 :- use_module(library(debug)).
 
 :- initialization main.
+%:- debug(css).
 
 main([In, Out]) :-
 	process(In, Out).
@@ -43,10 +44,13 @@ save(Out, s(S)) :- !,
 	format(Out, '~s', [S]).
 save(Out, url(S)) :-
 	\+ sub_string(S, 0, _, _, 'data:'),
-	once(sub_string(S, _, _, _, '/bower_components/')), % TBD: parameter
 	file_name_extension(_, Ext, S),
-	image_ext(Ext), !,
+	image_ext(Ext),
 	size_file(S, Size),
+	(   sub_string(S, _, _, _, '/bower_components/')
+	->  true
+	;   Size < 2000
+	), !,
 	debug(css, 'Inlining image: ~q (~D bytes)~n', [S, Size]),
 	read_file_to_codes(S, Codes, [type(binary)]),
 	phrase(base64(Codes), Base64),
