@@ -71,7 +71,9 @@ http:location(swish, root(.), [priority(-100)]).
 	swish_config:config/2,
 	swish_config:source_alias/1.
 
-swish_config:config(show_beware, true).
+swish_config:config(show_beware,    true).
+swish_config:config(tabled_results, false).
+swish_config:config(application,    swish).
 
 
                  /*******************************

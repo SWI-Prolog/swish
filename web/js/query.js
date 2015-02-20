@@ -9,8 +9,8 @@
  * @requires editor
  */
 
-define([ "jquery", "laconic", "editor" ],
-       function() {
+define([ "jquery", "config", "preferences", "laconic", "editor" ],
+       function($, config, preferences) {
 
 (function($) {
   var pluginName = 'queryEditor';
@@ -298,10 +298,22 @@ define([ "jquery", "laconic", "editor" ],
   }
 
   function tableCheckbox(options) {
-    var checkbox =
-      $.el.span({class:"run-chk-table"},
-		$.el.input({type:"checkbox", name:"table"}),
-		" table results");
+    var checked = preferences.getVal("tabled_results");
+    var attr    = {type:"checkbox", name:"table"};
+
+    if ( checked === undefined ) {
+      checked = config.tabled_results;
+    }
+    if ( checked )
+      attr.checked = "checked";
+
+    var input = $.el.input(attr);
+    var checkbox = $.el.span({class:"run-chk-table"},
+			     input, " table results");
+    $(input).on("change", function(ev) {
+      preferences.setVal("tabled_results",
+			 $(ev.target).prop("checked"));
+    });
 
     return checkbox;
   }
