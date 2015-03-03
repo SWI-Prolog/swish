@@ -302,7 +302,7 @@ define([ "jquery", "config", "preferences", "laconic", "editor" ],
     var attr    = {type:"checkbox", name:"table"};
 
     if ( checked === undefined ) {
-      checked = config.tabled_results;
+      checked = config.swish.tabled_results;
     }
     if ( checked )
       attr.checked = "checked";
