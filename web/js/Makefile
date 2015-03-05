@@ -8,7 +8,7 @@ MAIN=swish.js
 all:	doc min require.js
 
 doc::	$(CONF) $(JQ) $(JS)
-	jsdoc -p -c $(CONF) $(JQ) $(JS)
+	-jsdoc -p -c $(CONF) $(JQ) $(JS)
 
 min:	swish-min.js
 
