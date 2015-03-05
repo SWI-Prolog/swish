@@ -492,16 +492,16 @@ atomic_special(atom, Start, Len, TB, Type, Attrs) :-
 	).
 
 json_attributes([], [], _, _, _).
-json_attributes([H0|T0], [H|T], TB, Start, Len) :-
-	json_attribute(H0, H, TB, Start, Len), !,
+json_attributes([H0|T0], Attrs, TB, Start, Len) :-
+	json_attribute(H0, Attrs, T, TB, Start, Len), !,
 	json_attributes(T0, T, TB, Start, Len).
 json_attributes([_|T0], T, TB, Start, Len) :-
 	json_attributes(T0, T, TB, Start, Len).
 
-
-json_attribute(text, text(Text), TB, Start, Len) :- !,
+json_attribute(text, [text(Text)|T], T, TB, Start, Len) :- !,
 	memory_file_substring(TB, Start, Len, _, Text).
-json_attribute(Term, Term, _, _, _).
+json_attribute(line(File:Line), [line(Line),file(File)|T], T, _, _, _) :- !.
+json_attribute(Term, [Term|T], T, _, _, _).
 
 colour_item(_TB, Style, Start, Len) :-
 	(   style(Style)

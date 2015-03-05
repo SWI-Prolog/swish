@@ -47,9 +47,19 @@ var tokenHelp = {
   },
 
   "goal_recursion": "Recursive call",
-  "goal_local":     "Locally defined predicate",
   "goal_dynamic":   "Dynamic predicate",
   "goal_undefined": "Undefined predicate",
+  "goal_local": function(data, cm) {
+    if ( data && data.file ) {
+      return $.el.div("Predicate included from ",
+		      $.el.span({class:"file-path"},
+				data.file));
+    } else if ( data && data.line ) {
+      return "Predicate defined in line "+data.line;
+    } else {
+      return "Locally defined predicate";
+    }
+  },
 
   "head_unreferenced": "Predicate is not called",
 
