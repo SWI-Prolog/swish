@@ -60,8 +60,15 @@ add_extension(File, FileExt) :-
 	file_name_extension(_, Ext, File),
 	Ext \== '', !,
 	FileExt = File.
+add_extension(Hash, Hash) :-
+	is_hash(Hash), !.
 add_extension(File, FileExt) :-
 	file_name_extension(File, pl, FileExt).
+
+is_hash(Name) :-
+	atom_length(Name, 40),
+	split_string(Name, ":", "0123456789abcdef", [""]).
+
 
 		 /*******************************
 		 *	      SANDBOX		*
