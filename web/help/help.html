@@ -10,6 +10,7 @@
     <li><a href="#help-basics">Basic operation</a></li>
     <li><a href="#help-examples">Embedding examples in the program text</a></li>
     <li><a href="#help-share">Save or share your program</a></li>
+    <li><a href="#help-include">Include other programs</a></li>
     <li><a href="#help-preload">Preload SWISH with data</a></li>
   </ul>
 
@@ -68,12 +69,45 @@ first goal show in the Goal input field.
 
 <h4 id="help-share">Save or share your program</h4>
 <p>
-If you use <b>File/Save</b>, the server will save your program in a file
-with a unique random name and add this name to the URL displayed in the
-browser's address bar. You can later come back to this source by going
-to this URL. You can also sent the URL to a friend and let him or her
-have a look at your program.  Anyone can save the program, but the last
-one wins.  In the future, we will add versioning.
+The menu <b>File/Save ...</b> can be used to save your program.  There
+are several options:
+
+  <ul>
+    <li>By default, the program is saved to a randomly generated name
+        and may be searched by all users.  The <b>Public | Name</b> fields
+	can be used to hide the file and/or give it a name.
+    <li>The title is displayed in the search results and can help others
+        to guess what the file is about.
+    <li>You can fill in the author.  Future versions are likely to use
+        login for that.
+    <li>If an updated version of the file is changed, <b>Changes</b> may
+        be used to summarise the changes.
+    <li>Tags may be added to help people finding your code.  Type a comma
+        (,) to start a new tag.
+  </ul>
+
+<p>
+The <b>Info &amp; History ...</b> menu can be used to examine and use
+old versions of the program.
+
+<h4 id="help-include">Include other programs</h4>
+<p>
+If you know the name of a saved program (see above), you can reuse this
+program using Prolog's <b>include/1</b> predicate as illustrated below.
+
+<pre style="font-size:80%">
+:- include(clever).
+</pre>
+
+You can also include a <em>specific version</em> of a program by including
+its <em>hash</em>.  You can find the hash of a specific version using
+<b>Info &amp; History ...</b>, selecting the desired version and opening
+it using the <em>play</em> button.  This will display the hash in the
+browser's address field.  Now, include this version using e.g.,
+
+<pre style="font-size:80%">
+:- include('23dacada6952ec6701da2dc9d4ebcf5c7b860380').
+</pre>
 
 <p>
 Using <b>File/Collaborate ...</b>, you create a
