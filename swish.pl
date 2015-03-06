@@ -39,6 +39,7 @@
 :- use_module(lib/page, []).
 :- use_module(lib/storage).
 :- use_module(lib/include).
+:- use_module(lib/csv).
 :- use_module(lib/examples).
 :- use_module(lib/highlight).
 :- use_module(lib/template_hint, []).
