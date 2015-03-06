@@ -5,9 +5,9 @@
 # This program allows you to download query  results from a SWISH server
 # as CSV data.
 
-server=http://localhost:3020
+server=${SWISH_SERVER-http://localhost:3050}
 srctext=
-format=rdf
+format=${SWISH_FORMAT-prolog}
 program=$(basename $0)
 
 usage()
@@ -17,8 +17,8 @@ Usage: $program "[--server=URL] [--format=rdf|prolog]" file.pl ... projection qu
 
 Where
 
-  - server is by default "http://localhost:3020"
-  - format is by default "rdf"
+  - server is by default "$server".  Environment: SWISH_SERVER
+  - format is by default "$format".  Environment: SWISH_FORMAT
   - file.pl ... are files saved in SWISH.  Zero or more files are allowed
   - projection is a comma-separated list of Prolog variables that define
     the CSV columns.
