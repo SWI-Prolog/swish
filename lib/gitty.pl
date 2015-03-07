@@ -335,22 +335,36 @@ gitty_scan(Store) :-
 gitty_scan(Store) :-
 	with_mutex(gitty, gitty_scan_sync(Store)).
 
+:- thread_local
+	latest/3.
+
 gitty_scan_sync(Store) :-
 	store(Store), !.
 gitty_scan_sync(Store) :-
+	gitty_scan_latest(Store),
+	forall(retract(latest(Name, Hash, _Time)),
+	       assert(head(Store, Name, Hash))),
+	assertz(store(Store)).
+
+%%	gitty_scan_latest(+Store)
+%
+%	Scans the gitty store, extracting  the   latest  version of each
+%	named entry.
+
+gitty_scan_latest(Store) :-
+	retractall(latest(_, _, _)),
 	(   gitty_hash(Store, Hash),
 	    load_object(Store, Hash, Data, commit, _Size),
 	    term_string(Meta, Data, []),
-	    (	head(Store, Meta.name, OldHash)
-	    ->	(   OldHash == Meta.get(previous)
-		->  retract(head(Store, Meta.name, OldHash)),
-		    assertz(head(Store, Meta.name, Hash))
-		;   true
-		)
-	    ;	assertz(head(Store, Meta.name, Hash))
+	    _{name:Name, time:Time} :< Meta,
+	    (	latest(Name, _, OldTime),
+		OldTime > Time
+	    ->	true
+	    ;	retractall(latest(Name, _, _)),
+		assertz(latest(Name, Hash, Time))
 	    ),
 	    fail
-	;   assertz(store(Store))
+	;   true
 	).
 
 
