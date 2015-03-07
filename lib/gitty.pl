@@ -352,6 +352,7 @@ gitty_scan_sync(Store) :-
 %	named entry.
 
 gitty_scan_latest(Store) :-
+	retractall(head(Store, _, _)),
 	retractall(latest(_, _, _)),
 	(   gitty_hash(Store, Hash),
 	    load_object(Store, Hash, Data, commit, _Size),
