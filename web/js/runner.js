@@ -9,8 +9,8 @@
  * @requires editor
  */
 
-define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
-       function($, config, CodeMirror) {
+define([ "jquery", "config", "cm/lib/codemirror", "form", "answer", "laconic" ],
+       function($, config, CodeMirror, form) {
 
 		 /*******************************
 		 *	  THE COLLECTION	*
@@ -211,7 +211,7 @@ define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
 	var data = {};
 
 	function closeButton() {
-	  var btn = $.el.button();
+	  var btn = $.el.button({title:"Close query"});
 	  $(btn).html('&times');
 
 	  $(btn).on("click", function() { elem.prologRunner('close'); });
@@ -219,8 +219,14 @@ define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
 	}
 
 	function iconizeButton() {
-	  var btn = $.el.button("_");
+	  var btn = $.el.button({title:"Iconify query"}, "_");
 	  $(btn).on("click", function() { elem.prologRunner('toggleIconic'); });
+	  return btn;
+	}
+
+	function csvButton() {
+	  var btn = $.el.button({title:"Download CSV"}, "\u21ca");
+	  $(btn).on("click", function() { elem.prologRunner('downloadCSV'); });
 	  return btn;
 	}
 
@@ -294,6 +300,7 @@ define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
 	  {class:"runner-title ui-widget-header"},
 	  closeButton(),
 	  iconizeButton(),
+          csvButton(),
 	  stateButton(),
           qspan));
 	elem.append($.el.div(
@@ -547,6 +554,69 @@ define([ "jquery", "config", "cm/lib/codemirror", "answer", "laconic" ],
 
       return this;
     },
+
+    /**
+     * Download query results as CSV.
+     */
+    downloadCSV: function(options) {
+      var elem = this;
+      var data = this.data('prologRunner');
+      var vars = [];
+
+      options = options||{};
+
+      if ( options.projection ) {
+	var formel;
+
+	function attr(name,value) {
+	  return $.el.input({type:"hidden", name:name, value:value});
+	}
+
+	formel = $.el.form({ method:"POST",
+                             action:config.http.locations.pengines+"/create",
+			     target:"_blank"
+		           },
+			   attr("format", "csv"),
+			   attr("chunk", "100000000"),
+			   attr("application", "swish"),
+			   attr("ask", data.query.query.replace(/\.\s*$/,"")),
+			   attr("src_text", data.query.source),
+			   attr("template", "prolog("+options.projection+")"));
+	$("body").append(formel);
+	formel.submit();
+	$(formel).remove();
+      } else {
+	this.find("span.query span.cm-var").each(function() {
+	  var name = $(this).text();
+	  if ( vars.indexOf(name) < 0 )
+	    vars.push(name);
+        });
+
+
+	function infoBody() {
+	  var formel = $.el.form(
+            {class:"form-horizontal"},
+	    form.fields.projection(vars.join(",")),
+	    form.fields.buttons(
+	      { label: "Download CSV",
+		action: function(ev, params) {
+		  ev.preventDefault();
+		  elem.prologRunner('downloadCSV',
+				    { projection:params.projection
+				    });
+		  return false;
+		}
+	      }));
+	  this.append(formel);
+	}
+
+	form.showDialog({ title: "Download query results as CSV",
+			  body:  infoBody
+		        });
+      }
+
+      return this;
+      },
 
   /**
    * @param {String} state defines the new state of the pengine.

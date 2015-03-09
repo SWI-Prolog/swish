@@ -21,11 +21,27 @@
 
   - Template based completion					[OK]
 
+## Query editor
+
+  - Add an aggregate menu with options:
+    - Count
+    - Sum
+    - Average
+  - Add a solution sequence menu.  Options:
+    - Limit
+    - OrderBy
+    - Distinct
+
 ## Runners
 
   - Allow to move them into toplevel browser windows?  Is that possible?
   - Get back to the associated source version (open new editor tab?).
     Fork/re-run.
+  - Download results as CSV
+    - Add download button					[OK]
+    - Add selection for output format (must be swish option)
+    - Add limit
+    - Add distinct
 
 ## Rendering framework
 

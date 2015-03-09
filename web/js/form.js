@@ -164,6 +164,16 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 	return elem;
       },
 
+      projection: function(projection) {
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("projection", "Projection"),
+		 $.el.div({class:"col-xs-10"},
+			  textInput("projection",
+				    {placeholder:"Columns", value:projection})));
+	return elem;
+      },
+
       /**
        * @param {Object} options
        * @param {String} options.label is the label used for the
