@@ -113,3 +113,12 @@ _not_ see exactly the same UI for cooperation.  What about
     - For predicates							[OK]
     - For public files							[OK]
   - Implement string search with result page
+
+## Drag and drop values
+
+  - Allow dragging and dropping results to the editor and query window to
+    get their Prolog representation inserted.  Also needs to work from e.g.
+    ClioPatria.								[OK]
+
+    - HTML5 drap-and-drop:
+      http://decafbad.com/2009/07/drag-and-drop/js/drag-newschool.js

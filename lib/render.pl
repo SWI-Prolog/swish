@@ -177,7 +177,10 @@ alt_renderer(Specialised, Term, Options) -->
 		 \specialised(Specialised, Term, Options))).
 
 specialised([], Term, Options) -->
-	html(span('data-render'('Prolog term'), \term(Term, Options))).
+	html(span([ class('render-as-prolog'),
+		    'data-render'('Prolog term')
+		  ],
+		  \term(Term, Options))).
 specialised([H|T], Term, Options) -->
 	tokens(H),
 	specialised(T, Term, Options).
