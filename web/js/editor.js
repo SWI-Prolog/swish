@@ -660,8 +660,7 @@ define([ "cm/lib/codemirror",
       if ( e.state.location ) {
 	window.location =  e.state.location;
       }
-    } else
-      window.location.reload(true);
+    }
   }
 
   /**
