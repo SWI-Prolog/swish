@@ -9,8 +9,10 @@
  * @requires editor
  */
 
-define([ "jquery", "config", "preferences", "laconic", "editor" ],
-       function($, config, preferences) {
+define([ "jquery", "config", "preferences", "cm/lib/codemirror",
+	 "laconic", "editor"
+       ],
+       function($, config, preferences, CodeMirror) {
 
 (function($) {
   var pluginName = 'queryEditor';
@@ -44,7 +46,7 @@ define([ "jquery", "config", "preferences", "laconic", "editor" ],
 			     $.el.td({class:"buttons-left"},
 				     examplesButton(options),
 				     historyButton(options),
-				     clearButton(options)),
+				     aggregateButton(options)),
 			     $.el.td({class:"buttons-right"},
 				     tabled,
 				     runButton(options))));
@@ -169,6 +171,54 @@ define([ "jquery", "config", "preferences", "laconic", "editor" ],
     },
 
     /**
+     * @param {String} [query] query to get the variables from
+     * @return {List.string} is a list of Prolog variables without
+     * duplicates
+     */
+
+    variables: function(query) {
+      var qspan = $.el.span({class:"query cm-s-prolog"});
+      var vars = [];
+
+      CodeMirror.runMode(query, "prolog", qspan);
+      $(qspan).find("span.cm-var").each(function() {
+	var name = $(this).text();
+	if ( vars.indexOf(name) < 0 )
+	  vars.push(name);
+      });
+
+      return vars;
+    },
+
+    /**
+     * Wrap current query in a solution modifier.
+     * TBD: If there is a selection, only wrap the selection
+     *
+     * @param {String} wrapper defines the type of wrapper to use.
+     */
+    wrapSolution: function(wrapper) {
+      var query = this.queryEditor('getQuery').replace(/\.\s*$/m, "");
+      var that = this;
+      var vars = this.queryEditor('variables', query);
+
+      function wrapQuery(pre, post) {
+	that.queryEditor('setQuery', pre + "("+query+")" + post + ".");
+	return that;
+      }
+
+      switch ( wrapper ) {
+        case "Aggregate (count all)":
+	  return wrapQuery("aggregate_all(count, ", ", Count)");
+        case "Distinct":
+	  return wrapQuery("distinct(["+vars.join(",")+"], ", ")");
+        case "Limit":
+	  return wrapQuery("limit(10, ", ")");
+	default:
+	  alert("Unknown wrapper: \""+wrapper+"\"");
+      }
+    },
+
+    /**
      * Collect source and query and submit them to the associated
      * `runner`.
      *
@@ -265,17 +315,38 @@ define([ "jquery", "config", "preferences", "laconic", "editor" ],
     return dropup("history", "History", options);
   }
 
-  function clearButton(options) {
-    var button =
-      $.el.button(
-	{class:"clear-btn-query btn btn-default btn-xs"},
-	"Clear");
+  function aggregateButton(options) {
+    var cls = "aggregate";
+    var list = options.aggregates ||
+      [ "Aggregate (count all)",
+	"--",
+	"Distinct", "Limit"
+      ];
+    var ul;
 
-    $(button).on("click", function() {
-      Q(this).queryEditor('setQuery', "");
+    var dropup = $.el.div(
+      {class:"btn-group dropup"},
+      $.el.button(
+	{class:"btn btn-default btn-xs dropdown-toggle "+cls,
+	 "data-toggle":"dropdown"},
+	"Solutions",
+	$.el.span({class:"caret"})),
+      ul=$.el.ul({class:"dropdown-menu "+cls}));
+
+    for(var i = 0; i<list.length; i++) {
+      var wrap = list[i];
+
+      if ( wrap == "--" )
+	$(ul).append($.el.li({class:"divider"}));
+      else
+	$(ul).append($.el.li($.el.a(wrap)));
+    }
+
+    $(dropup).on("click", "a", function() {
+      Q(this).queryEditor('wrapSolution', $(this).text());
     });
 
-    return button;
+    return dropup;
   }
 
   function runButton(options) {
