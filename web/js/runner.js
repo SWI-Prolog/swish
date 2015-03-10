@@ -9,8 +9,10 @@
  * @requires editor
  */
 
-define([ "jquery", "config", "cm/lib/codemirror", "form", "answer", "laconic" ],
-       function($, config, CodeMirror, form) {
+define([ "jquery", "config", "preferences",
+	 "cm/lib/codemirror", "form", "answer", "laconic"
+       ],
+       function($, config, preferences, CodeMirror, form) {
 
 		 /*******************************
 		 *	  THE COLLECTION	*
@@ -557,6 +559,12 @@ define([ "jquery", "config", "cm/lib/codemirror", "form", "answer", "laconic" ],
 
     /**
      * Download query results as CSV.
+     * @param {Object} [options]
+     * @param {String} [options.projection] holds the Prolog projection
+     * variables, separated by commas, e.g., `"X,Y"`
+     * @param {String} [options.format="prolog"] holds a string that
+     * defines the variation of the CSV format, e.g., `"prolog"` or
+     * `"rdf"`
      */
     downloadCSV: function(options) {
       var elem = this;
@@ -567,6 +575,7 @@ define([ "jquery", "config", "cm/lib/codemirror", "form", "answer", "laconic" ],
 
       if ( options.projection ) {
 	var formel;
+	var format = options.format||"prolog";
 
 	function attr(name,value) {
 	  return $.el.input({type:"hidden", name:name, value:value});
@@ -581,7 +590,7 @@ define([ "jquery", "config", "cm/lib/codemirror", "form", "answer", "laconic" ],
 			   attr("application", "swish"),
 			   attr("ask", data.query.query.replace(/\.\s*$/,"")),
 			   attr("src_text", data.query.source),
-			   attr("template", "prolog("+options.projection+")"));
+			   attr("template", format+"("+options.projection+")"));
 	$("body").append(formel);
 	formel.submit();
 	$(formel).remove();
@@ -597,12 +606,17 @@ define([ "jquery", "config", "cm/lib/codemirror", "form", "answer", "laconic" ],
 	  var formel = $.el.form(
             {class:"form-horizontal"},
 	    form.fields.projection(vars.join(",")),
+	    form.fields.csvFormat(config.swish.csv_formats,
+				  preferences.getVal("csvFormat")),
 	    form.fields.buttons(
 	      { label: "Download CSV",
 		action: function(ev, params) {
 		  ev.preventDefault();
+		  if ( config.swish.csv_formats.length > 1 )
+		    preferences.setVal("csvFormat", params.format);
 		  elem.prologRunner('downloadCSV',
-				    { projection:params.projection
+				    { projection:params.projection,
+				      format:params.format
 				    });
 		  return false;
 		}

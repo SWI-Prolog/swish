@@ -73,9 +73,29 @@ http:location(swish, root(.), [priority(-100)]).
 	swish_config:config/2,
 	swish_config:source_alias/1.
 
+%%	swish_config:config(?Config, ?Value) is nondet.
+%
+%	All solutions of this predicate are  available in the JavaScript
+%	object config.swish.Config. Config must be an  atom that is also
+%	a valid JavaScript identifier. Value  must   be  a value that is
+%	valid for json_write_dict/2. Most configurations  are also saved
+%	in the application preferences. These   are  marked [P]. Defined
+%	config parameters:
+%
+%	  - show_beware
+%	  [P] If `true`, show the *Beware* modal dialog on startup
+%	  - tabled_results
+%	  [P] If `true`, check the _table results_ checkbox by default.
+%	  - application
+%	  Name of the Pengine application.
+%	  - csv_formats
+%	  [P] CSV output formats offered. For example, ClioPatria
+%	  defines this as [rdf,prolog]. The first element is default.
+
 swish_config:config(show_beware,    true).
 swish_config:config(tabled_results, false).
 swish_config:config(application,    swish).
+swish_config:config(csv_formats,    [prolog]).
 
 
                  /*******************************

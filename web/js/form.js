@@ -174,6 +174,26 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 	return elem;
       },
 
+      csvFormat: function(list, format) {
+	var elem;
+
+	list = list||["prolog"];
+	format = format||list[0];
+
+	if ( list.length == 1 ) {
+	  elem = $.el.input({type:"hidden", name:"format", value:list[0]});
+	} else {
+	  elem = $.el.div({class:"form-group"},
+			  label("format", "Format"),
+			  $.el.div({class:"col-xs-10"},
+				   select("format",
+					  list,
+					  {value:format})));
+	}
+
+	return elem;
+      },
+
       /**
        * @param {Object} options
        * @param {String} options.label is the label used for the
@@ -271,6 +291,43 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
     if ( options.placeholder ) attrs.placeholder = options.placeholder;
 
     return $.el.textarea(attrs, options.value||"");
+  }
+
+  /**
+   * Create a bootstrap <select> element from a list of options
+   * @param {String} name is the name of the select element
+   * @param {Array} from is an array of options. Each options is a
+   * string or an object with keys `value` and `label`.
+   * @param {Object} [options]
+   * @param {Object} [options.value] If provided, the corresponding
+   * option is selected
+   */
+
+  function select(name, from, options) {
+    var select = $($.el.select({class:"form-control", name:name}));
+
+    options=options||{};
+
+    function addSelect(e) {
+      if ( typeof(e) == "string" ) {
+	if ( e == options.value ) {
+	  select.append($.el.option({selected:"selected"}, e));
+	} else {
+	  select.append($.el.option(e));
+	}
+      } else {
+	var opts = {value:e.value};
+	if ( e.value == options.value )
+	  opts.selected = "selected";
+
+	select.append($.el.option(opts, e.label));
+      }
+    }
+
+    for(var i=0; i<from.length; i++)
+      addSelect(from[i]);
+
+    return select[0];
   }
 
   return form;
