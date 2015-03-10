@@ -206,9 +206,18 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	return that;
       }
 
+      function order(l) {
+	var order = [];
+	for(var i=0; i<vars.length; i++)
+	  order.push("asc("+vars[i]+")");
+	return order.join(",");
+      }
+
       switch ( wrapper ) {
         case "Aggregate (count all)":
 	  return wrapQuery("aggregate_all(count, ", ", Count)");
+        case "Aggregate (order by)":
+	  return wrapQuery("order_by(["+order(vars)+"], ", ")");
         case "Distinct":
 	  return wrapQuery("distinct(["+vars.join(",")+"], ", ")");
         case "Limit":
@@ -319,8 +328,10 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
     var cls = "aggregate";
     var list = options.aggregates ||
       [ "Aggregate (count all)",
+	"Aggregate (order by)",
 	"--",
-	"Distinct", "Limit"
+	"Distinct",
+	"Limit"
       ];
     var ul;
 
