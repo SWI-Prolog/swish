@@ -587,7 +587,7 @@ define([ "jquery", "config", "preferences",
 	}
 
 	if ( options.distinct )
-	  query = "distinct(("+query+"))";
+	  query = "distinct(["+options.projection+"],("+query+"))";
 	if ( options.limit ) {
 	  var limit = parseInt(options.limit.replace(/[ _]/g,""));
 
