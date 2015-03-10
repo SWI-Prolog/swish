@@ -80,6 +80,7 @@ success(Answers, VarTerm) :-
 	write_answers(Answers, VarTerm), !.
 success(Answers, VarTerm) :-
 	maplist(csv_answer, Answers, Rows),
+	format('Content-disposition: attachment; filename="swish-result.csv"~n'),
 	format('Content-type: text/csv~n~n'),
 	csv_write_stream(current_output, [VarTerm|Rows], []).
 
