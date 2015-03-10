@@ -195,6 +195,33 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
       },
 
       /**
+       * Ask for limit and distinct to modify the solution set.
+       * @param {Number} [limit] is the max number of solutions to
+       * return
+       * @param {Boolean} [distinct] requests only to return distinct
+       * solutions.
+       */
+      limit: function(limit, distinct) {
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("name", "Distinct | limit"),
+		 $.el.div({class:"col-xs-10"},
+			  $.el.div({class:"input-group"},
+				   $.el.span({class:"input-group-addon",
+				              title:"If checked only return distinct results"
+				             },
+					     checkbox("distinct",
+						      { checked: distinct
+						      })),
+				   textInput("limit",
+					     {placeholder:"Maximum result count (blank for unlimited)",
+					      title:"Limit results",
+					      value:limit}))));
+	return elem;
+      },
+
+
+      /**
        * @param {Object} options
        * @param {String} options.label is the label used for the
        * primary button.

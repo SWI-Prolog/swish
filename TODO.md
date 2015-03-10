@@ -39,9 +39,9 @@
     Fork/re-run.
   - Download results as CSV
     - Add download button					[OK]
-    - Add selection for output format (must be swish option)
-    - Add limit
-    - Add distinct
+    - Add selection for output format (must be swish option)	[OK]
+    - Add limit							[OK]
+    - Add distinct						[OK]
 
 ## Rendering framework
 

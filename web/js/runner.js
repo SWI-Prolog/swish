@@ -565,6 +565,10 @@ define([ "jquery", "config", "preferences",
      * @param {String} [options.format="prolog"] holds a string that
      * defines the variation of the CSV format, e.g., `"prolog"` or
      * `"rdf"`
+     * @param {String|Number} [options.limit] defines the max number of
+     * results.
+     * @param {Boolean} [options.distinct] requests only distinct
+     * results.
      */
     downloadCSV: function(options) {
       var elem = this;
@@ -576,9 +580,23 @@ define([ "jquery", "config", "preferences",
       if ( options.projection ) {
 	var formel;
 	var format = options.format||"prolog";
+	var query = data.query.query.replace(/\.\s*$/,"");
 
 	function attr(name,value) {
 	  return $.el.input({type:"hidden", name:name, value:value});
+	}
+
+	if ( options.distinct )
+	  query = "distinct(("+query+"))";
+	if ( options.limit ) {
+	  var limit = parseInt(options.limit.replace(/[ _]/g,""));
+
+	  if ( typeof(limit) == "number" ) {
+	    query = "limit("+limit+",("+query+"))";
+	  } else {
+	    alert("Not an integer: ", options.limit);
+	    return false;
+	  }
 	}
 
 	formel = $.el.form({ method:"POST",
@@ -588,7 +606,7 @@ define([ "jquery", "config", "preferences",
 			   attr("format", "csv"),
 			   attr("chunk", "100000000"),
 			   attr("application", "swish"),
-			   attr("ask", data.query.query.replace(/\.\s*$/,"")),
+			   attr("ask", query),
 			   attr("src_text", data.query.source),
 			   attr("template", format+"("+options.projection+")"));
 	$("body").append(formel);
@@ -608,16 +626,15 @@ define([ "jquery", "config", "preferences",
 	    form.fields.projection(vars.join(",")),
 	    form.fields.csvFormat(config.swish.csv_formats,
 				  preferences.getVal("csvFormat")),
+	    form.fields.limit("10 000", false),
 	    form.fields.buttons(
 	      { label: "Download CSV",
 		action: function(ev, params) {
 		  ev.preventDefault();
 		  if ( config.swish.csv_formats.length > 1 )
 		    preferences.setVal("csvFormat", params.format);
-		  elem.prologRunner('downloadCSV',
-				    { projection:params.projection,
-				      format:params.format
-				    });
+		  elem.prologRunner('downloadCSV', params);
+
 		  return false;
 		}
 	      }));
