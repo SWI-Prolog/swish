@@ -11,10 +11,11 @@
     <li><a href="#help-examples">Embedding examples in the program text</a></li>
     <li><a href="#help-share">Save or share your program</a></li>
     <li><a href="#help-include">Include other programs</a></li>
+    <li><a href="#help-csv">Download query results as CVS</a></li>
     <li><a href="#help-preload">Preload SWISH with data</a></li>
   </ul>
 
-<h4 id="help-basics">Basic operation</h4>
+<h2 id="help-basics">Basic operation</h2>
 <p>
 Prolog is about running a <i>query</i> against a <i>program</i>. The
 <i>query</i> goes into the bottom-right editor and the <i>program</i>
@@ -53,7 +54,7 @@ edit the program and use the <b>Run!</b> again.  The new query is
 executed in a completely new environment.  In particular, data that
 you asserted in a previous query is not available in the next.
 
-<h4 id="help-examples">Embedding examples in the program text</h4>
+<h2 id="help-examples">Embedding examples in the program text</h2>
 <p>
 If you include example goals inside comments as shown below,
 they will be used to populate the example menu and make the
@@ -67,7 +68,7 @@ first goal show in the Goal input field.
 
 */</pre>
 
-<h4 id="help-share">Save or share your program</h4>
+<h2 id="help-share">Save or share your program</h2>
 <p>
 The menu <b>File/Save ...</b> can be used to save your program.  There
 are several options:
@@ -90,7 +91,7 @@ are several options:
 The <b>Info &amp; History ...</b> menu can be used to examine and use
 old versions of the program.
 
-<h4 id="help-include">Include other programs</h4>
+<h2 id="help-include">Include other programs</h2>
 <p>
 If you know the name of a saved program (see above), you can reuse this
 program using Prolog's <b>include/1</b> predicate as illustrated below.
@@ -114,7 +115,63 @@ Using <b>File/Collaborate ...</b>, you create a
 <a target="_blank" href="https://togetherjs.com/">TogetherJS</a> session
 that provides shared editing, chat and voice communication.
 
-<h4 id="help-preload">Preload SWISH with data</h4>
+<h2 id="help-csv">Download query results as CSV</h2>
+<p>
+After running a query, the <strong>complete</strong> result set for the
+query can be downloaded as a CSV (Comma Separated Values) document by
+clicking the double down arrow at the <em>runner</em> window. This
+causes a dialogue to appear that allows for specifying the columns,
+optionally the detailed result format (if the server provides multiple
+result formats), whether only <em>distinct</em> results should be
+returned and the maximum number of results to return. The latter is by
+default set to 10&nbsp;000 to avoid sending huge documents by accident.
+The field can be cleared to return all results.
+
+<h3>Download query results through an API</h3>
+<p>
+The CSV results can also be downloaded programmatically by directly
+approaching the Pengine API. Example client code is <a
+href="https://github.com/SWI-Prolog/swish/tree/master/client"
+target="_blank">available</a>.  For example, the `swish-ask.sh` client
+can be used with `bash` to download the results for a query.  The call
+below downloads a CSV file for the <em>sin</em> function.
+
+<pre style="font-size:80%">
+$ bash swish.ask.sh --server=http://swish.swi-prolog.org \
+		    X,Y \
+		    "between(0,90,X),Y is sin(X*pi/180)"
+</pre>
+
+<p>
+The script can ask queries against stored Prolog scripts by specifying
+the script on the commandline.  For example:
+
+<pre style="font-size:80%">
+$ bash swish.ask.sh --server=http://swish.swi-prolog.org \
+		    sin_table.pl X,Y "sin_table(X,Y)"
+</pre>
+
+<p>
+Prolog can exploit the Pengine API directly.  For example, the above can
+be called as:
+
+<pre style="font-size:80%">
+?- [library(pengines)].
+?- pengine_rpc('http://swish.swi-prolog.org',
+	       sin_table(X,Y),
+	       [ src_text(':- include(sin_table).'),
+		 application(swish)
+	       ]).
+X = 0,
+Y = 0.0 ;
+X = 1,
+Y = 0.01745240643728351 ;
+X = 2
+...
+</pre>
+
+
+<h2 id="help-preload">Preload SWISH with data</h2>
 <p>
 You can make <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
 start with a loaded program using the URL <code>http://swish.swi-prolog.org/</code> and
@@ -144,11 +201,3 @@ http://swish.swi-prolog.org/?code=https://github.com/SWI-Prolog/swipl-devel/raw/
 
 </body>
 </html>
-
-
-
-
-
-
-
-
