@@ -66,9 +66,9 @@ define([ "jquery", "laconic" ],
 	if ( answerHasOutput(answer) ) {
 	  if ( elem.is("table") ) {
 	    var row = $.el.tr();
+	    elem.append(row);
 	    row.innerHTML = renderTabledAnswer(answer, elem);
 	    evalScripts($(row));
-	    elem.append(row);
 	    $(row).find(".render-multi").renderMulti();
 	  } else {
 	    elem[0].innerHTML = renderAnswer(answer);
