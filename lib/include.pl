@@ -98,7 +98,8 @@ prolog_colour:term_colours((:- include(File)),
 			     ]
 			   ]) :-
 	debug(include, 'Classifying ~p', [File]),
-	(   setting(web_storage:directory, Store),
+	(   atomic(File),
+	    setting(web_storage:directory, Store),
 	    add_extension(File, FileExt),
 	    catch(gitty_commit(Store, FileExt, _Meta), _, fail)
 	->  atom_concat('swish://', FileExt, Id),
