@@ -51,6 +51,7 @@ shared gitty store. It realises this using the following steps:
 swish:term_expansion(:- include(File),
 		     :- include(stream(Id, Stream, [close(true)]))) :-
 	setting(web_storage:directory, Store),
+	atomic(File),
 	add_extension(File, FileExt),
 	catch(gitty_data(Store, FileExt, Data, _Meta), _, fail),
 	atom_concat('swish://', FileExt, Id),
