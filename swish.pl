@@ -34,6 +34,7 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
 :- use_module(library(option)).
+:- use_module(library(settings)).
 
 :- use_module(lib/config, []).
 :- use_module(lib/page, []).
@@ -64,6 +65,16 @@ set_swish_path :-
 :- set_swish_path.
 
 http:location(swish, root(.), [priority(-100)]).
+
+
+		 /*******************************
+		 *	       CORS		*
+		 *******************************/
+
+% By default, enable CORS
+
+:- set_setting_default(http:cors, [*]).
+
 
 		 /*******************************
 		 *	      CONFIG		*
