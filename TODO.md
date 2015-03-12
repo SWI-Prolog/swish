@@ -20,6 +20,15 @@
 ## Editor
 
   - Template based completion					[OK]
+  - Indicate changes to last saved point
+  - When leaving page
+    - Save query history
+    - If page was modified
+      - Ignore changes?
+      - Save in local store?
+      - Save to associated file?
+  - Download menu?
+  - Open menu?
 
 ## Query editor
 
@@ -91,7 +100,8 @@
 
 ## Export results
 
- - Provide save-as-CSV from a runner?
+ - Provide save-as-CSV from a runner?				[OK]
+   - Also provide Prolog format?
 
 ## Sharing
 
