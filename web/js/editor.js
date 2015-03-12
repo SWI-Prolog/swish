@@ -121,6 +121,7 @@ define([ "cm/lib/codemirror",
 
 	data.cm              = CodeMirror.fromTextArea(ta, options);
 	data.cleanGeneration = data.cm.changeGeneration();
+	data.cleanData       = data.cm.getValue();
 	data.role            = options.role;
 
 	elem.data(pluginName, data);
@@ -188,11 +189,14 @@ define([ "cm/lib/codemirror",
      */
     setSource: function(src) {
       var options = this.data(pluginName);
+      var data = this.data(pluginName);
 
       if ( typeof(src) == "string" )
 	src = {data:src};
 
-      this.data(pluginName).cm.setValue(src.data);
+      data.cm.setValue(src.data);
+      data.cleanGeneration = data.cm.changeGeneration();
+      data.cleanData = src.data;
 
       if ( options.role == "source" ) {
 	if ( src.meta ) {
@@ -310,6 +314,9 @@ define([ "cm/lib/codemirror",
 		   options.url  = reply.url;
 		   options.file = reply.file;
 		   options.meta = reply.meta;
+		   options.cleanGeneration = options.cm.changeGeneration();
+		   options.cleanData       = options.cm.getValue();
+
 		   updateHistory(reply);
 		 }
 	       },
@@ -397,6 +404,12 @@ define([ "cm/lib/codemirror",
 		      });
 
       return this;
+    },
+
+    /**
+     * Generate diff relative to last checkpoint.
+     */
+    diff: function() {
     },
 
     /**
