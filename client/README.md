@@ -37,6 +37,7 @@ X = 2
 
 ## Extracting results using JavaScript
 
-The pengines infrastructure is designe to make JavaScript talk to Prolog
-servers.
+The Pengines infrastructure is  designed  to   make  JavaScript  talk to
+Prolog servers. The file   [sin-table.html](sin-table.html)  illustrates
+this.
 

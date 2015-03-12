@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+  <title>Create sine table using Pengines</title>
+  <script src="http://swish.swi-prolog.org/pengine/pengines.js"
+          type="text/javascript">
+  </script>
+  <script src="https://code.jquery.com/jquery-2.1.3.min.js"
+          type="text/javascript">
+  </script>
+</head>
+<body>
+
+<h1>Extract results from a Pengine/SWISH server</h1>
+
+<p>
+The table below is filled by running a query against the main SWISH
+server at <a
+href="http://swish.swi-prolog.org">http://swish.swi-prolog.org</a>,
+using the saved script <a
+href="http://swish.swi-prolog.org/p/sin_table.pl">sin_table.pl</a>.  Note that this
+example illustrates that you can write interactive web applications
+against one or more Pengine enabled Prolog servers without having
+direct access to Prolog.
+
+<table id="sin">
+<tr><th>X<th>Y</tr>
+</table>
+
+<script type="text/x-prolog">
+% Include a script saved on the server, combine it with your code here.
+:- include(sin_table).
+</script>
+
+<script type="text/javascript">
+/*
+Create a Prolog engine running the code   from  the above script and the
+query specified in `ask`. Get the results in chunks of max 1,000 entries
+and ask for more results if there are more available.
+*/
+
+$(function() {
+  new Pengine({ server: "http://swish.swi-prolog.org/pengine",
+		ask: "sin_table(X,Y)",
+		chunk: 1000,
+		application: "swish",
+		onsuccess: function(result) {
+		  for(var i=0; i<result.data.length; i++) {
+		    var b = result.data[i];
+		    $("#sin").append("<tr><td>"+b.X+"<td>"+b.Y+"</tr>");
+		  }
+		  if ( result.more )
+                    result.pengine.next();
+	        }
+	      });
+});
+</script>
+
+
+
+</body>
+</html>
