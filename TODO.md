@@ -23,14 +23,12 @@
 
 ## Query editor
 
-  - Add an aggregate menu with options:
-    - Count
-    - Sum
-    - Average
-  - Add a solution sequence menu.  Options:
-    - Limit
-    - OrderBy
-    - Distinct
+  - Add a solution menu.  Options:
+    - Aggregate (count)						[OK]
+    - All Solutions (group by, setof/bagof/findall)
+    - OrderBy							[OK]
+    - Limit							[OK]
+    - Distinct							[OK]
 
 ## Runners
 
