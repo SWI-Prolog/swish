@@ -196,7 +196,6 @@ define([ "cm/lib/codemirror",
      * `src` is an object.
      */
     setSource: function(src) {
-      var options = this.data(pluginName);
       var data = this.data(pluginName);
 
       if ( typeof(src) == "string" )
@@ -207,13 +206,13 @@ define([ "cm/lib/codemirror",
       data.cleanData       = src.data;
       data.cleanCheckpoint = src.cleanCheckpoint || "load";
 
-      if ( options.role == "source" ) {
+      if ( data.role == "source" ) {
 	if ( src.meta ) {
-	  options.file = src.meta.name;
-	  options.meta = src.meta;
+	  data.file = src.meta.name;
+	  data.meta = src.meta;
 	} else {
-	  options.file = null;
-	  options.meta = null;
+	  data.file = null;
+	  data.meta = null;
 	}
 
 	if ( !src.url )
