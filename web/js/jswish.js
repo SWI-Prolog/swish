@@ -60,8 +60,12 @@ preferences.setDefault("semantic-highlighting", true);
       { "Clear messages": function() {
 	  menuBroadcast("clearMessages");
 	},
+	"Changes": "--",
 	"View changes": function() {
 	  menuBroadcast("diff");
+	},
+	"Revert changes": function() {
+	  menuBroadcast("revert");
 	},
 	"Options": "--",
 	"Semantic highlighting": {

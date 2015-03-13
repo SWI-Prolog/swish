@@ -151,6 +151,9 @@ define([ "cm/lib/codemirror",
 	  elem.on("diff", function(ev) {
 	    elem.prologEditor('diff');
 	  });
+	  elem.on("revert", function(ev) {
+	    elem.prologEditor('revert');
+	  });
 	  $(window).bind("beforeunload", function(ev) {
 	    return elem.prologEditor('unload');
 	  });
@@ -243,6 +246,16 @@ define([ "cm/lib/codemirror",
 		 }
 	       });
       }
+      return this;
+    },
+
+    /**
+     * Revert to upstream version
+     */
+    revert: function() {
+      var data = this.data(pluginName);
+
+      data.cm.setValue(data.cleanData);
       return this;
     },
 
