@@ -20,7 +20,7 @@
 ## Editor
 
   - Template based completion					[OK]
-  - Indicate changes to last saved point
+  - Indicate changes to last saved point			[OK]
   - When leaving page
     - Save query history
     - If page was modified
