@@ -49,6 +49,11 @@ body .modal-dialog {
   margin-right:auto;
 }
 
+body .modal-dialog.modal-wide {
+  width: 90%;
+  max-width: none;
+}
+
 body .modal-dialog.swish-embedded-manual {
   width: 90%;
   max-width: 1000px;
