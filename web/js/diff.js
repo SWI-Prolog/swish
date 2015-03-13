@@ -7,7 +7,7 @@
  * @requires jquery
  */
 
-define([ "jquery", "laconic" ],
+define([ "jquery", "difflib", "diffview" ],
        function() {
 
 (function($) {
@@ -23,7 +23,7 @@ define([ "jquery", "laconic" ],
      * @param {String} [base] Old version
      * @param {String} [head] New version
      * @param {String} [baseName="Base text"] Name for old version
-     * @param {String} [headName="New text"] Name for new version
+     * @param {String} [headName="Current text"] Name for current version
      * @param {Number} [context=3] Number of context lines
      */
     _init: function(options) {
@@ -40,10 +40,10 @@ define([ "jquery", "laconic" ],
 	    newTextLines: newtxt,
 	    opcodes: opcodes,
 	    baseTextName: options.baseName || "Base text",
-	    newTextName: options.headName || "New text",
+	    newTextName:  options.headName || "Current text",
 	    contextSize: contextSize,
 	    viewType: $("inline").checked ? 1 : 0
-	  });
+	  }));
       });
     }
   }; // methods
