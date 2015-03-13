@@ -709,7 +709,7 @@ define([ "cm/lib/codemirror",
 	return message;
       }
 
-      return null;
+      return undefined;
     }
 
   }; // methods
