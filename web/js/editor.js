@@ -151,6 +151,9 @@ define([ "cm/lib/codemirror",
 	  elem.on("diff", function(ev) {
 	    elem.prologEditor('diff');
 	  });
+	  $(window).bind("beforeunload", function(ev) {
+	    return elem.prologEditor('unload');
+	  });
 	}
       });
     },
@@ -686,6 +689,27 @@ define([ "cm/lib/codemirror",
 	if ( cm._searchMarkers.length > 0 )
 	  cm.on("cursorActivity", clearSearchMarkers);
       }
+    },
+
+    /**
+     * Called if the editor is destroyed to see whether it has pending
+     * modifications.
+     */
+    unload: function(ev) {
+      var data = this.data(pluginName);
+
+      if ( data.cleanData != data.cm.getValue() ) {
+	var message = "The source editor has unsaved changes.\n"+
+	              "These will be lost if you leave the page";
+
+	ev = ev||window.event;
+	if ( ev )
+	  ev.returnValue = message;
+
+	return message;
+      }
+
+      return null;
     }
 
   }; // methods
