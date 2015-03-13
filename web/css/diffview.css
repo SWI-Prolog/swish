@@ -28,11 +28,12 @@ authors and should not be interpreted as representing official policies, either 
 or implied, of Chas Emerick.
 */
 table.diff {
+	width: 100%;
 	border-collapse:collapse;
 	border:1px solid darkgray;
 	white-space:pre-wrap
 }
-table.diff tbody { 
+table.diff tbody {
 	font-family:Courier, monospace
 }
 table.diff tbody th {
@@ -55,8 +56,7 @@ table.diff thead th.texttitle {
 	text-align:left
 }
 table.diff tbody td {
-	padding:0px .4em;
-	padding-top:.4em;
+	padding:0px;
 	vertical-align:top;
 }
 table.diff .empty {
