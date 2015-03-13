@@ -47,6 +47,10 @@ preferences.setDefault("semantic-highlighting", true);
 	"Info & history ...": function() {
 	  menuBroadcast("fileInfo");
 	},
+	"Open recent": {
+	  type: "submenu",
+	  items: [ "aap", "noot", "Mies" ]
+	},
 	"Share": "--",
 	"Collaborate ...": function() {
 	  $("body").swish('collaborate');

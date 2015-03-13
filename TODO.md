@@ -28,7 +28,6 @@
       - Save in local store?
       - Save to associated file?
   - Download menu?
-  - Open menu?
 
 ## Query editor
 
@@ -125,6 +124,27 @@ _not_ see exactly the same UI for cooperation.  What about
 	  - Save, clearing name.
     - Indicate branch points in history?
       - Requires complete graph in memory.
+
+### Keep track of recent state
+
+  - By location (window.location.path)
+  - Save the following info
+    - Query history (most recent N)
+    - Current query
+    - If left with modifications, the source text
+  - Update
+    - On Save
+      - Delete associated document
+    - On Load
+      - Delete associated document
+    - On Unload
+      - Set
+  - Use saveState/restore event
+  - User actions:
+    - Open recent ...
+      - If modified, load modified state and indicate it is modified
+    - Revert ...							[OK]
+
 
 ## Login
 
