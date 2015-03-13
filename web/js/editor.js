@@ -15,6 +15,7 @@ define([ "cm/lib/codemirror",
 	 "cm/mode/prolog/prolog-template-hint",
 	 "gitty",
 
+	 "diff",
 
 	 "cm/mode/prolog/prolog",
 	 "cm/mode/prolog/prolog_keys",
@@ -122,6 +123,7 @@ define([ "cm/lib/codemirror",
 	data.cm              = CodeMirror.fromTextArea(ta, options);
 	data.cleanGeneration = data.cm.changeGeneration();
 	data.cleanData       = data.cm.getValue();
+	data.cleanCheckpoint = "load";
 	data.role            = options.role;
 
 	elem.data(pluginName, data);
@@ -145,6 +147,9 @@ define([ "cm/lib/codemirror",
 	  });
 	  elem.on("clearMessages", function(ev) {
 	    elem.prologEditor('clearMessages');
+	  });
+	  elem.on("diff", function(ev) {
+	    elem.prologEditor('diff');
 	  });
 	}
       });
@@ -196,7 +201,8 @@ define([ "cm/lib/codemirror",
 
       data.cm.setValue(src.data);
       data.cleanGeneration = data.cm.changeGeneration();
-      data.cleanData = src.data;
+      data.cleanData       = src.data;
+      data.cleanCheckpoint = src.cleanCheckpoint || "load";
 
       if ( options.role == "source" ) {
 	if ( src.meta ) {
@@ -316,6 +322,7 @@ define([ "cm/lib/codemirror",
 		   options.meta = reply.meta;
 		   options.cleanGeneration = options.cm.changeGeneration();
 		   options.cleanData       = options.cm.getValue();
+		   options.cleanCheckpoint = "save";
 
 		   updateHistory(reply);
 		 }
@@ -410,6 +417,34 @@ define([ "cm/lib/codemirror",
      * Generate diff relative to last checkpoint.
      */
     diff: function() {
+      var data = this.data(pluginName);
+      var baseName = { load: "Loaded text",
+		       new: "New text",
+		       save: "Saved text"
+		     };
+
+      function infoBody() {
+	var diff = $.el.div();
+	var current = data.cm.getValue();
+
+	this.append(diff);
+
+	if ( current == data.cleanData ) {
+	  $(diff).append($.el.p("No changes"));
+	} else {
+	  $(diff).diff({ base: data.cleanData,
+			 head: current,
+			 baseName: baseName[data.cleanCheckpoint]
+		       });
+	  this.parents("div.modal-dialog").addClass("modal-wide");
+	}
+      }
+
+      form.showDialog({ title: "Changes since " + baseName[data.cleanCheckpoint],
+			body:  infoBody
+		      });
+
+      return this;
     },
 
     /**

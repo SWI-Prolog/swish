@@ -36,7 +36,9 @@ preferences.setDefault("semantic-highlighting", true);
     menu: {
       "File":
       { "New": function() {
-	  menuBroadcast("source", { data: defaults.newProgramText });
+	  menuBroadcast("source", { data: defaults.newProgramText,
+				    cleanCheckpoint: "new"
+				  });
 	},
 	"File group": "--",
 	"Save ...": function() {
@@ -57,6 +59,9 @@ preferences.setDefault("semantic-highlighting", true);
       "Edit":
       { "Clear messages": function() {
 	  menuBroadcast("clearMessages");
+	},
+	"View changes": function() {
+	  menuBroadcast("diff");
 	},
 	"Options": "--",
 	"Semantic highlighting": {
