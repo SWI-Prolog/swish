@@ -14,6 +14,7 @@ define([ "cm/lib/codemirror",
 	 "form",
 	 "cm/mode/prolog/prolog-template-hint",
 	 "gitty",
+	 "history",
 
 	 "diff",
 
@@ -38,7 +39,8 @@ define([ "cm/lib/codemirror",
 
          "jquery", "laconic"
        ],
-       function(CodeMirror, config, preferences, form, templateHint, gitty) {
+       function(CodeMirror, config, preferences, form, templateHint,
+		gitty, history) {
 
 (function($) {
   var pluginName = 'prologEditor';
@@ -224,7 +226,7 @@ define([ "cm/lib/codemirror",
 	if ( !src.url )
 	  src.url = config.http.locations.swish;
 
-	updateHistory(src);
+	history.push(src);
       }
 
       return this;
@@ -342,7 +344,7 @@ define([ "cm/lib/codemirror",
 		   options.cleanData       = options.cm.getValue();
 		   options.cleanCheckpoint = "save";
 
-		   updateHistory(reply);
+		   history.push(reply);
 		 }
 	       },
 	       error: function() {
@@ -739,26 +741,6 @@ define([ "cm/lib/codemirror",
 
   }; // methods
 
-  function updateHistory(reply) {
-    var cpath = window.location.pathname;
-
-    if ( cpath != reply.url ) {
-      window.history.pushState({location:reply.url},
-			       "",
-			       reply.url);
-      document.title = "SWISH -- "
-                     + (reply.file ? reply.file
-			           : "SWI-Prolog for SHaring");
-    }
-  }
-
-  window.onpopstate = function(e) {
-    if ( e.state ) {
-      if ( e.state.location ) {
-	window.location =  e.state.location;
-      }
-    }
-  }
 
   /**
    * The prologEditor jQuery plugin converts a `<div>` into an code
