@@ -164,9 +164,17 @@ define([ "jquery", "preferences", "laconic" ],
 
 	dropdown.append($.el.li($.el.a({class:"trigger right-caret"}, label),
 				submenu));
-	for(var i=0; i<options.items.length; i++) {
-	  $(submenu).append($.el.li($.el.a({href:"#"},
-					   options.items[i])));
+	if ( options.action )
+	  $(submenu).data('action', options.action);
+	if ( options.items ) {
+	  for(var i=0; i<options.items.length; i++) {
+	    $(submenu).append($.el.li($.el.a(options.items[i])));
+	  }
+	}
+	if ( options.update ) {
+	  $(submenu).on("update", function(ev) {
+	    options.update.call(ev.target);
+	  });
 	}
       } else {
 	alert("Unknown navbar item");
@@ -184,13 +192,14 @@ define([ "jquery", "preferences", "laconic" ],
     if ( $(a).hasClass("trigger") ) {
       clickSubMenu.call(a, ev);
     } else {
-      var action = $(a).data('action');
+      var action = ($(a).data('action') ||
+		    $(a).parents("ul").data('action'));
 
       clickNotSubMenu.call(a, ev);
 
       if ( action ) {
 	ev.preventDefault();
-	action.call(a);
+	action.call(a, ev);
       } else if ( $(a).hasClass("trigger") ) {
 	clickSubMenu.call(a, ev);
       }
@@ -202,12 +211,12 @@ define([ "jquery", "preferences", "laconic" ],
   /**
    * Bootstrap 3 extension to provide submenus.  Inspired by
    * http://jsfiddle.net/chirayu45/YXkUT/16/
+   * Triggers an `update` event to the submenu's <ul> just
+   * before opening it.
    */
   function clickSubMenu(ev) {
-    var current = $(this).next();
-    var grandparent = $(this).parent().parent();
-
-    console.log("Clicked submenu");
+    var current = $(this).next();		 /* the submenu <ul> */
+    var grandparent = $(this).parent().parent(); /* the main menu <ul> */
 
     if ( $(this).hasClass('left-caret') ||
 	 $(this).hasClass('right-caret') )
@@ -219,6 +228,7 @@ define([ "jquery", "preferences", "laconic" ],
     grandparent.find(".sub-menu:visible")
 	       .not(current).hide();
 
+    current.trigger("update");
     current.toggle();
     ev.stopPropagation();
   }

@@ -718,6 +718,12 @@ define([ "cm/lib/codemirror",
     unload: function(why, ev) {
       var data = this.data(pluginName);
 
+      if ( data.meta ) {
+	history.addRecent({ type: "gitty",
+			    id:	  data.meta.name	/* FIXME: add hash? */
+			  });
+      }
+
       if ( data.cleanData != data.cm.getValue() ) {
 	if ( why == "beforeunload" ) {
 	  var message = "The source editor has unsaved changes.\n"+

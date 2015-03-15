@@ -10,6 +10,7 @@
 define([ "jquery",
 	 "config",
 	 "preferences",
+	 "history",
 	 "jquery-ui",
 	 "splitter",
 	 "bootstrap",
@@ -22,7 +23,7 @@ define([ "jquery",
 	 "modal",
 	 "term",
 	 "laconic"
-       ], function($, config, preferences) {
+       ], function($, config, preferences, history) {
 
 preferences.setDefault("semantic-highlighting", true);
 
@@ -49,7 +50,10 @@ preferences.setDefault("semantic-highlighting", true);
 	},
 	"Open recent": {
 	  type: "submenu",
-	  items: [ "aap", "noot", "Mies" ]
+	  action: function(ev) {
+	    history.openRecent(ev, $(this).data('document'));
+	  },
+	  update: history.updateRecentUL
 	},
 	"Share": "--",
 	"Collaborate ...": function() {
