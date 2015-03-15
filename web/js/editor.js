@@ -155,7 +155,7 @@ define([ "cm/lib/codemirror",
 	    elem.prologEditor('revert');
 	  });
 	  $(window).bind("beforeunload", function(ev) {
-	    return elem.prologEditor('unload');
+	    return elem.prologEditor('unload', "beforeunload", ev);
 	  });
 	}
       });
@@ -200,6 +200,9 @@ define([ "cm/lib/codemirror",
      */
     setSource: function(src) {
       var data = this.data(pluginName);
+
+      if ( this[pluginName]('unload', "setSource") == false )
+	return false;
 
       if ( typeof(src) == "string" )
 	src = {data:src};
@@ -706,19 +709,29 @@ define([ "cm/lib/codemirror",
     /**
      * Called if the editor is destroyed to see whether it has pending
      * modifications.
+     *
+     * @param {String} why is one of `"beforeunload" if the window is
+     * left or "setSource" if the source will be replaced.
      */
-    unload: function(ev) {
+    unload: function(why, ev) {
       var data = this.data(pluginName);
 
       if ( data.cleanData != data.cm.getValue() ) {
-	var message = "The source editor has unsaved changes.\n"+
-	              "These will be lost if you leave the page";
+	if ( why == "beforeunload" ) {
+	  var message = "The source editor has unsaved changes.\n"+
+	                "These will be lost if you leave the page";
 
-	ev = ev||window.event;
-	if ( ev )
-	  ev.returnValue = message;
+	  ev = ev||window.event;
+	  if ( ev )
+	    ev.returnValue = message;
 
-	return message;
+	  return message;
+	} else {
+	  var message = "The source editor has unsaved changes.\n"+
+	                "These will be lost if you load a new program";
+
+	  return confirm(message);
+	}
       }
 
       return undefined;
