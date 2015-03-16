@@ -11,6 +11,7 @@ define([ "jquery",
 	 "config",
 	 "preferences",
 	 "history",
+	 "modal",
 	 "jquery-ui",
 	 "splitter",
 	 "bootstrap",
@@ -20,10 +21,9 @@ define([ "jquery",
 	 "editor",
 	 "query",
 	 "runner",
-	 "modal",
 	 "term",
 	 "laconic"
-       ], function($, config, preferences, history) {
+       ], function($, config, preferences, history, modal) {
 
 preferences.setDefault("semantic-highlighting", true);
 
@@ -187,8 +187,8 @@ preferences.setDefault("semantic-highlighting", true);
 		 reply.url = url;
 		 menuBroadcast("source", reply);
 	       },
-	       error: function() {
-		 alert("Failed to load example");
+	       error: function(jqXHR) {
+		 modal.ajaxError(jqXHR);
 	       }
 	     });
 
@@ -214,8 +214,8 @@ preferences.setDefault("semantic-highlighting", true);
 				   url: ex.href
 				 });
 		 },
-		 error: function() {
-		   alert("Failed to load example");
+		 error: function(jqXHR) {
+		   modal.ajaxError(jqXHR);
 		 }
 	       });
       };

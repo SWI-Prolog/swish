@@ -15,6 +15,7 @@ define([ "cm/lib/codemirror",
 	 "cm/mode/prolog/prolog-template-hint",
 	 "gitty",
 	 "history",
+	 "modal",
 
 	 "diff",
 
@@ -40,7 +41,7 @@ define([ "cm/lib/codemirror",
          "jquery", "laconic"
        ],
        function(CodeMirror, config, preferences, form, templateHint,
-		gitty, history) {
+		gitty, history, modal) {
 
 (function($) {
   var pluginName = 'prologEditor';
@@ -247,8 +248,8 @@ define([ "cm/lib/codemirror",
 		   that.prologEditor('setSource', data);
 		   options.file = file;
 		 },
-		 error: function(jqXHDR, textStatus) {
-		   alert("Failed to load document: "+textStatus);
+		 error: function(jqXHDR) {
+		   modal.ajaxError(jqXHR);
 		 }
 	       });
       }
@@ -348,8 +349,8 @@ define([ "cm/lib/codemirror",
 		   history.push(reply);
 		 }
 	       },
-	       error: function() {
-		 alert("Failed to save document");
+	       error: function(jqXHR) {
+		 modal.ajaxError(jqXHR);
 	       }
 	     });
 
@@ -494,8 +495,8 @@ define([ "cm/lib/codemirror",
 		 printWithIframe($.el.div($.el.style(data),
 					  pre));
 	       },
-	       error: function() {
-		 printWithIframe(pre);
+	       error: function(jqXHDR) {
+		 modal.ajaxError(jqXHR);
 	       }
              });
 

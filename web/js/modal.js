@@ -39,6 +39,9 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 	elem.on("error", function(ev, data) { /* still needed? */
 	  elem.swishModal('show', data);
 	});
+	elem.on("ajaxError", function(ev, jqXHR) {
+	  elem.swishModal('showAjaxError', jqXHR);
+	});
       });
     },
 
@@ -170,6 +173,24 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 		});
 
       return this
+    },
+
+    /**
+     * Display information about an ajax error
+     */
+    showAjaxError: function(jqXHR) {
+      var dom = $.el.div();
+
+      $(dom).html(jqXHR.responseText);
+      var h1 = $(dom).find("h1");
+      var title = h1.text() || "Server error";
+      h1.remove();
+
+      var data = { title: title,
+		   body: dom
+		 };
+
+      this.swishModal('show', data);
     }
   }; // methods
 
@@ -257,5 +278,11 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
     }
   };
 }(jQuery));
+
+  return {
+    ajaxError: function(jqXHR) {
+      $(".swish-event-receiver").trigger("ajaxError", jqXHR);
+    }
+  };
 });
 

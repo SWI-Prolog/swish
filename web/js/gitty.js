@@ -7,8 +7,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "form", "laconic" ],
-       function($, config, form) {
+define([ "jquery", "config", "form", "modal", "laconic" ],
+       function($, config, form, modal) {
 
 (function($) {
   var pluginName = 'gitty';
@@ -206,8 +206,8 @@ define([ "jquery", "config", "form", "laconic" ],
 		   elem.gitty('fillHistoryTable', reply);
 		   data.history = data.commit;
 		 },
-		 error: function() {
-		   alert("Failed to fetch history");
+		 error: function(jqXHDR) {
+		   modal.ajaxError(jqXHR);
 		 }
 	       });
       });
@@ -331,8 +331,8 @@ define([ "jquery", "config", "form", "laconic" ],
 		   elem.gitty('fillDiff', reply);
 		   data.diff = data.commit;
 		 },
-		 error: function() {
-		   alert("Failed to fetch diff");
+		 error: function(jqXHR) {
+		   modal.ajaxError(jqXHR);
 		 }
 	       });
       });
