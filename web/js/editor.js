@@ -203,7 +203,8 @@ define([ "cm/lib/codemirror",
     setSource: function(src) {
       var data = this.data(pluginName);
 
-      if ( this[pluginName]('unload', "setSource") == false )
+      if ( data.role == "source" &&
+	   this[pluginName]('unload', "setSource") == false )
 	return false;
 
       if ( typeof(src) == "string" )
