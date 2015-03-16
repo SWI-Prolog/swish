@@ -35,6 +35,7 @@
 	    gitty_data/4,		% +Store, +Name, -Data, -Meta
 	    gitty_history/4,		% +Store, +Name, -History, +Options
 	    gitty_scan/1,		% +Store
+	    gitty_rescan/1,		% ?Store
 	    gitty_hash/2,		% +Store, ?Hash
 	    gitty_reserved_meta/1,	% ?Key
 
@@ -316,6 +317,14 @@ read_hdr(C, In, [C|T]) :-
 	get_code(In, C1),
 	read_hdr(C1, In, T).
 read_hdr(_, _, []).
+
+%%	gitty_rescan(?Store) is det.
+%
+%	Update our view of the shared   storage  for all stores matching
+%	Store.
+
+gitty_rescan(Store) :-
+	retractall(store(Store, _)).
 
 %%	gitty_scan(+Store) is det.
 %
