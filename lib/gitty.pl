@@ -509,7 +509,8 @@ heads_input_stream(Store, Stream) :-
 create_heads_file(Store) :-
 	call_cleanup(
 	    heads_output_stream(Store, Out),
-	    close(Out)).
+	    close(Out)),
+	fail.					% always fail!
 
 heads_file(Store, HeadsFile) :-
 	directory_file_path(Store, ref, RefDir),
