@@ -78,10 +78,10 @@ the newly created (gitty_create/5) or updated object (gitty_update/5).
 
 :- dynamic
 	head/3,				% Store, Name, Hash
-	store/1.			% Store
+	store/2.			% Store, Updated
 :- volatile
 	head/3,
-	store/1.
+	store/2.
 
 %%	gitty_file(+Store, ?File, ?Head) is nondet.
 %
@@ -113,12 +113,10 @@ gitty_create(Store, Name, Data, Meta, CommitRet) :-
 	format(string(CommitString), '~q.~n', [Commit]),
 	save_object(Store, CommitString, commit, CommitHash),
 	CommitRet = Commit.put(commit, CommitHash),
-	with_mutex(gitty,
-		   (   head(Store, Name, _)
-		   ->  delete_object(Store, CommitHash),
-		       throw(error(gitty(file_exists(Name),_)))
-		   ;   assertz(head(Store, Name, CommitHash))
-		   )).
+	catch(gitty_update_head(Store, Name, -, CommitHash),
+	      E,
+	      ( delete_object(Store, CommitHash),
+		throw(E))).
 
 %%	gitty_update(+Store, +Name, +Data, +Meta, -Commit) is det.
 %
@@ -144,12 +142,10 @@ gitty_update(Store, Name, Data, Meta, CommitRet) :-
 	format(string(CommitString), '~q.~n', [Commit]),
 	save_object(Store, CommitString, commit, CommitHash),
 	CommitRet = Commit.put(commit, CommitHash),
-	with_mutex(gitty,
-		   (   retract(head(Store, Name, OldHead))
-		   ->  assertz(head(Store, Name, CommitHash))
-		   ;   delete_object(Store, CommitHash),
-		       throw(error(gitty(not_at_head(OldHead)), _))
-		   )).
+	catch(gitty_update_head(Store, Name, OldHead, CommitHash),
+	      E,
+	      ( delete_object(Store, CommitHash),
+		throw(E))).
 
 %%	gitty_data(+Store, +NameOrHash, -Data, -Meta) is semidet.
 %
@@ -331,7 +327,8 @@ read_hdr(_, _, []).
 %		store.
 
 gitty_scan(Store) :-
-	store(Store), !.
+	store(Store, _), !,
+	with_mutex(gitty, remote_updates(Store)).
 gitty_scan(Store) :-
 	with_mutex(gitty, gitty_scan_sync(Store)).
 
@@ -339,12 +336,13 @@ gitty_scan(Store) :-
 	latest/3.
 
 gitty_scan_sync(Store) :-
-	store(Store), !.
+	store(Store, _), !.
 gitty_scan_sync(Store) :-
 	gitty_scan_latest(Store),
 	forall(retract(latest(Name, Hash, _Time)),
 	       assert(head(Store, Name, Hash))),
-	assertz(store(Store)).
+	get_time(Now),
+	assertz(store(Store, Now)).
 
 %%	gitty_scan_latest(+Store)
 %
@@ -416,6 +414,105 @@ gitty_reserved_meta(name).
 gitty_reserved_meta(time).
 gitty_reserved_meta(data).
 gitty_reserved_meta(previous).
+
+
+		 /*******************************
+		 *	      SYNCING		*
+		 *******************************/
+
+%%	gitty_update_head(+Store, +Name, +OldCommit, +NewCommit) is det.
+%
+%	Update the head of a gitty  store   for  Name.  OldCommit is the
+%	current head and NewCommit is the new  head. If Name is created,
+%	and thus there is no head, OldCommit must be `-`.
+%
+%	This operation can fail because another   writer has updated the
+%	head.  This can both be in-process or another process.
+
+gitty_update_head(Store, Name, OldCommit, NewCommit) :-
+	with_mutex(gitty,
+		   gitty_update_head_sync(Store, Name, OldCommit, NewCommit)).
+
+gitty_update_head_sync(Store, Name, OldCommit, NewCommit) :-
+	setup_call_cleanup(
+	    heads_output_stream(Store, HeadsOut),
+	    gitty_update_head_sync(Store, Name, OldCommit, NewCommit, HeadsOut),
+	    close(HeadsOut)).
+
+gitty_update_head_sync(Store, Name, OldCommit, NewCommit, HeadsOut) :-
+	gitty_scan(Store),		% fetch remote changes
+	(   OldCommit == (-)
+	->  (   head(Store, Name, _)
+	    ->	throw(error(gitty(file_exists(Name),_)))
+	    ;	assertz(head(Store, Name, NewCommit))
+	    )
+	;   (   retract(head(Store, Name, OldCommit))
+	    ->	assertz(head(Store, Name, NewCommit))
+	    ;	throw(error(gitty(not_at_head(Name, OldCommit)), _))
+	    )
+	),
+	format(HeadsOut, '~q.~n', [head(Name, OldCommit, NewCommit)]).
+
+remote_updates(Store) :-
+	remote_updates(Store, List),
+	maplist(update_head(Store), List).
+
+update_head(Store, head(Name, OldCommit, NewCommit)) :-
+	(   OldCommit == (-)
+	->  \+ head(Store, Name, _)
+	;   retract(head(Store, Name, OldCommit))
+	), !,
+	assert(head(Store, Name, NewCommit)).
+update_head(_, _).
+
+remote_updates(Store, List) :-
+	heads_input_stream(Store, Stream),
+	read_new_terms(Stream, List).
+
+read_new_terms(Stream, Terms) :-
+	read(Stream, First),
+	read_new_terms(First, Stream, Terms).
+
+read_new_terms(end_of_file, _, List) :- !,
+	List = [].
+read_new_terms(Term, Stream, [Term|More]) :-
+	read(Stream, Term2),
+	read_new_terms(Term2, Stream, More).
+
+heads_output_stream(Store, Out) :-
+	heads_file(Store, HeadsFile),
+	open(HeadsFile, append, Out,
+	     [ encoding(utf8),
+	       lock(exclusive)
+	     ]).
+
+heads_input_stream(Store, Stream) :-
+	heads_file(Store, File),
+	between(1, 2, _),
+	catch(open(File, read, In,
+		   [ encoding(utf8),
+		     eof_action(reset)
+		   ]),
+	      _,
+	      create_heads_file(Store)), !,
+	Stream = In.
+
+create_heads_file(Store) :-
+	call_cleanup(
+	    heads_output_stream(Store, Out),
+	    close(Out)).
+
+heads_file(Store, HeadsFile) :-
+	directory_file_path(Store, ref, RefDir),
+	ensure_directory(RefDir),
+	directory_file_path(RefDir, head, HeadsFile).
+
+:- multifile
+	prolog:error_message//1.
+
+prolog:error_message(gitty(not_at_head(Name, _OldCommit))) -->
+	[ 'Gitty: cannot update head for "~w" because it was \c
+	   updated by someone else'-[Name] ].
 
 
 		 /*******************************
