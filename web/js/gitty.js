@@ -494,6 +494,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
   return {
     diffMeta:   diffMeta,
-    reduceMeta: reduceMeta
+    reduceMeta: reduceMeta,
+    diffTags:   diffTags
   };
 });

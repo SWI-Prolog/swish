@@ -321,7 +321,7 @@ define([ "cm/lib/codemirror",
 	  data = { data: this.prologEditor('getSource'),
 		   type: "pl"
 		 };
-	} else if ( sameSet(options.meta.tags, meta.tags) ) {
+	} else if ( gitty.diffTags(options.meta.tags, meta.tags) == null ) {
 	  alert("No change");
 	  return;
 	}
