@@ -197,6 +197,7 @@ filter_pairs([_|T0], T) :-
 	filter_pairs(T0, T).
 
 meta_allowed(public,	     boolean).
+meta_allowed(example,	     boolean).
 meta_allowed(author,	     string).
 meta_allowed(email,	     string).
 meta_allowed(title,	     string).

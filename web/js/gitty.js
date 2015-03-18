@@ -118,7 +118,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
 	tab.html("");
 	formel = $.el.form({class:"form-horizontal"},
-		      form.fields.fileName(meta.name, meta.public,
+		      form.fields.fileName(meta.name, meta.public, meta.example,
 					   true), // disabled
 		      form.fields.title(meta.title),
 		      form.fields.author(meta.author),
@@ -432,6 +432,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
     diffAttr("title");
     diffAttr("data");
     diffAttr("public");
+    diffAttr("example");
 
     if ( (d=diffTags(m1.tags, m2.tags)) )
       diff.tags = d;

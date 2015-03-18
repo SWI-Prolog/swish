@@ -373,7 +373,7 @@ define([ "cm/lib/codemirror",
       function saveAsBody() {
 	this.append($.el.form({class:"form-horizontal"},
 			      form.fields.fileName(fork ? null: options.file,
-						   meta.public),
+						   meta.public, meta.example),
 			      form.fields.title(meta.title),
 			      form.fields.author(meta.author),
 			      update ? form.fields.commit_message() : undefined,
@@ -383,7 +383,6 @@ define([ "cm/lib/codemirror",
 					 update ? "Update program" :
 						  "Save program",
 				  action: function(ev,data) {
-					    console.log(data);
 				            editor.prologEditor('save', data);
 					    return false;
 				          }
@@ -748,7 +747,6 @@ define([ "cm/lib/codemirror",
     }
 
   }; // methods
-
 
   /**
    * The prologEditor jQuery plugin converts a `<div>` into an code

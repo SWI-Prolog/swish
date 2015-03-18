@@ -201,24 +201,32 @@ preferences.setDefault("semantic-highlighting", true);
      * @param {String} ex.file is the (file) name of the example
      * @param {String} ex.href is the URL from which to download the
      * program.
-     * @returns {Function} function that loads an example
+     * @returns {Function|String} function that loads an example
      */
     openExampleFunction: function(ex) {
-      return function() {
-	$.ajax({ url: ex.href,
-	         type: "GET",
-		 data: {format: "raw"},
-		 success: function(source) {
-		   menuBroadcast("source",
-				 { data: source,
-				   url: ex.href
-				 });
-		 },
-		 error: function(jqXHR) {
-		   modal.ajaxError(jqXHR);
-		 }
-	       });
-      };
+      if ( ex.type == "store" ) {
+	return function() {
+	  methods.playFile(ex.file);
+	};
+      } else if ( ex.type == "divider" ) {
+	return "--";
+      } else {
+	return function() {
+	  $.ajax({ url: ex.href,
+		   type: "GET",
+		   data: {format: "raw"},
+		   success: function(source) {
+		     menuBroadcast("source",
+				   { data: source,
+				     url: ex.href
+				   });
+		   },
+		   error: function(jqXHR) {
+		     modal.ajaxError(jqXHR);
+		   }
+		 });
+	};
+      }
     },
 
     /**

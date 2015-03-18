@@ -9,7 +9,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "laconic", "tagmanager" ], function($) {
+define([ "jquery", "config", "laconic", "tagmanager" ],
+       function($, config) {
   var form = {
     /**
      * Serialize a form as an object. The following normalizations are
@@ -79,10 +80,11 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
     },
 
     fields: {
-      fileName: function(name, public, disabled) {
+      fileName: function(name, public, example, disabled) {
+	var labeltext = config.swish.community_examples ? "Public | Example | name" : "Public | name"
 	var elem =
 	$.el.div({class:"form-group"},
-		 label("name", "Public | name"),
+		 label("name", labeltext),
 		 $.el.div({class:"col-xs-10"},
 			  $.el.div({class:"input-group"},
 				   $.el.span({class:"input-group-addon",
@@ -91,6 +93,13 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 					     checkbox("public",
 						      { checked: public
 						      })),
+				   config.swish.community_examples ?
+				   $.el.span({class:"input-group-addon",
+				              title:"If checked, add to examples menu"
+				             },
+					     checkbox("example",
+						      { checked: example
+						      })) : undefined,
 				   textInput("name",
 					     {placeholder:"Name (leave empty for generated random name)",
 					      title:"Public name of your program",

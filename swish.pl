@@ -87,7 +87,7 @@ http:location(swish, root(.), [priority(-100)]).
 %%	swish_config:config(?Config, ?Value) is nondet.
 %
 %	All solutions of this predicate are  available in the JavaScript
-%	object config.swish.Config. Config must be an  atom that is also
+%	object config.swish.config. Config must be an  atom that is also
 %	a valid JavaScript identifier. Value  must   be  a value that is
 %	valid for json_write_dict/2. Most configurations  are also saved
 %	in the application preferences. These   are  marked [P]. Defined
@@ -102,11 +102,15 @@ http:location(swish, root(.), [priority(-100)]).
 %	  - csv_formats
 %	  [P] CSV output formats offered. For example, ClioPatria
 %	  defines this as [rdf,prolog]. The first element is default.
+%	  - community_examples
+%	  Allow marking saved programs as example.  If marked, the
+%	  programs are added to the Examples menu.
 
-swish_config:config(show_beware,    true).
-swish_config:config(tabled_results, false).
-swish_config:config(application,    swish).
-swish_config:config(csv_formats,    [prolog]).
+swish_config:config(show_beware,        true).
+swish_config:config(tabled_results,     false).
+swish_config:config(application,        swish).
+swish_config:config(csv_formats,        [prolog]).
+swish_config:config(community_examples, false).
 
 
                  /*******************************

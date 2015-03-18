@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014, VU University Amsterdam
+    Copyright (C): 2014-2015, VU University Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -35,8 +35,17 @@
 :- use_module(library(filesex)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
+:- use_module(library(settings)).
+
+:- use_module(gitty).
 
 /** <module> Serve example files
+
+Locate and serve files for the _Examples_   menu. The examples come from
+two sources:
+
+  - Prolog files in the file search path `examples`
+  - Gitty files marked as `example`.
 */
 
 :- multifile
@@ -58,6 +67,21 @@ swish_config:source_alias(example).
 %	a file swish_examples('index.json').
 
 list_examples(_Request) :-
+	example_files(FileExamples),
+	storage_examples(StorageExamples),
+	append(FileExamples, StorageExamples, AllExamples),
+	reply_json(AllExamples).
+
+%%	example_files(JSON:list) is det.
+%
+%	JSON is a list of JSON dicts containing the keys below. The list
+%	is composed from all *.pl files in the search path `example`.
+%
+%	  - file:File
+%	  - href:URL
+%	  - title:String
+
+example_files(AllExamples) :-
 	http_absolute_location(swish(example), HREF, []),
 	findall(Index,
 		absolute_file_name(example(.), Index,
@@ -68,8 +92,7 @@ list_examples(_Request) :-
 				   ]),
 		ExDirs),
 	maplist(index_json(HREF), ExDirs, JSON),
-	append(JSON, AllExamples),
-	reply_json(AllExamples).
+	append(JSON, AllExamples).
 
 index_json(HREF, Dir, JSON) :-
 	directory_file_path(Dir, 'index.json', File),
@@ -99,3 +122,29 @@ ex_file_json(HREF0, Path, json{file:File, href:HREF, title:Base}) :-
 	file_base_name(Path, File),
 	file_name_extension(Base, _, File),
 	directory_file_path(HREF0, File, HREF).
+
+
+		 /*******************************
+		 *	      STORAGE		*
+		 *******************************/
+
+%%	storage_examples(-List) is det.
+%
+%	Extract examples from the gitty store.
+
+storage_examples(List) :-
+	swish_config:config(community_examples, true),
+	findall(Ex, gitty_example(Ex), List1),
+	List1 \== [], !,
+	List = [json{type:"divider"}|List1].
+storage_examples([]).
+
+gitty_example(json{title:Title, file:File, type:"store"}) :-
+	setting(web_storage:directory, Store),
+	gitty_file(Store, File, _),
+	gitty_commit(Store, File, Meta),
+	Meta.get(example) == true,
+	(   Title = Meta.get(title), Title \== ""
+	->  true
+	;   Title = File
+	).
