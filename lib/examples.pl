@@ -50,6 +50,7 @@ two sources:
 
 :- multifile
 	user:file_search_path/2,
+	swish_config:config/2,
 	swish_config:source_alias/1.
 
 % make example(File) find the example data
