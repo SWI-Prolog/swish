@@ -45,17 +45,27 @@ shared gitty store. It realises this using the following steps:
   - Declare this specific version of include safe.
   - Adjust the colourization to indicate the shared file as existing.
   - Hook the Prolog cross-referencer to process the included file.
+
+We allow for hierarchical and circular includes.
 */
 
 
-swish:term_expansion(:- include(File),
-		     :- include(stream(Id, Stream, [close(true)]))) :-
-	setting(web_storage:directory, Store),
-	atomic(File),
-	add_extension(File, FileExt),
-	catch(gitty_data(Store, FileExt, Data, _Meta), _, fail),
-	atom_concat('swish://', FileExt, Id),
-	open_string(Data, Stream).
+swish:term_expansion(:- include(FileIn), Expansion) :-
+	atomic(FileIn),
+	atom_string(File, FileIn),
+	(   prolog_load_context(module, Module),
+	    clause(Module:'swish included'(File), true)
+	->  Expansion = []
+	;   Expansion = [ (:- discontiguous('swish included'/1)),
+		          'swish included'(File),
+		          (:- include(stream(Id, Stream, [close(true)])))
+			],
+	    setting(web_storage:directory, Store),
+	    add_extension(File, FileExt),
+	    catch(gitty_data(Store, FileExt, Data, _Meta), _, fail),
+	    atom_concat('swish://', FileExt, Id),
+	    open_string(Data, Stream)
+	).
 
 add_extension(File, FileExt) :-
 	file_name_extension(_, Ext, File),
