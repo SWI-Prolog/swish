@@ -36,7 +36,7 @@ define([ "jquery", "config", "typeahead" ],
 
 	var files = new Bloodhound({
 			name: "files",
-			remote: config.http.locations.typeahead +
+			remote: config.http.locations.swish_typeahead +
 				"?set=file&q=%QUERY",
 			datumTokenizer: fileTokenizer,
 			queryTokenizer: Bloodhound.tokenizers.whitespace

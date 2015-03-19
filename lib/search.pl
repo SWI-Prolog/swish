@@ -53,8 +53,8 @@ search from the server side. What do we want to search for?
       these?
 */
 
-:- http_handler(swish(typeahead), typeahead, [id(typeahead)]).
-:- http_handler(swish(search),    search,    [id(search)]).
+:- http_handler(swish(typeahead), typeahead, [id(swish_typeahead)]).
+:- http_handler(swish(search),    search,    [id(swish_search)]).
 
 %%	search_box(+Options)//
 %
