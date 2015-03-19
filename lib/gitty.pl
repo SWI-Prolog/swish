@@ -509,7 +509,7 @@ heads_input_stream(Store, Stream) :-
 		   ]),
 	      _,
 	      create_heads_file(Store)), !,
-	assert(heads_input_stream_cache(Store, Stream)),
+	assert(heads_input_stream_cache(Store, In)),
 	Stream = In.
 
 create_heads_file(Store) :-
