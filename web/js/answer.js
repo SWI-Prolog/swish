@@ -256,10 +256,12 @@ define([ "jquery", "laconic" ],
 	  var how = $(this).css("display");
 
 	  display.push(how);
-	  if ( i++ == 0 )
+	  if ( i++ == 0 ) {
 	    elem.css("display", how);
-	  else
+	    $(this).attr('draggable', false);
+	  } else {
 	    $(this).hide();
+	  }
 	});
 	data.display = display;
 	elem.append(selector);
