@@ -513,6 +513,7 @@ create_heads_file(Store) :-
 	fail.					% always fail!
 
 heads_file(Store, HeadsFile) :-
+	ensure_directory(Store),
 	directory_file_path(Store, ref, RefDir),
 	ensure_directory(RefDir),
 	directory_file_path(RefDir, head, HeadsFile).
