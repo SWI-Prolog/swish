@@ -79,10 +79,12 @@ the newly created (gitty_create/5) or updated object (gitty_update/5).
 
 :- dynamic
 	head/3,				% Store, Name, Hash
-	store/2.			% Store, Updated
+	store/2,			% Store, Updated
+	heads_input_stream_cache/2.	% Store, Stream
 :- volatile
 	head/3,
-	store/2.
+	store/2,
+	heads_input_stream_cache/2.	% Store, Stream
 
 %%	gitty_file(+Store, ?File, ?Head) is nondet.
 %
@@ -496,6 +498,9 @@ heads_output_stream(Store, Out) :-
 	     ]).
 
 heads_input_stream(Store, Stream) :-
+	heads_input_stream_cache(Store, Stream0), !,
+	Stream = Stream0.
+heads_input_stream(Store, Stream) :-
 	heads_file(Store, File),
 	between(1, 2, _),
 	catch(open(File, read, In,
@@ -504,6 +509,7 @@ heads_input_stream(Store, Stream) :-
 		   ]),
 	      _,
 	      create_heads_file(Store)), !,
+	assert(heads_input_stream_cache(Stream, Stream)),
 	Stream = In.
 
 create_heads_file(Store) :-
