@@ -151,7 +151,7 @@ remove([H|T], TB, ChPos, Changed) :-
 insert([], _, ChPos, ChPos, _) :- !.
 insert([H|T], TB, ChPos0, ChPos, Changed) :-
 	(   H == ""
-	->  true
+	->  Len	= 0
 	;   Changed = true,
 	    string_length(H, Len),
 	    debug(swish(change), 'Insert ~q at ~d', [H, ChPos0]),
