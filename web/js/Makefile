@@ -1,5 +1,5 @@
 JS=editor.js navbar.js answer.js pane.js query.js runner.js swish.js \
-   config.js jswish.js
+   config.js jswish.js search.js history.js preferences.js
 CM=$(shell find codemirror -name '*.js')
 JQ=jquery.jsdoc
 CONF=conf.json
