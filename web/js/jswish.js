@@ -241,10 +241,19 @@ preferences.setDefault("semantic-highlighting", true);
 	     { dataType: "json",
 	       success: function(data) {
 		 for(var i=0; i<data.length; i++) {
+		   var title;
+		   var options;
+
+		   if ( data[i] == "--" ) {
+		     title = "--";
+		     options = "--";
+		   } else {
+		     title = data[i].title;
+		     options = that.swish('openExampleFunction', data[i]);
+		   }
+
 		   $("#navbar").navbar('extendDropdown', dropdown,
-				       data[i].title,
-				       that.swish('openExampleFunction',
-						  data[i]));
+				       title, options);
 		 }
 	       }
 	     });

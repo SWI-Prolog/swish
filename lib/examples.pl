@@ -111,8 +111,11 @@ read_file_to_json(File, JSON) :-
 	    json_read_dict(In, JSON),
 	    close(In)).
 
-add_href(HREF0, Dict, Dict.put(href, HREF)) :-
-	directory_file_path(HREF0, Dict.file, HREF).
+add_href(HREF0, Dict, Dict2) :-
+	is_dict(Dict),
+	directory_file_path(HREF0, Dict.get(file), HREF), !,
+	Dict2 = Dict.put(href, HREF).
+add_href(_, Dict, Dict).
 
 %%	ex_file_json(+ExampleBase, +Path, -JSON) is det.
 %
