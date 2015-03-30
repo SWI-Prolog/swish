@@ -26,6 +26,7 @@ http://www.swi-prolog.org/download/swish/swish-bower-components.zip.
 Unpack the zip file, maintaining the directory structure, from the swish
 root directory to create the directory web/bower_components.
 
+Last updated: Mar 30, 2015 (CodeMirror 5.1)
 
 ### Get the latest SWI-Prolog
 
@@ -37,8 +38,8 @@ you            need            the             [nightly            build
 system    from    the     current      git     development    repository
 [swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
 
-Nov 6, 2014: release 7.1.26 fully supports the current SWISH.
-
+Mar 30, 2015: use release 7.1.34.   "Solutions/Order by" only works with
+the git or nightly versions.
 
 ## Running SWISH
 
