@@ -21,33 +21,21 @@
 
   - Template based completion					[OK]
   - Indicate changes to last saved point			[OK]
-  - When leaving page
-    - Save query history
-    - If page was modified
-      - Ignore changes?
-      - Save in local store?
-      - Save to associated file?
   - Download menu?
 
 ## Query editor
 
-  - Add a solution menu.  Options:
-    - Aggregate (count)						[OK]
-    - All Solutions (group by, setof/bagof/findall)
-    - OrderBy							[OK]
-    - Limit							[OK]
-    - Distinct							[OK]
+  - Quickly create a query from a predicate?
+    - Menu from source editor based on cursor position
+      - If in head, create goal from current predicate
+        - Can we do something with the arguments?
+      - If in goal, copy goal to query window
 
 ## Runners
 
   - Allow to move them into toplevel browser windows?  Is that possible?
   - Get back to the associated source version (open new editor tab?).
-    Fork/re-run.
-  - Download results as CSV
-    - Add download button					[OK]
-    - Add selection for output format (must be swish option)	[OK]
-    - Add limit							[OK]
-    - Add distinct						[OK]
+  - Find source changes compared to current version (easy)
 
 ## Rendering framework
 
@@ -97,11 +85,6 @@
    https://www.cs.umd.edu/users/ben/papers/Shneiderman1996eyes.pdf
  - "Information Visualization and Visual Data Mining", Daniel A. Keim
 
-## Export results
-
- - Provide save-as-CSV from a runner?				[OK]
-   - Also provide Prolog format?
-
 ## Sharing
 
 First option was TogetherJS.  Now doubting, as it my be much better to
@@ -125,44 +108,18 @@ _not_ see exactly the same UI for cooperation.  What about
     - Indicate branch points in history?
       - Requires complete graph in memory.
 
-### Keep track of recent state
-
-  - By location (window.location.path)
-  - Save the following info
-    - Query history (most recent N)
-    - Current query
-    - If left with modifications, the source text
-  - Update
-    - On Save
-      - Delete associated document
-    - On Load
-      - Delete associated document
-    - On Unload
-      - Set
-  - Use saveState/restore event
-  - User actions:
-    - Open recent ...
-      - If modified, load modified state and indicate it is modified
-    - Revert ...							[OK]
-
-
 ## Login
 
-  - Deal with login-with-google (oauth2)
+  - Social login
+    - login-with-google (oauth2)
+    - etc ...
+  - Make it easy to add HTTPS certificate based login.
+    - not SWISH specific
 
 ## Search
 
-  - Implement typeahead search
-    - For lines of the source code					[OK]
-    - For predicates							[OK]
-    - For public files							[OK]
   - Implement string search with result page
-
-## Drag and drop values
-
-  - Allow dragging and dropping results to the editor and query window to
-    get their Prolog representation inserted.  Also needs to work from e.g.
-    ClioPatria.								[OK]
-
-    - HTML5 drap-and-drop:
-      http://decafbad.com/2009/07/drag-and-drop/js/drag-newschool.js
+    - `Harmonica' with
+      - Found files (including full text search inside them)
+      - Found manual entries
+      - Found source locations
