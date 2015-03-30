@@ -37,6 +37,18 @@
   - Get back to the associated source version (open new editor tab?).
   - Find source changes compared to current version (easy)
 
+## Debugger
+
+  - Add trace event to pengine infrastructure
+    - Classical port + goal
+    - Line no + char offset to highlight (can be one level higher,
+      use rules of GUI debugger)
+    - Variable named and bindings
+    - Pass goal stack and choicepoints
+    - Only show goals associated with clauses of target module.
+      auto skip/creep otherwise.
+  - Add breakpoint interface (and allow for trace/0)
+
 ## Rendering framework
 
   - Core from Prolog ok.
