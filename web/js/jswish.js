@@ -102,7 +102,7 @@ preferences.setDefault("emacs-keybinding", false);
 	  menuBroadcast("help", {file:"runner.html"});
 	},
 	"Background": "--",
-	"Beware! ...": function() {
+	"Limitations ...": function() {
 	  menuBroadcast("help", {file:"beware.html"});
 	},
 	"Caveats ...": function() {
