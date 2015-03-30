@@ -801,6 +801,13 @@ define([ "cm/lib/codemirror",
 }(jQuery));
 
 		 /*******************************
+		 *	      EMACS		*
+		 *******************************/
+
+CodeMirror.keyMap.emacs.Enter = "newlineAndIndent";
+
+
+		 /*******************************
 		 *	STYLE CONFIGURATION	*
 		 *******************************/
 
