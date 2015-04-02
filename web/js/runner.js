@@ -416,6 +416,50 @@ define([ "jquery", "config", "preferences",
     },
 
     /**
+     * Handle trace events
+     */
+    trace: function(data) {
+      var goal = $.el.span({class:"goal"});
+      $(goal).html(data.data.goal);
+
+      function capitalizeFirstLetter(string) {
+	return string.charAt(0).toUpperCase() + string.slice(1);
+      }
+
+      function button(label, action) {
+	var btn = $.el.button({class:action,
+			       title:label
+			      },
+			      $.el.span(label));
+	$(btn).on("click", function(ev) {
+	  data.pengine.respond(action);
+	  $(ev.target).parent().remove();
+	});
+	return btn;
+      }
+
+      addAnswer(this,
+		$.el.div({class:"prolog-trace"},
+			 $.el.span({ class:"depth",
+			             style:"width:"+(data.data.depth*5-1)+"px"
+				   }, "\u00A0"), /* &nbsp; */
+			 $.el.span({ class:"port "+data.data.port
+			           },
+				   capitalizeFirstLetter(data.data.port),
+				   ":"),
+			 goal));
+      addAnswer(this,
+		$.el.div({class:"trace-buttons"},
+			 button("Continue",  "nodebug"),
+			 button("Step into", "continue"),
+			 button("Step over", "skip"),
+			 button("Step out",  "up"),
+			 button("Retry",     "retry"),
+			 button("Abort",     "abort")));
+      this.prologRunner('setState', "wait-debug");
+    },
+
+    /**
      * set the placeholder of the input field.  This is normally
      * done from the pengine's onprompt handler
      * @param {String} p the new placeholder
@@ -657,6 +701,7 @@ define([ "jquery", "config", "preferences",
    *   - "running"    - Pengine is running
    *   - "wait-next"  - Pengine produced a non-deterministic answer
    *   - "wait-input" - Pengine waits for input
+   *   - "wait-debug" - Pengine waits for for debugger reply
    *   - "true"       - Pengine produced the last answer
    *   - "false"      - Pengine failed
    *   - "error"      - Pengine raised an error
@@ -706,7 +751,8 @@ define([ "jquery", "config", "preferences",
 
    /**
     * @returns {Boolean} true if the related pengine is alive.  That
-    * means it has state `"running"`, `"wait-next"` or `"wait-input"`
+    * means it has state `"running"`, `"wait-next"`, `"wait-input"` or
+    * `"wait-debug"`
     */
    alive: function() {
      return aliveState(this.prologRunner('getState'));
@@ -734,6 +780,7 @@ define([ "jquery", "config", "preferences",
     { case "running":
       case "wait-next":
       case "wait-input":
+      case "wait-debug":
 	return true;
       default:
 	return false;
@@ -763,7 +810,9 @@ define([ "jquery", "config", "preferences",
     var elem = this.pengine.options.runner;
     var data = elem.data('prologRunner');
 
-    this.pengine.ask(termNoFullStop(data.query.query));
+    this.pengine.ask("'$swish wrapper'((" +
+		     termNoFullStop(data.query.query) +
+		     "))");
     elem.prologRunner('setState', "running");
   }
 
@@ -801,10 +850,15 @@ define([ "jquery", "config", "preferences",
 
   function handlePrompt() {
     var elem   = this.pengine.options.runner;
-    var prompt = this.data ? this.data : "Please enter a Prolog term";
 
-    elem.prologRunner('setPrompt', prompt);
-    elem.prologRunner('setState', "wait-input");
+    if ( this.data && this.data.type == "trace" ) {
+      elem.prologRunner('trace', this);
+    } else {
+      var prompt = this.data ? this.data : "Please enter a Prolog term";
+
+      elem.prologRunner('setPrompt', prompt);
+      elem.prologRunner('setState', "wait-input");
+    }
   }
 
   /**

@@ -222,6 +222,10 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	  return wrapQuery("distinct(["+vars.join(",")+"], ", ")");
         case "Limit":
 	  return wrapQuery("limit(10, ", ")");
+        case "Time":
+	  return wrapQuery("time(", ")");
+        case "Debug (trace)":
+	  return wrapQuery("trace, ", "");
 	default:
 	  alert("Unknown wrapper: \""+wrapper+"\"");
       }
@@ -331,7 +335,10 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	"--",
 	"Order by",
 	"Distinct",
-	"Limit"
+	"Limit",
+	"--",
+	"Time",
+	"Debug (trace)"
       ];
     var ul;
 

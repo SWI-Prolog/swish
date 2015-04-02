@@ -119,6 +119,7 @@ div.runner-title > button:hover {
 span.runner-state.idle,
 span.runner-state.wait-next,
 span.runner-state.wait-input { background-image: url("../icons/logo.png");    }
+span.runner-state.wait-debug { background-image: url("../icons/debug.png");   }
 span.runner-state.running    { background-image: url("../icons/running.gif"); }
 span.runner-state.true,
 span.runner-state.stopped,
@@ -166,3 +167,46 @@ td.answer-nth { color: #060; font-size: 80%; font-style: italic;
 		background-color: #eee;
 		vertical-align: top;
 	      }
+
+/* The debugger */
+
+div.trace-buttons > button > span { display: none; }
+div.trace-buttons > button
+{ display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-size: 90%;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  margin-left: 5px;
+}
+
+button.nodebug  { background-image: url("../icons/continue.png"); }
+button.continue { background-image: url("../icons/stepInto.png"); }
+button.skip     { background-image: url("../icons/stepOver.png"); }
+button.up       { background-image: url("../icons/stepOut.png"); }
+button.retry    { background-image: url("../icons/retry.png"); }
+button.abort    { background-image: url("../icons/abort.png"); }
+
+span.depth
+{ display: inline-block;
+  font-weight: bold;
+  background-image: url("../icons/depth.png");
+}
+
+span.port
+{ font-weight: bold;
+  padding-right: 0.5ex;
+  margin-right: 0.5ex;
+  background-color: #ccf;
+  display: inline-block;
+  width: 11ex;
+  text-align: right;
+  border-radius: 5px;
+}
+
+span.port.fail { color: #f00; }
+span.port.redo { color: #ff0; }
+span.port.exit { color: #0c0; }
+span.port.exception { color: #f0f; }
+
