@@ -33,19 +33,20 @@
 
 ## Runners
 
-  - Allow to move them into toplevel browser windows?  Is that possible?
   - Get back to the associated source version (open new editor tab?).
   - Find source changes compared to current version (easy)
 
 ## Debugger
 
-  - Add trace event to pengine infrastructure
-    - Classical port + goal
+  - Based on pengine_input/2, sending the trace info as prompt	[OK]
+    and getting the user continuation as reply.
+    Additional information:
+    - Classical port + goal					[OK]
     - Line no + char offset to highlight (can be one level higher,
       use rules of GUI debugger)
     - Variable named and bindings
     - Pass goal stack and choicepoints
-    - Only show goals associated with clauses of target module.
+    - Only show goals associated with clauses of target module.	[OK]
       auto skip/creep otherwise.
   - Add breakpoint interface (and allow for trace/0)
 
