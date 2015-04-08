@@ -153,6 +153,9 @@ define([ "cm/lib/codemirror",
 	  elem.on("source-error", function(ev, error) {
 	    elem.prologEditor('highlightError', error);
 	  });
+	  elem.on("trace-location", function(ev, prompt) {
+	    elem.prologEditor('showTracePort', prompt);
+	  });
 	  elem.on("clearMessages", function(ev) {
 	    elem.prologEditor('clearMessages');
 	  });
@@ -587,9 +590,43 @@ define([ "cm/lib/codemirror",
      * Remove all inline messages from the editor
      */
     clearMessages: function() {
-      return this.find(".source-msg").each(function() {
+      this.find(".source-msg").each(function() {
 	$(this).data("cm-widget").clear();
       });
+
+      this.prologEditor('showTracePort', null);
+
+      return this;
+    },
+
+    /**
+     * Highlight source events
+     */
+    showTracePort: function(prompt) {
+      var data = this.data(pluginName);
+
+      if ( data.traceMark ) {
+	data.traceMark.clear();
+	data.traceMark = null;
+      }
+
+      if ( prompt && prompt.source &&
+	   prompt.source.file &&
+	   prompt.source.file.startsWith("pengine://") ) {
+	if ( prompt.source.from && prompt.source.to ) {
+	  var from = data.cm.charOffsetToPos(prompt.source.from);
+	  var to   = data.cm.charOffsetToPos(prompt.source.to);
+
+	  if ( from && to ) {
+	    data.traceMark = data.cm.markText(from, to,
+					      { className: "trace "+prompt.port
+					      });
+	    data.cm.scrollIntoView(from, 50);
+	  }
+	}
+      }
+
+      return this;
     },
 
     /**
@@ -799,6 +836,26 @@ define([ "cm/lib/codemirror",
     }
   };
 }(jQuery));
+
+		 /*******************************
+		 *	     FUNCTIONS		*
+		 *******************************/
+
+CodeMirror.prototype.charOffsetToPos = function(offset) {
+  var line = this.firstLine();
+  var last = this.lastLine();
+  var charno = 0;
+
+  for( ; line < last; line++ ) {
+    var text = this.getLine(line);
+
+    if ( charno <= offset && charno+text.length >= offset )
+      return {line:line, ch:offset-charno};
+
+    charno += text.length + 1;		/* one extra for the newline */
+  }
+};
+
 
 		 /*******************************
 		 *	      EMACS		*

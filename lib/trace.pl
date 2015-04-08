@@ -31,11 +31,17 @@
 	  [ '$swish wrapper'/1		% +Goal
 	  ]).
 :- use_module(library(debug)).
+:- use_module(library(settings)).
 :- use_module(library(pengines)).
 :- use_module(library(pengines_io), [pengine_io_predicate/1]).
 :- use_module(library(sandbox), []).
+:- use_module(library(prolog_clause)).
 :- use_module(library(http/term_html)).
 :- use_module(library(http/html_write)).
+
+:- if(current_setting(swish:debug_info)).
+:- set_setting(swish:debug_info, true).
+:- endif.
 
 :- set_prolog_flag(generate_debug_info, false).
 
@@ -48,7 +54,11 @@ Allow tracing pengine execution under SWISH.
 */
 
 :- multifile
-	user:prolog_trace_interception/4.
+	user:prolog_trace_interception/4,
+	user:message_hook/3.
+
+user:message_hook(trace_mode(_), _, _) :-
+	pengine_self(_), !.
 
 user:prolog_trace_interception(Port, Frame, _CHP, Action) :-
 	pengine_self(Pengine),
@@ -65,12 +75,13 @@ user:prolog_trace_interception(Port, Frame, _CHP, Action) :-
 	debug(trace, '[~d] ~w: Goal ~p', [Depth0, Port, Goal]),
 	term_html(Goal, GoalString),
 	functor(Port, PortName, _),
-	pengine_input(_{type:  trace,
-			port:  PortName,
-			depth: Depth,
-			goal:  GoalString
-		       },
-		      Reply),
+	Prompt0 = _{type:  trace,
+		    port:  PortName,
+		    depth: Depth,
+		    goal:  GoalString
+		   },
+	add_source(Port, Frame, Prompt0, Prompt),
+	pengine_input(Prompt, Reply),
 	trace_action(Reply, Port, Frame, Action), !,
 	debug(trace, 'Action: ~p --> ~p', [Reply, Action]).
 user:prolog_trace_interception(Port, Frame0, _CHP, nodebug) :-
@@ -159,6 +170,226 @@ no_lco.
 
 :- '$hide'(swish_call/1).
 :- '$hide'(no_lco/0).
+
+
+		 /*******************************
+		 *	  SOURCE LOCATION	*
+		 *******************************/
+
+add_source(Port, Frame, Prompt0, Prompt) :-
+	debug(trace(line), 'Add source?', []),
+	source_location(Frame, Port, Location), !,
+	Prompt = Prompt0.put(source, Location),
+	debug(trace(line), 'Source ~p ~p: ~p', [Port, Frame, Location]).
+add_source(_, _, Prompt, Prompt).
+
+%%	source_location(+Frame, +Port, -Location) is semidet.
+%
+%	Determine the appropriate location to show for Frame at Port.
+%
+%	  1. If we have a PC (integer), we have a concrete
+%	  clause-location, so use it if it is in the current file.
+%	  2. If we have a port, but the parent is not associated
+%	  with our file, use it.  This ensures that the initial
+%	  query is shown in the source window.
+
+source_location(Frame, Port, Location) :-
+	parent_frame(Frame, Port, _Steps, ShowFrame, PC),
+	(   clause_position(PC)
+	->  true			% real PC
+	;   prolog_frame_attribute(ShowFrame, parent, Parent),
+	    frame_file(Parent, ParentFile),
+	    \+ pengine_file(ParentFile)
+	),
+	(   debugging(trace(file))
+	->  prolog_frame_attribute(ShowFrame, level, Level),
+	    prolog_frame_attribute(ShowFrame, predicate_indicator, PI),
+	    debug(trace(file), '\t[~d]: ~p', [Level, PI])
+	;   true
+	),
+	frame_file(ShowFrame, File),
+	pengine_file(File), !,
+	source_position(ShowFrame, PC, Location).
+
+%%	parent_frame(+FrameIn, +PCOrPortIn, -Steps,
+%%		     -FrameOut, -PCOrPortOut) is nondet.
+%
+%	True  when  FrameOut/PCOrPortOut  is  a  parent  environment  of
+%	FrameIn/PCOrPortIn. Backtracking yields higher frames.
+
+parent_frame(Frame0, Port0, Steps, Frame, Port) :-
+	parent_frame(Frame0, Port0, 0, Steps, Frame, Port).
+
+parent_frame(Frame, Port, Steps, Steps, Frame, Port).
+parent_frame(Frame, _Port, Steps0, Steps, Parent, PC) :-
+	direct_parent_frame(Frame, DirectParent, ParentPC),
+	Steps1 is Steps0+1,
+	parent_frame(DirectParent, ParentPC, Steps1, Steps, Parent, PC).
+
+direct_parent_frame(Frame, Parent, PC) :-
+	prolog_frame_attribute(Frame, parent, Parent),
+	prolog_frame_attribute(Frame, pc, PC).
+
+
+%%	frame_file(+Frame, -File) is semidet.
+%
+%	True when Frame is associated with   a predicate that is defined
+%	in File.
+
+frame_file(Frame, File) :-
+	prolog_frame_attribute(Frame, clause, ClauseRef), !,
+	(   clause_property(ClauseRef, predicate(system:'<meta-call>'/1))
+	->  prolog_frame_attribute(Frame, parent, Parent),
+	    frame_file(Parent, File)
+	;   clause_property(ClauseRef, file(File))
+	).
+frame_file(Frame, File) :-
+	prolog_frame_attribute(Frame, goal, Goal),
+	qualify(Goal, QGoal),
+	\+ predicate_property(QGoal, foreign),
+	clause(QGoal, _Body, ClauseRef), !,
+	clause_property(ClauseRef, file(File)).
+
+pengine_file(File) :-
+	sub_atom(File, 0, _, _, 'pengine://').
+
+%%	clause_position(+PC) is semidet.
+%
+%	True if the position can be related to a clause.
+
+clause_position(PC) :- integer(PC), !.
+clause_position(exit).
+clause_position(unify).
+clause_position(choice(_)).
+
+%%	subgoal_position(+Clause, +PortOrPC,
+%%			 -File, -CharA, -CharZ) is semidet.
+%
+%	Character  range  CharA..CharZ  in  File   is  the  location  to
+%	highlight for the given clause at the given location.
+
+subgoal_position(ClauseRef, PortOrPC, _, _, _) :-
+	debugging(trace(save_pc)),
+	debug(trace(save_pc), 'Position for ~p at ~p', [ClauseRef, PortOrPC]),
+	asserta(subgoal_position(ClauseRef, PortOrPC)),
+	fail.
+subgoal_position(ClauseRef, unify, File, CharA, CharZ) :- !,
+	clause_info(ClauseRef, File, TPos, _),
+	head_pos(ClauseRef, TPos, PosTerm),
+	nonvar(PosTerm),
+	arg(1, PosTerm, CharA),
+	arg(2, PosTerm, CharZ).
+subgoal_position(ClauseRef, choice(CHP), File, CharA, CharZ) :- !,
+	(   prolog_choice_attribute(CHP, type, jump),
+	    prolog_choice_attribute(CHP, pc, To)
+	->  debug(gtrace(position), 'Term-position: choice-jump to ~w', [To]),
+	    subgoal_position(ClauseRef, To, File, CharA, CharZ)
+	;   clause_end(ClauseRef, File, CharA, CharZ)
+	).
+subgoal_position(ClauseRef, Port, File, CharA, CharZ) :-
+	end_port(Port), !,
+	clause_end(ClauseRef, File, CharA, CharZ).
+subgoal_position(ClauseRef, PC, File, CharA, CharZ) :-
+	clause_info(ClauseRef, File, TPos, _),
+	(   '$clause_term_position'(ClauseRef, PC, List)
+	->  debug(gtrace(position), 'Term-position: for ref=~w at PC=~w: ~w',
+		  [ClauseRef, PC, List]),
+	    (   find_subgoal(List, TPos, PosTerm)
+	    ->  true
+	    ;   PosTerm = TPos,
+		debug(trace(source),
+		      'Clause source-info could not be parsed', []),
+		fail
+	    ),
+	    nonvar(PosTerm),
+	    arg(1, PosTerm, CharA),
+	    arg(2, PosTerm, CharZ)
+	;   debug(trace(source),
+		  'No clause-term-position for ref=~p at PC=~p',
+		  [ClauseRef, PC]),
+	    fail
+	).
+
+end_port(exit).
+end_port(fail).
+end_port(exception).
+
+clause_end(ClauseRef, File, CharA, CharZ) :-
+	clause_info(ClauseRef, File, TPos, _),
+	nonvar(TPos),
+	arg(2, TPos, CharA),
+	CharZ is CharA + 1.
+
+head_pos(Ref, Pos, HPos) :-
+	clause_property(Ref, fact), !,
+	HPos = Pos.
+head_pos(_, term_position(_, _, _, _, [HPos,_]), HPos).
+
+%	warning, ((a,b),c)) --> compiled to (a, (b, c))!!!  We try to correct
+%	that in clause.pl.  This is work in progress.
+
+find_subgoal([A|T], term_position(_, _, _, _, PosL), SPos) :-
+	nth1(A, PosL, Pos), !,
+	find_subgoal(T, Pos, SPos).
+find_subgoal([1|T], brace_term_position(_,_,Pos), SPos) :- !,
+	find_subgoal(T, Pos, SPos).
+find_subgoal(_, Pos, Pos).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Extracted from show_source/2 from library(trace/trace)
+
+%%	source_position(Frame, PCOrPort, -Position)
+%
+%	Get the source location for  Frame   at  PCOrPort. Position is a
+%	dict.
+
+source_position(Frame, PC, _{file:File, from:CharA, to:CharZ}) :-
+	debug(trace(pos), '~p', [source_position(Frame, PC, _)]),
+	clause_position(PC),
+	prolog_frame_attribute(Frame, clause, ClauseRef), !,
+	subgoal_position(ClauseRef, PC, File, CharA, CharZ).
+source_position(Frame, _PC, Position) :-
+	prolog_frame_attribute(Frame, goal, Goal),
+	qualify(Goal, QGoal),
+	\+ predicate_property(QGoal, foreign),
+	(   clause(QGoal, _Body, ClauseRef)
+	->  subgoal_position(ClauseRef, unify, File, CharA, CharZ),
+	    Position = _{file:File, from:CharA, to:CharZ}
+	;   functor(Goal, Functor, Arity),
+	    functor(GoalTemplate, Functor, Arity),
+	    qualify(GoalTemplate, QGoalTemplate),
+	    clause(QGoalTemplate, _TBody, ClauseRef)
+	->  subgoal_position(ClauseRef, unify, File, CharA, CharZ),
+	    Position = _{file:File, from:CharA, to:CharZ}
+	;   find_source(QGoal, File, Line),
+	    debug(trace(source), 'At ~w:~d', [File, Line]),
+	    Position = _{file:File, line:Line}
+	).
+
+qualify(Goal, Goal) :-
+	functor(Goal, :, 2), !.
+qualify(Goal, user:Goal).
+
+find_source(Predicate, File, Line) :-
+	predicate_property(Predicate, file(File)),
+	predicate_property(Predicate, line_count(Line)), !.
+
+%%	prolog_clause:open_source(+File, -Stream) is semidet.
+%
+%	Open the saved pengine source if applicable
+
+:- multifile prolog_clause:open_source/2.
+
+prolog_clause:open_source(File, Stream) :-
+	pengine_file(File), !,
+	(   pengine_self(Pengine)
+	->  true
+	;   debugging(trace(_))
+	),
+	pengine_property(Pengine, source(File, Source)),
+	open_string(Source, Stream).
+
 
 		 /*******************************
 		 *	 ALLOW DEBUGGING	*

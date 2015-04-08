@@ -456,6 +456,9 @@ define([ "jquery", "config", "preferences",
 			 button("Step out",  "up"),
 			 button("Retry",     "retry"),
 			 button("Abort",     "abort")));
+
+      $(".swish-event-receiver").trigger("trace-location", data.data);
+
       this.prologRunner('setState', "wait-debug");
     },
 
