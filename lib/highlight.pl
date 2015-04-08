@@ -350,7 +350,9 @@ enriched_tokens(TB, _Data, Tokens) :-
 %	state that must be reused, but  this   is  not true (for example
 %	because we have been restarted).
 %
-%	@throws cm(existence_error)
+%	@throws cm(existence_error) if the target editor did not exist
+%	@throws cm(out_of_sync) if the changes do not apply due to an
+%	internal error or a lost message.
 
 shadow_editor(Data, TB) :-
 	atom_string(UUID, Data.get(uuid)),
@@ -361,7 +363,10 @@ shadow_editor(Data, TB) :-
 	    insert_memory_file(TB, 0, Text),
 	    mark_changed(TB, true)
 	;   Changes = Data.get(changes)
-	->  maplist(apply_change(TB, Changed), Changes),
+	->  (   maplist(apply_change(TB, Changed), Changes)
+	    ->	true
+	    ;	throw(cm(out_of_sync))
+	    ),
 	    mark_changed(TB, Changed)
 	).
 shadow_editor(Data, TB) :-
