@@ -112,8 +112,10 @@ define([ "cm/lib/codemirror",
 	if ( preferences.getVal("emacs-keybinding") )
 	  options.keyMap = "emacs";
 
-	if ( options.role != "query" )
+	if ( options.role != "query" ) {
 	  options.continueComments = "Enter";
+	  options.gutters = ["Prolog-breakpoints"]
+	}
 
 	if ( (ta=elem.children("textarea")[0]) ) {
 	  var file = $(ta).attr("data-file");
@@ -168,6 +170,18 @@ define([ "cm/lib/codemirror",
 	  $(window).bind("beforeunload", function(ev) {
 	    return elem.prologEditor('unload', "beforeunload", ev);
 	  });
+	  data.cm.on("gutterClick", function(cm, n) {
+	    var info = cm.lineInfo(n);
+
+	    function makeMarker() {
+	      return $("<span class=\"breakpoint-marker\">&#9679;</span>")[0];
+	    }
+
+	    if ( info.gutterMarkers )
+	      cm.setGutterMarker(n, "Prolog-breakpoints", null);
+	    else
+	      cm.setGutterMarker(n, "Prolog-breakpoints", makeMarker());
+	  });
 	}
       });
     },
@@ -196,10 +210,42 @@ define([ "cm/lib/codemirror",
     },
 
     /**
+     * Get the defined breakpoints.
+     * @returns {Array.integer} array of lines that need a breakpoint
+     */
+    getBreakpoints: function() {
+      var cm = this.data(pluginName).cm;
+      var line = cm.firstLine();
+      var last = cm.lastLine();
+      var breakpoints = [];
+
+      for( ; line < last; line++ ) {
+	var info = cm.lineInfo(line);
+	if ( info.gutterMarkers )
+	  breakpoints.push(line+1);
+      }
+
+      return breakpoints;
+    },
+
+    /**
      * @returns {String} current contents of the editor
      */
     getSource: function() {
       return this.data(pluginName).cm.getValue();
+    },
+
+    /**
+     * @returns {Object} holding extended source information
+     */
+    getSourceEx: function() {
+      var obj = { value: this.data(pluginName).cm.getValue()
+		};
+      var bps = this.prologEditor('getBreakpoints');
+      if ( bps.length > 0 )
+	obj.breakpoints = bps;
+
+      return obj;
     },
 
     /**

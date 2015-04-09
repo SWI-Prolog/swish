@@ -288,6 +288,19 @@ preferences.setDefault("emacs-keybinding", false);
     },
 
     /**
+     * Pick up all breakpoints.  Currently assumes a single source.
+     */
+    breakpoints: function() {
+      var list = [];
+      var rc;
+
+      if ( (rc=$(".prolog-editor").prologEditor('getBreakpoints')) )
+	list = list.concat(rc);
+
+      return list;
+    },
+
+    /**
      * Extract examples from `$(".examples.prolog").text()`.  If this
      * does not exist, it returns a function that extracts the examples
      * from the current Prolog source editor.

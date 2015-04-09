@@ -33,9 +33,14 @@
 :- use_module(library(debug)).
 :- use_module(library(settings)).
 :- use_module(library(pengines)).
+:- use_module(library(apply)).
+:- use_module(library(option)).
+:- use_module(library(solution_sequences)).
+:- use_module(library(edinburgh), [debug/0]).
 :- use_module(library(pengines_io), [pengine_io_predicate/1]).
 :- use_module(library(sandbox), []).
 :- use_module(library(prolog_clause)).
+:- use_module(library(prolog_breakpoints)).
 :- use_module(library(http/term_html)).
 :- use_module(library(http/html_write)).
 
@@ -106,6 +111,13 @@ trace_action(skip,     _, _, skip).
 trace_action(retry,    _, _, retry).
 trace_action(up   ,    _, _, up).
 trace_action(abort,    _, _, abort).
+trace_action(nodebug(Breakpoints), _, _, Action) :-
+	update_breakpoints(Breakpoints),
+	(   Breakpoints == []
+	->  Action = nodebug
+	;   Action = continue,
+	    notrace
+	).
 
 box_enter(call).
 box_enter(redo(_)).
@@ -375,6 +387,59 @@ find_source(Predicate, File, Line) :-
 	predicate_property(Predicate, file(File)),
 	predicate_property(Predicate, line_count(Line)), !.
 
+%%	pengines:prepare_goal(+GoalIn, -GoalOut, +Options) is semidet.
+%
+%	Handle the breakpoints(List) option to  set breakpoints prior to
+%	execution of the query. If breakpoints  are present and enabled,
+%	the goal is executed in debug mode.
+
+:- multifile pengines:prepare_goal/3.
+
+pengines:prepare_goal(Goal0, Goal, Options) :-
+	option(breakpoints(Breakpoints), Options),
+	Breakpoints \== [],
+	maplist(set_breakpoint, Breakpoints),
+	Goal = (debug, Goal0).
+
+set_breakpoint(Line) :-
+	debug(trace(break), 'Set breakpoint at line ~p', [Line]),
+	pengine_self(Pengine),
+	pengine_property(Pengine, source(File, Text)),
+	line_start(Line, Text, Char),
+	(   set_breakpoint(File, Line, Char, Break)
+	->  !, debug(trace(break), 'Created breakpoint ~p', [Break])
+	;   print_message(warning, breakpoint(failed(File, Line, 0)))
+	).
+
+line_start(1, _, 0) :- !.
+line_start(N, Text, Start) :-
+	N0 is N - 2,
+	offset(N0, sub_string(Text, Start, _, _, '\n')), !.
+
+%%	current_breakpoints(-Pairs) is det.
+%
+%	@arg Pairs is a list `Id-Line` for each defined breakpoint.
+
+current_breakpoints(Pairs) :-
+	pengine_self(Pengine),
+	findall(Id-Line,
+		( pengine_property(Pengine, source(File, _Text)),
+		  breakpoint_property(Id, file(File)),
+		  breakpoint_property(Id, line_count(Line))
+		),
+		Pairs).
+
+%%	update_breakpoints(+Breakpoints)
+
+update_breakpoints(Breakpoints) :-
+	current_breakpoints(Pairs),
+	debug(trace(break), 'Current: ~p, Request: ~p', [Pairs, Breakpoints]),
+	forall((member(Id-Line, Pairs), \+memberchk(Line, Breakpoints)),
+	       delete_breakpoint(Id)),
+	forall((member(Line, Breakpoints), \+memberchk(_-Line, Pairs)),
+	       set_breakpoint(Line)).
+
+
 %%	prolog_clause:open_source(+File, -Stream) is semidet.
 %
 %	Open the saved pengine source if applicable
@@ -401,4 +466,16 @@ prolog_clause:open_source(File, Stream) :-
 sandbox:safe_primitive(system:trace).
 sandbox:safe_primitive(system:notrace).
 sandbox:safe_primitive(system:tracing).
+sandbox:safe_primitive(edinburgh:debug).
 sandbox:safe_primitive(system:deterministic(_)).
+
+
+		 /*******************************
+		 *	      MESSAGES		*
+		 *******************************/
+
+:- multifile
+	prolog:message/3.
+
+prolog:message(breakpoint(failed(File, Line, _Char))) -->
+	[ 'Failed to set breakpoint at ~w:~d'-[File,Line] ].

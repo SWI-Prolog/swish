@@ -419,6 +419,7 @@ define([ "jquery", "config", "preferences",
      * Handle trace events
      */
     trace: function(data) {
+      var elem = this;
       var goal = $.el.span({class:"goal"});
       $(goal).html(data.data.goal);
 
@@ -426,12 +427,15 @@ define([ "jquery", "config", "preferences",
 	return string.charAt(0).toUpperCase() + string.slice(1);
       }
 
-      function button(label, action) {
+      function button(label, action, context) {
 	var btn = $.el.button({class:action,
 			       title:label
 			      },
 			      $.el.span(label));
 	$(btn).on("click", function(ev) {
+	  if ( context !== undefined ) {
+	    action += "("+Pengine.stringify(context(ev))+")";
+	  }
 	  data.pengine.respond(action);
 	  $(ev.target).parent().remove();
 	});
@@ -450,7 +454,9 @@ define([ "jquery", "config", "preferences",
 			 goal));
       addAnswer(this,
 		$.el.div({class:"trace-buttons"},
-			 button("Continue",  "nodebug"),
+			 button("Continue",  "nodebug", function(ev) {
+			   return breakpoints(ev.target);
+			 }),
 			 button("Step into", "continue"),
 			 button("Step over", "skip"),
 			 button("Step out",  "up"),
@@ -812,13 +818,22 @@ define([ "jquery", "config", "preferences",
 		 *   HANDLE PROLOG CALLBACKS	*
 		 *******************************/
 
+  function breakpoints(runner) {
+    return $(runner).parents(".swish").swish('breakpoints');
+  }
+
   function handleCreate() {
     var elem = this.pengine.options.runner;
     var data = elem.data('prologRunner');
+    var options = {};
+    var bps;
+
+    if ( (bps = breakpoints(elem)) )
+      options.breakpoints = Pengine.stringify(bps);
 
     this.pengine.ask("'$swish wrapper'((" +
 		     termNoFullStop(data.query.query) +
-		     "))");
+		     "))", options);
     elem.prologRunner('setState', "running");
   }
 
