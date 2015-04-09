@@ -716,6 +716,9 @@ define([ "jquery", "config", "preferences",
    setState: function(state) {
      var data = this.data('prologRunner');
 
+     if ( !data )
+       return;
+
      if ( data.prolog.state != state ) {
        var stateful = this.find(".show-state");
 
