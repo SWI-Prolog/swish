@@ -85,7 +85,8 @@ user:prolog_trace_interception(Port, Frame, _CHP, Action) :-
 		    depth: Depth,
 		    goal:  GoalString
 		   },
-	add_source(Port, Frame, Prompt0, Prompt),
+	add_context(Port, Frame, Prompt0, Prompt1),
+	add_source(Port, Frame, Prompt1, Prompt),
 	pengine_input(Prompt, Reply),
 	trace_action(Reply, Port, Frame, Action), !,
 	debug(trace, 'Action: ~p --> ~p', [Reply, Action]).
@@ -112,7 +113,8 @@ trace_action(retry,    _, _, retry).
 trace_action(up   ,    _, _, up).
 trace_action(abort,    _, _, abort).
 trace_action(nodebug(Breakpoints), _, _, Action) :-
-	update_breakpoints(Breakpoints),
+	catch(update_breakpoints(Breakpoints), E,
+	      print_message(warning, E)),
 	(   Breakpoints == []
 	->  Action = nodebug
 	;   Action = continue,
@@ -150,6 +152,19 @@ term_html(Term, HTMlString) :-
 			  ])), Tokens),
 	with_output_to(string(HTMlString), print_html(Tokens)).
 
+%%	add_context(+Port, +Frame, +Prompt0, -Prompt) is det.
+%
+%	Add additional information  about  the   context  to  the  debug
+%	prompt.
+
+add_context(exception(Exception), _Frame, Prompt0, Prompt) :- !,
+	term_html(Exception, String),
+	message_to_string(Exception, Msg),
+	Prompt = Prompt0.put(exception,
+			     json{term_html:String,
+				  message:Msg
+				 }).
+add_context(_, _, Prompt, Prompt).
 
 %%	'$swish wrapper'(:Goal)
 %

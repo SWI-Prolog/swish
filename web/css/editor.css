@@ -47,10 +47,11 @@
 		 *	 DEBUGGER SUPPORT	*
 		 *******************************/
 
-.CodeMirror .trace.call { background-color: #0f0; }
-.CodeMirror .trace.exit { background-color: #0f0; }
-.CodeMirror .trace.fail { background-color: #f00; }
-.CodeMirror .trace.redo { background-color: #ff0; }
+.CodeMirror .trace.call      { background-color: #0f0; }
+.CodeMirror .trace.exit      { background-color: #0f0; }
+.CodeMirror .trace.fail      { background-color: #f00; }
+.CodeMirror .trace.redo      { background-color: #ff0; }
+.CodeMirror .trace.exception { background-color: #f0f; }
 
 .Prolog-breakpoints { width: 1em; }
 .breakpoint-marker

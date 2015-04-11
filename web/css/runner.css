@@ -210,3 +210,8 @@ span.port.redo { color: #ff0; }
 span.port.exit { color: #0c0; }
 span.port.exception { color: #f0f; }
 
+div.prolog-exception
+{ color: #f00;
+  font-size: 80%;
+  margin-left: 5em;
+}

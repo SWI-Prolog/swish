@@ -421,7 +421,8 @@ define([ "jquery", "config", "preferences",
     trace: function(data) {
       var elem = this;
       var goal = $.el.span({class:"goal"});
-      $(goal).html(data.data.goal);
+      var prompt = data.data;
+      $(goal).html(prompt.goal);
 
       function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
@@ -445,13 +446,17 @@ define([ "jquery", "config", "preferences",
       addAnswer(this,
 		$.el.div({class:"prolog-trace"},
 			 $.el.span({ class:"depth",
-			             style:"width:"+(data.data.depth*5-1)+"px"
+			             style:"width:"+(prompt.depth*5-1)+"px"
 				   }, "\u00A0"), /* &nbsp; */
-			 $.el.span({ class:"port "+data.data.port
+			 $.el.span({ class:"port "+prompt.port
 			           },
-				   capitalizeFirstLetter(data.data.port),
+				   capitalizeFirstLetter(prompt.port),
 				   ":"),
 			 goal));
+      if ( prompt.port == "exception" )
+	addAnswer(this,
+		  $.el.div({class:"prolog-exception"},
+			   prompt.exception.message));
       addAnswer(this,
 		$.el.div({class:"trace-buttons"},
 			 button("Continue",  "nodebug", function(ev) {
@@ -463,7 +468,7 @@ define([ "jquery", "config", "preferences",
 			 button("Retry",     "retry"),
 			 button("Abort",     "abort")));
 
-      $(".swish-event-receiver").trigger("trace-location", data.data);
+      $(".swish-event-receiver").trigger("trace-location", prompt);
 
       this.prologRunner('setState', "wait-debug");
     },
