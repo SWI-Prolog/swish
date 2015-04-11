@@ -157,14 +157,21 @@ term_html(Term, HTMlString) :-
 %	Add additional information  about  the   context  to  the  debug
 %	prompt.
 
-add_context(exception(Exception), _Frame, Prompt0, Prompt) :- !,
-	term_html(Exception, String),
-	message_to_string(Exception, Msg),
-	Prompt = Prompt0.put(exception,
-			     json{term_html:String,
-				  message:Msg
-				 }).
+add_context(exception(Exception0), _Frame, Prompt0, Prompt) :-
+	strip_stack(Exception0, Exception),
+	message_to_string(Exception, Msg), !,
+	debug(trace, 'Msg = ~s', [Msg]),
+	(   term_html(Exception, String)
+	->  Ex = json{term_html:String, message:Msg}
+	;   Ex = json{message:Msg}
+	),
+	Prompt = Prompt0.put(exception, Ex).
 add_context(_, _, Prompt, Prompt).
+
+strip_stack(error(Error, context(prolog_stack(S), Msg)),
+	    error(Error, context(_, Msg))) :-
+	nonvar(S).
+strip_stack(Error, Error).
 
 %%	'$swish wrapper'(:Goal)
 %
