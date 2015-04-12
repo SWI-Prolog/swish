@@ -101,6 +101,9 @@ preferences.setDefault("emacs-keybinding", false);
 	"Runner ...": function() {
 	  menuBroadcast("help", {file:"runner.html"});
 	},
+	"Debugging ...": function() {
+	  menuBroadcast("help", {file:"debug.html"});
+	},
 	"Background": "--",
 	"Limitations ...": function() {
 	  menuBroadcast("help", {file:"beware.html"});
