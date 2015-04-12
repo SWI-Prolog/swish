@@ -183,7 +183,7 @@ strip_stack(Error, Error).
 :- meta_predicate swish_call(0).
 
 '$swish wrapper'(Goal) :-
-	swish_call(Goal),
+	catch(swish_call(Goal), E, throw(E)),
 	deterministic(Det),
 	(   tracing,
 	    Det == false
@@ -476,6 +476,42 @@ prolog_clause:open_source(File, Stream) :-
 	),
 	pengine_property(Pengine, source(File, Source)),
 	open_string(Source, Stream).
+
+
+		 /*******************************
+		 *	 TRAP EXCEPTIONS	*
+		 *******************************/
+
+:- dynamic
+	user:prolog_exception_hook/4,
+	installed/1.
+
+exception_hook(Ex, Ex, _Frame, Catcher) :-
+	Catcher \== none,
+	prolog_frame_attribute(Catcher, predicate_indicator, PI),
+	debug(trace(exception), 'Ex: ~p, catcher: ~p', [Ex, PI]),
+	PI == '$swish wrapper'/1,
+	trace,
+	fail.
+
+%%	install_exception_hook
+%
+%	Make sure our handler is the first of the hook predicate.
+
+install_exception_hook :-
+	installed(Ref),
+	(   nth_clause(_, I, Ref)
+	->  I == 1, !			% Ok, we are the first
+	;   retractall(installed(Ref)),
+	    erase(Ref),			% Someone before us!
+	    fail
+	).
+install_exception_hook :-
+	asserta((user:prolog_exception_hook(Ex, Out, Frame, Catcher) :-
+			exception_hook(Ex, Out, Frame, Catcher)), Ref),
+	assert(installed(Ref)).
+
+:- install_exception_hook.
 
 
 		 /*******************************
