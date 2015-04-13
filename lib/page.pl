@@ -261,7 +261,27 @@ swish_content(Options) -->
 	swish_config_hash,
 	html(div([id(content), class([container, swish])],
 		 [ div([class([tile, horizontal]), 'data-split'('50%')],
-		       [ div(class('prolog-editor'), \source(Options)),
+		       [ div([ class(editors),
+			       style('height: 100%')
+			     ],
+			     [ ul([class([nav, 'nav-tabs']), role(tablist)],
+				  [ li([ role(presentation),
+					 class(active)
+				       ],
+				       a(href('#source'), 'Source'))
+				  ]),
+			       div([ class('tab-content'),
+				     style('height: calc(100% - 50px)')
+				   ],
+				   [ div([ role(tabpanel),
+					   class(['tab-pane', active]),
+					   id(source),
+					   style('height: 100%')
+					 ],
+					 div(class('prolog-editor'),
+					     \source(Options)))
+				   ])
+			     ]),
 			 div([class([tile, vertical]), 'data-split'('70%')],
 			     [ div(class('prolog-runners'), []),
 			       div(class('prolog-query'), \query(Options))
