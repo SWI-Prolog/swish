@@ -38,8 +38,7 @@ you            need            the             [nightly            build
 system    from    the     current      git     development    repository
 [swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
 
-Mar 30, 2015: use release 7.1.34.   "Solutions/Order by" only works with
-the git or nightly versions.
+Apr 13, 2015: use release 7.1.36.
 
 ## Running SWISH
 
