@@ -170,8 +170,8 @@ td.answer-nth { color: #060; font-size: 80%; font-style: italic;
 
 /* The debugger */
 
-div.trace-buttons > button > span { display: none; }
-div.trace-buttons > button
+div.trace-buttons button > span { display: none; }
+div.trace-buttons button
 { display: inline-block;
   width: 24px;
   height: 24px;
