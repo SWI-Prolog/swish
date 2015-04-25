@@ -10,11 +10,13 @@ all:	doc min require.js
 doc::	$(CONF) $(JQ) $(JS)
 	-jsdoc -p -c $(CONF) $(JQ) $(JS)
 
-min:	swish-min.js
+min:	swish-min.js swish-min.js.gz
 
 swish-min.js:	build.js $(JS) $(CM)
 	r.js -o build.js
-	gzip -fk $@
+
+swish-min.js.gz: swish-min.js
+	gzip < $< > $@
 
 build.js: $(MAIN) build.js.in
 	swipl mkjsbuild.pl $(MAIN) build.js.in
