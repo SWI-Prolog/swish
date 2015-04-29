@@ -13,12 +13,18 @@
     border: 0px;
   }
   div.acknowledgement { width: 90%;
-			margin-top: 2em; margin-left:auto; margin-right: auto;}
-  div.acknowledgement > span { display: inline-block; width: 60%;
+			margin-top: 2em; margin-left:auto; margin-right: auto;
+			border-top: 1px solid #bbb;
+			padding-top: 5px;
+		      }
+  div.acknowledgement > span { display: inline-block; width: 48%;
 			       vertical-align: top;
 			       color: #888;
 			     }
-  img.commit-logo { width: 30%; vertical-align: top;}
+  img.commit-logo { vertical-align: top;}
+  img.commit { width: 30% }
+  img.vu { width: 8% }
+  img.synerscope { width: 12% }
   </style>  </head>
   <body>
 
@@ -62,10 +68,15 @@ latest <a href="http://github.com/SWI-Prolog/swipl-devel.git">GIT</a>.
 </div>
 
 <div class=acknowledgement>
-<img src="/icons/COMMIT_logo.png" class="commit-logo">
+<a href="http://vu.nl" target="_blank">
+<img src="/icons/VU-logo.png" class="vu commit-logo"></a>
+<a href="http://www.commit-nl.nl" target="_blank">
+<img src="/icons/COMMIT_logo.png" class="commit commit-logo"></a>
 <span>SWISH is developed within the DataLab valorisation project sponsored by
-the <a href="http://www.commit-nl.nl/">COMMIT/ consortium</a>
+the <a href="http://www.commit-nl.nl">COMMIT/ consortium</a>
 </span>
+<a href="http://www.synerscope.com" target="_blank">
+<img src="/icons/Synerscope-logo.png" class="synerscope commit-logo"></a>
 </div>
 
 </body>
