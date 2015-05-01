@@ -12,7 +12,7 @@
 
 % We use Boolean variables A, B and C to represent the inhabitants.
 % Each variable is true iff the respective inhabitant is a knight.
-% Notice that no search is required for most of these examples.
+% Notice that no search is required for any of these examples.
 
 
 % Example 1: You meet two inhabitants, A and B.
@@ -56,7 +56,6 @@ example_knights(5, [A,B,C]) :-
 
 ?- example_knights(1, [A,B]).
 ?- example_knights(2, [A,B]).
-?- example_knights(5, Knights), labeling(Knights).
 ?- example_knights(Example, Knights).
 
 */
