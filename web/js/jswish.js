@@ -24,7 +24,7 @@ define([ "jquery",
 	 "laconic"
        ], function($, config, preferences) {
 
-preferences.setDefault("semantic-highlighting", true);
+preferences.setDefault("semantic-highlighting", false);
 
 (function($) {
   var pluginName = 'swish';
