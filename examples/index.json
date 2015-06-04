@@ -16,7 +16,7 @@
 { "file":"cora.cpl",		  "title":"Cora: entity resolution " },
 { "file":"monty.cpl",		  "title":"Monty Hall puzzle" },
 { "file":"jail.cpl",		  "title":"Three-prisoners puzzle" },
-{ "file":"trigger.cpl",		  "title":"Trigger" },
+{ "file":"trigger.cpl",		  "title":"Russian roulette" },
 { "file":"light.cpl",		  "title":"Light" },
 { "file":"coin2.cpl",		  "title":"Coins" },
 { "file":"threesideddice.cpl",	  "title":"Three sided dice" },
