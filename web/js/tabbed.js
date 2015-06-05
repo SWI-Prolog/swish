@@ -41,15 +41,15 @@ define([ "jquery", "laconic" ],
       this.prepend(ul);
 
       $(ul).on("click", "a", function(ev) {
-	console.log(ev.target);
 	$(ev.target).tab('show');
 	ev.preventDefault();
       });
 
       for(var i=0; i<children.length; i++) {
 	var id = 'tab-'+i;
-	var a = $.el.a({href:"#"+id}, "Source "+i);
-	$(ul).append($.el.li({ role:"presentation", class:"active" }, a));
+	var li = this.tabbed('tabLabel', id, "Source");
+	$(li).addClass("active");
+	$(ul).append(li);
 	$(contents).append(wrapInTab($(children[i]), id, true));
       }
 
@@ -66,14 +66,13 @@ define([ "jquery", "laconic" ],
     /**
      * Add a new tab using content
      */
-    addTab: function(content) {
+    addTab: function(content, id, active) {
       var ul = this.tabbed('navTabs');
       var id = "tab-new";
 
-      this.tabbed('navContent').append(wrapInTab(content, id));
+      this.tabbed('navContent').append(wrapInTab(content, id, active));
 
-      var a  = $.el.a({href:"#"+id}, "Source "+id);
-      var li = $.el.li({ role:"presentation" }, a);
+      var li  = this.tabbed('tabLabel', id, "Source "+id);
 
       var create = ul.find("a.tab-new");
       if ( create.length == 1 )
@@ -81,7 +80,14 @@ define([ "jquery", "laconic" ],
       else
 	ul.append(li);
 
-      $(a).tab('show');
+      $(li).find("a").first().tab('show');
+    },
+
+    tabLabel: function(id, name, close) {
+      var a  = $.el.a({href:"#"+id}, name);
+      var li = $.el.li({role:"presentation"}, a);
+
+      return li;
     },
 
     /**
