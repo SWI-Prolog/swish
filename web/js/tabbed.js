@@ -40,6 +40,10 @@ define([ "jquery", "laconic" ],
       this.prepend(contents);
       this.prepend(ul);
 
+      $(ul).on("click", "span.xclose", function(ev) {
+	alert("close");
+	ev.preventDefault();
+      });
       $(ul).on("click", "a", function(ev) {
 	$(ev.target).tab('show');
 	ev.preventDefault();
@@ -53,7 +57,7 @@ define([ "jquery", "laconic" ],
 	$(contents).append(wrapInTab($(children[i]), id, true));
       }
 
-      var create = $.el.a({class: "tab-new"}, "+");
+      var create = $.el.a({class: "tab-new compact"}, glyphicon("plus"));
       $(ul).append($.el.li({ role:"presentation" }, create));
       $(create).on("click", function(ev) {
 	var tabbed = $(ev.target).parents(".tabbed").first();
@@ -84,8 +88,9 @@ define([ "jquery", "laconic" ],
     },
 
     tabLabel: function(id, name, close) {
-      var a  = $.el.a({href:"#"+id}, name);
-      var li = $.el.li({role:"presentation"}, a);
+      var a1 = $.el.a({class:"compact", href:"#"+id},
+		      name, glyphicon("remove", "xclose"));
+      var li = $.el.li({role:"presentation"}, a1);
 
       return li;
     },
@@ -117,6 +122,16 @@ define([ "jquery", "laconic" ],
 
     return wrapped;
   }
+
+  function glyphicon(glyph, className) {
+    var span = $.el.span({class:"glyphicon glyphicon-"+glyph});
+
+    if ( className )
+      $(span).addClass(className);
+
+    return span;
+  }
+
 
   /**
    * <Class description>

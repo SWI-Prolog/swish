@@ -11,3 +11,17 @@ div.tab-content	{
 div.tab-pane {
   height: 100%;
 }
+
+span.glyphicon.xclose:hover {
+  margin-left: 5px;
+  opacity: 0.8;
+}
+
+span.glyphicon.xclose {
+  margin-left: 5px;
+  opacity: 0.2;
+}
+
+.nav > li > a.compact {
+  padding: 5px 5px;
+}
