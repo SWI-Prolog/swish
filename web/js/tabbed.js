@@ -13,14 +13,24 @@ define([ "jquery", "laconic" ],
 
 (function($) {
   var pluginName = 'tabbed';
+  var tabid = 0;
 
   /** @lends $.fn.tabbed */
   var methods = {
+    /**
+     * Turn the current element into a Bootstrap tabbed pane. All
+     * children of the current element are changed into tabs.  The
+     * child can control the mapping using:
+     *
+     *   - `data-label = "Label"`
+     *   - `data-close = "disabled"`
+     */
     _init: function(options) {
       return this.each(function() {
 	var elem = $(this);
 	var data = {};			/* private data */
 
+	elem.addClass("tabbed");
 	elem.tabbed('makeTabbed');
 
 	elem.data(pluginName, data);	/* store with element */
@@ -42,7 +52,6 @@ define([ "jquery", "laconic" ],
 
       $(ul).on("click", "span.xclose", function(ev) {
 	var id = $(ev.target).parent().attr("data-id");
-	console.log($(ev.target).parents(".tabbed"));
 	$(ev.target).parents(".tabbed").first().tabbed('removeTab', id);
 	ev.preventDefault();
       });
@@ -52,33 +61,50 @@ define([ "jquery", "laconic" ],
       });
 
       for(var i=0; i<children.length; i++) {
-	var id = 'tab-'+i;
-	var li = this.tabbed('tabLabel', id, "Source");
-	$(li).addClass("active");
+	var child = $(children[i]);
+	var id = genId();
+	var label = child.attr("data-label") || "Unknown";
+	var close = child.attr("data-close") != "disabled";
+
+	var li = this.tabbed('tabLabel', id, label, close);
+	if ( i == 0 )
+	  $(li).addClass("active");
 	$(ul).append(li);
-	$(contents).append(wrapInTab($(children[i]), id, true));
+	$(contents).append(wrapInTab($(children[i]), id, i == 0));
       }
 
-      var create = $.el.a({class: "tab-new compact"}, glyphicon("plus"));
+      var create = $.el.a({ class: "tab-new compact",
+			    title: "Open a new tab"
+			  },
+			  glyphicon("plus"));
       $(ul).append($.el.li({ role:"presentation" }, create));
       $(create).on("click", function(ev) {
 	var tabbed = $(ev.target).parents(".tabbed").first();
 
 	var e = $("<div>Hello World</div>");
-	tabbed.tabbed('addTab', e);
+	tabbed.tabbed('addTab', e, {active:true,close:true});
+	ev.preventDefault();
+	return false;
       });
     },
 
     /**
      * Add a new tab using content
+     * @param {Object} content is the DOM node to use as content for the
+     * tab.
+     * @param {Object} options
+     * @param {Boolean} [options.active] if `true`, make the new tab
+     * active
+     * @param {Boolean} [options.close] if `true`, allow closing the new
+     * tab.
      */
-    addTab: function(content, id, active) {
+    addTab: function(content, options) {
       var ul = this.tabbed('navTabs');
-      var id = "tab-new";
+      var id = genId();
 
-      this.tabbed('navContent').append(wrapInTab(content, id, active));
+      this.tabbed('navContent').append(wrapInTab(content, id, options.close));
 
-      var li  = this.tabbed('tabLabel', id, "Source "+id);
+      var li  = this.tabbed('tabLabel', id, "New tab", close);
 
       var create = ul.find("a.tab-new");
       if ( create.length == 1 )
@@ -86,27 +112,41 @@ define([ "jquery", "laconic" ],
       else
 	ul.append(li);
 
-      $(li).find("a").first().tab('show');
+      if ( options.active )
+	$(li).find("a").first().tab('show');
     },
 
     /**
-     * Remove tab with given Id. Make the previous tab active, or if
-     * there is no previous, the next.
-     * @param id is the id of the tab to destroy
+     * Remove tab with given Id. If the tab is the active tab, make the
+     * previous tab active, or if there is no previous, the next.
+     *
+     * @param {String} id is the id of the tab to destroy
      */
     removeTab: function(id) {
       var li = this.tabbed('navTabs').find("a[data-id='"+id+"']").parent();
-      var new_active = li.prev() || li.next();
+      var new_active;
 
+      if ( $("#"+id).is(":visible") )
+	new_active = li.prev() || li.next();
       li.remove();
       $("#"+id).remove();
       if ( new_active )
 	new_active.find("a").first().tab('show');
     },
 
+    /**
+     * Create a label (`li`) for a new tab.
+     */
     tabLabel: function(id, name, close) {
+      var close_button;
+
+      if ( close )
+      { close_button = glyphicon("remove", "xclose");
+	$(close_button).attr("title", "Close tab");
+      }
+
       var a1 = $.el.a({class:"compact", href:"#"+id, "data-id":id},
-		      name, glyphicon("remove", "xclose"));
+		      name, close_button);
       var li = $.el.li({role:"presentation"}, a1);
 
       return li;
@@ -147,6 +187,10 @@ define([ "jquery", "laconic" ],
       $(span).addClass(className);
 
     return span;
+  }
+
+  function genId()
+  { return "tabbed-tab-"+tabid++;
   }
 
 

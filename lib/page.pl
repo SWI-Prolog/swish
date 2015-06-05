@@ -263,7 +263,10 @@ swish_content(Options) -->
 		 [ div([class([tile, horizontal]), 'data-split'('50%')],
 		       [ div([ class([editors, tabbed])
 			     ],
-			     [ div(class(['prolog-editor']),
+			     [ div([ class(['prolog-editor']),
+				     'data-label'('Source'),
+				     'data-close'(disabled)
+				   ],
 				   \source(Options))
 			     ]),
 			 div([class([tile, vertical]), 'data-split'('70%')],
