@@ -35,16 +35,64 @@ define([ "jquery", "laconic" ],
       var ul = $.el.ul({ class:"nav nav-tabs",
 			 role:"tablist"
 		       });
+      var contents = $.el.div({class:"tab-content"});
 
+      this.prepend(contents);
       this.prepend(ul);
+
+      $(ul).on("click", "a", function(ev) {
+	console.log(ev.target);
+	$(ev.target).tab('show');
+	ev.preventDefault();
+      });
 
       for(var i=0; i<children.length; i++) {
 	var id = 'tab-'+i;
-	$(ul).append($.el.li({ role:"presentation", class:"active" },
-			     $.el.a({href:"#"+id},
-				    "Source "+i)));
-	wrapInTab($(children[i]), id, true);
+	var a = $.el.a({href:"#"+id}, "Source "+i);
+	$(ul).append($.el.li({ role:"presentation", class:"active" }, a));
+	$(contents).append(wrapInTab($(children[i]), id, true));
       }
+
+      var create = $.el.a({class: "tab-new"}, "+");
+      $(ul).append($.el.li({ role:"presentation" }, create));
+      $(create).on("click", function(ev) {
+	var tabbed = $(ev.target).parents(".tabbed").first();
+
+	var e = $("<div>Hello World</div>");
+	tabbed.tabbed('addTab', e);
+      });
+    },
+
+    /**
+     * Add a new tab using content
+     */
+    addTab: function(content) {
+      var ul = this.tabbed('navTabs');
+      var id = "tab-new";
+
+      this.tabbed('navContent').append(wrapInTab(content, id));
+
+      var a  = $.el.a({href:"#"+id}, "Source "+id);
+      var li = $.el.li({ role:"presentation" }, a);
+
+      var create = ul.find("a.tab-new");
+      if ( create.length == 1 )
+	$(li).insertBefore(create.first().parent());
+      else
+	ul.append(li);
+
+      $(a).tab('show');
+    },
+
+    /**
+     * Get the UL list that represents the nav tabs
+     */
+    navTabs: function() {
+      return this.find("ul.nav-tabs").first();
+    },
+
+    navContent: function() {
+      return this.find("div.tab-content").first();
     }
   }; // methods
 
@@ -61,7 +109,7 @@ define([ "jquery", "laconic" ],
     if ( active )
       wrapped.addClass("active");
 
-    wrapped.wrap('<div class="tab-content"></div>');
+    return wrapped;
   }
 
   /**
