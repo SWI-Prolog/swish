@@ -102,5 +102,5 @@ pengines:prepare_module(Module, swish, _Options) :-
 :- use_module(swish(lib/render/codes), []).
 :- use_module(swish(lib/render/svgtree), []).
 
-:- use_module(library(pita)).
+:- use_module(lib/pita).
 
