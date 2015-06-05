@@ -41,7 +41,9 @@ define([ "jquery", "laconic" ],
       this.prepend(ul);
 
       $(ul).on("click", "span.xclose", function(ev) {
-	alert("close");
+	var id = $(ev.target).parent().attr("data-id");
+	console.log($(ev.target).parents(".tabbed"));
+	$(ev.target).parents(".tabbed").first().tabbed('removeTab', id);
 	ev.preventDefault();
       });
       $(ul).on("click", "a", function(ev) {
@@ -87,8 +89,23 @@ define([ "jquery", "laconic" ],
       $(li).find("a").first().tab('show');
     },
 
+    /**
+     * Remove tab with given Id. Make the previous tab active, or if
+     * there is no previous, the next.
+     * @param id is the id of the tab to destroy
+     */
+    removeTab: function(id) {
+      var li = this.tabbed('navTabs').find("a[data-id='"+id+"']").parent();
+      var new_active = li.prev() || li.next();
+
+      li.remove();
+      $("#"+id).remove();
+      if ( new_active )
+	new_active.find("a").first().tab('show');
+    },
+
     tabLabel: function(id, name, close) {
-      var a1 = $.el.a({class:"compact", href:"#"+id},
+      var a1 = $.el.a({class:"compact", href:"#"+id, "data-id":id},
 		      name, glyphicon("remove", "xclose"));
       var li = $.el.li({role:"presentation"}, a1);
 
