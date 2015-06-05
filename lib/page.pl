@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014, VU University Amsterdam
+    Copyright (C): 2014-2015, VU University Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -261,26 +261,10 @@ swish_content(Options) -->
 	swish_config_hash,
 	html(div([id(content), class([container, swish])],
 		 [ div([class([tile, horizontal]), 'data-split'('50%')],
-		       [ div([ class(editors),
-			       style('height: 100%')
+		       [ div([ class([editors, tabbed])
 			     ],
-			     [ ul([class([nav, 'nav-tabs']), role(tablist)],
-				  [ li([ role(presentation),
-					 class(active)
-				       ],
-				       a(href('#source'), 'Source'))
-				  ]),
-			       div([ class('tab-content'),
-				     style('height: calc(100% - 50px)')
-				   ],
-				   [ div([ role(tabpanel),
-					   class(['tab-pane', active]),
-					   id(source),
-					   style('height: 100%')
-					 ],
-					 div(class('prolog-editor'),
-					     \source(Options)))
-				   ])
+			     [ div(class(['prolog-editor']),
+				   \source(Options))
 			     ]),
 			 div([class([tile, vertical]), 'data-split'('70%')],
 			     [ div(class('prolog-runners'), []),

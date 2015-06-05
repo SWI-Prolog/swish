@@ -16,6 +16,7 @@ define([ "jquery",
 	 "splitter",
 	 "bootstrap",
 	 "pane",
+	 "tabbed",
 	 "navbar",
 	 "search",
 	 "editor",
@@ -378,6 +379,7 @@ preferences.setDefault("emacs-keybinding", false);
     $('body').on("click", "button.close-pane", function() {
       closePane($(this).parent());
     });
+    $(".tabbed").tabbed();
   }
 
   /**
