@@ -127,3 +127,10 @@ _not_ see exactly the same UI for cooperation.  What about
       - Found files (including full text search inside them)
       - Found manual entries
       - Found source locations
+
+## Tabbed editor
+
+  - "New tab" presents dialog with options:
+
+    - Create a new document (e.g., HTML)
+    - Find and edit (loaded) source file.
