@@ -24,23 +24,23 @@ define([ "jquery", "laconic" ],
 
 	elem.append($.el.div(
 	    {class:"nb-titlebar"},
-	    "Notebook"));
+	    $.el.span({class:"nb-title"}, "Notebook")));
 	elem.append($.el.div(
             {class:"nb-toolbar"},
-	    glyphicon("floppy-save"),
+	    glyphButton("floppy-save", "checkpoint", "Checkpoint"),
 	    sep(),
-	    glyphicon("trash"),
-	    glyphicon("copy"),
-	    glyphicon("paste"),
+	    glyphButton("trash", "delete", "Delete cell"),
+	    glyphButton("copy", "copy", "Copy cell"),
+	    glyphButton("paste", "paste", "Paste cell below"),
 	    sep(),
-	    glyphicon("chevron-up"),
-	    glyphicon("chevron-down"),
+	    glyphButton("chevron-up", "up", "Move cell up"),
+	    glyphButton("chevron-down", "down", "Move cell down"),
 	    sep(),
-	    glyphicon("circle-arrow-up"),
-	    glyphicon("circle-arrow-down"),
+	    glyphButton("circle-arrow-up", "insert_above", "Insert cell above"),
+	    glyphButton("circle-arrow-down", "insert_below", "Insert cell below"),
 	    sep(),
-	    glyphicon("play"),
-	    glyphicon("stop")
+	    glyphButton("play", "run", "Run"),
+	    glyphButton("stop", "interrupt", "Interrupt")
 	    ));
 	elem.append($.el.div({class:"nb-content"}));
 
@@ -51,13 +51,14 @@ define([ "jquery", "laconic" ],
 
   // <private functions>
 
-  function glyphicon(glyph, className) {
-    var span = $.el.span({class:"glyphicon glyphicon-"+glyph});
+  function glyphButton(glyph, className, title) {
+    var btn = $.el.a({href:"#", class:"btn btn-info btn-sm", title:title},
+		     $.el.span({class:"glyphicon glyphicon-"+glyph}));
 
     if ( className )
-      $(span).addClass(className);
+      $(btn).addClass(className);
 
-    return span;
+    return btn;
   }
 
   function sep() {
