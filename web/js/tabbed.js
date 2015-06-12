@@ -30,6 +30,8 @@ define([ "jquery", "laconic" ],
 	var elem = $(this);
 	var data = {};			/* private data */
 
+	data.newTab = options.newTab;
+
 	elem.addClass("tabbed");
 	elem.tabbed('makeTabbed');
 
@@ -81,12 +83,25 @@ define([ "jquery", "laconic" ],
       $(create).on("click", function(ev) {
 	var tabbed = $(ev.target).parents(".tabbed").first();
 
-	var e = $("<div>Hello World</div>");
-	tabbed.tabbed('addTab', e, {active:true,close:true});
+	tabbed.tabbed('newTab');
 	ev.preventDefault();
 	return false;
       });
     },
+
+    /**
+     * Add an empty new tab from the "+" button.  This calls
+     * options.newTab() to return a DOM element for the new
+     * tab.
+     */
+    newTab: function() {
+      var data = this.data(pluginName);
+      var dom  = data.newTab();
+
+      this.tabbed('addTab', dom, {active:true,close:true});
+      return this;
+    },
+
 
     /**
      * Add a new tab using content
@@ -166,13 +181,13 @@ define([ "jquery", "laconic" ],
 
   /**
    * Wrap a content element in a Bootstrap tab content.
-   * @param dom is the object that must be wrapped
-   * @param id is the identifier to give to the new content
-   * @param active sets the tab to active if `true`
+   * @param {Object} dom is the object that must be wrapped
+   * @param {String} id is the identifier to give to the new content
+   * @param {Boolean} active sets the tab to active if `true`
    */
   function wrapInTab(dom, id, active) {
-    dom.wrap('<div role="tabpanel" class="tab-pane" id="'+id+'"></div>');
-    var wrapped = dom.parent();
+    $(dom).wrap('<div role="tabpanel" class="tab-pane" id="'+id+'"></div>');
+    var wrapped = $(dom).parent();
 
     if ( active )
       wrapped.addClass("active");
