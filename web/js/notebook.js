@@ -279,6 +279,13 @@ define([ "jquery", "laconic" ],
 
     type: function(type) {
       console.log(this, type);
+      switch(type) {
+	case "source":
+	  var editor;
+	  this.html("");
+	  this.append(editor=$.el.div());
+	  $(editor).prologEditor();
+      }
     },
 
     /**
