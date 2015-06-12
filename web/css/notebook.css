@@ -1,7 +1,7 @@
 /* Style for the SWISH notebook
 */
 
-.nb-titlebar, .nb-toolbar, .nb-content
+.nb-titlebar, .nb-toolbar, .nb-content, .nb-cell
 { margin-left: 1em;
 }
 
@@ -17,4 +17,15 @@
 
 .dropdown.cell-type
 { display: inline;
+}
+
+.nb-cell
+{ margin-right: 1em;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.nb-cell.active
+{ border: 1px solid #888;
 }
