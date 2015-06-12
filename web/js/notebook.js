@@ -70,6 +70,7 @@ define([ "jquery", "laconic" ],
 		 *******************************/
 
     checkpoint: function() {
+      alert("Checkpoint safe not yet implemented");
     },
 
     delete: function(cell) {
@@ -118,7 +119,16 @@ define([ "jquery", "laconic" ],
       return this.notebook('insert', { where:"below" });
     },
 
-    run: function() {
+    run: function(cell) {
+      cell = cell||currentCell(this);
+      if ( cell )
+	cell.nbCell("run");
+    },
+
+    cellType: function(cell, type) {
+      cell = cell||currentCell(this);
+      if ( cell )
+	cell.nbCell('type', type);
     },
 
 		 /*******************************
@@ -176,11 +186,10 @@ define([ "jquery", "laconic" ],
   }
 
   function typeDropDown() {
-    function item(name) {
+    function item(type, label) {
       return $.el.li({role:"presentation"},
-		     $.el.a({role:"menuitem", href:"#"},
-			    name));
-
+		     $.el.a({role:"menuitem", href:"#", "data-type":type},
+			    label));
     }
 
     var dd = $.el.div({class:"dropdown cell-type"},
@@ -190,13 +199,20 @@ define([ "jquery", "laconic" ],
 				  "Cell type ",
 				  $.el.span({class:"caret"})),
 		      $.el.ul({class:"dropdown-menu"},
-			      item("Source"),
-			      item("Query"),
-			      item("Markdown"),
-			      item("Heading 1"),
-			      item("Heading 2"),
-			      item("Heading 3"),
-			      item("Heading 4")));
+			      item("source",   "Source"),
+			      item("query",    "Query"),
+			      item("markdown", "Markdown"),
+			      item("h1",       "Heading 1"),
+			      item("h2",       "Heading 2"),
+			      item("h3",       "Heading 3"),
+			      item("h4",       "Heading 4")));
+
+    $(dd).on("click", "a", function(ev) {
+      var notebook = $(ev.target).closest(".notebook");
+      var type = $(ev.target).data("type");
+      notebook.notebook('cellType', undefined, type);
+    });
+
     return dd;
   }
 
@@ -258,6 +274,17 @@ define([ "jquery", "laconic" ],
 
 	elem.data(pluginName, data);	/* store with element */
       });
+    },
+
+    type: function(type) {
+      console.log(this, type);
+    },
+
+    /**
+     * Run the current cell
+     */
+    run: function() {
+      alert("Run me");
     }
   }; // methods
 
