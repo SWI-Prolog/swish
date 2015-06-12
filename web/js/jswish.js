@@ -17,6 +17,7 @@ define([ "jquery",
 	 "bootstrap",
 	 "pane",
 	 "tabbed",
+	 "notebook",
 	 "navbar",
 	 "search",
 	 "editor",
@@ -379,7 +380,11 @@ preferences.setDefault("emacs-keybinding", false);
     $('body').on("click", "button.close-pane", function() {
       closePane($(this).parent());
     });
-    $(".tabbed").tabbed();
+    $(".tabbed").tabbed({newTab: function() {
+      var nb = $.el.div({class: "notebook"});
+      $(nb).notebook();
+      return nb;
+    }});
   }
 
   /**
