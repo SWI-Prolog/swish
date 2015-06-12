@@ -14,3 +14,7 @@
   margin-bottom: 1em;
   border-bottom: 1px solid #ddd;
 }
+
+.dropdown.cell-type
+{ display: inline;
+}

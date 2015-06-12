@@ -40,7 +40,9 @@ define([ "jquery", "laconic" ],
 	    glyphButton("circle-arrow-down", "insert_below", "Insert cell below"),
 	    sep(),
 	    glyphButton("play", "run", "Run"),
-	    glyphButton("stop", "interrupt", "Interrupt")
+	    glyphButton("stop", "interrupt", "Interrupt"),
+	    sep(),
+	    typeDropDown()
 	    ));
 	elem.append($.el.div({class:"nb-content"}));
 
@@ -63,6 +65,31 @@ define([ "jquery", "laconic" ],
 
   function sep() {
     return $.el.span({class:"thin-space"}, " ");
+  }
+
+  function typeDropDown() {
+    function item(name) {
+      return $.el.li({role:"presentation"},
+		     $.el.a({role:"menuitem", href:"#"},
+			    name));
+
+    }
+
+    var dd = $.el.div({class:"dropdown cell-type"},
+		      $.el.button({class:"btn btn-sm dropdown-toggle",
+		                  type:"button",
+				  "data-toggle":"dropdown"},
+				  "Cell type ",
+				  $.el.span({class:"caret"})),
+		      $.el.ul({class:"dropdown-menu"},
+			      item("Source"),
+			      item("Query"),
+			      item("Markdown"),
+			      item("Heading 1"),
+			      item("Heading 2"),
+			      item("Heading 3"),
+			      item("Heading 4")));
+    return dd;
   }
 
   /**
