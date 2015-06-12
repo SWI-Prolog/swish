@@ -2,11 +2,12 @@
  * @fileOverview
  * Manage the cell structure of a notebook modelled after IPython
  * NoteBook.  The nodebook consists of a toolbar with a series of
- * buttons and manages a list of cells.
+ * buttons and manages a list of cells.  The file defines two plugins
+ * `notebook`, implementing the overall notebook and `nbCell`,
+ * implementing a single cell.
  *
  * @version 0.2.0
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
- * @requires jquery
  */
 
 define([ "jquery", "laconic" ],
