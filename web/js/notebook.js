@@ -266,17 +266,11 @@ var cellTypes = {
     type: function(type) {
       var data = this.data(pluginName);
       if ( data.type != type ) {
-	switch(type) {
-	  case "program":
-	    makeEditor(this, {});
-	    break;
-	  case "markdown":
-	    makeEditor(this, {mode:"markdown"});
-	    break;
-	}
+	methods.type[type].apply(this);
 	data.type = type;
 	this.addClass(type);
       }
+      return this;
     },
 
     /**
@@ -294,17 +288,59 @@ var cellTypes = {
   }; // methods
 
 		 /*******************************
+		 *	     SET TYPE		*
+		 *******************************/
+
+  methods.type.markdown = function(options) {	/* markdown */
+    var editor;
+
+    options = options||{};
+    options.mode = "markdown";
+
+    this.html("");
+    this.append(editor=$.el.div({class:"editor"}));
+    $(editor).prologEditor(options);
+    this.addClass("runnable");
+  }
+
+  methods.type.program = function() {		/* program */
+    var editor;
+
+    this.html("");
+    this.append(editor=$.el.div({class:"editor"}));
+    $(editor).prologEditor();
+  }
+
+  methods.type.query = function() {		/* query */
+    var editor;
+
+    this.html("<span class='prolog-prompt'>?-</span>");
+    this.append(editor=$.el.div({class:"editor query"}));
+    $(editor).prologEditor({ role: "query",
+	                   //sourceID: options.sourceID,
+			     placeholder: "Your query goes here ...",
+			     lineNumbers: false,
+			     lineWrapping: true,
+			     prologQuery: function(q) {
+			       alert("Run query"+q+"!");
+			     }
+		           });
+    this.addClass("runnable");
+  }
+
+
+		 /*******************************
 		 *	    RUN BY TYPE		*
 		 *******************************/
 
-  methods.run.markdown = function() {
+  methods.run.markdown = function() {		/* markdown */
     var cell = this;
     var markdownText = cellText(this);
 
     function makeEditable(ev) {
       var cell = $(ev.target).closest(".nb-cell");
       var text = cell.data('markdownText');
-      makeEditor(cell, { mode:"markdown", value:text });
+      methods.type.markdown.call(cell, {value:text});
       cell.off("dblclick", makeEditable);
     }
 
@@ -318,22 +354,21 @@ var cellTypes = {
 	    cell.on("dblclick", makeEditable);
 	  });
   };
-  methods.run.program = function() {
+
+  methods.run.program = function() {		/* program */
     alert("Please define a query to run this program");
   };
+
+  methods.run.query = function() {		/* query */
+    var query = cellText(this);
+
+    alert("Run! "+query);
+  };
+
 
 		 /*******************************
 		 *	     UTILITIES		*
 		 *******************************/
-
-  function makeEditor(cell, options) {
-    var editor;
-
-    cell.html("");
-    cell.append(editor=$.el.div({class:"editor"}));
-    $(editor).prologEditor(options);
-    cell.addClass("runnable");
-  }
 
   function cellText(cell) {
     return cell.find(".editor").prologEditor('getSource');

@@ -52,3 +52,15 @@
 .nb-cell .CodeMirror
 { border-radius: 5px;
 }
+
+.nb-cell .prolog-prompt
+{ float: left;
+  width: 44px;			/* CodeMirror gutter width */
+  padding-left: 0.3em;
+  padding-top: 0.2em;
+  font-weight: bold;
+}
+
+.nb-cell .editor.query
+{ margin-left: 44px;		/* CodeMirror gutter width */
+}
