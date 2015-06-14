@@ -13,6 +13,12 @@
 define([ "jquery", "config", "laconic" ],
        function($, config) {
 
+var cellTypes = {
+  "program":  { label:"Program" },
+  "query":    { label:"Query" },
+  "markdown": { label:"Markdown" },
+};
+
 (function($) {
   var pluginName = 'notebook';
   var clipboard = null;
@@ -198,7 +204,7 @@ define([ "jquery", "config", "laconic" ],
 				  "Cell type ",
 				  $.el.span({class:"caret"})),
 		      $.el.ul({class:"dropdown-menu"},
-			      item("source",   "Source"),
+			      item("program",  "Program"),
 			      item("query",    "Query"),
 			      item("markdown", "Markdown")));
 
@@ -254,7 +260,6 @@ define([ "jquery", "config", "laconic" ],
 
 (function($) {
   var pluginName = 'nbCell';
-  var id = 0;
 
   /** @lends $.fn.nbCell */
   var methods = {
@@ -262,12 +267,28 @@ define([ "jquery", "config", "laconic" ],
       return this.each(function() {
 	var elem = $(this);
 	var data = {};			/* private data */
-
-	elem.attr("tabIndex", -1);
-	elem.append("Cell "+id+++" ");
-	elem.append($.el.input());
+	var g;
 
 	elem.data(pluginName, data);	/* store with element */
+
+	elem.attr("tabIndex", -1);
+	elem.append($.el.div({class:"nb-type-select"},
+			     $.el.label("Create a "),
+			     g=$.el.div({class:"btn-group",role:"group"}),
+			     $.el.label("cell here.")));
+
+	for(var k in cellTypes) {
+	  if ( cellTypes.hasOwnProperty(k) )
+	    $(g).append($.el.button({ type:"button",
+				      class:"btn btn-default",
+				      "data-type":k
+				    },
+				    cellTypes[k].label));
+	}
+
+	$(g).on("click", ".btn", function(ev) {
+	  elem.nbCell('type', $(ev.target).data('type'));
+	});
       });
     },
 
@@ -275,7 +296,7 @@ define([ "jquery", "config", "laconic" ],
       var data = this.data(pluginName);
       if ( data.type != type ) {
 	switch(type) {
-	  case "source":
+	  case "program":
 	    makeEditor(this, {});
 	    break;
 	  case "markdown":
@@ -283,6 +304,7 @@ define([ "jquery", "config", "laconic" ],
 	    break;
 	}
 	data.type = type;
+	this.addClass(type);
       }
     },
 
@@ -290,9 +312,13 @@ define([ "jquery", "config", "laconic" ],
      * Run the current cell
      */
     run: function() {
-      var data = this.data(pluginName);
+      if ( this.hasClass("runnable") ) {
+	var data = this.data(pluginName);
 
-      return methods.run[data.type].apply(this, arguments);
+	return methods.run[data.type].apply(this, arguments);
+      } else {
+	alert("Cell is not runnable");
+      }
     }
   }; // methods
 
@@ -308,10 +334,11 @@ define([ "jquery", "config", "laconic" ],
 	  },
 	  function(data) {
 	    cell.html(data);
+	    cell.removeClass("runnable");
 	  });
   };
-  methods.run.source = function() {
-    alert("Please define a query to run this source");
+  methods.run.program = function() {
+    alert("Please define a query to run this program");
   };
 
 		 /*******************************
@@ -324,6 +351,7 @@ define([ "jquery", "config", "laconic" ],
     cell.html("");
     cell.append(editor=$.el.div({class:"editor"}));
     $(editor).prologEditor(options);
+    cell.addClass("runnable");
   }
 
   function cellText(cell) {

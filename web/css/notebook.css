@@ -26,6 +26,17 @@
   border-radius: 5px;
 }
 
+.nb-type-select
+{ padding: 1em 0px 1em 0px;
+}
+
+.nb-type-select > label
+{ margin-left: 1em;
+  margin-right: 1em;
+  position: relative;
+  top: 0.1em;
+}
+
 .nb-cell.active
 { border: 1px solid #888;
 }
