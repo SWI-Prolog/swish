@@ -88,13 +88,14 @@ var cellTypes = {
     copy: function(cell) {
       cell = cell||currentCell(this);
       if ( cell )
-	clipboard = cell;
+	clipboard = $(cell).nbCell('saveDOM');
     },
 
     paste: function() {
       if ( clipboard ) {
-	var newcell = clipboard.clone(true,true);
+	var newcell = $.el.div({class:"nb-cell"});
 	this.notebook('insert', { where:"below", cell:newcell });
+	$(newcell).nbCell($(clipboard));
       } else {
 	alert("Clipboard is empty");
       }
@@ -171,6 +172,35 @@ var cellTypes = {
       if ( !options.cell )
 	$(cell).nbCell();
       this.notebook('active', $(cell));
+    },
+
+		 /*******************************
+		 *	   SAVE/RESTORE		*
+		 *******************************/
+
+    /**
+     * Set or get the state of this notebook as a string.
+     * @param [String] val is an HTML string that represents
+     * the notebook state.
+     */
+    value: function(val) {
+      if ( val == undefined ) {
+	var dom = $.el.div({class:"notebook"});
+	this.find(".nb-cell").each(function() {
+	  cell = $(this);
+	  dom.append(cell.nbCell('saveDOM'));
+	});
+
+	return this.html();
+      } else {
+	var dom = $.el.div();
+	$(dom).html(val);
+	$(dom).find(".nb-cell").each(function() {
+	  var cell = $.el.div({class:"nb-cell"});
+	  this.append(cell);
+	  $(cell).nbCell($(this));
+	});
+      }
     }
   }; // methods
 
@@ -234,32 +264,41 @@ var cellTypes = {
 
   /** @lends $.fn.nbCell */
   var methods = {
-    _init: function(options) {
+    /**
+     * Create a new notebook cell
+     * @param {jQuery} [dom] initialise the new cell from the saved
+     * DOM
+     */
+    _init: function(dom) {
       return this.each(function() {
 	var elem = $(this);
 	var data = {};			/* private data */
 	var g;
 
 	elem.data(pluginName, data);	/* store with element */
-
 	elem.attr("tabIndex", -1);
-	elem.append($.el.div({class:"nb-type-select"},
-			     $.el.label("Create a "),
-			     g=$.el.div({class:"btn-group",role:"group"}),
-			     $.el.label("cell here.")));
 
-	for(var k in cellTypes) {
-	  if ( cellTypes.hasOwnProperty(k) )
-	    $(g).append($.el.button({ type:"button",
-				      class:"btn btn-default",
-				      "data-type":k
-				    },
-				    cellTypes[k].label));
+	if ( dom instanceof jQuery ) {
+	  elem.nbCell('restoreDOM', dom);
+	} else {
+	  elem.append($.el.div({class:"nb-type-select"},
+			       $.el.label("Create a "),
+			       g=$.el.div({class:"btn-group",role:"group"}),
+			       $.el.label("cell here.")));
+
+	  for(var k in cellTypes) {
+	    if ( cellTypes.hasOwnProperty(k) )
+	      $(g).append($.el.button({ type:"button",
+					class:"btn btn-default",
+					"data-type":k
+				      },
+				      cellTypes[k].label));
+	  }
+
+	  $(g).on("click", ".btn", function(ev) {
+	    elem.nbCell('type', $(ev.target).data('type'));
+	  });
 	}
-
-	$(g).on("click", ".btn", function(ev) {
-	  elem.nbCell('type', $(ev.target).data('type'));
-	});
       });
     },
 
@@ -284,6 +323,25 @@ var cellTypes = {
       } else {
 	alert("Cell is not runnable");
       }
+    },
+
+    saveDOM: function() {
+      return methods.saveDOM[this.data(pluginName).type].apply(this, arguments);
+    },
+
+    restoreDOM: function(dom) {
+      var data = this.data(pluginName);
+
+      function domCellType(dom) {
+	for(var k in cellTypes) {
+	  if ( cellTypes.hasOwnProperty(k) && dom.hasClass(k) )
+	    return k;
+	}
+      }
+
+      data.type = domCellType(dom);
+      methods.restoreDOM[data.type].apply(this, arguments);
+      this.addClass(data.type);
     }
   }; // methods
 
@@ -303,29 +361,34 @@ var cellTypes = {
     this.addClass("runnable");
   }
 
-  methods.type.program = function() {		/* program */
+  methods.type.program = function(options) {	/* program */
     var editor;
+
+    options = options||{};
 
     this.html("");
     this.append(editor=$.el.div({class:"editor"}));
-    $(editor).prologEditor();
+    $(editor).prologEditor(options);
   }
 
-  methods.type.query = function() {		/* query */
+  methods.type.query = function(options) {	/* query */
     var editor;
     var cell = this;
 
+    options = $.extend({}, options,
+		       { role: "query",
+		       //sourceID: options.sourceID,
+		         placeholder: "Your query goes here ...",
+			 lineNumbers: false,
+			 lineWrapping: true,
+			 prologQuery: function(q) {
+			   cell.nbCell('run');
+			 }
+		       });
+
     this.html("<span class='prolog-prompt'>?-</span>");
     this.append(editor=$.el.div({class:"editor query"}));
-    $(editor).prologEditor({ role: "query",
-	                   //sourceID: options.sourceID,
-			     placeholder: "Your query goes here ...",
-			     lineNumbers: false,
-			     lineWrapping: true,
-			     prologQuery: function(q) {
-			       cell.nbCell('run');
-			     }
-		           });
+    $(editor).prologEditor(options);
     this.addClass("runnable");
   }
 
@@ -334,13 +397,15 @@ var cellTypes = {
 		 *	    RUN BY TYPE		*
 		 *******************************/
 
-  methods.run.markdown = function() {		/* markdown */
+  methods.run.markdown = function(markdownText) {	/* markdown */
     var cell = this;
-    var markdownText = cellText(this);
+
+    markdownText = markdownText||cellText(this);
 
     function makeEditable(ev) {
       var cell = $(ev.target).closest(".nb-cell");
       var text = cell.data('markdownText');
+      cell.removeData('markdownText');
       methods.type.markdown.call(cell, {value:text});
       cell.off("dblclick", makeEditable);
     }
@@ -369,6 +434,38 @@ var cellTypes = {
     this.find(".prolog-runner").remove();
     this.append(runner);
     $(runner).prologRunner(query);
+  };
+
+		 /*******************************
+		 *	SAVE/RESTORE DOM	*
+		 *******************************/
+
+  methods.saveDOM.markdown = function() {	/* markdown */
+    var text = this.data('markdownText') || cellText(this);
+
+    return $.el.div({class:"nb-cell markdown"}, text);
+  };
+
+  methods.saveDOM.program = function() {	/* program */
+    return $.el.div({class:"nb-cell program"}, cellText(this));
+  };
+
+  methods.saveDOM.query = function() {		/* query */
+    return $.el.div({class:"nb-cell query"}, cellText(this));
+  };
+
+/* ---------------- restore ---------------- */
+
+  methods.restoreDOM.markdown = function(dom) {	/* markdown */
+    methods.run.markdown.call(this, dom.text());
+  };
+
+  methods.restoreDOM.program = function(dom) {	/* program */
+    methods.type.program.call(this, {value:dom.text()});
+  };
+
+  methods.restoreDOM.query = function(dom) {	/* query */
+    methods.type.query.call(this, {value:dom.text()});
   };
 
 
