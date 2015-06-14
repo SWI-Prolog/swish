@@ -108,7 +108,7 @@ define([ "cm/lib/codemirror",
 
 	options      = options||{};
 	options.mode = options.mode||"prolog";
-	options      = $.extend(modeDefaults[options.mode], options);
+	options      = $.extend({}, modeDefaults[options.mode], options);
 
 	if ( preferences.getVal("emacs-keybinding") )
 	  options.keyMap = "emacs";
