@@ -41,11 +41,9 @@ define([ "jquery", "laconic" ],
 	    glyphButton("chevron-up", "up", "Move cell up"),
 	    glyphButton("chevron-down", "down", "Move cell down"),
 	    sep(),
-	    glyphButton("circle-arrow-up", "insertAbove", "Insert cell above"),
-	    glyphButton("circle-arrow-down", "insertBelow", "Insert cell below"),
+	    glyphButton("plus", "insertBelow", "Insert cell below"),
 	    sep(),
 	    glyphButton("play", "run", "Run"),
-	    glyphButton("stop", "interrupt", "Interrupt"),
 	    sep(),
 	    typeDropDown()
 	    ));
@@ -202,11 +200,7 @@ define([ "jquery", "laconic" ],
 		      $.el.ul({class:"dropdown-menu"},
 			      item("source",   "Source"),
 			      item("query",    "Query"),
-			      item("markdown", "Markdown"),
-			      item("h1",       "Heading 1"),
-			      item("h2",       "Heading 2"),
-			      item("h3",       "Heading 3"),
-			      item("h4",       "Heading 4")));
+			      item("markdown", "Markdown")));
 
     $(dd).on("click", "a", function(ev) {
       var notebook = $(ev.target).closest(".notebook");
