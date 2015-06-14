@@ -285,6 +285,13 @@ define([ "jquery", "laconic" ],
 	  this.html("");
 	  this.append(editor=$.el.div());
 	  $(editor).prologEditor();
+	  break;
+	case "markdown":
+	  var editor;
+	  this.html("");
+	  this.append(editor=$.el.div());
+	  $(editor).prologEditor({mode:"markdown"});
+	  break;
       }
     },
 
