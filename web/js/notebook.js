@@ -10,7 +10,7 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  */
 
-define([ "jquery", "config", "laconic" ],
+define([ "jquery", "config", "laconic", "runner" ],
        function($, config) {
 
 var cellTypes = {
@@ -313,6 +313,7 @@ var cellTypes = {
 
   methods.type.query = function() {		/* query */
     var editor;
+    var cell = this;
 
     this.html("<span class='prolog-prompt'>?-</span>");
     this.append(editor=$.el.div({class:"editor query"}));
@@ -322,7 +323,7 @@ var cellTypes = {
 			     lineNumbers: false,
 			     lineWrapping: true,
 			     prologQuery: function(q) {
-			       alert("Run query"+q+"!");
+			       cell.nbCell('run');
 			     }
 		           });
     this.addClass("runnable");
@@ -360,9 +361,14 @@ var cellTypes = {
   };
 
   methods.run.query = function() {		/* query */
-    var query = cellText(this);
-
-    alert("Run! "+query);
+    var query = { source: "",			/* TBD */
+                  query: cellText(this),
+		  tabled: true
+                };
+    var runner = $.el.div({class: "prolog-runner"});
+    this.find(".prolog-runner").remove();
+    this.append(runner);
+    $(runner).prologRunner(query);
   };
 
 
