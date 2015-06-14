@@ -56,11 +56,16 @@
 .nb-cell .prolog-prompt
 { float: left;
   width: 44px;			/* CodeMirror gutter width */
-  padding-left: 0.3em;
+  padding-right: 0.3em;
   padding-top: 0.2em;
   font-weight: bold;
+  text-align: right;
 }
 
 .nb-cell .editor.query
 { margin-left: 44px;		/* CodeMirror gutter width */
+}
+
+.nb-cell.program, .nb-cell.query
+{ margin-bottom: 1em;
 }
