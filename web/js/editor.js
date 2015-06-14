@@ -72,6 +72,7 @@ define([ "cm/lib/codemirror",
 
     markdown: {
       placeholder: "Your markdown block goes here ...",
+      lineWrapping: true
     }
   };
 
@@ -140,7 +141,7 @@ define([ "cm/lib/codemirror",
 	    data.meta = window.swish.meta_data;
 	} else {
 	  ta = $.el.textarea({placeholder:options.placeholder},
-			     elem.text());
+			     options.value||elem.text());
 	  elem.append(ta);
 	}
 
