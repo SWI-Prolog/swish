@@ -6,7 +6,10 @@
 }
 
 .nb-title
-{ font-size: 250%;
+{ display: block;
+  text-align: center;
+  font-size: 200%;
+  margin-bottom: 0.5em;
 }
 
 .nb-toolbar
