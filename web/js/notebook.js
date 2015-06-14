@@ -10,8 +10,8 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  */
 
-define([ "jquery", "laconic" ],
-       function() {
+define([ "jquery", "config", "laconic" ],
+       function($, config) {
 
 (function($) {
   var pluginName = 'notebook';
@@ -276,16 +276,10 @@ define([ "jquery", "laconic" ],
       if ( data.type != type ) {
 	switch(type) {
 	  case "source":
-	    var editor;
-	    this.html("");
-	    this.append(editor=$.el.div());
-	    $(editor).prologEditor();
+	    makeEditor(this, {});
 	    break;
 	  case "markdown":
-	    var editor;
-	    this.html("");
-	    this.append(editor=$.el.div());
-	    $(editor).prologEditor({mode:"markdown"});
+	    makeEditor(this, {mode:"markdown"});
 	    break;
 	}
 	data.type = type;
@@ -302,14 +296,39 @@ define([ "jquery", "laconic" ],
     }
   }; // methods
 
+		 /*******************************
+		 *	    RUN BY TYPE		*
+		 *******************************/
+
   methods.run.markdown = function() {
-    alert("Run markdown");
+    var cell = this;
+
+    $.get(config.http.locations.markdown,
+	  { text: cellText(this)
+	  },
+	  function(data) {
+	    cell.html(data);
+	  });
   };
   methods.run.source = function() {
     alert("Please define a query to run this source");
   };
 
-  // <private functions>
+		 /*******************************
+		 *	     UTILITIES		*
+		 *******************************/
+
+  function makeEditor(cell, options) {
+    var editor;
+
+    cell.html("");
+    cell.append(editor=$.el.div({class:"editor"}));
+    $(editor).prologEditor(options);
+  }
+
+  function cellText(cell) {
+    return cell.find(".editor").prologEditor('getSource');
+  }
 
   /**
    * <Class description>
