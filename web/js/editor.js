@@ -24,6 +24,8 @@ define([ "cm/lib/codemirror",
 	 "cm/mode/prolog/prolog_query",
 	 "cm/mode/prolog/prolog_server",
 
+	 "cm/mode/markdown/markdown",
+
 	 "cm/addon/edit/matchbrackets",
 	 "cm/addon/comment/continuecomment",
 	 "cm/addon/comment/comment",
@@ -47,6 +49,31 @@ define([ "cm/lib/codemirror",
 
 (function($) {
   var pluginName = 'prologEditor';
+
+  var modeDefaults = {
+    prolog: {
+      role: "source",
+      placeholder: "Your Prolog program goes here ...",
+      lineNumbers: true,
+      mode: "prolog",
+      theme: "prolog",
+      matchBrackets: true,
+      textHover: true,
+      prologKeys: true,
+      extraKeys: {
+	"Ctrl-Space": "autocomplete",
+	"Alt-/": "autocomplete",
+      },
+      hintOptions: {
+      hint: templateHint.getHints,
+      completeSingle: false
+      }
+    },
+
+    markdown: {
+      placeholder: "Your markdown block goes here ...",
+    }
+  };
 
   /** @lends $.fn.prologEditor */
   var methods = {
@@ -77,44 +104,31 @@ define([ "cm/lib/codemirror",
       return this.each(function() {
 	var elem = $(this);
 	var data = {};
-	var ta;					/* textarea */
+	var ta;				/* textarea */
 
-	options = $.extend({
-	  role: "source",
-	  placeholder: "Your Prolog program goes here ...",
-	  lineNumbers: true,
-	  mode: "prolog",
-	  theme: "prolog",
-	  matchBrackets: true,
-	  textHover: true,
-	  prologKeys: true,
-	  extraKeys: {
-	    "Ctrl-Space": "autocomplete",
-	    "Alt-/": "autocomplete",
-	  },
-	  hintOptions: {
-	    hint: templateHint.getHints,
-	    completeSingle: false
-	  }
-	}, options);
-
-	if ( config.http.locations.cm_highlight ) {
-	  options.prologHighlightServer =
-	  { url:  config.http.locations.cm_highlight,
-	    role: options.role,
-	    enabled: preferences.getVal("semantic-highlighting")
-	  };
-	  if ( options.sourceID )
-	    options.prologHighlightServer.sourceID = options.sourceID;
-	  options.extraKeys["Ctrl-R"] = "refreshHighlight";
-	}
+	options      = options||{};
+	options.mode = options.mode||"prolog";
+	options      = $.extend(modeDefaults[options.mode], options);
 
 	if ( preferences.getVal("emacs-keybinding") )
 	  options.keyMap = "emacs";
 
-	if ( options.role != "query" ) {
-	  options.continueComments = "Enter";
-	  options.gutters = ["Prolog-breakpoints"]
+	if ( options.mode == "prolog" ) {
+	  if ( config.http.locations.cm_highlight ) {
+	    options.prologHighlightServer =
+	    { url:  config.http.locations.cm_highlight,
+	      role: options.role,
+	      enabled: preferences.getVal("semantic-highlighting")
+	    };
+	    if ( options.sourceID )
+	      options.prologHighlightServer.sourceID = options.sourceID;
+	    options.extraKeys["Ctrl-R"] = "refreshHighlight";
+	  }
+
+	  if ( options.role != "query" ) {
+	    options.continueComments = "Enter";
+	    options.gutters = ["Prolog-breakpoints"]
+	  }
 	}
 
 	if ( (ta=elem.children("textarea")[0]) ) {

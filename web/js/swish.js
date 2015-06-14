@@ -31,6 +31,11 @@ require.config({
     "cm/addon/runmode/runmode": "../bower_components/codemirror/addon/runmode/runmode",
     "cm/keymap/emacs" : "../bower_components/codemirror/keymap/emacs",
 
+					/* Markdown mode to support notebook */
+    "cm/mode/meta" : "../bower_components/codemirror/mode/meta",
+    "cm/mode/xml/xml" : "../bower_components/codemirror/mode/xml/xml",
+    "cm/mode/markdown/markdown" : "../bower_components/codemirror/mode/markdown/markdown",
+
 					/* Our own Prolog mode */
     "cm/mode/prolog/prolog": "codemirror/mode/prolog/prolog",
     "cm/mode/prolog/prolog_keys": "codemirror/mode/prolog/prolog_keys",
