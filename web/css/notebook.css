@@ -29,3 +29,7 @@
 .nb-cell.active
 { border: 1px solid #888;
 }
+
+.nb-cell .CodeMirror
+{ border-radius: 5px;
+}
