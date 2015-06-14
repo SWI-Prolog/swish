@@ -272,20 +272,23 @@ define([ "jquery", "laconic" ],
     },
 
     type: function(type) {
-      console.log(this, type);
-      switch(type) {
-	case "source":
-	  var editor;
-	  this.html("");
-	  this.append(editor=$.el.div());
-	  $(editor).prologEditor();
-	  break;
-	case "markdown":
-	  var editor;
-	  this.html("");
-	  this.append(editor=$.el.div());
-	  $(editor).prologEditor({mode:"markdown"});
-	  break;
+      var data = this.data(pluginName);
+      if ( data.type != type ) {
+	switch(type) {
+	  case "source":
+	    var editor;
+	    this.html("");
+	    this.append(editor=$.el.div());
+	    $(editor).prologEditor();
+	    break;
+	  case "markdown":
+	    var editor;
+	    this.html("");
+	    this.append(editor=$.el.div());
+	    $(editor).prologEditor({mode:"markdown"});
+	    break;
+	}
+	data.type = type;
       }
     },
 
@@ -293,9 +296,18 @@ define([ "jquery", "laconic" ],
      * Run the current cell
      */
     run: function() {
-      alert("Run me");
+      var data = this.data(pluginName);
+
+      return methods.run[data.type].apply(this, arguments);
     }
   }; // methods
+
+  methods.run.markdown = function() {
+    alert("Run markdown");
+  };
+  methods.run.source = function() {
+    alert("Please define a query to run this source");
+  };
 
   // <private functions>
 
