@@ -49,9 +49,7 @@ var cellTypes = {
 	    sep(),
 	    glyphButton("plus", "insertBelow", "Insert cell below"),
 	    sep(),
-	    glyphButton("play", "run", "Run"),
-	    sep(),
-	    typeDropDown()
+	    glyphButton("play", "run", "Run")
 	    ));
 	elem.append($.el.div({class:"nb-content"}));
 
@@ -188,33 +186,6 @@ var cellTypes = {
 
   function sep() {
     return $.el.span({class:"thin-space"}, " ");
-  }
-
-  function typeDropDown() {
-    function item(type, label) {
-      return $.el.li({role:"presentation"},
-		     $.el.a({role:"menuitem", href:"#", "data-type":type},
-			    label));
-    }
-
-    var dd = $.el.div({class:"dropdown cell-type"},
-		      $.el.button({class:"btn btn-sm dropdown-toggle",
-		                  type:"button",
-				  "data-toggle":"dropdown"},
-				  "Cell type ",
-				  $.el.span({class:"caret"})),
-		      $.el.ul({class:"dropdown-menu"},
-			      item("program",  "Program"),
-			      item("query",    "Query"),
-			      item("markdown", "Markdown")));
-
-    $(dd).on("click", "a", function(ev) {
-      var notebook = $(ev.target).closest(".notebook");
-      var type = $(ev.target).data("type");
-      notebook.notebook('cellType', undefined, type);
-    });
-
-    return dd;
   }
 
   /**
