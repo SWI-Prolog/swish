@@ -161,7 +161,7 @@ define([ "cm/lib/codemirror",
 	  elem.on("source", function(ev, src) {
 	    elem.prologEditor('setSource', src);
 	  });
-	  elem.on("saveProgram", function(ev, data) {
+	  elem.on("save", function(ev, data) {
 	    elem.prologEditor('save', data);
 	  });
 	  elem.on("fileInfo", function() {

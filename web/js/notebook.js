@@ -32,6 +32,7 @@ var cellTypes = {
 	var toolbar;
 
 	elem.addClass("notebook");
+	elem.addClass("swish-event-receiver");
 
 	elem.append($.el.div(
 	    {class:"nb-titlebar"},
@@ -62,6 +63,9 @@ var cellTypes = {
 
 	elem.focusin(function(ev) {
 	  elem.notebook('active', $(ev.target).closest(".nb-cell"));
+	});
+	elem.on("save", function(ev, data) {
+	  elem.notebook('save', data);
 	});
 
 	elem.data(pluginName, data);	/* store with element */

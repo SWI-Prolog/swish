@@ -46,7 +46,7 @@ preferences.setDefault("emacs-keybinding", false);
 	},
 	"File group": "--",
 	"Save ...": function() {
-	  menuBroadcast("saveProgram", "as");
+	  menuBroadcast("save", "as");
 	},
 	"Info & history ...": function() {
 	  menuBroadcast("fileInfo");
