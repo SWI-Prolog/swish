@@ -299,13 +299,23 @@ var cellTypes = {
 
   methods.run.markdown = function() {
     var cell = this;
+    var markdownText = cellText(this);
+
+    function makeEditable(ev) {
+      var cell = $(ev.target).closest(".nb-cell");
+      var text = cell.data('markdownText');
+      makeEditor(cell, { mode:"markdown", value:text });
+      cell.off("dblclick", makeEditable);
+    }
 
     $.get(config.http.locations.markdown,
-	  { text: cellText(this)
+	  { text: markdownText
 	  },
 	  function(data) {
 	    cell.html(data);
 	    cell.removeClass("runnable");
+	    cell.data('markdownText', markdownText);
+	    cell.on("dblclick", makeEditable);
 	  });
   };
   methods.run.program = function() {

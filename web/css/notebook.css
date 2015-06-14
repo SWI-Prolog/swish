@@ -19,6 +19,11 @@
 { display: inline;
 }
 
+.nb-cell.markdown:not(.runnable)
+{ background-color: transparent;
+  border: 0px;
+}
+
 .nb-cell
 { margin-right: 1em;
   background-color: #eee;
