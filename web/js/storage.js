@@ -36,7 +36,10 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 	var data = $.extend({}, options);
 
 	function isVisible() {
-	  return elem.is(":visible");
+	  var tab = elem.closest(".tab-pane");
+	  console.log(tab);
+	  return tab.length > 0 ? tab.hasClass("active")
+				: elem.is(":visible");
 	}
 
 	elem.on("source", function(ev, src) {
@@ -54,6 +57,10 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 	elem.on("revert", function(ev) {
 	  if ( isVisible() ) elem.storage('revert');
 	});
+	elem.on("activate-tab", function(ev) {
+						/* TBD: What exactly? */
+	});
+
 	$(window).bind("beforeunload", function(ev) {
 	  return elem.storage('unload', "beforeunload", ev);
 	});
