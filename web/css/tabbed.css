@@ -25,3 +25,13 @@ span.glyphicon.xclose {
 .nav > li > a.compact {
   padding: 5px 5px;
 }
+
+.tabbed-select {
+  margin-top: 2em;
+  margin-left: 2em;
+}
+
+.tabbed-select label {
+  margin-left: 1em;
+  margin-right: 1em;
+}

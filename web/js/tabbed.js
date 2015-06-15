@@ -10,6 +10,9 @@
 
 define([ "jquery", "laconic" ],
        function() {
+var tabbed = {
+  tabTypes: {}
+};
 
 (function($) {
   var pluginName = 'tabbed';
@@ -26,11 +29,14 @@ define([ "jquery", "laconic" ],
      *   - `data-close = "disabled"`
      */
     _init: function(options) {
+      options = options||{};
+
       return this.each(function() {
 	var elem = $(this);
 	var data = {};			/* private data */
 
-	data.newTab = options.newTab;
+	data.newTab   = options.newTab;
+	data.tabTypes = options.tabTypes || tabbed.tabTypes;
 
 	elem.addClass("tabbed");
 	elem.tabbed('makeTabbed');
@@ -96,7 +102,13 @@ define([ "jquery", "laconic" ],
      */
     newTab: function() {
       var data = this.data(pluginName);
-      var dom  = data.newTab();
+      var dom;
+
+      if ( data.newTab ) {
+	dom = data.newTab();
+      } else {
+	dom = this.tabbed('tabSelect');
+      }
 
       this.tabbed('addTab', dom, {active:true,close:true});
       return this;
@@ -168,6 +180,55 @@ define([ "jquery", "laconic" ],
     },
 
     /**
+     * This method is typically _not_ called on the tab, but on some
+     * inner element of the tab.  It changes the title of the tab.
+     * @param {String} title is the new title for the tab.
+     */
+    title: function(title) {
+      var tab    = this.closest(".tab-pane");
+      var tabbed = tab.closest(".tabbed");
+      var id     = tab.attr("id");
+      var ul	 = tabbed.tabbed('navTabs');
+      var a      = ul.find("a[data-id="+id+"]");
+
+      a.text(title);
+      return tabbed;
+    },
+
+    /**
+     * Default empty tab content that allows the user to transform
+     * the tab into the desired object.
+     * @return {Object} containing content for the new tab
+     */
+    tabSelect: function() {
+      var data = this.data(pluginName);
+      var dom = $.el.div({class:"tabbed-select"},
+			 $.el.label("Create a new "),
+			 g=$.el.div({class:"btn-group",role:"group"}),
+			 $.el.label("here."));
+      for(var k in data.tabTypes) {
+	if ( data.tabTypes.hasOwnProperty(k) )
+	  $(g).append($.el.button({ type:"button",
+				    class:"btn btn-default",
+				    "data-type":k
+				  },
+				  data.tabTypes[k].label));
+      }
+
+      $(g).on("click", ".btn", function(ev) {
+	var type    = $(ev.target).data('type');
+	var tab     = $(ev.target).closest(".tab-pane");
+	var content = $.el.div();
+
+	tab.html("");
+	tab.append(content);
+	$(content)[type]();
+      });
+
+      return dom;
+    },
+
+    /**
      * Get the UL list that represents the nav tabs
      */
     navTabs: function() {
@@ -231,4 +292,6 @@ define([ "jquery", "laconic" ],
     }
   };
 }(jQuery));
+
+  return tabbed;
 });

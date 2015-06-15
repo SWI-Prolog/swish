@@ -10,8 +10,10 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  */
 
-define([ "jquery", "config", "laconic", "runner", "storage", "sha1" ],
-       function($, config) {
+define([ "jquery", "config", "tabbed",
+	 "laconic", "runner", "storage", "sha1"
+       ],
+       function($, config, tabbed) {
 
 var cellTypes = {
   "program":  { label:"Program" },
@@ -73,8 +75,12 @@ var cellTypes = {
 					/* restore content */
 					/* TBD: restore meta-data */
 	var content = elem.find(".notebook-data");
-	elem.notebook('value', content.text());
-	content.remove();
+	if ( content.length > 0 ) {
+	  elem.notebook('value', content.text());
+	  content.remove();
+	} else {
+	  elem.tabbed('title', "Notebook");
+	}
 
 	elem.notebook('setupStorage');
       });
@@ -286,6 +292,10 @@ var cellTypes = {
 
     return null;
   }
+
+  tabbed.tabTypes.notebook = {
+    label: "Notebook",
+  };
 
   /**
    * <Class description>
