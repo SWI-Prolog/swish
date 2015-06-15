@@ -214,7 +214,7 @@ var cellTypes = {
 	isClean: function(gen) {
 	  var cgen = notebook.notebook('changeGen');
 	  console.log(gen, cgen);
-	  return gen == cgen);
+	  return gen == cgen;
 	},
 	cleanGeneration: this.notebook('changeGen'),
 	cleanData:       this.notebook('value'),
@@ -256,12 +256,12 @@ var cellTypes = {
      * @return {String} SHA1 fingerprint
      */
     changeGen: function() {
+      var list = [];
       this.find(".nb-cell").each(function() {
-	var list = [];
 	cell = $(this);
 	list.push(cell.nbCell('changeGen'));
-	return sha1(list.join());
       });
+      return sha1(list.join());
     }
   }; // methods
 
