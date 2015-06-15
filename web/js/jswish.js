@@ -160,6 +160,8 @@ preferences.setDefault("emacs-keybinding", false);
 	    runner:   data.runner,
 	  }).trigger("source");
 
+	$(".notebook").notebook();
+
 	if ( options.show_beware )
 	  menuBroadcast("help", {file:"beware.html", notagain:"beware"});
 

@@ -25,6 +25,9 @@ var cellTypes = {
 
   /** @lends $.fn.notebook */
   var methods = {
+    /**
+     * Initialize a Prolog Notebook.
+     */
     _init: function(options) {
       return this.each(function() {
 	var elem = $(this);
@@ -66,6 +69,13 @@ var cellTypes = {
 	});
 
 	elem.data(pluginName, data);	/* store with element */
+
+					/* restore content */
+					/* TBD: restore meta-data */
+	var content = elem.find(".notebook-data");
+	elem.notebook('value', content.text());
+	content.remove();
+
 	elem.notebook('setupStorage');
       });
     },
@@ -224,11 +234,12 @@ var cellTypes = {
 
 	return $($.el.div(dom)).html();
       } else {
+	var notebook = this;
 	var dom = $.el.div();
 	$(dom).html(val);
 	$(dom).find(".nb-cell").each(function() {
 	  var cell = $.el.div({class:"nb-cell"});
-	  this.append(cell);
+	  notebook.append(cell);
 	  $(cell).nbCell($(this));
 	});
       }

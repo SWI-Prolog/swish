@@ -381,7 +381,9 @@ notebooks(notebook, Options) -->
 	  ;   Extra = []
 	  )
 	},
-	html(div([class('notebook')],
+	html(div([ class('notebook'),
+		   'data-label'('Notebook')		% Use file?
+		 ],
 		 [ pre([ class('notebook-data'),
 			 style('display:none')
 		       | Extra
