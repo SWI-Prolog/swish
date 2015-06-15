@@ -19,6 +19,7 @@ require.config({
     typeahead:   "../bower_components/typeahead.js/dist/typeahead.bundle.min",
     splitter:    "../bower_components/jquery.splitter/js/jquery.splitter-0.14.0",
     tagmanager:  "../bower_components/tagmanager/tagmanager",
+    sha1:        "../bower_components/js-sha1/src/sha1",
 
     "cm/lib/codemirror": "../bower_components/codemirror/lib/codemirror",
 					/* CodeMirror standard extensions */

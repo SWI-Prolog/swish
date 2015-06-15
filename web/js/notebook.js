@@ -10,7 +10,7 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  */
 
-define([ "jquery", "config", "laconic", "runner" ],
+define([ "jquery", "config", "laconic", "runner", "storage", "sha1" ],
        function($, config) {
 
 var cellTypes = {
@@ -64,11 +64,9 @@ var cellTypes = {
 	elem.focusin(function(ev) {
 	  elem.notebook('active', $(ev.target).closest(".nb-cell"));
 	});
-	elem.on("save", function(ev, data) {
-	  elem.notebook('save', data);
-	});
 
 	elem.data(pluginName, data);	/* store with element */
+	elem.notebook('setupStorage');
       });
     },
 
@@ -183,6 +181,33 @@ var cellTypes = {
 		 *******************************/
 
     /**
+     * Setup connection to the storage manager.
+     */
+    setupStorage: function() {
+      var notebook = this;
+      var storage = {
+        getValue: function() {
+	  return notebook.notebook('value');
+	},
+	setValue: function(string) {
+	  return notebook.notebook('value', string);
+	},
+	changeGen: function() {
+	  return notebook.notebook('changeGen');
+	},
+	isClean: function(gen) {
+	  return gen == notebook.notebook('changeGen');
+	},
+	cleanGeneration: this.notebook('changeGen'),
+	cleanData:       this.notebook('value'),
+	cleanCheckpoint: "load",
+	dataType:        "swinb"
+      };
+
+      return this.storage(storage);
+    },
+
+    /**
      * Set or get the state of this notebook as a string.
      * @param [String] val is an HTML string that represents
      * the notebook state.
@@ -205,6 +230,19 @@ var cellTypes = {
 	  $(cell).nbCell($(this));
 	});
       }
+    },
+
+    /**
+     * Compute a state fingerprint for the entire notebook
+     * @return {String} SHA1 fingerprint
+     */
+    changeGen: function() {
+      this.find(".nb-cell").each(function() {
+	var list = [];
+	cell = $(this);
+	list.push(cell.nbCell('changeGen'));
+	return sha1(list.join());
+      });
     }
   }; // methods
 
@@ -265,6 +303,7 @@ var cellTypes = {
 
 (function($) {
   var pluginName = 'nbCell';
+  var id = 0;				/* generate unique cell ids */
 
   /** @lends $.fn.nbCell */
   var methods = {
@@ -281,6 +320,7 @@ var cellTypes = {
 
 	elem.data(pluginName, data);	/* store with element */
 	elem.attr("tabIndex", -1);
+	elem.attr("id", "nbc"+id++);
 
 	if ( dom instanceof jQuery ) {
 	  elem.nbCell('restoreDOM', dom);
@@ -330,7 +370,7 @@ var cellTypes = {
     },
 
     saveDOM: function() {
-      return methods.saveDOM[this.data(pluginName).type].apply(this, arguments);
+      return methods.saveDOM[this.data(pluginName).type].call(this);
     },
 
     restoreDOM: function(dom) {
@@ -346,6 +386,13 @@ var cellTypes = {
       data.type = domCellType(dom);
       methods.restoreDOM[data.type].apply(this, arguments);
       this.addClass(data.type);
+    },
+
+    /**
+     * Compute a state fingerprint for the current cell.
+     */
+    changeGen: function() {
+      return methods.changeGen[this.data(pluginName).type].call(this);
     }
   }; // methods
 
@@ -444,6 +491,8 @@ var cellTypes = {
 		 *	SAVE/RESTORE DOM	*
 		 *******************************/
 
+/* ---------------- saveDOM ---------------- */
+
   methods.saveDOM.markdown = function() {	/* markdown */
     var text = this.data('markdownText') || cellText(this);
 
@@ -458,7 +507,7 @@ var cellTypes = {
     return $.el.div({class:"nb-cell query"}, cellText(this));
   };
 
-/* ---------------- restore ---------------- */
+/* ---------------- restoreDOM ---------------- */
 
   methods.restoreDOM.markdown = function(dom) {	/* markdown */
     methods.run.markdown.call(this, dom.text());
@@ -470,6 +519,22 @@ var cellTypes = {
 
   methods.restoreDOM.query = function(dom) {	/* query */
     methods.type.query.call(this, {value:dom.text()});
+  };
+
+/* ---------------- changeGen ---------------- */
+
+  methods.changeGen.markdown = function() {	/* markdown */
+    var text = this.data('markdownText') || cellText(this);
+
+    return sha1(text);
+  };
+
+  methods.changeGen.program = function() {	/* program */
+    return sha1(cellText());
+  };
+
+  methods.changeGen.query = function() {	/* query */
+    return sha1(cellText());
   };
 
 
