@@ -257,6 +257,8 @@ search_form(Options) -->
 %	  Load initial source from HREF
 
 swish_content(Options) -->
+	{ document_type(Type, Options)
+	},
 	swish_resources,
 	swish_config_hash,
 	html(div([id(content), class([container, swish])],
@@ -267,7 +269,8 @@ swish_content(Options) -->
 				     'data-label'('Source'),
 				     'data-close'(disabled)
 				   ],
-				   \source(Options))
+				   \source(Type, Options))
+			     | \notebooks(Type, Options)
 			     ]),
 			 div([class([tile, vertical]), 'data-split'('70%')],
 			     [ div(class('prolog-runners'), []),
@@ -293,7 +296,7 @@ swish_config_hash -->
 		   |}).
 
 
-%%	source(+Options)//
+%%	source(+Type, +Options)//
 %
 %	Associate the source with the SWISH   page. The source itself is
 %	stored  in  the  textarea  from  which  CodeMirror  is  created.
@@ -305,7 +308,7 @@ swish_config_hash -->
 %	  If present and code(String) is present, also associate the
 %	  editor with the given file.  See storage.pl.
 
-source(Options) -->
+source(prolog, Options) -->
 	{ option(code(Spec), Options), !,
 	  download_source(Spec, Source, Options),
 	  (   option(file(File), Options)
@@ -319,7 +322,7 @@ source(Options) -->
 		      | Extra
 		      ],
 		      Source)).
-source(_) --> [].
+source(_, _) --> [].
 
 %%	source_meta_data(+File, +Options)//
 %
@@ -365,6 +368,28 @@ query(Options) -->
 		      Query)).
 query(_) --> [].
 
+%%	notebooks(+Type, +Options)//
+%
+%	We have opened a notebook. Embed the notebook data in the
+%	left-pane tab area.
+
+notebooks(notebook, Options) -->
+	{ option(code(Spec), Options),
+	  download_source(Spec, NoteBookText, Options),
+	  (   option(file(File), Options)
+	  ->  Extra = ['data-file'(File)]
+	  ;   Extra = []
+	  )
+	},
+	html(div([class('notebook')],
+		 [ pre([ class('notebook-data'),
+			 style('display:none')
+		       | Extra
+		       ],
+		       NoteBookText),
+		   \source_meta_data(File, Options)
+		 ])).
+notebooks(_, _) --> [].
 
 %%	download_source(+HREF, -Source, Options) is det.
 %
@@ -389,7 +414,7 @@ download_source(HREF, Source, Options) :-
 		  TMO,
 		  setup_call_cleanup(
 		      http_open(HREF, In,
-				[ cert_verify_hook(ssl_verify)
+				[ cert_verify_hook(cert_accept_any)
 				]),
 		      read_source(In, MaxLen, Source, Options),
 		      close(In))),
@@ -419,17 +444,18 @@ load_error(E, Source) :-
 	message_to_string(E, String),
 	format(string(Source), '%ERROR: ~s~n', [String]).
 
-:- public ssl_verify/5.
-
-%%	ssl_verify(+SSL, +ProblemCert, +AllCerts, +FirstCert, +Error)
+%%	document_type(-Type, +Options) is det.
 %
-%	Currently we accept  all  certificates.   We  organise  our  own
-%	security using SHA1 signatures, so  we   do  not  care about the
-%	source of the data.
+%	Determine the type of document.
+%
+%	@arg Type is one of `notebook` or `prolog`
 
-ssl_verify(_SSL,
-	   _ProblemCertificate, _AllCertificates, _FirstCertificate,
-	   _Error).
+document_type(Type, Options) :-
+	(   option(meta(Meta), Options),
+	    file_name_extension(_, swinb, Meta.name)
+	->  Type = notebook
+	;   Type = prolog
+	).
 
 
 		 /*******************************
