@@ -553,6 +553,13 @@ define([ "cm/lib/codemirror",
     },
 
     /**
+     * @return {Integer} change generation for this editor
+     */
+    changeGen: function() {
+      return this.data(pluginName).cm.changeGeneration();
+    },
+
+    /**
      * Associate the editor with the server side (gitty) source
      */
     setupStorage: function(storage) {
