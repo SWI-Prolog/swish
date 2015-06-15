@@ -131,7 +131,7 @@ define([ "cm/lib/codemirror",
 	}
 
 	if ( (ta=elem.children("textarea")[0]) ) {
-	  var file = $(ta).attr("data-file");
+	  var file = $(ta).data("file");
 
 	  if ( file )
 	    storage.file = file;

@@ -68,6 +68,7 @@ var tabbed = {
 	ev.preventDefault();
       });
 
+			/* Turn children into tabs */
       for(var i=0; i<children.length; i++) {
 	var child = $(children[i]);
 	var id = genId();
