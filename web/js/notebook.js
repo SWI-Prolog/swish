@@ -41,8 +41,6 @@ var cellTypes = {
 
 	elem.append(toolbar = $.el.div(
             {class:"nb-toolbar"},
-	    glyphButton("floppy-save", "checkpoint", "Checkpoint"),
-	    sep(),
 	    glyphButton("trash", "delete", "Delete cell"),
 	    glyphButton("copy", "copy", "Copy cell"),
 	    glyphButton("paste", "paste", "Paste cell below"),
@@ -86,12 +84,6 @@ var cellTypes = {
 		 /*******************************
 		 *	  BUTTON ACTIONS	*
 		 *******************************/
-
-    checkpoint: function() {
-      var text = this.notebook('value');
-      console.log(text);
-      alert("Checkpoint safe not yet implemented");
-    },
 
     delete: function(cell) {
       cell = cell||currentCell(this);
