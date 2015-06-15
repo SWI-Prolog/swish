@@ -82,6 +82,7 @@ var tabbed = {
 	$(contents).append(wrapInTab($(children[i]), id, active));
       }
 
+			/* Create and handle "+" button */
       var create = $.el.a({ class: "tab-new compact",
 			    title: "Open a new tab"
 			  },
@@ -93,6 +94,12 @@ var tabbed = {
 	tabbed.tabbed('newTab');
 	ev.preventDefault();
 	return false;
+      });
+
+			/* Handle tab-switching */
+      $(ul).on("shown.bs.tab", "a", function(ev) {
+	var newContentID  = $(ev.target).data("id");
+	$("#"+newContentID+" .swish-event-receiver").trigger("activate-tab");
       });
     },
 

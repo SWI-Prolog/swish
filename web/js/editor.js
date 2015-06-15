@@ -155,6 +155,11 @@ define([ "cm/lib/codemirror",
 	if ( options.mode == "prolog" && data.role == "source" ) {
 	  elem.prologEditor('setupStorage', storage);
 
+	  elem.on("activate-tab", function(ev) {
+	    console.log("Refresh ", data.cm);
+	    data.cm.refresh();
+	  });
+
 	  elem.on("source-error", function(ev, error) {
 	    elem.prologEditor('highlightError', error);
 	  });
