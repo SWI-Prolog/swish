@@ -523,7 +523,9 @@ var cellTypes = {
 /* ---------------- restoreDOM ---------------- */
 
   methods.restoreDOM.markdown = function(dom) {	/* markdown */
-    methods.run.markdown.call(this, dom.text());
+    var text = dom.text();
+    this.data('markdownText', text);
+    methods.run.markdown.call(this, text);
   };
 
   methods.restoreDOM.program = function(dom) {	/* program */
