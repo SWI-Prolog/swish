@@ -33,6 +33,7 @@ var cellTypes = {
     _init: function(options) {
       return this.each(function() {
 	var elem = $(this);
+	var storage = {};		/* storage info */
 	var data = {};			/* private data */
 	var toolbar;
 
@@ -71,13 +72,20 @@ var cellTypes = {
 					/* TBD: restore meta-data */
 	var content = elem.find(".notebook-data");
 	if ( content.length > 0 ) {
+	  var file = content.data("file");
+
+	  if ( file )
+	    storage.file = file;
+	  if ( window.swish && window.swish.meta_data )
+	    storage.meta = window.swish.meta_data;
+
 	  elem.notebook('value', content.text());
 	  content.remove();
 	} else {
 	  elem.tabbed('title', "Notebook");
 	}
 
-	elem.notebook('setupStorage');
+	elem.notebook('setupStorage', storage);
       });
     },
 
@@ -190,9 +198,10 @@ var cellTypes = {
     /**
      * Setup connection to the storage manager.
      */
-    setupStorage: function() {
+    setupStorage: function(storage) {
       var notebook = this;
-      var storage = {
+
+      storage = $.extend(storage, {
         getValue: function() {
 	  return notebook.notebook('value');
 	},
@@ -203,13 +212,15 @@ var cellTypes = {
 	  return notebook.notebook('changeGen');
 	},
 	isClean: function(gen) {
-	  return gen == notebook.notebook('changeGen');
+	  var cgen = notebook.notebook('changeGen');
+	  console.log(gen, cgen);
+	  return gen == cgen);
 	},
 	cleanGeneration: this.notebook('changeGen'),
 	cleanData:       this.notebook('value'),
 	cleanCheckpoint: "load",
 	dataType:        "swinb"
-      };
+      });
 
       return this.storage(storage);
     },
