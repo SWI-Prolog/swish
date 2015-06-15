@@ -73,12 +73,13 @@ var tabbed = {
 	var id = genId();
 	var label = child.attr("data-label") || "Unknown";
 	var close = child.attr("data-close") != "disabled";
+	var active = (i == children.length-1);	/* activate last */
 
 	var li = this.tabbed('tabLabel', id, label, close);
-	if ( i == 0 )
+	if ( active )
 	  $(li).addClass("active");
 	$(ul).append(li);
-	$(contents).append(wrapInTab($(children[i]), id, i == 0));
+	$(contents).append(wrapInTab($(children[i]), id, active));
       }
 
       var create = $.el.a({ class: "tab-new compact",
