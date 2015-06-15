@@ -1,19 +1,13 @@
 /* Style for the SWISH notebook
 */
 
-.nb-titlebar, .nb-toolbar, .nb-content, .nb-cell
+.nb-toolbar, .nb-content, .nb-cell
 { margin-left: 1em;
 }
 
-.nb-title
-{ display: block;
-  text-align: center;
-  font-size: 200%;
-  margin-bottom: 0.5em;
-}
-
 .nb-toolbar
-{ padding-bottom: 0.3em;
+{ padding-top: 0.3em;
+  padding-bottom: 0.3em;
   margin-bottom: 1em;
   border-bottom: 1px solid #ddd;
 }

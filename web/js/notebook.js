@@ -39,9 +39,6 @@ var cellTypes = {
 	elem.addClass("notebook");
 	elem.addClass("swish-event-receiver");
 
-	elem.append($.el.div(
-	    {class:"nb-titlebar"},
-	    $.el.span({class:"nb-title"}, "SWI-Prolog Notebook")));
 	elem.append(toolbar = $.el.div(
             {class:"nb-toolbar"},
 	    glyphButton("floppy-save", "checkpoint", "Checkpoint"),
