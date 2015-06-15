@@ -35,20 +35,24 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 	var elem = $(this);
 	var data = $.extend({}, options);
 
+	function isVisible() {
+	  return elem.is(":visible");
+	}
+
 	elem.on("source", function(ev, src) {
-	  elem.storage('setSource', src);
+	  if ( isVisible() ) elem.storage('setSource', src);
 	});
 	elem.on("save", function(ev, data) {
-	  elem.storage('save', data);
+	  if ( isVisible() ) elem.storage('save', data);
 	});
 	elem.on("fileInfo", function() {
-	  elem.storage('info');
+	  if ( isVisible() ) elem.storage('info');
 	});
 	elem.on("diff", function(ev) {
-	  elem.storage('diff');
+	  if ( isVisible() ) elem.storage('diff');
 	});
 	elem.on("revert", function(ev) {
-	  elem.storage('revert');
+	  if ( isVisible() ) elem.storage('revert');
 	});
 	$(window).bind("beforeunload", function(ev) {
 	  return elem.storage('unload', "beforeunload", ev);
