@@ -13,11 +13,9 @@ define([ "cm/lib/codemirror",
 	 "preferences",
 	 "form",
 	 "cm/mode/prolog/prolog-template-hint",
-	 "gitty",
-	 "history",
 	 "modal",
 
-	 "diff",
+	 "storage",
 
 	 "cm/mode/prolog/prolog",
 	 "cm/mode/prolog/prolog_keys",
@@ -44,8 +42,7 @@ define([ "cm/lib/codemirror",
 
 	 "cm/keymap/emacs",
        ],
-       function(CodeMirror, config, preferences, form, templateHint,
-		gitty, history, modal) {
+       function(CodeMirror, config, preferences, form, templateHint, modal) {
 
 (function($) {
   var pluginName = 'prologEditor';
@@ -104,7 +101,8 @@ define([ "cm/lib/codemirror",
 
       return this.each(function() {
 	var elem = $(this);
-	var data = {};
+	var storage = {};		/* storage meta-data */
+	var data = {};			/* our data */
 	var ta;				/* textarea */
 
 	options      = options||{};
@@ -126,7 +124,7 @@ define([ "cm/lib/codemirror",
 	    options.extraKeys["Ctrl-R"] = "refreshHighlight";
 	  }
 
-	  if ( options.role != "query" ) {
+	  if ( options.role == "source" ) {
 	    options.continueComments = "Enter";
 	    options.gutters = ["Prolog-breakpoints"]
 	  }
@@ -136,9 +134,9 @@ define([ "cm/lib/codemirror",
 	  var file = $(ta).attr("data-file");
 
 	  if ( file )
-	    data.file = file;
+	    storage.file = file;
 	  if ( window.swish && window.swish.meta_data )
-	    data.meta = window.swish.meta_data;
+	    storage.meta = window.swish.meta_data;
 	} else {
 	  ta = $.el.textarea({placeholder:options.placeholder},
 			     options.value||elem.text());
@@ -146,9 +144,6 @@ define([ "cm/lib/codemirror",
 	}
 
 	data.cm              = CodeMirror.fromTextArea(ta, options);
-	data.cleanGeneration = data.cm.changeGeneration();
-	data.cleanData       = data.cm.getValue();
-	data.cleanCheckpoint = "load";
 	data.role            = options.role;
 
 	elem.data(pluginName, data);
@@ -157,16 +152,9 @@ define([ "cm/lib/codemirror",
 	  elem.prologEditor('preference', pref);
 	});
 
-	if ( data.role == "source" ) {
-	  elem.on("source", function(ev, src) {
-	    elem.prologEditor('setSource', src);
-	  });
-	  elem.on("save", function(ev, data) {
-	    elem.prologEditor('save', data);
-	  });
-	  elem.on("fileInfo", function() {
-	    elem.prologEditor('info');
-	  });
+	if ( options.mode == "prolog" && data.role == "source" ) {
+	  elem.prologEditor('setupStorage', storage);
+
 	  elem.on("source-error", function(ev, error) {
 	    elem.prologEditor('highlightError', error);
 	  });
@@ -175,15 +163,6 @@ define([ "cm/lib/codemirror",
 	  });
 	  elem.on("clearMessages", function(ev) {
 	    elem.prologEditor('clearMessages');
-	  });
-	  elem.on("diff", function(ev) {
-	    elem.prologEditor('diff');
-	  });
-	  elem.on("revert", function(ev) {
-	    elem.prologEditor('revert');
-	  });
-	  $(window).bind("beforeunload", function(ev) {
-	    return elem.prologEditor('unload', "beforeunload", ev);
 	  });
 	  data.cm.on("gutterClick", function(cm, n) {
 	    var info = cm.lineInfo(n);
@@ -275,6 +254,20 @@ define([ "cm/lib/codemirror",
        }
        return null;
      },
+
+    /**
+     * @param {String} source sets the new content for the editor.  If
+     * the editor is associated with a storage plugin, the call is
+     * forwarded to the storage plugin.
+     */
+    setSource: function(source) {
+      if ( this.data('storage') ) {
+	this.storage('setSource', source);
+      } else {
+	this.data(pluginName).cm.setValue(source);
+      }
+      return this;
+    },
 
     /**
      * print the current content of the editor after applying the
@@ -557,6 +550,34 @@ define([ "cm/lib/codemirror",
 	if ( cm._searchMarkers.length > 0 )
 	  cm.on("cursorActivity", clearSearchMarkers);
       }
+    },
+
+    /**
+     * Associate the editor with the server side (gitty) source
+     */
+    setupStorage: function(storage) {
+      var data = this.data(pluginName);
+
+      storage.setValue = function(source) {
+	data.cm.setValue(source);
+      };
+      storage.getValue = function() {
+	return data.cm.getValue();
+      };
+      storage.changeGen = function() {
+	return data.cm.changeGeneration();
+      };
+      storage.isClean = function(generation) {
+	return data.cm.isClean(generation);
+      };
+
+      storage.cleanGeneration = data.cm.changeGeneration();
+      storage.cleanData       = data.cm.getValue();
+      storage.cleanCheckpoint = "load";
+      storage.dataType	      = "pl";
+
+      this.storage(storage);
+      return this;
     }
 
   }; // methods

@@ -8,8 +8,11 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "laconic" ],
-       function($, config) {
+define([ "jquery", "config", "modal", "form", "gitty", "history",
+
+	 "laconic", "diff"
+       ],
+       function($, config, modal, form, gitty, history) {
 
 (function($) {
   var pluginName = 'storage';
@@ -21,13 +24,35 @@ define([ "jquery", "config", "laconic" ],
      * @param {Function} options.setValue sets the new document value
      * @param {Function} options.getValue gets the current document value
      * @param {Function} options.changeGen identifies the current state
+     * @param {String}   options.cleanData identifies the clean state
+     * @param {String}	 options.cleanCheckpoint is the action that
+     * caused the clean state
+     * @param {Any}	 options.cleanGeneration identifies the clean
+     * state.
      */
     _init: function(options) {
       return this.each(function() {
 	var elem = $(this);
-	var data = {};			/* private data */
+	var data = $.extend({}, options);
 
-	<setup the widget>
+	elem.on("source", function(ev, src) {
+	  elem.storage('setSource', src);
+	});
+	elem.on("save", function(ev, data) {
+	  elem.storage('save', data);
+	});
+	elem.on("fileInfo", function() {
+	  elem.storage('info');
+	});
+	elem.on("diff", function(ev) {
+	  elem.storage('diff');
+	});
+	elem.on("revert", function(ev) {
+	  elem.storage('revert');
+	});
+	$(window).bind("beforeunload", function(ev) {
+	  return elem.storage('unload', "beforeunload", ev);
+	});
 
 	elem.data(pluginName, data);	/* store with element */
       });
@@ -41,32 +66,29 @@ define([ "jquery", "config", "laconic" ],
     setSource: function(src) {
       var data = this.data(pluginName);
 
-      if ( data.role == "source" &&
-	   this[pluginName]('unload', "setSource") == false )
+      if ( this.storage('unload', "setSource") == false )
 	return false;
 
       if ( typeof(src) == "string" )
 	src = {data:src};
 
-      data.cm.setValue(src.data);
-      data.cleanGeneration = data.cm.changeGeneration();
+      data.setValue(src.data);
+      data.cleanGeneration = data.changeGen();
       data.cleanData       = src.data;
       data.cleanCheckpoint = src.cleanCheckpoint || "load";
 
-      if ( data.role == "source" ) {
-	if ( src.meta ) {
-	  data.file = src.meta.name;
-	  data.meta = src.meta;
-	} else {
-	  data.file = null;
-	  data.meta = null;
-	}
-
-	if ( !src.url )
-	  src.url = config.http.locations.swish;
-
-	history.push(src);
+      if ( src.meta ) {
+	data.file = src.meta.name;
+	data.meta = src.meta;
+      } else {
+	data.file = null;
+	data.meta = null;
       }
+
+      if ( !src.url )
+	src.url = config.http.locations.swish;
+
+      history.push(src);
 
       return this;
     },
@@ -82,7 +104,7 @@ define([ "jquery", "config", "laconic" ],
 	$.ajax({ url: config.http.locations.web_storage + "/" + file,
 		 dataType: "text",
 		 success: function(data) {
-		   that.prologEditor('setSource', data);
+		   that.storage('setSource', data);
 		   options.file = file;
 		 },
 		 error: function(jqXHDR) {
@@ -99,7 +121,7 @@ define([ "jquery", "config", "laconic" ],
     revert: function() {
       var data = this.data(pluginName);
 
-      data.cm.setValue(data.cleanData);
+      data.setValue(data.cleanData);
       return this;
     },
 
@@ -129,7 +151,7 @@ define([ "jquery", "config", "laconic" ],
       var data;
 
       if ( meta == "as" ) {
-	this.prologEditor('saveAs');
+	this.storage('saveAs');
 	return this;
       }
 
@@ -147,16 +169,16 @@ define([ "jquery", "config", "laconic" ],
 	}
 	data = { update: "meta-data" };
       } else if ( method == "POST" ) {
-	data = { data: this.prologEditor('getSource'),
-		 type: "pl"
+	data = { data: options.getValue(),
+		 type: options.dataType
 	       };
 	if ( options.meta ) {			/* rename */
 	  data.previous = options.meta.commit;
 	}
       } else {
-	if ( !options.cm.isClean(options.cleanGeneration) ) {
-	  data = { data: this.prologEditor('getSource'),
-		   type: "pl"
+	if ( !options.isClean(options.cleanGeneration) ) {
+	  data = { data: options.getValue(),
+		   type: options.dataType
 		 };
 	} else if ( gitty.diffTags(options.meta.tags, meta.tags) == null ) {
 	  alert("No change");
@@ -179,8 +201,8 @@ define([ "jquery", "config", "laconic" ],
 		   options.url  = reply.url;
 		   options.file = reply.file;
 		   options.meta = reply.meta;
-		   options.cleanGeneration = options.cm.changeGeneration();
-		   options.cleanData       = options.cm.getValue();
+		   options.cleanGeneration = options.changeGen();
+		   options.cleanData       = options.getValue();
 		   options.cleanCheckpoint = "save";
 
 		   history.push(reply);
@@ -220,7 +242,7 @@ define([ "jquery", "config", "laconic" ],
 					 update ? "Update program" :
 						  "Save program",
 				  action: function(ev,data) {
-				            editor.prologEditor('save', data);
+				            editor.storage('save', data);
 					    return false;
 				          }
 				})));
@@ -283,7 +305,7 @@ define([ "jquery", "config", "laconic" ],
 
       function infoBody() {
 	var diff = $.el.div();
-	var current = data.cm.getValue();
+	var current = data.getValue();
 
 	this.append(diff);
 
@@ -321,7 +343,7 @@ define([ "jquery", "config", "laconic" ],
 			  });
       }
 
-      if ( data.cleanData != data.cm.getValue() ) {
+      if ( data.cleanData != data.getValue() ) {
 	if ( why == "beforeunload" ) {
 	  var message = "The source editor has unsaved changes.\n"+
 	                "These will be lost if you leave the page";
