@@ -75,6 +75,8 @@ var cellTypes = {
 		 *******************************/
 
     checkpoint: function() {
+      var text = this.notebook('value');
+      console.log(text);
       alert("Checkpoint safe not yet implemented");
     },
 
@@ -217,10 +219,10 @@ var cellTypes = {
 	var dom = $.el.div({class:"notebook"});
 	this.find(".nb-cell").each(function() {
 	  cell = $(this);
-	  dom.append(cell.nbCell('saveDOM'));
+	  $(dom).append(cell.nbCell('saveDOM'));
 	});
 
-	return this.html();
+	return $($.el.div(dom)).html();
       } else {
 	var dom = $.el.div();
 	$(dom).html(val);
@@ -530,11 +532,11 @@ var cellTypes = {
   };
 
   methods.changeGen.program = function() {	/* program */
-    return sha1(cellText());
+    return sha1(cellText(this));
   };
 
   methods.changeGen.query = function() {	/* query */
-    return sha1(cellText());
+    return sha1(cellText(this));
   };
 
 
