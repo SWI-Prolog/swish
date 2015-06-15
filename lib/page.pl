@@ -266,7 +266,7 @@ swish_content(Options) -->
 		       [ div([ class([editors, tabbed])
 			     ],
 			     [ div([ class(['prolog-editor']),
-				     'data-label'('Source'),
+				     'data-label'('Program'),
 				     'data-close'(disabled)
 				   ],
 				   \source(Type, Options))
