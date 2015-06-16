@@ -61,9 +61,6 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	$(qediv).append(elem.children("textarea"))
 	        .prologEditor({ role: "query",
 				sourceID: options.sourceID,
-		                placeholder: "Your query goes here ...",
-				lineNumbers: false,
-				lineWrapping: true,
 				prologQuery: function(q) {
 				  elem.queryEditor('run', q, tableSelected());
 				}

@@ -451,10 +451,6 @@ var cellTypes = {
 
     options = $.extend({}, options,
 		       { role: "query",
-		       //sourceID: options.sourceID,
-		         placeholder: "Your query goes here ...",
-			 lineNumbers: false,
-			 lineWrapping: true,
 			 prologQuery: function(q) {
 			   cell.nbCell('run');
 			 }
