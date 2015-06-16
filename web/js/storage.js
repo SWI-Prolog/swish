@@ -35,27 +35,31 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 	var elem = $(this);
 	var data = $.extend({}, options);
 
-	function isVisible() {
-	  var tab = elem.closest(".tab-pane");
-	  console.log(tab);
-	  return tab.length > 0 ? tab.hasClass("active")
-				: elem.is(":visible");
+	function onStorage(ev, method) {
+	  var target = $(ev.target);
+
+	  if ( target.hasClass("storage") &&
+	       target.is(":visible") ) {
+	     target.storage(method, Array.prototype.slice.call(arguments, 2));
+	  }
 	}
 
+	elem.addClass("storage");
+
 	elem.on("source", function(ev, src) {
-	  if ( isVisible() ) elem.storage('setSource', src);
+	  onStorage(ev, 'setSource', src);
 	});
 	elem.on("save", function(ev, data) {
-	  if ( isVisible() ) elem.storage('save', data);
+	  onStorage(ev, 'save', data);
 	});
 	elem.on("fileInfo", function() {
-	  if ( isVisible() ) elem.storage('info');
+	  onStorage(ev, 'info');
 	});
 	elem.on("diff", function(ev) {
-	  if ( isVisible() ) elem.storage('diff');
+	  onStorage(ev, 'diff');
 	});
 	elem.on("revert", function(ev) {
-	  if ( isVisible() ) elem.storage('revert');
+	  onStorage(ev, 'revert');
 	});
 	elem.on("activate-tab", function(ev) {
 						/* TBD: What exactly? */
