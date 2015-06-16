@@ -230,6 +230,7 @@ var tabbed = {
 	var content = $.el.div();
 
 	tab.html("");
+	tab.tabbed('title', tabbed.tabTypes[type].label);
 	tab.append(content);
 	tabbed.tabTypes[type].create(content);
       });

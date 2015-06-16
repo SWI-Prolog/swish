@@ -81,9 +81,7 @@ var cellTypes = {
 
 	  elem.notebook('value', content.text());
 	  content.remove();
-	} else {
-	  elem.tabbed('title', "Notebook");
-	}
+	} else
 
 	elem.notebook('setupStorage', storage);
       });
