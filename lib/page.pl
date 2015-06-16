@@ -145,16 +145,16 @@ source_option(_Request, Options, Options) :-
 source_option(Request, Options0, Options) :-
 	option(path_info(Info), Request),
 	Info \== 'index.html', !,	% Backward compatibility
-	(   source_data(Info, String)
-	->  Options = [code(String)|Options0]
+	(   source_data(Info, Title, String)
+	->  Options = [code(String),title(Title)|Options0]
 	;   http_404([], Request)
 	).
 source_option(_, Options, Options).
 
-source_data(Info, Code) :-
-	sub_atom(Info, B, _, A, /),
-	sub_atom(Info, 0, B, _, Alias),
-	sub_atom(Info, _, A, 0, File),
+source_data(PathInfo, Title, Code) :-
+	sub_atom(PathInfo, B, _, A, /),
+	sub_atom(PathInfo, 0, B, _, Alias),
+	sub_atom(PathInfo, _, A, 0, File),
 	catch(swish_config:source_alias(Alias), E,
 	      (print_message(warning, E), fail)),
 	Spec =.. [Alias,File],
@@ -166,7 +166,8 @@ source_data(Info, Code) :-
 	setup_call_cleanup(
 	    open(Path, read, In, [encoding(utf8)]),
 	    read_string(In, _, Code),
-	    close(In)).
+	    close(In)),
+	file_base_name(PathInfo, Title).
 
 %%	serve_resource(+Request) is semidet.
 %
@@ -311,12 +312,9 @@ swish_config_hash -->
 source(prolog, Options) -->
 	{ option(code(Spec), Options), !,
 	  download_source(Spec, Source, Options),
-	  (   option(file(File), Options)
-	  ->  Extra = ['data-file'(File)]
-	  ;   Extra = []
-	  )
+	  phrase(source_data_attrs(Options), Extra)
 	},
-	source_meta_data(File, Options),
+	source_meta_data(Options),
 	html(textarea([ class([source,prolog]),
 			style('display:none')
 		      | Extra
@@ -324,19 +322,31 @@ source(prolog, Options) -->
 		      Source)).
 source(_, _) --> [].
 
-%%	source_meta_data(+File, +Options)//
+source_data_attrs(Options) -->
+	(source_file_data(Options) -> [] ; []),
+	(source_title_data(Options) -> [] ; []).
+
+source_file_data(Options) -->
+	{ option(file(File), Options) },
+	['data-file'(File)].
+source_title_data(Options) -->
+	{ option(title(File), Options) },
+	['data-title'(File)].
+
+
+%%	source_meta_data(+Options)//
 %
 %	Dump the meta-data of the provided file into swish.meta_data.
 
-source_meta_data(File, Options) -->
-	{ nonvar(File),
+source_meta_data(Options) -->
+	{ option(file(_), Options),
 	  option(meta(Meta), Options)
 	}, !,
 	js_script({|javascript(Meta)||
 		   window.swish = window.swish||{};
 		   window.swish.meta_data = Meta;
 		   |}).
-source_meta_data(_, _) --> [].
+source_meta_data(_) --> [].
 
 background(Options) -->
 	{ option(background(Spec), Options), !,
@@ -376,10 +386,7 @@ query(_) --> [].
 notebooks(notebook, Options) -->
 	{ option(code(Spec), Options),
 	  download_source(Spec, NoteBookText, Options),
-	  (   option(file(File), Options)
-	  ->  Extra = ['data-file'(File)]
-	  ;   Extra = []
-	  )
+	  phrase(source_data_attrs(Options), Extra)
 	},
 	html(div([ class('notebook'),
 		   'data-label'('Notebook')		% Use file?
@@ -389,7 +396,7 @@ notebooks(notebook, Options) -->
 		       | Extra
 		       ],
 		       NoteBookText),
-		   \source_meta_data(File, Options)
+		   \source_meta_data(Options)
 		 ])).
 notebooks(_, _) --> [].
 

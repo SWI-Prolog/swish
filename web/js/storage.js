@@ -51,8 +51,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 	}
 
 	elem.addClass("storage");
-	if ( options.file )
-	  elem.tabbed('title', options.file);
+	if ( options.title||options.file )
+	  elem.tabbed('title', options.title||options.file);
 
 	elem.on("source", function(ev, src) {
 	  onStorage(ev, 'setSource', src);

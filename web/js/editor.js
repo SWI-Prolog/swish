@@ -151,10 +151,13 @@ define([ "cm/lib/codemirror",
 	}
 
 	if ( (ta=elem.children("textarea")[0]) ) {
-	  var file = $(ta).data("file");
+	  function copyData(name) {
+	    var value = $(ta).data(name);
+	    if ( value ) storage[name] = value;
+	  }
 
-	  if ( file )
-	    storage.file = file;
+	  copyData("file");
+	  copyData("title");
 	  if ( window.swish && window.swish.meta_data )
 	    storage.meta = window.swish.meta_data;
 	} else {
