@@ -131,8 +131,8 @@ _not_ see exactly the same UI for cooperation.  What about
 ## Tabbed editor
 
   - swish.playFile()
-    - If current tab can accept type, play it there
-    - If current tab is a `new tab', play it there
+    - If current tab can accept type, play it there		[OK]
+    - If current tab is a `new tab', play it there		[OK]
     - else, add a new tab
   - Add notion of `current source' to be used by the
     bottom-right query editor.  This is:
@@ -143,9 +143,12 @@ _not_ see exactly the same UI for cooperation.  What about
   - Notebook
     - Connect query to above source.
     - Multiple sources:
-      - Allow naming sources
-      - Allow one source to include others
+      - Allow naming sources?
+      - Allow one source to include others in the same notebook?
     - Allow a notebook to make a link to another in the markdown:
       [hello.swinb](Nice example to say hello)
+    - Avoid hyperlinks to destroy the page.
+      - show predicate links in a modal dialog
+      - Use `target=` for others.
   - Use type icons for tabs and hide the file extension.
 
