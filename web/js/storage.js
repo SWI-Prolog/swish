@@ -50,6 +50,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 	}
 
 	elem.addClass("storage");
+	if ( options.file )
+	  elem.tabbed('title', options.file);
 
 	elem.on("source", function(ev, src) {
 	  onStorage(ev, 'setSource', src);
@@ -108,6 +110,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
       if ( !src.url )
 	src.url = config.http.locations.swish;
 
+      this.tabbed('title', data.file||capitalizeFirstLetter(data.typeName));
       history.push(src);
 
       return this;
@@ -168,6 +171,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
       var options = this.data(pluginName);
       var url     = config.http.locations.web_storage;
       var method  = "POST";
+      var elem    = this;
       var data;
 
       if ( meta == "as" ) {
@@ -225,6 +229,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 		   options.cleanData       = options.getValue();
 		   options.cleanCheckpoint = "save";
 
+		   elem.tabbed('title', meta.name);
 		   history.push(reply);
 		 }
 	       },
@@ -386,7 +391,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
     }
   }; // methods
 
-  // <private functions>
+  function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
 
   /**
    * <Class description>
