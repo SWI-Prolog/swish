@@ -147,7 +147,7 @@ preferences.setDefault("emacs-keybinding", false);
 
 	$("#navbar").navbar(defaults.menu);
 
-	data.editor = $(".prolog-editor").prologEditor();
+	data.editor = $(".prolog-editor").prologEditor({save:true});
 	data.runner = $(".prolog-runners").prologRunners();
 	data.query  = $(".prolog-query").queryEditor(
           { source:   function() {

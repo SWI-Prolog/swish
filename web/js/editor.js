@@ -49,10 +49,11 @@ define([ "cm/lib/codemirror",
 
   var modeDefaults = {
     prolog: {
+      mode: "prolog",
       role: "source",
       placeholder: "Your Prolog program goes here ...",
       lineNumbers: true,
-      mode: "prolog",
+      save: false,
       theme: "prolog",
       matchBrackets: true,
       textHover: true,
@@ -68,8 +69,21 @@ define([ "cm/lib/codemirror",
     },
 
     markdown: {
+      mode: "markdown",
       placeholder: "Your markdown block goes here ...",
-      lineWrapping: true
+      lineWrapping: true,
+      save: false
+    }
+  };
+
+  var roleDefaults = {
+    query: {
+      mode: "prolog",
+      role: "query",
+      placeholder: "Your query goes here ...",
+      lineNumbers: false,
+      lineWrapping: true,
+      save: false
     }
   };
 
@@ -84,6 +98,8 @@ define([ "cm/lib/codemirror",
      * sets the placeholder for the editor.
      * @param {Boolean} [options.lineNumbers=true] defines whether or
      * not a left-gutter with line numbers is displayed.
+     * @param {Boolean} [options.save=false] defines whether the
+     * editor responds to storage events.
      * @param {String} [options.mode="prolog"] defines the mode used by
      * CodeMirror.
      * @param {String} [options.theme="prolog"] defines the CSS used for
@@ -97,7 +113,7 @@ define([ "cm/lib/codemirror",
      * "autocomplete".
      *
      */
-    _init: function(options) {
+    _init: function(opts) {
 
       return this.each(function() {
 	var elem = $(this);
@@ -105,9 +121,13 @@ define([ "cm/lib/codemirror",
 	var data = {};			/* our data */
 	var ta;				/* textarea */
 
-	options      = options||{};
-	options.mode = options.mode||"prolog";
-	options      = $.extend({}, modeDefaults[options.mode], options);
+	opts      = opts||{};
+	opts.mode = opts.mode||"prolog";
+
+	options      = $.extend({}, modeDefaults[opts.mode]);
+	if ( opts.role && roleDefaults[opts.role] )
+	  options = $.extend(options, roleDefaults[opts.role]);
+	options = $.extend(options, opts);
 
 	if ( preferences.getVal("emacs-keybinding") )
 	  options.keyMap = "emacs";
@@ -152,9 +172,12 @@ define([ "cm/lib/codemirror",
 	  elem.prologEditor('preference', pref);
 	});
 
-	if ( options.mode == "prolog" && data.role == "source" ) {
+	if ( options.save ) {
+	  console.log(options.save);
 	  elem.prologEditor('setupStorage', storage);
+	}
 
+	if ( options.mode == "prolog" && data.role == "source" ) {
 	  elem.on("activate-tab", function(ev) {
 	    console.log("Refresh ", data.cm);
 	    data.cm.refresh();
