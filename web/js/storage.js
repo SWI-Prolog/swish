@@ -18,7 +18,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
   var pluginName = 'storage';
 
   var defaults = {
-    dateType: "pl",
+    dataType: "pl",
     typeName: "program"
   }
 
@@ -43,10 +43,10 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 	function onStorage(ev, method) {
 	  var target = $(ev.target);
 
-	  if ( target.hasClass("storage") &&
-	       target.is(":visible") ) {
-	     target.storage.apply(target,
-				  Array.prototype.slice.call(arguments, 1));
+	  ev.stopPropagation();
+	  if ( target.hasClass("storage") && target.is(":visible") ) {
+	    return target.storage.apply(target,
+					Array.prototype.slice.call(arguments, 1));
 	  }
 	}
 
@@ -85,9 +85,19 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
      * @param {String|Object} src becomes the new contents of the editor
      * @param {String} Object.data contains the data in the case that
      * `src` is an object.
+     * @return {Object|null} `null` is returned if the provided src
+     * does not match the supported type.
      */
     setSource: function(src) {
       var data = this.data(pluginName);
+
+      if ( typeof(src) == "object" &&
+	   src.meta && src.meta.name )
+      { var ext = src.meta.name.split('.').pop();
+	console.log(ext, data.dataType);
+	if ( ext != data.dataType )
+	  return null;
+      }
 
       if ( this.storage('unload', "setSource") == false )
 	return false;

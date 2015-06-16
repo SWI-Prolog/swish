@@ -123,6 +123,29 @@ var tabbed = {
       return this;
     },
 
+    /**
+     * Transform the new tab into a tab that can hold the requested
+     * source
+     */
+    setSource: function(tab, src) {
+      if ( typeof(src) == "object" && src.meta && src.meta.name )
+      { var ext = src.meta.name.split('.').pop();
+
+	for(var k in tabbed.tabTypes) {
+	  if ( tabbed.tabTypes.hasOwnProperty(k) &&
+	       tabbed.tabTypes[k].dataType == ext )
+	  { var tabType = tabbed.tabTypes[k];
+	    var content = $.el.div();
+
+	    tab.html("");
+	    tab.tabbed('title', tabType.label);
+	    tab.append(content);
+	    tabType.create(content);
+	    $(content).trigger("source", src);
+	  }
+	}
+      }
+    },
 
     /**
      * Add a new tab using content
@@ -233,6 +256,12 @@ var tabbed = {
 	tab.tabbed('title', tabbed.tabTypes[type].label);
 	tab.append(content);
 	tabbed.tabTypes[type].create(content);
+      });
+      $(g).addClass("swish-event-receiver");
+      $(g).on("source", function(ev, src) {
+	var tab = $(ev.target).closest(".tab-pane");
+	if ( tab.is(":visible") )
+	  tab.closest(".tabbed").tabbed('setSource', tab, src);
       });
 
       return dom;
