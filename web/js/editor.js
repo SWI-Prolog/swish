@@ -173,7 +173,6 @@ define([ "cm/lib/codemirror",
 	});
 
 	if ( options.save ) {
-	  console.log(options.save);
 	  elem.prologEditor('setupStorage', storage);
 	}
 
