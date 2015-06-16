@@ -45,7 +45,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 
 	  if ( target.hasClass("storage") &&
 	       target.is(":visible") ) {
-	     target.storage(method, Array.prototype.slice.call(arguments, 2));
+	     target.storage.apply(target,
+				  Array.prototype.slice.call(arguments, 1));
 	  }
 	}
 
@@ -107,10 +108,18 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 	data.meta = null;
       }
 
+      function basename(path) {
+	return path ? path.split('/').pop() : null;
+      }
+      var title = (data.file ||
+		   basename(src.url) ||
+		   capitalizeFirstLetter(data.typeName));
+
       if ( !src.url )
 	src.url = config.http.locations.swish;
 
-      this.tabbed('title', data.file||capitalizeFirstLetter(data.typeName));
+
+      this.tabbed('title', title);
       history.push(src);
 
       return this;
