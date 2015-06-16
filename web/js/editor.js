@@ -609,7 +609,6 @@ define([ "cm/lib/codemirror",
       storage.cleanGeneration = data.cm.changeGeneration();
       storage.cleanData       = data.cm.getValue();
       storage.cleanCheckpoint = "load";
-      storage.dataType	      = "pl";
 
       this.storage(storage);
       return this;

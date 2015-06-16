@@ -17,6 +17,11 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 (function($) {
   var pluginName = 'storage';
 
+  var defaults = {
+    dateType: "pl",
+    typeName: "program"
+  }
+
   /** @lends $.fn.storage */
   var methods = {
     /**
@@ -33,7 +38,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
     _init: function(options) {
       return this.each(function() {
 	var elem = $(this);
-	var data = $.extend({}, options);
+	var data = $.extend({}, defaults, options);
 
 	function onStorage(ev, method) {
 	  var target = $(ev.target);
@@ -240,6 +245,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
       var editor  = this;
       var update  = Boolean(options.file);
       var fork    = options.meta && meta.symbolic != "HEAD";
+      var type    = options.typeName || "program";
 
       if ( meta.public === undefined )
 	meta.public = true;
@@ -253,9 +259,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 			      update ? form.fields.commit_message() : undefined,
 			      form.fields.tags(meta.tags),
 			      form.fields.buttons(
-				{ label: fork   ? "Fork program" :
-					 update ? "Update program" :
-						  "Save program",
+				{ label: fork   ? "Fork "+type :
+					 update ? "Update "+type :
+						  "Save "+type,
 				  action: function(ev,data) {
 				            editor.storage('save', data);
 					    return false;
@@ -265,7 +271,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 
       form.showDialog({ title: fork   ? "Fork from "+meta.commit.substring(0,7) :
 			       update ? "Save new version" :
-			                "Save program as",
+			                "Save "+type+" as",
 			body:  saveAsBody
 		      });
 
