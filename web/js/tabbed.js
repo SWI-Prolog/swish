@@ -231,7 +231,7 @@ var tabbed = {
 
 	tab.html("");
 	tab.append(content);
-	$(content)[type]();
+	tabbed.tabTypes[type].create(content);
       });
 
       return dom;

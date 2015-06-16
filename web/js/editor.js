@@ -14,6 +14,7 @@ define([ "cm/lib/codemirror",
 	 "form",
 	 "cm/mode/prolog/prolog-template-hint",
 	 "modal",
+	 "tabbed",
 
 	 "storage",
 
@@ -42,7 +43,8 @@ define([ "cm/lib/codemirror",
 
 	 "cm/keymap/emacs",
        ],
-       function(CodeMirror, config, preferences, form, templateHint, modal) {
+       function(CodeMirror, config, preferences, form, templateHint,
+		modal, tabbed) {
 
 (function($) {
   var pluginName = 'prologEditor';
@@ -617,6 +619,15 @@ define([ "cm/lib/codemirror",
     }
 
   }; // methods
+
+  tabbed.tabTypes.program = {
+    dataType: "pl",
+    label: "Program",
+    create: function(dom) {
+      $(dom).addClass("prolog-editor")
+            .prologEditor({save:true});
+    }
+  };
 
   /**
    * The prologEditor jQuery plugin converts a `<div>` into an code

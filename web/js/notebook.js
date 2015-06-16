@@ -295,7 +295,12 @@ var cellTypes = {
   }
 
   tabbed.tabTypes.notebook = {
+    dataType: "swinb",
+    typeName: "notebook",
     label: "Notebook",
+    create: function(dom) {
+      $(dom).notebook();
+    }
   };
 
   /**
