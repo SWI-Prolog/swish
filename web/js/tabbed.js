@@ -64,7 +64,7 @@ var tabbed = {
 	ev.preventDefault();
       });
       $(ul).on("click", "a", function(ev) {
-	$(ev.target).tab('show');
+	$(ev.target).closest("a").tab('show');
 	ev.preventDefault();
       });
 
@@ -182,7 +182,7 @@ var tabbed = {
       }
 
       var a1 = $.el.a({class:"compact", href:"#"+id, "data-id":id},
-		      name, close_button);
+		      $.el.span({class:"tab-title"}, name), close_button);
       var li = $.el.li({role:"presentation"}, a1);
 
       return li;
@@ -200,7 +200,7 @@ var tabbed = {
       var ul	 = tabbed.tabbed('navTabs');
       var a      = ul.find("a[data-id="+id+"]");
 
-      a.text(title);
+      a.find(".tab-title").text(title);
       return tabbed;
     },
 
