@@ -153,3 +153,6 @@ _not_ see exactly the same UI for cooperation.  What about
       - Use `target=` for others.
   - Use type icons for tabs and hide the file extension.
 
+### Check
+
+  - Handling of background examples.
