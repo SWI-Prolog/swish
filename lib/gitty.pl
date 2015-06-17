@@ -86,6 +86,17 @@ the newly created (gitty_create/5) or updated object (gitty_update/5).
 	store/2,
 	heads_input_stream_cache/2.	% Store, Stream
 
+% enable/disable syncing remote servers running on  the same file store.
+% This facility requires shared access to files and thus doesn't work on
+% Windows.
+
+:- if(current_prolog_flag(windows, true)).
+remote_sync(false).
+:- else.
+remote_sync(true).
+:- endif.
+
+
 %%	gitty_file(+Store, ?File, ?Head) is nondet.
 %
 %	True when File entry in the  gitty   store  and Head is the HEAD
@@ -339,7 +350,10 @@ gitty_rescan(Store) :-
 
 gitty_scan(Store) :-
 	store(Store, _), !,
-	with_mutex(gitty, remote_updates(Store)).
+	(   remote_sync(true)
+	->  with_mutex(gitty, remote_updates(Store))
+	;   true
+	).
 gitty_scan(Store) :-
 	with_mutex(gitty, gitty_scan_sync(Store)).
 
@@ -445,12 +459,16 @@ gitty_update_head(Store, Name, OldCommit, NewCommit) :-
 		   gitty_update_head_sync(Store, Name, OldCommit, NewCommit)).
 
 gitty_update_head_sync(Store, Name, OldCommit, NewCommit) :-
+	remote_sync(true), !,
 	setup_call_cleanup(
 	    heads_output_stream(Store, HeadsOut),
 	    gitty_update_head_sync(Store, Name, OldCommit, NewCommit, HeadsOut),
 	    close(HeadsOut)).
+gitty_update_head_sync(Store, Name, OldCommit, NewCommit) :-
+	gitty_update_head_sync2(Store, Name, OldCommit, NewCommit).
 
 gitty_update_head_sync(Store, Name, OldCommit, NewCommit, HeadsOut) :-
+	gitty_update_head_sync2(Store, Name, OldCommit, NewCommit),
 	gitty_scan(Store),		% fetch remote changes
 	(   OldCommit == (-)
 	->  (   head(Store, Name, _)
@@ -463,6 +481,19 @@ gitty_update_head_sync(Store, Name, OldCommit, NewCommit, HeadsOut) :-
 	    )
 	),
 	format(HeadsOut, '~q.~n', [head(Name, OldCommit, NewCommit)]).
+
+gitty_update_head_sync2(Store, Name, OldCommit, NewCommit) :-
+	gitty_scan(Store),		% fetch remote changes
+	(   OldCommit == (-)
+	->  (   head(Store, Name, _)
+	    ->	throw(error(gitty(file_exists(Name),_)))
+	    ;	assertz(head(Store, Name, NewCommit))
+	    )
+	;   (   retract(head(Store, Name, OldCommit))
+	    ->	assertz(head(Store, Name, NewCommit))
+	    ;	throw(error(gitty(not_at_head(Name, OldCommit)), _))
+	    )
+	).
 
 remote_updates(Store) :-
 	remote_updates(Store, List),
