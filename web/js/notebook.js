@@ -159,7 +159,6 @@ var cellTypes = {
      * @param {Boolean} [focus] if `true`, give the cell the focus
      */
     active: function(cell, focus) {
-      console.log(cell);
       if ( cell && cell.length == 1 )
       { this.children(".nb-cell.active").nbCell('active', false);
 	cell.nbCell('active', true);
@@ -216,7 +215,6 @@ var cellTypes = {
 	},
 	isClean: function(gen) {
 	  var cgen = notebook.notebook('changeGen');
-	  console.log(gen, cgen);
 	  return gen == cgen;
 	},
 	cleanGeneration: this.notebook('changeGen'),
@@ -388,7 +386,6 @@ var cellTypes = {
 	this.addClass("active");
 	switch( data.type ) {
 	  case "program":
-	    console.log(this.find(".editor"));
 	    this.find(".editor").prologEditor('makeCurrent');
 	    break;
 	}
