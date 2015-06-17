@@ -183,7 +183,6 @@ define([ "cm/lib/codemirror",
 
 	if ( options.mode == "prolog" && data.role == "source" ) {
 	  elem.on("activate-tab", function(ev) {
-	    console.log("Refresh ", data.cm);
 	    data.cm.refresh();
 	  });
 
