@@ -154,10 +154,15 @@ var cellTypes = {
 		 *	 CELL MANAGEMENT	*
 		 *******************************/
 
+    /**
+     * @param {jQuery} cell is the cell that must be activated
+     * @param {Boolean} [focus] if `true`, give the cell the focus
+     */
     active: function(cell, focus) {
+      console.log(cell);
       if ( cell && cell.length == 1 )
-      { this.children(".nb-cell.active").removeClass("active");
-	cell.addClass("active");
+      { this.children(".nb-cell.active").nbCell('active', false);
+	cell.nbCell('active', true);
 	if ( focus )
 	  cell.focus();
       }
@@ -372,6 +377,31 @@ var cellTypes = {
 	}
       });
     },
+
+    /**
+     * (de)activate the current cell.
+     */
+    active: function(val) {
+      var data = this.data(pluginName);
+
+      if ( val ) {
+	this.addClass("active");
+	switch( data.type ) {
+	  case "program":
+	    console.log(this.find(".editor"));
+	    this.find(".editor").prologEditor('makeCurrent');
+	    break;
+	}
+      } else if ( this.length > 0 ) {
+	this.removeClass("active");
+	switch( data.type ) {
+	  case "markdown":
+	    this.nbCell('run');
+	    break;
+	}
+      }
+    },
+
 
     type: function(type) {
       var data = this.data(pluginName);
