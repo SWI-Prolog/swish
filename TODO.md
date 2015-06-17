@@ -133,7 +133,7 @@ _not_ see exactly the same UI for cooperation.  What about
   - swish.playFile()
     - If current tab can accept type, play it there		[OK]
     - If current tab is a `new tab', play it there		[OK]
-    - else, add a new tab
+    - else, add a new tab					[OK]
   - Add notion of `current source' to be used by the
     bottom-right query editor.  This is:
     - Visible Prolog editor

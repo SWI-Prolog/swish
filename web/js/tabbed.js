@@ -40,6 +40,10 @@ var tabbed = {
 
 	elem.addClass("tabbed");
 	elem.tabbed('makeTabbed');
+	// Current tab could not handle source, create a new one
+	elem.on("source", function(ev, src) {
+	  elem.tabbed('tabFromSource', src);
+	});
 
 	elem.data(pluginName, data);	/* store with element */
       });
@@ -108,24 +112,40 @@ var tabbed = {
      * Add an empty new tab from the "+" button.  This calls
      * options.newTab() to return a DOM element for the new
      * tab.
+     * @param {HTMLElement} [content] Content for the new tab
+     * If omitted, it calls `options.newTab` or uses the method
+     * `tabSelect`.
+     * @return {jQuery} object representing the created tab
      */
-    newTab: function() {
+    newTab: function(dom) {
       var data = this.data(pluginName);
-      var dom;
 
-      if ( data.newTab ) {
-	dom = data.newTab();
-      } else {
-	dom = this.tabbed('tabSelect');
+      if ( dom == undefined ) {
+	if ( data.newTab ) {
+	  dom = data.newTab();
+	} else {
+	  dom = this.tabbed('tabSelect');
+	}
       }
 
-      this.tabbed('addTab', dom, {active:true,close:true});
+      return this.tabbed('addTab', dom, {active:true,close:true});
+    },
+
+    /**
+     * Add a new tab from the provided source
+     */
+    tabFromSource: function(src) {
+      var tab = this.tabbed('newTab', $("<span></span>"));
+      if ( !this.tabbed('setSource', tab, src) ) {
+	this.tabbed('removeTab', tab.attr("id"));
+      }
       return this;
     },
 
     /**
      * Transform the new tab into a tab that can hold the requested
-     * source
+     * source.
+     * @return {Boolean} `true` if a suitable type was found
      */
     setSource: function(tab, src) {
       if ( typeof(src) == "object" && src.meta && src.meta.name )
@@ -142,9 +162,11 @@ var tabbed = {
 	    tab.append(content);
 	    tabType.create(content);
 	    $(content).trigger("source", src);
+	    return true;
 	  }
 	}
       }
+      return false;
     },
 
     /**
@@ -156,12 +178,14 @@ var tabbed = {
      * active
      * @param {Boolean} [options.close] if `true`, allow closing the new
      * tab.
+     * @return {jQuery} the created tab element
      */
     addTab: function(content, options) {
-      var ul = this.tabbed('navTabs');
-      var id = genId();
+      var ul  = this.tabbed('navTabs');
+      var id  = genId();
+      var tab =	wrapInTab(content, id, options.close);
 
-      this.tabbed('navContent').append(wrapInTab(content, id, options.close));
+      this.tabbed('navContent').append(tab);
 
       var li  = this.tabbed('tabLabel', id, "New tab", close);
 
@@ -173,6 +197,8 @@ var tabbed = {
 
       if ( options.active )
 	$(li).find("a").first().tab('show');
+
+      return tab;
     },
 
     /**
@@ -284,6 +310,8 @@ var tabbed = {
    * @param {Object} dom is the object that must be wrapped
    * @param {String} id is the identifier to give to the new content
    * @param {Boolean} active sets the tab to active if `true`
+   * @return {jQuery} `div` object of class `tab-pane` and the
+   * passed `id`.
    */
   function wrapInTab(dom, id, active) {
     $(dom).wrap('<div role="tabpanel" class="tab-pane" id="'+id+'"></div>');
