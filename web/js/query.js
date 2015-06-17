@@ -17,6 +17,10 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 (function($) {
   var pluginName = 'queryEditor';
 
+  var defaults = {
+    maxHistoryLength: 50
+  };
+
   /** @lends $.fn.queryEditor */
   var methods = {
     /**
@@ -31,9 +35,9 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
     _init: function(options) {
       return this.each(function() {
 	var elem   = $(this);
-	var data   = $.extend({maxHistoryLength: 50}, options);
+	var data   = $.extend({}, defaults, options);
 	var qediv  = $.el.div({class:"query",style:"height:100%"});
-	var tabled = tableCheckbox(options);
+	var tabled = tableCheckbox(data);
 
         var content =
 	  $.el.table({class:"prolog-query"},
@@ -44,12 +48,12 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 			     $.el.td()),
 		     $.el.tr($.el.td(),
 			     $.el.td({class:"buttons-left"},
-				     examplesButton(options),
-				     historyButton(options),
-				     aggregateButton(options)),
+				     examplesButton(data),
+				     historyButton(data),
+				     aggregateButton(data)),
 			     $.el.td({class:"buttons-right"},
 				     tabled,
-				     runButton(options))));
+				     runButton(data))));
 
 	elem.addClass("prolog-query-editor swish-event-receiver");
 	elem.append(content);
@@ -60,26 +64,67 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 
 	$(qediv).append(elem.children("textarea"))
 	        .prologEditor({ role: "query",
-				sourceID: options.sourceID,
+				sourceID: function() {
+				  return data.sourceID();
+				},
 				prologQuery: function(q) {
 				  elem.queryEditor('run', q, tableSelected());
 				}
 		              });
 
-	if ( typeof(options.examples) == "object" &&
-	     options.examples[0] &&
+	if ( typeof(data.examples) == "object" &&
+	     data.examples[0] &&
 	     !$(qediv).prologEditor('getSource') )
-	  $(qediv).prologEditor('setSource', options.examples[0]);
+	  $(qediv).prologEditor('setSource', data.examples[0]);
 
-	elem.on("source", function(src) {
-	  if ( typeof(data.examples) == "function" ) {
-	    exl = data.examples();
-	    elem.queryEditor('setQuery', (exl && exl[0]) ? exl[0] : "");
+	elem.on("current-program", function(ev, editor) {
+	  elem[pluginName]('setProgramEditor', $(editor));
+	});
+	elem.on("program-loaded", function(ev, editor) {
+	  if ( $(data.editor).data('prologEditor') == $(editor).data('prologEditor') ) {
+	    var exl = data.examples();
+	    elem.queryEditor('setQuery', exl && exl[0] ? exl[0] : "");
 	  }
 	});
 
 	elem.data(pluginName, data);
       });
+    },
+
+    /**
+     * @param {jQuery} editor has become the new current program
+     * editor.  Update the examples and re-run the query highlighting.
+     */
+    setProgramEditor: function(editor) {
+      var data = this.data(pluginName);
+
+      data.editor = editor[0];
+      if ( editor ) {
+	data.examples = function() {
+	  return editor.prologEditor('getExamples');
+	};
+	data.source = function() {
+	  var src = editor.prologEditor('getSource');
+	  var bg  = $(".background.prolog.source").text();
+
+	  if ( bg )
+	    src += '\n\n' + bg;
+
+	  return src;
+	};
+	data.sourceID = function() {
+	  return editor.prologEditor('getSourceID');
+	};
+
+	var exl = data.examples();
+	if ( exl && exl[0] ) {
+	  this.queryEditor('setQuery', exl[0]);
+	} else {
+	  editor.prologEditor('refreshHighlight');
+	}
+      } else
+      { data.examples = "";
+      }
     },
 
     /**

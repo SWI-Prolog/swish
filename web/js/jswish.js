@@ -147,7 +147,7 @@ preferences.setDefault("emacs-keybinding", false);
 
 	$("#navbar").navbar(defaults.menu);
 
-	data.editor = $(".prolog-editor").prologEditor({save:true});
+	var  editor = $(".prolog-editor").prologEditor({save:true});
 	data.runner = $(".prolog-runners").prologRunners();
 	data.query  = $(".prolog-query").queryEditor(
           { source:   function() {
@@ -158,7 +158,9 @@ preferences.setDefault("emacs-keybinding", false);
 	    },
 	    examples: elem.swish('examples'),
 	    runner:   data.runner,
-	  }).trigger("source");
+	  });
+
+	editor.prologEditor('makeCurrent');
 
 	$(".notebook").notebook();
 

@@ -183,7 +183,8 @@ define([ "cm/lib/codemirror",
 
 	if ( options.mode == "prolog" && data.role == "source" ) {
 	  elem.on("activate-tab", function(ev) {
-	    data.cm.refresh();
+	    elem.prologEditor('makeCurrent');
+	    data.cm.refresh();		/* needed if a tab has been opened */
 	  });
 
 	  elem.on("source-error", function(ev, error) {
@@ -290,13 +291,29 @@ define([ "cm/lib/codemirror",
      * @param {String} source sets the new content for the editor.  If
      * the editor is associated with a storage plugin, the call is
      * forwarded to the storage plugin.
+     * @param {Boolean} [direct=false] if this parameter is `true`, the
+     * message is never delegated to the storage
      */
-    setSource: function(source) {
-      if ( this.data('storage') ) {
+    setSource: function(source, direct) {
+      if ( this.data('storage') && direct != true ) {
 	this.storage('setSource', source);
       } else {
-	this.data(pluginName).cm.setValue(source);
+	var data = this.data(pluginName);
+
+	data.cm.setValue(source);
+	if ( data.role == "source" ) {
+	  $(".swish-event-receiver").trigger("program-loaded", this);
+	}
       }
+      return this;
+    },
+
+    /**
+     * Advertise this editor as the current editor.  This is the
+     * one used by the default query editor.
+     */
+    makeCurrent: function() {
+      $(".swish-event-receiver").trigger("current-program", this);
       return this;
     },
 
@@ -396,6 +413,16 @@ define([ "cm/lib/codemirror",
       });
       $(elem).data("cm-widget", widget);
 
+      return this;
+    },
+
+    /**
+     * Re-run the highlighting.  Used for query editors if the
+     * associated editor has changed.
+     */
+    refreshHighlight: function() {
+      var data = this.data(pluginName);
+      data.cm.serverAssistedHighlight(true);
       return this;
     },
 
@@ -595,9 +622,10 @@ define([ "cm/lib/codemirror",
      */
     setupStorage: function(storage) {
       var data = this.data(pluginName);
+      var elem = this;
 
       storage.setValue = function(source) {
-	data.cm.setValue(source);
+	elem.prologEditor('setSource', source, true);
       };
       storage.getValue = function() {
 	return data.cm.getValue();
@@ -624,7 +652,8 @@ define([ "cm/lib/codemirror",
     label: "Program",
     create: function(dom) {
       $(dom).addClass("prolog-editor")
-            .prologEditor({save:true});
+            .prologEditor({save:true})
+	    .prologEditor('makeCurrent');
     }
   };
 
