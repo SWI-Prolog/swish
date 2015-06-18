@@ -255,10 +255,20 @@ define([ "cm/lib/codemirror",
     },
 
     /**
-     * @returns {String} current contents of the editor
+     * FIXME: Add indication of the source, such that errors
+     * can be relayed to the proper editor.
+     * @returns {String} current contents of the editor.  If
+     * the jQuery object holds multiple editors, we return the
+     * joined content of the editors.
      */
     getSource: function() {
-      return this.data(pluginName).cm.getValue();
+      var src = [];
+
+      this.each(function() {
+	src.push($(this).data(pluginName).cm.getValue());
+      });
+
+      return src.join("\n\n");
     },
 
     /**

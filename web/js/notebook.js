@@ -427,6 +427,17 @@ var cellTypes = {
       }
     },
 
+    /**
+     * Currently simply returns the preceeding program cell.
+     * @return {jQuery} set of prologEditor elements that form the
+     * sources for the receiving query cell.
+     */
+    programs: function() {
+      var data = this.data(pluginName);
+
+      return this.prev(".program").find(".editor");
+    },
+
     saveDOM: function() {
       return methods.saveDOM[this.data(pluginName).type].call(this);
     },
@@ -485,11 +496,14 @@ var cellTypes = {
     var cell = this;
 
     options = $.extend({}, options,
-		       { role: "query",
-			 prologQuery: function(q) {
-			   cell.nbCell('run');
-			 }
-		       });
+      { role: "query",
+	sourceID: function() {
+	  return cell.nbCell('programs').prologEditor('getSourceID');
+	},
+	prologQuery: function(q) {
+	  cell.nbCell('run');
+	}
+      });
 
     this.html("<span class='prolog-prompt'>?-</span>");
     this.append(editor=$.el.div({class:"editor query"}));
@@ -531,7 +545,9 @@ var cellTypes = {
   };
 
   methods.run.query = function() {		/* query */
-    var query = { source: "",			/* TBD */
+    var programs = this.nbCell('programs');
+
+    var query = { source: programs.prologEditor('getSource'),
                   query: cellText(this),
 		  tabled: true
                 };

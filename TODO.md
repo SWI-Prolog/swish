@@ -142,7 +142,7 @@ _not_ see exactly the same UI for cooperation.  What about
     - Populate the query example window from there
   - Run Markdown cells when they become inactive		[OK]
   - Notebook
-    - Connect query to above source.
+    - Connect query to above source.				[OK]
     - Multiple sources:
       - Allow naming sources?
       - Allow one source to include others in the same notebook?
