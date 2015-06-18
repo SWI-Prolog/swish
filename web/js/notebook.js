@@ -160,10 +160,14 @@ var cellTypes = {
      */
     active: function(cell, focus) {
       if ( cell && cell.length == 1 )
-      { this.children(".nb-cell.active").nbCell('active', false);
-	cell.nbCell('active', true);
-	if ( focus )
-	  cell.focus();
+      { var current = this.children(".nb-cell.active");
+
+	if ( !(current.length == 1 && cell[0] == current[0]) ) {
+	  current.nbCell('active', false);
+	  cell.nbCell('active', true);
+	  if ( focus )
+	    cell.focus();
+	}
       }
     },
 
