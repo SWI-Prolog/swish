@@ -275,16 +275,22 @@ define([ "cm/lib/codemirror",
     },
 
     /**
-     * @return {String|null} UUID of the source used for server-side
-     * analysis
+     * @return {Array(String|null)} UUIDs of the sources used for
+     * server-side analysis.
      */
      getSourceID: function() {
-       var cm = this.data(pluginName).cm;
+       var ids = [];
 
-       if ( cm.state.prologHighlightServer ) {
-	 return cm.state.prologHighlightServer.uuid;
-       }
-       return null;
+       this.each(function() {
+	 var cm =  $(this).data(pluginName).cm;
+
+	 if ( cm.state.prologHighlightServer )
+	   ids.push(cm.state.prologHighlightServer.uuid);
+	 else
+	   ids.push(null);
+       });
+
+       return ids;
      },
 
     /**
