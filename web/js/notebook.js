@@ -81,7 +81,7 @@ var cellTypes = {
 
 	  elem.notebook('value', content.text());
 	  content.remove();
-	} else
+	}
 
 	elem.notebook('setupStorage', storage);
       });
