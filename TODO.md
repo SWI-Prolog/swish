@@ -141,7 +141,6 @@ _not_ see exactly the same UI for cooperation.  What about
     - If in a notebook, the active one.
     - Populate the query example window from there
   - Run Markdown cells when they become inactive		[OK]
-  - Loading example into empty tab
   - Notebook
     - Connect query to above source.
     - Multiple sources:

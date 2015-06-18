@@ -101,8 +101,10 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
       var data = this.data(pluginName);
 
       if ( typeof(src) == "object" &&
-	   src.meta && src.meta.name )
-      { var ext = src.meta.name.split('.').pop();
+	   ((src.meta && src.meta.name) || src.url) )
+      { var name = (src.meta && src.meta.name) ? src.meta.name : src.url;
+	var ext  = name.split('.').pop();
+
 	if ( ext != data.dataType )
 	  return "propagate";
       }

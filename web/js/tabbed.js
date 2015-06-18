@@ -148,8 +148,10 @@ var tabbed = {
      * @return {Boolean} `true` if a suitable type was found
      */
     setSource: function(tab, src) {
-      if ( typeof(src) == "object" && src.meta && src.meta.name )
-      { var ext = src.meta.name.split('.').pop();
+      if ( typeof(src) == "object" &&
+	   ((src.meta && src.meta.name) || src.url) )
+      { var name = (src.meta && src.meta.name) ? src.meta.name : src.url;
+	var ext  = name.split('.').pop();
 
 	for(var k in tabbed.tabTypes) {
 	  if ( tabbed.tabTypes.hasOwnProperty(k) &&
@@ -286,8 +288,10 @@ var tabbed = {
       $(g).addClass("swish-event-receiver");
       $(g).on("source", function(ev, src) {
 	var tab = $(ev.target).closest(".tab-pane");
-	if ( tab.is(":visible") )
-	  tab.closest(".tabbed").tabbed('setSource', tab, src);
+	if ( tab.is(":visible") &&
+	     tab.closest(".tabbed").tabbed('setSource', tab, src) ) {
+	  ev.stopPropagation();
+	}
       });
 
       return dom;
