@@ -135,12 +135,13 @@ _not_ see exactly the same UI for cooperation.  What about
     - If current tab is a `new tab', play it there		[OK]
     - else, add a new tab					[OK]
     - If file is already opened in a tab, switch to that tab.
-  - Add notion of `current source' to be used by the
+  - Add notion of `current source' to be used by the		[OK]
     bottom-right query editor.  This is:
     - Visible Prolog editor
     - If in a notebook, the active one.
     - Populate the query example window from there
-  - Run Markdown cells when they become inactive
+  - Run Markdown cells when they become inactive		[OK]
+  - Loading example into empty tab
   - Notebook
     - Connect query to above source.
     - Multiple sources:
