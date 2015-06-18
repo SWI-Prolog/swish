@@ -469,17 +469,6 @@ gitty_update_head_sync(Store, Name, OldCommit, NewCommit) :-
 
 gitty_update_head_sync(Store, Name, OldCommit, NewCommit, HeadsOut) :-
 	gitty_update_head_sync2(Store, Name, OldCommit, NewCommit),
-	gitty_scan(Store),		% fetch remote changes
-	(   OldCommit == (-)
-	->  (   head(Store, Name, _)
-	    ->	throw(error(gitty(file_exists(Name),_)))
-	    ;	assertz(head(Store, Name, NewCommit))
-	    )
-	;   (   retract(head(Store, Name, OldCommit))
-	    ->	assertz(head(Store, Name, NewCommit))
-	    ;	throw(error(gitty(not_at_head(Name, OldCommit)), _))
-	    )
-	),
 	format(HeadsOut, '~q.~n', [head(Name, OldCommit, NewCommit)]).
 
 gitty_update_head_sync2(Store, Name, OldCommit, NewCommit) :-
