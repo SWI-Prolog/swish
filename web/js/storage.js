@@ -69,7 +69,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 	elem.on("save", function(ev, data) {
 	  onStorage(ev, 'save', data);
 	});
-	elem.on("fileInfo", function() {
+	elem.on("fileInfo", function(ev) {
 	  onStorage(ev, 'info');
 	});
 	elem.on("diff", function(ev) {
