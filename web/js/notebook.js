@@ -160,7 +160,7 @@ var cellTypes = {
      */
     active: function(cell, focus) {
       if ( cell && cell.length == 1 )
-      { var current = this.children(".nb-cell.active");
+      { var current = this.find(".nb-content").children(".nb-cell.active");
 
 	if ( !(current.length == 1 && cell[0] == current[0]) ) {
 	  current.nbCell('active', false);
@@ -189,7 +189,7 @@ var cellTypes = {
 	  $(cell).insertAfter(relto);
 	}
       } else {
-	this.append(cell);
+	this.find(".nb-content").append(cell);
       }
 
       if ( !options.cell )
@@ -247,11 +247,14 @@ var cellTypes = {
 	return $($.el.div(dom)).html();
       } else {
 	var notebook = this;
+	var content  = this.find(".nb-content");
 	var dom = $.el.div();
+
+	content.html("");
 	$(dom).html(val);
 	$(dom).find(".nb-cell").each(function() {
 	  var cell = $.el.div({class:"nb-cell"});
-	  notebook.append(cell);
+	  content.append(cell);
 	  $(cell).nbCell($(this));
 	});
       }
