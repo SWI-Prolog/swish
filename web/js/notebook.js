@@ -400,7 +400,9 @@ var cellTypes = {
 	this.removeClass("active");
 	switch( data.type ) {
 	  case "markdown":
-	    this.nbCell('run');
+	    if ( this.hasClass("runnable") ) {
+	      this.nbCell('run');
+	    }
 	    break;
 	}
       }
@@ -438,7 +440,7 @@ var cellTypes = {
     programs: function() {
       var data = this.data(pluginName);
 
-      return this.prev(".program").find(".editor");
+      return this.prevAll(".program").first().find(".editor");
     },
 
     saveDOM: function() {
