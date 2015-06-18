@@ -9,6 +9,7 @@ div.tab-content	{
 }
 
 div.tab-pane {
+  position: relative;
   height: 100%;
 }
 
