@@ -1,15 +1,25 @@
 /* Style for the SWISH notebook
 */
 
-.nb-toolbar, .nb-content, .nb-cell
-{ margin-left: 1em;
+.nb-toolbar, .nb-content
+{ width: 100%;
+  padding-left: 1em;
+  padding-right: 1em;
 }
 
 .nb-toolbar
-{ padding-top: 0.3em;
-  padding-bottom: 0.3em;
+{ position: absolute;
+  padding-top: 5px;
+  padding-bottom: 5px;
   margin-bottom: 1em;
   border-bottom: 1px solid #ddd;
+}
+
+.nb-content
+{ position: absolute;
+  top: 40px;
+  height: calc(100% - 40px);
+  overflow-y: auto;
 }
 
 .dropdown.cell-type
@@ -22,7 +32,7 @@
 }
 
 .nb-cell
-{ margin-right: 1em;
+{ box-sizing: border-box;
   background-color: #eee;
   border: 1px solid #ccc;
   border-radius: 5px;
