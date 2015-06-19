@@ -605,7 +605,8 @@ var cellTypes = {
     options = options||{};
     var query = { source: programs.prologEditor('getSource'),
                   query: cellText(this),
-		  tabled: options.tabled||false
+		  tabled: options.tabled||false,
+		  title: false
                 };
     var runner = $.el.div({class: "prolog-runner"});
     this.find(".prolog-runner").remove();

@@ -206,6 +206,8 @@ define([ "jquery", "config", "preferences",
      * @param {String} [query.source] the Prolog program
      * @param {Boolean} [query.tabled=false]  If `true`, represent the
      * results as a table.
+     * @param {Boolean} [query.title=true] If `false`, suppress the
+     * title.
      */
     _init: function(query) {
       return this.each(function() {
@@ -296,15 +298,19 @@ define([ "jquery", "config", "preferences",
 	}
 
 	elem.addClass("prolog-runner");
-	var qspan = $.el.span({class:"query cm-s-prolog"});
-	CodeMirror.runMode(query.query, "prolog", qspan);
-	elem.append($.el.div(
-	  {class:"runner-title ui-widget-header"},
-	  closeButton(),
-	  iconizeButton(),
-          csvButton(),
-	  stateButton(),
-          qspan));
+	if ( query.tabled )
+	  elem.addClass("tabled");
+	if ( query.title != false ) {
+	  var qspan = $.el.span({class:"query cm-s-prolog"});
+	  CodeMirror.runMode(query.query, "prolog", qspan);
+	  elem.append($.el.div(
+	    {class:"runner-title ui-widget-header"},
+	    closeButton(),
+	    iconizeButton(),
+	    csvButton(),
+	    stateButton(),
+	    qspan));
+	}
 	elem.append($.el.div(
 	  {class:"runner-results"}));
 	elem.append(controllerDiv());
