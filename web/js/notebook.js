@@ -257,7 +257,10 @@ var cellTypes = {
 	  $(dom).append(cell.nbCell('saveDOM'));
 	});
 
-	return $($.el.div(dom)).html();
+	var html = $($.el.div(dom)).html();
+	return html.replace(/(<div [^>]*>|<\/div>)/g, function(t) {
+	  return "\n"+t+"\n";
+	}).slice(1);
       } else {
 	var notebook = this;
 	var content  = this.find(".nb-content");
@@ -670,11 +673,11 @@ var cellTypes = {
   };
 
   methods.restoreDOM.program = function(dom) {	/* program */
-    methods.type.program.call(this, {value:dom.text()});
+    methods.type.program.call(this, {value:dom.text().trim()});
   };
 
   methods.restoreDOM.query = function(dom) {	/* query */
-    methods.type.query.call(this, {value:dom.text()});
+    methods.type.query.call(this, {value:dom.text().trim()});
   };
 
 /* ---------------- changeGen ---------------- */
