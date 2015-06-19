@@ -167,7 +167,7 @@ source_data(PathInfo, Title, Code) :-
 	    open(Path, read, In, [encoding(utf8)]),
 	    read_string(In, _, Code),
 	    close(In)),
-	file_base_name(PathInfo, Title).
+	file_name_extension(Title, _Ext, File).
 
 %%	serve_resource(+Request) is semidet.
 %

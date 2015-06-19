@@ -61,7 +61,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 
 	elem.addClass("storage");
 	if ( options.title||options.file )
-	  elem.tabbed('title', options.title||options.file);
+	  elem.tabbed('title', options.title||filebase(options.file));
 
 	elem.on("source", function(ev, src) {
 	  onStorage(ev, 'setSource', src);
@@ -131,15 +131,14 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
       function basename(path) {
 	return path ? path.split('/').pop() : null;
       }
-      var title = (data.file ||
-		   basename(src.url) ||
+      var title = (filebase(data.file) ||
+		   filebase(basename(src.url)) ||
 		   capitalizeFirstLetter(data.typeName));
 
       if ( !src.url )
 	src.url = config.http.locations.swish;
 
-
-      this.tabbed('title', title);
+      this.tabbed('title', title, data.dataType);
       history.push(src);
 
       return this;
@@ -449,4 +448,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
     }
   };
 }(jQuery));
+
+  function filebase(file) {
+    return file ? file.split('.').slice(0,-1).join(".") : null;
+  }
 });

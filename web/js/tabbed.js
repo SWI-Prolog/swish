@@ -160,7 +160,7 @@ var tabbed = {
 	    var content = $.el.div();
 
 	    tab.html("");
-	    tab.tabbed('title', tabType.label);
+	    tab.tabbed('title', tabType.label, tabType.dataType);
 	    tab.append(content);
 	    tabType.create(content);
 	    $(content).trigger("source", src);
@@ -189,7 +189,7 @@ var tabbed = {
 
       this.tabbed('navContent').append(tab);
 
-      var li  = this.tabbed('tabLabel', id, "New tab", close);
+      var li  = this.tabbed('tabLabel', id, "New tab", close, "select");
 
       var create = ul.find("a.tab-new");
       if ( create.length == 1 )
@@ -205,7 +205,8 @@ var tabbed = {
 
     /**
      * Remove tab with given Id. If the tab is the active tab, make the
-     * previous tab active, or if there is no previous, the next.
+     * previous tab active, or if there is no previous, the next. If the
+     * tabbed environment becomes empty, add a virgin tab.
      *
      * @param {String} id is the id of the tab to destroy
      */
@@ -217,7 +218,7 @@ var tabbed = {
 	new_active = li.prev() || li.next();
       li.remove();
       $("#"+id).remove();
-      if ( new_active.length > 0 ) {
+      if ( new_active && new_active.length > 0 ) {
 	new_active.find("a").first().tab('show');
       } else if ( this.tabbed('navContent').children().length == 0 ) {
 	this.tabbed('newTab');
@@ -226,17 +227,26 @@ var tabbed = {
 
     /**
      * Create a label (`li`) for a new tab.
+     * @param {String} id is the identifier of the new tab
+     * @param {String} label is the textual label of the new tab
+     * @param {Boolean} close determines whether or nor a close button
+     * is added to the tab.
+     * @param {String} [type="pl"] indicates the type of the tab. This
+     * is used for associating an icon with the tab.
      */
-    tabLabel: function(id, name, close) {
+    tabLabel: function(id, label, close, type) {
       var close_button;
 
       if ( close )
       { close_button = glyphicon("remove", "xclose");
 	$(close_button).attr("title", "Close tab");
       }
+      type = type||"pl";
 
       var a1 = $.el.a({class:"compact", href:"#"+id, "data-id":id},
-		      $.el.span({class:"tab-title"}, name), close_button);
+		      $.el.span({class:"tab-icon "+type}),
+		      $.el.span({class:"tab-title"}, label),
+		      close_button);
       var li = $.el.li({role:"presentation"}, a1);
 
       return li;
@@ -246,8 +256,9 @@ var tabbed = {
      * This method is typically _not_ called on the tab, but on some
      * inner element of the tab.  It changes the title of the tab.
      * @param {String} title is the new title for the tab.
+     * @param {String} [type="pl"] is the new type for the tab.
      */
-    title: function(title) {
+    title: function(title, type) {
       var tab    = this.closest(".tab-pane");
       var tabbed = tab.closest(".tabbed");
       var id     = tab.attr("id");
@@ -255,6 +266,12 @@ var tabbed = {
       var a      = ul.find("a[data-id="+id+"]");
 
       a.find(".tab-title").text(title);
+      if ( type ) {
+	var icon = a.find(".tab-icon");
+	icon.removeClass();
+	icon.addClass("tab-icon "+type);
+      }
+
       return tabbed;
     },
 
@@ -282,9 +299,10 @@ var tabbed = {
 	var type    = $(ev.target).data('type');
 	var tab     = $(ev.target).closest(".tab-pane");
 	var content = $.el.div();
+	var options = tabbed.tabTypes[type];
 
 	tab.html("");
-	tab.tabbed('title', tabbed.tabTypes[type].label);
+	tab.tabbed('title', options.label, options.dataType);
 	tab.append(content);
 	tabbed.tabTypes[type].create(content);
       });
