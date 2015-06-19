@@ -394,6 +394,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
     unload: function(why, ev) {
       var data = this.data(pluginName);
 
+      if ( !data )				/* how can this happen? */
+	return undefined;
+
       if ( data.meta ) {
 	history.addRecent({ type: "gitty",
 			    id:	  data.meta.name	/* FIXME: add hash? */
