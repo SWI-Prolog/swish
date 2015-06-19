@@ -532,6 +532,44 @@ var cellTypes = {
       cell.removeData('markdownText');
       methods.type.markdown.call(cell, {value:text});
       cell.off("dblclick", makeEditable);
+      cell.off("click", followLink);
+    }
+
+    function followLink(ev) {
+      var a = $(ev.target).closest("a");
+
+      function parsePred(s) {
+	var pred = {};
+	var i;
+
+	if ( (i=s.indexOf(":")) > 0 ) {
+	  pred.module = s.substring(0,i);
+	  s = s.slice(i+1);
+	}
+	if ( (i=s.indexOf("/")) > 0 ) {
+	  pred.name = s.substring(0,i);
+	  if ( s.charAt(i+1) == '/' )	/* name//arity is a non-terminal */
+	    pred.arity = parseInt(s.slice(i+2))+2;
+	  else
+	    pred.arity = parseInt(s.slice(i+1));
+
+	  if ( !isNaN(pred.arity) )
+	    return pred;
+	}
+      }
+
+      if ( a.hasClass("swinb") ) {
+	$(ev.target).parents(".swish").swish('playFile', a.attr("href"));
+	ev.preventDefault();
+      } else if ( a.hasClass("builtin") ) {
+	var s    = a.attr("href").split("predicate=").pop();
+	var pred = parsePred(s);
+
+	if ( pred ) {
+	  $(".swish-event-receiver").trigger("pldoc", pred);
+	  ev.preventDefault();
+	}
+      }
     }
 
     $.get(config.http.locations.markdown,
@@ -542,6 +580,7 @@ var cellTypes = {
 	    cell.removeClass("runnable");
 	    cell.data('markdownText', markdownText);
 	    cell.on("dblclick", makeEditable);
+	    cell.on("click", "a", followLink);
 	  });
   };
 

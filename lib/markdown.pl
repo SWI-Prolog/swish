@@ -32,7 +32,9 @@
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/html_head)).
-:- use_module(library(pldoc/doc_html)).
+:- use_module(library(pldoc/doc_html),
+	      except([ file//2
+		     ])).
 :- use_module(library(pldoc/doc_wiki)).
 
 /** <module> SWISH Notebook markdown support
@@ -73,3 +75,34 @@ wiki_file_codes_to_dom(String, File, DOM) :-
                 wiki_codes_to_dom(String, [], DOM),
                 nb_delete(pldoc_file))
         ).
+
+
+		 /*******************************
+		 *	     HOOK WIKI		*
+		 *******************************/
+
+:- multifile
+	prolog:doc_autolink_extension/2.
+
+prolog:doc_autolink_extension(swinb, notebook).
+
+:- public
+	file//2.
+
+%%	file(+File, +Options)//
+%
+%	Hook that deals with linking other notebooks using the following
+%	markdown syntax:
+%
+%	  ```
+%	  - [My first book](mybook.swinb)
+%	  ```
+
+file(File, Options) -->
+	{ file_name_extension(_Base, swinb, File),
+	  option(label(Label), Options)
+	}, !,
+	html(a([class(swinb), href(File)], Label)).
+file(File, Options) -->
+	pldoc_html:file(File, Options).
+
