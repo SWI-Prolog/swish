@@ -15,4 +15,6 @@
 { "file":"clpfd-sudoku.pl",	  "title":"Sudoku (clp(fd))" },
 { "file":"knights_and_knaves.pl", "title":"Knights and Knaves (clp(b))" },
 { "file":"japanese.pl",		  "title":"Japanese source" },
+"--",
+{ "file":"hello.swinb",		  "title":"Hello world notebook" },
 ]
