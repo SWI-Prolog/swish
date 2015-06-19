@@ -154,6 +154,7 @@ _not_ see exactly the same UI for cooperation.  What about
 	- other predicate links.
       - Use `target=` for others.
   - Use type icons for tabs and hide the file extension.	[OK]
+  - Use type icons for examples menu and search results.
   - Use swish('playFile', ...) for the back button.		[OK]
   - Add close-button to runner without title.			[OK]
   - Add help screen for empty notebook.				[OK]
@@ -161,6 +162,7 @@ _not_ see exactly the same UI for cooperation.  What about
 ### Bugs
 
   - With a notebook open, opening a Prolog file opens multiple tabs?
+  - Open http://localhost:3050/example/hello.swinb
 
 ### Check
 
