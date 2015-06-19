@@ -49,12 +49,28 @@
   top: 0.1em;
 }
 
-.nb-cell.active
+.nb-cell.active, .nb-cell.active.query > .query
 { border: 1px solid #888;
 }
 
 .nb-cell .CodeMirror
 { border-radius: 5px;
+}
+
+.nb-cell-buttons
+{ text-align: right;
+  width: 100%;
+}
+
+.nb-cell.query
+{ border: 0px;
+  background: transparent;
+}
+
+.nb-cell.query > .query
+{ background-color: #eee;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
 .nb-cell .prolog-prompt

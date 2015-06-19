@@ -35,7 +35,7 @@ var cellTypes = {
 	var elem = $(this);
 	var storage = {};		/* storage info */
 	var data = {};			/* private data */
-	var toolbar;
+	var toolbar, content;
 
 	elem.addClass("notebook");
 	elem.addClass("swish-event-receiver");
@@ -53,11 +53,22 @@ var cellTypes = {
 	    sep(),
 	    glyphButton("play", "run", "Run")
 	    ));
-	elem.append($.el.div({class:"nb-content"}));
+	elem.append(content=$.el.div({class:"nb-content"}));
+	elem.append($.el.div({class:"nb-bottom"}));
 
 	$(toolbar).on("click", "a.btn", function(ev) {
 	  var action = $(ev.target).closest("a").data("action");
 	  elem.notebook(action);
+	  ev.preventDefault();
+	  return false;
+	});
+
+	$(content).on("click", ".nb-cell-buttons a.btn", function(ev) {
+	  var a    = $(ev.target).closest("a");
+	  var cell = a.closest(".nb-cell");
+
+	  var action = a.data("action");
+	  cell.nbCell(action);
 	  ev.preventDefault();
 	  return false;
 	});
@@ -276,18 +287,6 @@ var cellTypes = {
 
   // <private functions>
 
-  function glyphButton(glyph, action, title) {
-    var btn = $.el.a({href:"#", class:"btn btn-info btn-sm",
-		      title:title, "data-action":action},
-		     $.el.span({class:"glyphicon glyphicon-"+glyph}));
-
-    return btn;
-  }
-
-  function sep() {
-    return $.el.span({class:"thin-space"}, " ");
-  }
-
   /**
    * @returns {Object|null} cell that is focussed and inside our
    * notebook.
@@ -430,6 +429,11 @@ var cellTypes = {
       } else {
 	alert("Cell is not runnable");
       }
+      return this;
+    },
+
+    runTabled: function() {
+      return this.nbCell('run', {tabled:true});
     },
 
     /**
@@ -510,8 +514,15 @@ var cellTypes = {
 	}
       });
 
-    this.html("<span class='prolog-prompt'>?-</span>");
-    this.append(editor=$.el.div({class:"editor query"}));
+    this.html("");
+    this.append($.el.div($.el.div({class:"nb-cell-buttons"},
+      {class:"btn-group nb-cell-buttons",role:"group"},
+      glyphButton("play", "run",       "Run query",                 "xs"),
+      glyphButton("th",   "runTabled", "Run query (table results)", "xs"))));
+
+    this.append($.el.div({class:"query"},
+			 $.el.span({class:"prolog-prompt"}, "?-"),
+			 editor=$.el.div({class:"editor query"})));
     $(editor).prologEditor(options);
     this.addClass("runnable");
   }
@@ -588,12 +599,13 @@ var cellTypes = {
     alert("Please define a query to run this program");
   };
 
-  methods.run.query = function() {		/* query */
+  methods.run.query = function(options) {	/* query */
     var programs = this.nbCell('programs');
 
+    options = options||{};
     var query = { source: programs.prologEditor('getSource'),
                   query: cellText(this),
-		  tabled: true
+		  tabled: options.tabled||false
                 };
     var runner = $.el.div({class: "prolog-runner"});
     this.find(".prolog-runner").remove();
@@ -685,5 +697,16 @@ var cellTypes = {
   };
 }(jQuery));
 
+function glyphButton(glyph, action, title, size) {
+  size = size||"sm";
+  var btn = $.el.a({href:"#", class:"btn btn-info btn-"+size,
+		    title:title, "data-action":action},
+		   $.el.span({class:"glyphicon glyphicon-"+glyph}));
 
+  return btn;
+}
+
+function sep() {
+  return $.el.span({class:"thin-space"}, " ");
+}
 });
