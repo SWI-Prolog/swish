@@ -26,9 +26,12 @@ define(["jquery", "preferences"],
       var cpath = window.location.pathname;
 
       if ( cpath != reply.url ) {
-	window.history.pushState({location:reply.url},
-				 "",
-				 reply.url);
+	var state = {location:reply.url};
+
+	if ( reply.meta )
+	  state.meta = reply.meta;
+
+	window.history.pushState(state, "", reply.url);
 	document.title = "SWISH -- "
                        + (reply.file ? reply.file
 			             : "SWI-Prolog for SHaring");
@@ -40,7 +43,9 @@ define(["jquery", "preferences"],
      */
     pop: function(e) {
       if ( e.state ) {
-	if ( e.state.location ) {
+	if ( e.state.meta && e.state.meta.name ) {
+	  $(".swish").swish('playFile', e.state.meta.name);
+	} else if ( e.state.location ) {
 	  window.location =  e.state.location;
 	}
       }

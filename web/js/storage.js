@@ -156,8 +156,11 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 	$.ajax({ url: config.http.locations.web_storage + "/" + file,
 		 dataType: "text",
 		 success: function(data) {
-		   that.storage('setSource', data);
-		   options.file = file;
+		   that.storage('setSource',
+				{ data: data,
+				  meta: { name:file
+				        }
+				});
 		 },
 		 error: function(jqXHDR) {
 		   modal.ajaxError(jqXHR);
