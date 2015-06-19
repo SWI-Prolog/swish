@@ -49,6 +49,7 @@
 :- endif.
 :- use_module(library(debug)).
 :- use_module(library(time)).
+:- use_module(library(lists)).
 :- use_module(library(option)).
 
 :- use_module(config).
@@ -145,13 +146,13 @@ source_option(_Request, Options, Options) :-
 source_option(Request, Options0, Options) :-
 	option(path_info(Info), Request),
 	Info \== 'index.html', !,	% Backward compatibility
-	(   source_data(Info, Title, String)
-	->  Options = [code(String),title(Title)|Options0]
+	(   source_data(Info, String, Options1)
+	->  append([[code(String)], Options1, Options0], Options)
 	;   http_404([], Request)
 	).
 source_option(_, Options, Options).
 
-source_data(PathInfo, Title, Code) :-
+source_data(PathInfo, Code, [title(Title), type(Ext)]) :-
 	sub_atom(PathInfo, B, _, A, /),
 	sub_atom(PathInfo, 0, B, _, Alias),
 	sub_atom(PathInfo, _, A, 0, File),
@@ -167,7 +168,7 @@ source_data(PathInfo, Title, Code) :-
 	    open(Path, read, In, [encoding(utf8)]),
 	    read_string(In, _, Code),
 	    close(In)),
-	file_name_extension(Title, _Ext, File).
+	file_name_extension(Title, Ext, File).
 
 %%	serve_resource(+Request) is semidet.
 %
@@ -308,7 +309,7 @@ swish_config_hash -->
 %	  If present and code(String) is present, also associate the
 %	  editor with the given file.  See storage.pl.
 
-source(prolog, Options) -->
+source(pl, Options) -->
 	{ option(code(Spec), Options), !,
 	  download_source(Spec, Source, Options),
 	  phrase(source_data_attrs(Options), Extra)
@@ -382,7 +383,7 @@ query(_) --> [].
 %	We have opened a notebook. Embed the notebook data in the
 %	left-pane tab area.
 
-notebooks(notebook, Options) -->
+notebooks(swinb, Options) -->
 	{ option(code(Spec), Options),
 	  download_source(Spec, NoteBookText, Options),
 	  phrase(source_data_attrs(Options), Extra)
@@ -459,10 +460,13 @@ load_error(E, Source) :-
 %	@arg Type is one of `notebook` or `prolog`
 
 document_type(Type, Options) :-
-	(   option(meta(Meta), Options),
-	    file_name_extension(_, swinb, Meta.name)
-	->  Type = notebook
-	;   Type = prolog
+	(   option(type(Type0), Options)
+	->  Type = Type0
+	;   option(meta(Meta), Options),
+	    file_name_extension(_, Type0, Meta.name),
+	    Type0 \== ''
+	->  Type = Type0
+	;   Type = pl
 	).
 
 

@@ -81,10 +81,13 @@ var cellTypes = {
 					/* restore content */
 	var content = elem.find(".notebook-data");
 	if ( content.length > 0 ) {
-	  var file = content.data("file");
+	  function copyData(name) {
+	    var value = content.data(name);
+	    if ( value ) storage[name] = value;
+	  }
 
-	  if ( file )
-	    storage.file = file;
+	  copyData("file");
+	  copyData("title");
 	  if ( window.swish && window.swish.meta_data )
 	    storage.meta = window.swish.meta_data;
 

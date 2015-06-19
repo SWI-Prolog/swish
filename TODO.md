@@ -162,7 +162,6 @@ _not_ see exactly the same UI for cooperation.  What about
 ### Bugs
 
   - With a notebook open, opening a Prolog file opens multiple tabs?
-  - Open http://localhost:3050/example/hello.swinb
 
 ### Check
 
