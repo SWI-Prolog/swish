@@ -54,7 +54,6 @@ var cellTypes = {
 	    glyphButton("play", "run", "Run")
 	    ));
 	elem.append(content=$.el.div({class:"nb-content"}));
-	elem.append($.el.div({class:"nb-bottom"}));
 
 	$(toolbar).on("click", "a.btn", function(ev) {
 	  var action = $(ev.target).closest("a").data("action");
@@ -80,7 +79,6 @@ var cellTypes = {
 	elem.data(pluginName, data);	/* store with element */
 
 					/* restore content */
-					/* TBD: restore meta-data */
 	var content = elem.find(".notebook-data");
 	if ( content.length > 0 ) {
 	  var file = content.data("file");
@@ -92,6 +90,8 @@ var cellTypes = {
 
 	  elem.notebook('value', content.text());
 	  content.remove();
+	} else {
+	  elem.notebook('placeHolder');
 	}
 
 	elem.notebook('setupStorage', storage);
@@ -107,6 +107,7 @@ var cellTypes = {
       if ( cell ) {
 	this.notebook('active', cell.next());
 	cell.remove();
+	this.notebook('updatePlaceHolder');
       }
       return this;
     },
@@ -205,6 +206,7 @@ var cellTypes = {
 
       if ( !options.cell )
 	$(cell).nbCell();
+      this.notebook('updatePlaceHolder');
       this.notebook('active', $(cell));
     },
 
@@ -268,6 +270,8 @@ var cellTypes = {
 	  content.append(cell);
 	  $(cell).nbCell($(this));
 	});
+
+	this.notebook('updatePlaceHolder');
       }
     },
 
@@ -282,6 +286,29 @@ var cellTypes = {
 	list.push(cell.nbCell('changeGen'));
       });
       return sha1(list.join());
+    },
+
+		 /*******************************
+		 *	       HELP		*
+		 *******************************/
+
+    updatePlaceHolder: function() {
+      if ( this.find(".nb-content").children().length == 0 )
+	this.notebook('placeHolder');
+      else
+	this.find(".nb-placeholder").remove();
+    },
+
+    placeHolder: function() {
+      var placeholder = $.el.div({class:"nb-placeholder"});
+
+      $.ajax({ url: config.http.locations.help + "/notebook.html",
+	       dataType: "html",
+	       success: function(data) {
+		 $(placeholder).html(data);
+	       }
+             });
+      this.find(".nb-content").append(placeholder);
     }
   }; // methods
 

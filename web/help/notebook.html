@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+  </head>
+<body>
+<h2>About the Prolog notebook</h2>
+
+<p>
+A notebook is a list of <i>cells</i>. Notebooks are different from a
+program with examples because they can <em>tell a story</em>, mixing
+properly formatted text with programs and queries. The story is
+<em>interactive</em>. The reader can edit program fragments and/or
+queries and see the result. This makes notebooks particularly
+interesting for writing <em>tutorials</em> as well as writing
+<em>cookbooks</em> that document data analysis and transformation steps.
+A Prolog notebook supports three types of cells:
+
+  <ul>
+    <li><b>Markdown</b> cells allow you to write text in the SWI-Prolog
+    <a href="/pldoc/man?section=wiki">PlDoc</a> variation of markdown.
+    <li><b>Program</b> cells contain a Prolog program.
+    <li><b>Query</b> cells contain a Prolog query, operating
+    on the nearest program above it.
+  </ul>
+
+<h3>Creating a notebook</h3>
+
+<p>Creating and managing a notebook is supposed to be intuitive.  Below
+we describe the first starting point as well as some less obvious
+operations.
+
+<ul>
+<li>
+To <b>add a new cell</b>, click the <a class="btn btn-info btn-xs"><span
+class="glyphicon glyphicon-plus"></span></a> button and select the
+desired cell type. The other buttons allow for deleting, copy/paste
+and moving cells.
+
+<li>
+To <b>link to another notebook</b>, create a markdown cell and use the
+markdown notation <code>[label](reference)</code>, e.g.,
+
+<pre style="font-size:80%">
+[All about lists](lists.swinb)
+</pre>
+</ul>
+
+</body>
+</html>

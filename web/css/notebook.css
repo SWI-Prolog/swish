@@ -89,3 +89,7 @@
 .nb-cell.program, .nb-cell.query
 { margin-bottom: 1em;
 }
+
+.nb-placeholder
+{ opacity: 0.5;
+}
