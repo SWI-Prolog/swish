@@ -335,7 +335,8 @@ enriched_tokens(TB, Data, Tokens) :-		% query window
 	), !,
 	atom_string(SourceID, SourceIdS),
 	memory_file_to_string(TB, Query),
-	prolog_colourise_query(Query, SourceID, colour_item(TB)),
+	with_mutex(swish_highlight_query,
+		   prolog_colourise_query(Query, SourceID, colour_item(TB))),
 	collect_tokens(TB, Tokens).
 enriched_tokens(TB, _Data, Tokens) :-
 	memory_file_to_string(TB, Query),
