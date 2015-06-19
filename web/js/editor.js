@@ -240,16 +240,21 @@ define([ "cm/lib/codemirror",
      * @returns {Array.integer} array of lines that need a breakpoint
      */
     getBreakpoints: function() {
-      var cm = this.data(pluginName).cm;
-      var line = cm.firstLine();
-      var last = cm.lastLine();
       var breakpoints = [];
+      var offset = 0;
 
-      for( ; line < last; line++ ) {
-	var info = cm.lineInfo(line);
-	if ( info.gutterMarkers )
-	  breakpoints.push(line+1);
-      }
+      this.each(function() {
+	var cm = $(this).data(pluginName).cm;
+	var line = cm.firstLine();
+	var last = cm.lastLine();
+
+	for( ; line < last; line++ ) {
+	  var info = cm.lineInfo(line);
+	  if ( info.gutterMarkers )
+	    breakpoints.push(offset+line+1);
+	}
+	offset += 2+last;			/* two newlines */
+      });
 
       return breakpoints;
     },
