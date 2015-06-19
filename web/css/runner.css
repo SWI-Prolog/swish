@@ -5,10 +5,11 @@ div.prolog-runners {
   background-repeat: no-repeat;
   background-position: 35% 50%;
   overflow: auto;
+  padding: 0px 5px 0px;
 }
 
 div.prolog-runner {
-  margin: 2px 5px;		/* top/bottom,left/right */
+  margin: 2px 0px 2px;		/* top,left/right,bottom */
   border: 1px solid #ccc;
   border-radius: 5px;
 }
@@ -22,6 +23,7 @@ div.prolog-runner.iconic > div.runner-results { display: none; }
 div.runner-title {
   padding: 0px 5px 2px;
   border-radius: 5px;
+  box-sizing: border-box;
 }
 
 div.prolog-runner:focus div.runner-title {
