@@ -121,12 +121,20 @@ define([ "jquery", "preferences", "laconic" ],
    *	 - if `.action' exists, it is called on change with the new
    *	   value as argument.
    *   - An object with `.type == "submenu" creates a submenu.
+   *   - An object with `.typeIcon` gets an icon indicating the type
    */
   function appendDropdown(dropdown, label, options) {
     if ( options == "--" ) {
       dropdown.append($.el.li({class:"divider"}));
     } else if ( typeof(options) == "function" ) {	/* Simple action */
-      var a = $.el.a(label);
+      var a;
+
+      if ( options.typeIcon ) {
+	a = $.el.a($.el.span({class:"dropdown-icon type-icon "+options.typeIcon}),
+		   label);
+      } else {
+	a = $.el.a(label);
+      }
 
       $(a).data('action', options);
       if ( options.name )

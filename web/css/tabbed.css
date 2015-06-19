@@ -48,20 +48,18 @@ a.tab-new.compact > span {
   display: inline-block;
   vertical-align: middle;
   height: 30px;
+  width: 30px;
 }
 
-.tab-icon.pl {
-  width: 30px;
+.type-icon.pl {
   background-image: url("../icons/pl.png");
 }
 
-.tab-icon.swinb {
-  width: 30px;
+.type-icon.swinb {
   background-image: url("../icons/swinb.png");
 }
 
-.tab-icon.select {
-  width: 30px;
+.type-icon.select {
   background-image: url("../icons/select.png");
 }
 

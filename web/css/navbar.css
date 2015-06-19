@@ -42,3 +42,16 @@ ul.dropdown-menu li.checkbox span  { margin-left: 20px; }
 .left-caret:after
 {	border-right: 5px solid #ffaf46;
 }
+
+.dropdown-icon {
+  margin-left: -12px;
+  margin-right: 5px;
+  padding: 0px;
+  background-repeat: no-repeat;
+  background-size: 100%;
+  background-position: 50% 50%;
+  display: inline-block;
+  vertical-align: middle;
+  height: 18px;
+  width: 18px;
+}

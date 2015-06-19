@@ -268,6 +268,7 @@ preferences.setDefault("emacs-keybinding", false);
 		   } else {
 		     title = data[i].title;
 		     options = that.swish('openExampleFunction', data[i]);
+		     options.typeIcon = data[i].href.split('.').pop();
 		   }
 
 		   $("#navbar").navbar('extendDropdown', dropdown,

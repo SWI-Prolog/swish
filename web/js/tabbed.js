@@ -244,7 +244,7 @@ var tabbed = {
       type = type||"pl";
 
       var a1 = $.el.a({class:"compact", href:"#"+id, "data-id":id},
-		      $.el.span({class:"tab-icon "+type}),
+		      $.el.span({class:"tab-icon type-icon "+type}),
 		      $.el.span({class:"tab-title"}, label),
 		      close_button);
       var li = $.el.li({role:"presentation"}, a1);
@@ -269,7 +269,7 @@ var tabbed = {
       if ( type ) {
 	var icon = a.find(".tab-icon");
 	icon.removeClass();
-	icon.addClass("tab-icon "+type);
+	icon.addClass("tab-icon type-icon "+type);
       }
 
       return tabbed;
