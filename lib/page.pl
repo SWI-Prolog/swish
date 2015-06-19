@@ -267,8 +267,7 @@ swish_content(Options) -->
 		       [ div([ class([editors, tabbed])
 			     ],
 			     [ div([ class(['prolog-editor']),
-				     'data-label'('Program'),
-				     'data-close'(disabled)
+				     'data-label'('Program')
 				   ],
 				   \source(Type, Options))
 			     | \notebooks(Type, Options)

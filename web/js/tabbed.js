@@ -217,8 +217,11 @@ var tabbed = {
 	new_active = li.prev() || li.next();
       li.remove();
       $("#"+id).remove();
-      if ( new_active )
+      if ( new_active.length > 0 ) {
 	new_active.find("a").first().tab('show');
+      } else if ( this.tabbed('navContent').children().length == 0 ) {
+	this.tabbed('newTab');
+      }
     },
 
     /**
