@@ -155,8 +155,6 @@ _not_ see exactly the same UI for cooperation.  What about
 
 ### Bugs
 
-  - Loading a notebook does not set the tab title
-  - Notebook cannot be saved after load and edit
   - With a notebook open, opening a Prolog file
     opens multiple tabs.
 
