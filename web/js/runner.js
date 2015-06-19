@@ -310,6 +310,12 @@ define([ "jquery", "config", "preferences",
 	    csvButton(),
 	    stateButton(),
 	    qspan));
+	} else {
+	  var close = glyphButton("remove-circle", "Close");
+	  elem.append(close);
+	  $(close).on("click", function() {
+	    elem.prologRunner('close');
+	  });
 	}
 	elem.append($.el.div(
 	  {class:"runner-results"}));
@@ -815,7 +821,7 @@ define([ "jquery", "config", "preferences",
 
     for(i=0; i<projection.length; i++)
       tds.push($.el.th({class:"pl-pvar"}, projection[i]));
-    tds.push($.el.th({class:"answer-nth"}, "No"));
+    tds.push($.el.th({class:"answer-nth"}, ""));
 
     var table = $.el.table({class:"prolog-answers"},
 			   $.el.tbody($.el.tr.apply(this, tds)));
@@ -1026,5 +1032,13 @@ define([ "jquery", "config", "preferences",
     ul.on("click", "a", function() { runMenu(this); } );
 
     return menu;
+  }
+
+  function glyphButton(glyph, title) {
+    var btn = $.el.a({href:"#", class:"close btn btn-link btn-sm",
+		      title:title},
+		     $.el.span({class:"glyphicon glyphicon-"+glyph}));
+
+    return btn;
   }
 });

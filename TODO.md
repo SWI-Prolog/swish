@@ -155,8 +155,8 @@ _not_ see exactly the same UI for cooperation.  What about
       - Use `target=` for others.
   - Use type icons for tabs and hide the file extension.
   - Use swish('playFile', ...) for the back button.		[OK]
-  - Add close-button to runner without title.
-  - Add help screen for empty notebook.
+  - Add close-button to runner without title.			[OK]
+  - Add help screen for empty notebook.				[OK]
 
 ### Bugs
 

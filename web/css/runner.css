@@ -9,6 +9,7 @@ div.prolog-runners {
 }
 
 div.prolog-runner {
+  position: relative;
   margin: 2px 0px 2px;		/* top,left/right,bottom */
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -16,6 +17,13 @@ div.prolog-runner {
 
 div.prolog-runner.tabled {
   border: 0px;
+}
+
+div.prolog-runner > a.close {
+  position: absolute;
+  top: -4px;
+  right: -10px;
+  z-index: 2000;
 }
 
 div.prolog-runner:focus {
