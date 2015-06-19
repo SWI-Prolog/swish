@@ -147,16 +147,18 @@ _not_ see exactly the same UI for cooperation.  What about
       - Allow naming sources?
       - Allow one source to include others in the same notebook?
     - Allow a notebook to make a link to another in the markdown:
-      [hello.swinb](Nice example to say hello)
+      [Nice example to say hello](hello.swinb)			[OK]
     - Avoid hyperlinks to destroy the page.
       - show predicate links in a modal dialog
+        - /pldoc/man?predicate=member/2				[OK]
+	- other predicate links.
       - Use `target=` for others.
   - Use type icons for tabs and hide the file extension.
+  - Use swish('playFile', ...) for the back button.		[OK]
 
 ### Bugs
 
-  - With a notebook open, opening a Prolog file
-    opens multiple tabs.
+  - With a notebook open, opening a Prolog file opens multiple tabs?
 
 ### Check
 
