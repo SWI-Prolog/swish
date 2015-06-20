@@ -125,9 +125,10 @@ var cellTypes = {
 
     paste: function() {
       if ( clipboard ) {
-	var newcell = $.el.div({class:"nb-cell"});
-	this.notebook('insert', { where:"below", cell:newcell });
-	$(newcell).nbCell($(clipboard));
+	this.notebook('insert', {
+	  where: "below",
+	  restore: $(clipboard)
+	});
       } else {
 	alert("Clipboard is empty");
       }
@@ -193,6 +194,8 @@ var cellTypes = {
      * @param {Object} [options]
      * @param {String} [options.where] defines where the cell is
      * inserted relative to the cell with the current focus.
+     * @param {jQuery} [options.restore] If provided, it must contains
+     * a save/restore node that will be used to fill the new cell.
      */
     insert: function(options) {
       options   = options||{};
@@ -209,8 +212,9 @@ var cellTypes = {
 	this.find(".nb-content").append(cell);
       }
 
-      if ( !options.cell )
-	$(cell).nbCell();
+      if ( !options.cell ) {
+	$(cell).nbCell(options.restore);
+      }
       this.notebook('updatePlaceHolder');
       this.notebook('active', $(cell));
     },
