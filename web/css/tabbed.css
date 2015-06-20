@@ -50,16 +50,3 @@ a.tab-new.compact > span {
   height: 30px;
   width: 30px;
 }
-
-.type-icon.pl {
-  background-image: url("../icons/pl.png");
-}
-
-.type-icon.swinb {
-  background-image: url("../icons/swinb.png");
-}
-
-.type-icon.select {
-  background-image: url("../icons/select.png");
-}
-

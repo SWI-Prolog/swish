@@ -1,0 +1,15 @@
+/* Specify icons for a file type.  Elements that must be styles this way
+   need the style "type-icon" and the file extension.
+*/
+
+.type-icon.pl {
+  background-image: url("../icons/pl.png");
+}
+
+.type-icon.swinb {
+  background-image: url("../icons/swinb.png");
+}
+
+.type-icon.select {
+  background-image: url("../icons/select.png");
+}

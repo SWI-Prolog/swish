@@ -48,9 +48,18 @@ define([ "jquery", "config", "typeahead" ],
 	}
 
 	function renderFile(f) {
-	  var str = "<div class=\"tt-match file\">"
+	  function filetype(file) {
+	    return file.split('.').pop();
+	  }
+	  function filebase(file) {
+	    return file.split('.').slice(0,-1).join(".");
+	  }
+
+	  var str = "<div class=\"tt-match file type-icon "
+	          + filetype(f.name)
+	          + "\">"
 		  + "<span class=\"tt-label\">"
-		  + htmlEncode(f.name);
+		  + htmlEncode(filebase(f.name));
 	          + "</span>";
 
 	  if ( f.tags ) {

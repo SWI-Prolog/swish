@@ -154,7 +154,7 @@ _not_ see exactly the same UI for cooperation.  What about
 	- other predicate links.
       - Use `target=` for others.
   - Use type icons for tabs and hide the file extension.	[OK]
-  - Use type icons for examples menu and search results.
+  - Use type icons for examples menu and search results.	[OK]
   - Use swish('playFile', ...) for the back button.		[OK]
   - Add close-button to runner without title.			[OK]
   - Add help screen for empty notebook.				[OK]

@@ -63,7 +63,6 @@ span.twitter-typeahead {
 }
 
 .tt-suggestion .tt-match.file {
-  background-image: url("file-icon.png");
   background-size: 1em;
   background-repeat: no-repeat;
   background-position: 5px 5px;
