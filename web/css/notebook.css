@@ -15,11 +15,22 @@
   border-bottom: 1px solid #ddd;
 }
 
-.nb-content
+.nb-view
 { position: absolute;
   top: 40px;
   height: calc(100% - 40px);
+  width: 100%;
   overflow-y: auto;
+}
+
+.nb-content
+{ position: relative;
+  width: 100%;
+}
+
+.nb-bottom
+{ width: 100%;
+  height: 30%;
 }
 
 .dropdown.cell-type

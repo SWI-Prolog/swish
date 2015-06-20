@@ -53,7 +53,9 @@ var cellTypes = {
 	    sep(),
 	    glyphButton("play", "run", "Run")
 	    ));
-	elem.append(content=$.el.div({class:"nb-content"}));
+	elem.append($.el.div({class:"nb-view"},
+			     content=$.el.div({class:"nb-content"}),
+			     $.el.div({class:"nb-bottom"})));
 
 	$(toolbar).on("click", "a.btn", function(ev) {
 	  var action = $(ev.target).closest("a").data("action");
