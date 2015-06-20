@@ -290,8 +290,9 @@ define([ "cm/lib/codemirror",
     },
 
     /**
-     * @return {Array(String|null)} UUIDs of the sources used for
-     * server-side analysis.
+     * @return {String[]} UUIDs of the sources used for
+     * server-side analysis.  The array may contain `null`s
+     * for sources that have no server side backup.
      */
      getSourceID: function() {
        var ids = [];
