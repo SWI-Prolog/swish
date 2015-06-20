@@ -165,4 +165,4 @@ _not_ see exactly the same UI for cooperation.  What about
 
 ### Check
 
-  - Handling of background examples.
+  - Handling of background examples (test LPN).
