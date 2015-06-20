@@ -16,5 +16,5 @@
 { "file":"knights_and_knaves.pl", "title":"Knights and Knaves (clp(b))" },
 { "file":"japanese.pl",		  "title":"Japanese source" },
 "--",
-{ "file":"hello.swinb",		  "title":"Hello world notebook" },
+{ "file":"dict.swinb",		  "title":"Dict tutorial" },
 ]
