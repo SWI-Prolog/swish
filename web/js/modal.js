@@ -104,7 +104,9 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
      */
     showPlDoc: function(options) {
       function docURL(options) {
-	var term = options.name+"/"+options.arity;
+	var term = "("+options.name+")/"+options.arity;
+	if ( options.module )			/* FIXME: must be valid Prolog term */
+	  term = options.module+":"+term;
 	return   config.http.locations.pldoc_doc_for
 	       + "?header=false&object="
 	       + encodeURIComponent(term);

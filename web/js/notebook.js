@@ -613,7 +613,7 @@ var cellTypes = {
 	ev.preventDefault();
       } else if ( a.hasClass("builtin") ) {
 	var s    = a.attr("href").split("predicate=").pop();
-	var pred = parsePred(s);
+	var pred = parsePred(decodeURIComponent(s));
 
 	if ( pred ) {
 	  $(".swish-event-receiver").trigger("pldoc", pred);
