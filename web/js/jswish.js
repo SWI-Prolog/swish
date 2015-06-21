@@ -157,7 +157,7 @@ preferences.setDefault("emacs-keybinding", false);
 	      return elem.swish('prologSource');
 	    },
 	    sourceID: function() {
-	      return data.editor.prologEditor('getSourceID');
+	      return editor.prologEditor('getSourceID');
 	    },
 	    examples: elem.swish('examples'),
 	    runner:   data.runner,

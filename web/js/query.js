@@ -101,8 +101,8 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
       data.editor = editor[0];
       if ( editor ) {
 	data.examples = function() {
-	  var exl    = editor.prologEditor('getExamples');
-	  var global = editor.parents(".swish").swish('examples', true);
+	  var exl    = editor.prologEditor('getExamples')||[];
+	  var global = editor.parents(".swish").swish('examples', true)||[];
 
 	  if ( $.isArray(global) )
 	  exl.concat(global);
