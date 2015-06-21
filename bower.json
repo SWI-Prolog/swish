@@ -7,9 +7,9 @@
   "dependencies":
   { "jquery": "*",
     "jquery-ui": "*",
-    "jquery.splitter": "*",
+    "jquery.splitter": "0.15",
     "bootstrap": "*",
-    "typeahead.js": "*",
+    "typeahead.js": "0.10.5",
     "laconic": "*",
     "requirejs": "*",
     "codemirror": "*",

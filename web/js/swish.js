@@ -17,7 +17,7 @@ require.config({
     laconic:     "../bower_components/laconic/laconic",
     bootstrap:   "../bower_components/bootstrap/dist/js/bootstrap.min",
     typeahead:   "../bower_components/typeahead.js/dist/typeahead.bundle.min",
-    splitter:    "../bower_components/jquery.splitter/js/jquery.splitter-0.14.0",
+    splitter:    "../bower_components/jquery.splitter/js/jquery.splitter-0.15.0",
     tagmanager:  "../bower_components/tagmanager/tagmanager",
     sha1:        "../bower_components/js-sha1/src/sha1",
 
