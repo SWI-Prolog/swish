@@ -26,7 +26,8 @@ http://www.swi-prolog.org/download/swish/swish-bower-components.zip.
 Unpack the zip file, maintaining the directory structure, from the swish
 root directory to create the directory web/bower_components.
 
-Last updated: Mar 30, 2015 (CodeMirror 5.1)
+Last updated: Jun 21, 2015: fix splitter.jquery and typeahead versions
+at 0.15 and 0.10.5 due to compatibility issues.
 
 ### Get the latest SWI-Prolog
 
@@ -38,7 +39,8 @@ you            need            the             [nightly            build
 system    from    the     current      git     development    repository
 [swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
 
-Apr 13, 2015: use release 7.1.36.
+Jun 21, 2015: use release  7.3.3.   Getting  links between notebooks and
+Dict.get(key) to work requires the git version.
 
 ## Running SWISH
 
