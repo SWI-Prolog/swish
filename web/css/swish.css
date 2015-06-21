@@ -38,6 +38,9 @@ a.pengine-logo {
     border: 2px outset #ccc;
 }
 
+.splitter_panel .vsplitter { width: 3px; }
+.splitter_panel .hsplitter { height: 3px; }
+
 .splitter_panel .vsplitter, .splitter_panel .left_panel, .splitter_panel .right_panel,
 .splitter_panel .hsplitter, .splitter_panel .top_panel, .splitter_panel .bottom_panel {
     overflow: visible;
