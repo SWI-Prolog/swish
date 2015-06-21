@@ -317,17 +317,20 @@ preferences.setDefault("emacs-keybinding", false);
      * Extract examples from `$(".examples.prolog").text()`.  If this
      * does not exist, it returns a function that extracts the examples
      * from the current Prolog source editor.
+     * @param {Boolean} [onlyglobal] if `true`, only extract globally
+     * listed examples.
      * @returns {Array.String|null|Function}
      */
-    examples: function() {
+    examples: function(onlyglobal) {
       var text = $(".examples.prolog").text();
 
-      if ( text )
+      if ( text ) {
 	return $().prologEditor('getExamples', text, false);
-      else
+      } else if ( onlyglobal != true ) {
 	return function() {
 	  return $(".prolog-editor").prologEditor('getExamples');
 	};
+      }
     },
 
     /**
