@@ -83,6 +83,45 @@ define([ "jquery", "config", "typeahead" ],
 	}
 
 		 /*******************************
+		 *     SEARCH REMOTE SOURCES	*
+		 *******************************/
+
+	var sources = new Bloodhound({
+			name: "source",
+			cache: false,
+			remote: config.http.locations.swish_typeahead +
+				"?set=sources&q=%QUERY",
+			datumTokenizer: sourceLineTokenizer,
+			queryTokenizer: Bloodhound.tokenizers.whitespace
+	               });
+	sources.initialize();
+
+	function sourceLineTokenizer(hit) {
+	  return Bloodhound.tokenizers.whitespace(hit.text);
+	}
+
+	var currentFile  = null;
+	var currentAlias = null;
+	function renderSourceLine(hit) {
+	  var str = "";
+
+	  if ( hit.file != currentFile || hit.alias != currentAlias ) {
+	    currentFile = hit.file;
+	    currentAlias = hit.alias;
+	    str = "<div class=\"tt-file-header\">"
+	        + "<span class=\"tt-path-alias\">"
+	        + htmlEncode(hit.alias)
+		+ "</span>(<span class=\"tt-path-file\">"
+		+ htmlEncode(hit.file)
+		+ ")</span>"
+		+ "</div>";
+	  }
+
+	  return str+renderSourceMatch(hit);
+	}
+
+
+		 /*******************************
 		 *    PREDICATE COMPLETION	*
 		 *******************************/
 
@@ -192,9 +231,49 @@ define([ "jquery", "config", "typeahead" ],
 		  + "<span class=\"tt-text\">"
 		  + htmlEncode(text)
 	          + "</span>"
-	          + "</span>";
+	          + "</span>"
+		  + "</div>";
 
 	  return str;
+	}
+
+
+	var typeaheadProperties = {
+	  source:			/* local source */
+	  { name: "source",
+	    source: sourceMatcher,
+	    templates: { suggestion: renderSourceMatch }
+	  },
+	  sources:			/* remote sources */
+	  { name: "sources",
+	    source: sources.ttAdapter(),
+	    templates: { suggestion: renderSourceLine }
+	  },
+	  files:			/* files in gitty on name and tags */
+	  { name: "files",
+	    source: files.ttAdapter(),
+	    templates: { suggestion: renderFile }
+	  },
+	  predicates:			/* built-in and library predicates */
+	  { name: "predicates",
+	    source: predicateMatcher,
+	    templates: { suggestion: renderPredicate }
+	  }
+	};
+
+	/**
+	 * Assemble the sources
+	 */
+
+	function ttSources(from) {
+	  var sources = [];
+	  var src = from.replace(/\s+/g, ' ').split(" ");
+
+	  for(var i=0; i<src.length; i++) {
+	    sources.push(typeaheadProperties[src[i]]);
+	  }
+
+	  return sources;
 	}
 
 
@@ -205,19 +284,7 @@ define([ "jquery", "config", "typeahead" ],
 	elem.typeahead({ minLength: 1,
 			 highlight: true
 		       },
-		       [ { name: "source",
-			   source: sourceMatcher,
-			   templates: { suggestion: renderSourceMatch }
-		         },
-			 { name: "files",
-			   source: files.ttAdapter(),
-			   templates: { suggestion: renderFile }
-		         },
-			 { name: "predicates",
-			   source: predicateMatcher,
-			   templates: { suggestion: renderPredicate }
-		         }
-		       ])
+		       ttSources(elem.data("search-in")))
 	  .on('typeahead:selected typeahead:autocompleted',
 	      function(ev, datum, set) {
 		if ( datum.type == "store" ) {
@@ -230,6 +297,10 @@ define([ "jquery", "config", "typeahead" ],
 					       { regex: datum.regex,
 						 showAllMatches: true
 					       });
+		} else if ( datum.alias !== undefined ) {
+		  var url = encodeURI("/"+datum.alias+"/"+datum.file+"."+datum.ext);
+		  console.log(url);
+		  $(ev.target).parents(".swish").swish('playURL', url);
 		} else {
 		  elem.data("target", {datum:datum, set:set});
 		  console.log(elem.data("target"));

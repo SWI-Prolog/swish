@@ -35,6 +35,7 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
+:- use_module(library(prolog_source)).
 
 :- use_module(config).
 
@@ -66,6 +67,7 @@ search_box(_Options) -->
 		      [ input([ type(text),
 				class('form-control'),
 				placeholder('Search'),
+				'data-search-in'([source,files,predicates]),
 				title('Searches code, documentation and files'),
 				id('search')
 			      ]),
@@ -91,11 +93,38 @@ typeahead(Request) :-
 	findall(Match, typeahead(Set, Query, Match), Matches),
 	reply_json_dict(Matches).
 
+%%	typeahead(+Type, +Query, -Match) is nondet.
+%
+%	Find  typeahead  suggestions  for  a  specific  search  category
+%	(Type). This oredicate is a   multifile  predicate, which allows
+%	for  adding  new  search  targets.  The  default  implementation
+%	offers:
+%
+%	  - predicates
+%	  Searches for built-in and configured library predicates
+%	  - sources
+%	  Searches all loaded source files.
+%
+%	@tbd: Limit number of hits?
+
 typeahead(predicates, Query, Template) :-
 	swish_config(templates, Templates),
 	member(Template, Templates),
 	_{name:Name, arity:_} :< Template,
 	sub_atom(Name, 0, _, _, Query).
+typeahead(sources, Query, hit{alias:Alias, file:File, ext:Ext,
+			      line:LineNo, text:Line}) :-
+	source_file(Path),
+	setup_call_cleanup(
+	    open(Path, read, In),
+	    read_string(In, _, String),
+	    close(In)),
+	file_name_on_path(Path, Symbolic),
+	file_name_extension(_, Ext, Path),
+	Symbolic =.. [Alias,File],
+	split_string(String, "\n", "\r", Lines),
+	nth1(LineNo, Lines, Line),
+	once(sub_string(Line, _, _, _, Query)).
 
 %%	search(+Request)
 %
