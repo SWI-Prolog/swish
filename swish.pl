@@ -83,7 +83,7 @@ http:location(swish, root(.), [priority(-100)]).
 
 :- multifile
 	swish_config:config/2,
-	swish_config:source_alias/1.
+	swish_config:source_alias/2.
 
 %%	swish_config:config(?Config, ?Value) is nondet.
 %
@@ -112,6 +112,17 @@ swish_config:config(tabled_results,     false).
 swish_config:config(application,        swish).
 swish_config:config(csv_formats,        [prolog]).
 swish_config:config(community_examples, false).
+
+%%	swish_config:source_alias(Alias, Options) is nondet.
+%
+%	Specify access for files below a given _alias_. Options define
+%
+%	  - access(Access)
+%	  One of `read` or `both`.  Default is `read`.
+%	  - if(Condition)
+%	  Provide additional conditions.  Defined conditions are:
+%	    - loaded
+%	    Only provide access to the file if it is loaded.
 
 
                  /*******************************

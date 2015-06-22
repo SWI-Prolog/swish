@@ -51,6 +51,7 @@
 :- use_module(library(time)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
+:- use_module(library(error)).
 
 :- use_module(config).
 :- use_module(help).
@@ -69,7 +70,7 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 :- http_handler(swish(.), swish_reply([]), [id(swish), prefix, priority(100)]).
 
 :- multifile
-	swish_config:source_alias/1,
+	swish_config:source_alias/2,
 	swish_config:reply_page/1.
 
 %%	swish_reply(+Options, +Request)
@@ -156,7 +157,7 @@ source_data(PathInfo, Code, [title(Title), type(Ext)]) :-
 	sub_atom(PathInfo, B, _, A, /),
 	sub_atom(PathInfo, 0, B, _, Alias),
 	sub_atom(PathInfo, _, A, 0, File),
-	catch(swish_config:source_alias(Alias), E,
+	catch(swish_config:source_alias(Alias, Options), E,
 	      (print_message(warning, E), fail)),
 	Spec =.. [Alias,File],
 	http_safe_file(Spec, []),
@@ -164,11 +165,21 @@ source_data(PathInfo, Code, [title(Title), type(Ext)]) :-
 			   [ access(read),
 			     file_errors(fail)
 			   ]),
+	confirm_access(Path, Options), !,
 	setup_call_cleanup(
 	    open(Path, read, In, [encoding(utf8)]),
 	    read_string(In, _, Code),
 	    close(In)),
 	file_name_extension(Title, Ext, File).
+
+confirm_access(Path, Options) :-
+	option(if(Condition), Options), !,
+	must_be(oneof([loaded]), Condition),
+	eval_condition(Condition, Path).
+confirm_access(_, _).
+
+eval_condition(loaded, Path) :-
+	source_file(Path).
 
 %%	serve_resource(+Request) is semidet.
 %
