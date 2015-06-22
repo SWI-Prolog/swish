@@ -221,17 +221,24 @@ preferences.setDefault("emacs-keybinding", false);
      * Load file from a URL.  This fetches the data from the URL and
      * broadcasts a `"source"` event that is normally picked up by
      * the tabbed pane.
-     * @param {String} URL is the URL to load.
+     * @param {Object}   options
+     * @param {String}   options.url     URL to load.
+     * @param {Integer} [options.line]   Line to go to.
+     * @param {Regex}   [options.search] Text searched for.
      */
-    playURL: function(url) {
-      $.ajax({ url: url,
+    playURL: function(options) {
+      $.ajax({ url: options.url,
 	       type: "GET",
 	       data: {format: "raw"},
 	       success: function(source) {
-		 menuBroadcast("source",
-			       { data: source,
-				 url: url
-			       });
+		 var msg = { data: source,
+			     url: options.url
+			   };
+
+		 if ( options.line )   msg.line   = options.line;
+		 if ( options.search ) msg.search = options.search;
+
+		 menuBroadcast("source", msg);
 	       },
 	       error: function(jqXHR) {
 		 modal.ajaxError(jqXHR);
@@ -256,7 +263,7 @@ preferences.setDefault("emacs-keybinding", false);
 	};
       } else {
 	return function() {
-	  methods.playURL(ex.href);
+	  methods.playURL({url:ex.href});
 	};
       }
     },

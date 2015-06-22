@@ -317,12 +317,17 @@ define([ "cm/lib/codemirror",
      * message is never delegated to the storage
      */
     setSource: function(source, direct) {
+      if ( typeof(source) == "string" )
+	source = {data:source};
+
       if ( this.data('storage') && direct != true ) {
 	this.storage('setSource', source);
       } else {
 	var data = this.data(pluginName);
 
-	data.cm.setValue(source);
+	data.cm.setValue(source.data);
+	if ( source.line )
+	  this.prologEditor('gotoLine', source.line, source);
 	if ( data.role == "source" ) {
 	  $(".swish-event-receiver").trigger("program-loaded", this);
 	}

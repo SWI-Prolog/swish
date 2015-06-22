@@ -233,8 +233,8 @@ var cellTypes = {
         getValue: function() {
 	  return notebook.notebook('value');
 	},
-	setValue: function(string) {
-	  return notebook.notebook('value', string);
+	setValue: function(source) {
+	  return notebook.notebook('setSource', source);
 	},
 	changeGen: function() {
 	  return notebook.notebook('changeGen');
@@ -251,6 +251,16 @@ var cellTypes = {
       });
 
       return this.storage(storage);
+    },
+
+    /**
+     * Set the source
+     */
+    setSource: function(source) {
+      if ( typeof(source) == "string" )
+	source = {data:source};
+
+      this.notebook('value', source.data);
     },
 
     /**

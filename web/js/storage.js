@@ -94,7 +94,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 
     /**
      * @param {String|Object} src becomes the new contents of the editor
-     * @param {String} Object.data contains the data in the case that
+     * @param {String} src.data contains the data in the case that
      * `src` is an object.
      * @return {Object|String} The string `"propagate"` is
      * returned if the provided src does not match the supported type.
@@ -102,8 +102,10 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
     setSource: function(src) {
       var data = this.data(pluginName);
 
-      if ( typeof(src) == "object" &&
-	   ((src.meta && src.meta.name) || src.url) )
+      if ( typeof(src) == "string" )
+	src = {data:src};
+
+      if ( (src.meta && src.meta.name) || src.url )
       { var name = (src.meta && src.meta.name) ? src.meta.name : src.url;
 	var ext  = name.split('.').pop();
 
@@ -114,10 +116,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
       if ( this.storage('unload', "setSource") == false )
 	return false;
 
-      if ( typeof(src) == "string" )
-	src = {data:src};
-
-      data.setValue(src.data);
+      data.setValue(src);
       data.cleanGeneration = data.changeGen();
       data.cleanData       = src.data;
       data.cleanCheckpoint = src.cleanCheckpoint || "load";
