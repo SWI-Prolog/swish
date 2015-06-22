@@ -8,7 +8,7 @@
  * @requires jquery
  */
 
-define([ "jquery", "laconic" ],
+define([ "jquery", "laconic", "search" ],
        function() {
 var tabbed = {
   tabTypes: {}
@@ -125,6 +125,7 @@ var tabbed = {
 	  dom = data.newTab();
 	} else {
 	  dom = this.tabbed('tabSelect');
+	  $(dom).append(this.tabbed('searchForm'));
 	}
       }
 
@@ -283,9 +284,10 @@ var tabbed = {
     tabSelect: function() {
       var data = this.data(pluginName);
       var dom = $.el.div({class:"tabbed-select"},
-			 $.el.label("Create a new "),
-			 g=$.el.div({class:"btn-group",role:"group"}),
-			 $.el.label("here."));
+			 $.el.div({class: "tabbed-create"},
+				  $.el.label("Create a new "),
+				  g=$.el.div({class:"btn-group",role:"group"}),
+				  $.el.label("here.")));
       for(var k in data.tabTypes) {
 	if ( data.tabTypes.hasOwnProperty(k) )
 	  $(g).append($.el.button({ type:"button",
@@ -316,6 +318,24 @@ var tabbed = {
       });
 
       return dom;
+    },
+
+    searchForm: function() {
+      var form = $.el.form({class: "search-sources"},
+	$.el.label({class:"control-label"}, 'Open source file containing'),
+        $.el.div(
+	  {class: "input-group"},
+	  $.el.input({ type: "text",
+		       class: "form-control",
+		       placeholder: "Search sources",
+		       'data-search-in': "sources",
+		     }),
+	  $.el.div({ class: "input-group-btn" },
+		   $.el.button({class:"btn btn-default", type:"submit"},
+			       $.el.i({class:"glyphicon glyphicon-search"})))));
+      $(form).find("input").search();
+
+      return form;
     },
 
     /**

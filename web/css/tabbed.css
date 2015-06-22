@@ -30,12 +30,16 @@ a.tab-new.compact > span {
   padding: 0px 5px;	/* top/bottom left/right */
 }
 
-.tabbed-select {
-  margin-top: 2em;
-  margin-left: 2em;
+.tabbed-select: {
+  width: 100%;
 }
 
-.tabbed-select label {
+.tabbed-create {
+  margin: 2em 0px 1em;
+  text-align: center;
+}
+
+.tabbed-create label {
   margin-left: 1em;
   margin-right: 1em;
 }
@@ -49,4 +53,9 @@ a.tab-new.compact > span {
   vertical-align: middle;
   height: 30px;
   width: 30px;
+}
+
+form.search-sources {
+  margin: 3em auto 1em;
+  width: 80%;
 }
