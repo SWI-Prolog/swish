@@ -113,7 +113,7 @@ typeahead(predicates, Query, Template) :-
 	_{name:Name, arity:_} :< Template,
 	sub_atom(Name, 0, _, _, Query).
 typeahead(sources, Query, hit{alias:Alias, file:File, ext:Ext,
-			      line:LineNo, text:Line}) :-
+			      query:Query, line:LineNo, text:Line}) :-
 	source_file(Path),
 	setup_call_cleanup(
 	    open(Path, read, In),
