@@ -218,6 +218,28 @@ preferences.setDefault("emacs-keybinding", false);
     },
 
     /**
+     * Load file from a URL.  This fetches the data from the URL and
+     * broadcasts a `"source"` event that is normally picked up by
+     * the tabbed pane.
+     * @param {String} URL is the URL to load.
+     */
+    playURL: function(url) {
+      $.ajax({ url: url,
+	       type: "GET",
+	       data: {format: "raw"},
+	       success: function(source) {
+		 menuBroadcast("source",
+			       { data: source,
+				 url: url
+			       });
+	       },
+	       error: function(jqXHR) {
+		 modal.ajaxError(jqXHR);
+	       }
+      });
+    },
+
+    /**
      * @param {Object} ex
      * @param {String} ex.title is the title of the example
      * @param {String} ex.file is the (file) name of the example
@@ -226,27 +248,15 @@ preferences.setDefault("emacs-keybinding", false);
      * @returns {Function|String} function that loads an example
      */
     openExampleFunction: function(ex) {
-      if ( ex.type == "store" ) {
+      if ( ex.type == "divider" ) {
+	return "--";
+      } else if ( ex.type == "store" ) {
 	return function() {
 	  methods.playFile(ex.file);
 	};
-      } else if ( ex.type == "divider" ) {
-	return "--";
       } else {
 	return function() {
-	  $.ajax({ url: ex.href,
-		   type: "GET",
-		   data: {format: "raw"},
-		   success: function(source) {
-		     menuBroadcast("source",
-				   { data: source,
-				     url: ex.href
-				   });
-		   },
-		   error: function(jqXHR) {
-		     modal.ajaxError(jqXHR);
-		   }
-		 });
+	  methods.playURL(ex.href);
 	};
       }
     },
