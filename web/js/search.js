@@ -88,6 +88,7 @@ define([ "jquery", "config", "typeahead" ],
 
 	var sources = new Bloodhound({
 			name: "source",
+			limit: 15,
 			cache: false,
 			remote: config.http.locations.swish_typeahead +
 				"?set=sources&q=%QUERY",
@@ -247,7 +248,8 @@ define([ "jquery", "config", "typeahead" ],
 	  sources:			/* remote sources */
 	  { name: "sources",
 	    source: sources.ttAdapter(),
-	    templates: { suggestion: renderSourceLine }
+	    templates: { suggestion: renderSourceLine },
+	    limit: 15
 	  },
 	  files:			/* files in gitty on name and tags */
 	  { name: "files",
@@ -281,12 +283,13 @@ define([ "jquery", "config", "typeahead" ],
 		 *	     TYPEAHEAD		*
 		 *******************************/
 
-	elem.typeahead({ minLength: 1,
+	elem.typeahead({ minLength: 2,
 			 highlight: true
 		       },
 		       ttSources(elem.data("search-in")))
 	  .on('typeahead:selected typeahead:autocompleted',
 	      function(ev, datum, set) {
+
 		if ( datum.type == "store" ) {
 		  $(ev.target).parents(".swish").swish('playFile', datum.file);
 		} else if ( datum.arity !== undefined ) {
@@ -298,9 +301,17 @@ define([ "jquery", "config", "typeahead" ],
 						 showAllMatches: true
 					       });
 		} else if ( datum.alias !== undefined ) {
-		  var url = encodeURI("/"+datum.alias+"/"+datum.file+"."+datum.ext);
-		  console.log(url);
-		  $(ev.target).parents(".swish").swish('playURL', url);
+		  var url = encodeURI("/"+datum.alias+
+				      "/"+datum.file+
+				      "."+datum.ext);
+		  var play = { url:url, line: datum.line };
+
+		  if ( datum.query ) {
+		    play.regex = new RegExp(RegExp.escape(datum.query));
+		    play.showAllMatches = true;
+		  }
+
+		  $(ev.target).parents(".swish").swish('playURL', play);
 		} else {
 		  elem.data("target", {datum:datum, set:set});
 		  console.log(elem.data("target"));
@@ -373,4 +384,9 @@ define([ "jquery", "config", "typeahead" ],
     }
   };
 }(jQuery));
+
+RegExp.escape = function(string) {
+  return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+};
+
 });
