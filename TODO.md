@@ -161,7 +161,9 @@ _not_ see exactly the same UI for cooperation.  What about
 
 ### Bugs
 
-  - With a notebook open, opening a Prolog file opens multiple tabs?
+  - Colouring of /library/http/html_write.pl
+    - DCG exports broken?
+    - use_module/2 broken.
 
 ### Check
 
