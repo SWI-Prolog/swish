@@ -37,6 +37,7 @@
 :- use_module(library(http/http_json)).
 :- use_module(library(prolog_source)).
 :- use_module(library(option)).
+:- use_module(library(solution_sequences)).
 
 :- use_module(config).
 
@@ -123,7 +124,7 @@ typeahead(sources, Query, hit{alias:Alias, file:File, ext:Ext,
 	file_name_extension(_, Ext, Path),
 	Symbolic =.. [Alias,File],
 	once(swish_config:source_alias(Alias, _)),
-	search_file(Path, Query, LineNo, Line).
+	limit(5, search_file(Path, Query, LineNo, Line)).
 typeahead(sources, Query, hit{alias:Alias, file:Base, ext:Ext,
 			      query:Query, line:LineNo, text:Line}) :-
 	swish_config:source_alias(Alias, Options),
@@ -142,7 +143,7 @@ typeahead(sources, Query, hit{alias:Alias, file:Base, ext:Ext,
 	\+ source_file(Path),		% already did this one above
 	atom_concat(DirSlash, File, Path),
 	file_name_extension(Base, Ext, File),
-	search_file(Path, Query, LineNo, Line).
+	limit(5, search_file(Path, Query, LineNo, Line)).
 
 search_file(Path, Query, LineNo, Line) :-
 	setup_call_cleanup(
