@@ -56,7 +56,7 @@ two sources:
 % make example(File) find the example data
 user:file_search_path(example, swish(examples)).
 % make SWISH serve /example/File as example(File).
-swish_config:source_alias(example, [access(read)]).
+swish_config:source_alias(example, [access(read), search('*.{pl,swinb}')]).
 
 :- http_handler(swish(list_examples),
 		list_examples, [id(swish_examples)]).

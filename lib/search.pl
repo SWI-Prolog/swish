@@ -36,6 +36,7 @@
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
 :- use_module(library(prolog_source)).
+:- use_module(library(option)).
 
 :- use_module(config).
 
@@ -122,6 +123,28 @@ typeahead(sources, Query, hit{alias:Alias, file:File, ext:Ext,
 	file_name_extension(_, Ext, Path),
 	Symbolic =.. [Alias,File],
 	once(swish_config:source_alias(Alias, _)),
+	search_file(Path, Query, LineNo, Line).
+typeahead(sources, Query, hit{alias:Alias, file:Base, ext:Ext,
+			      query:Query, line:LineNo, text:Line}) :-
+	swish_config:source_alias(Alias, Options),
+	option(search(Pattern), Options),
+	DirSpec =.. [Alias,.],
+	absolute_file_name(DirSpec, Dir,
+			   [ access(read),
+			     file_type(directory),
+			     solutions(all),
+			     file_errors(fail)
+			   ]),
+	directory_file_path(Dir, Pattern, FilePattern),
+	expand_file_name(FilePattern, Files),
+	atom_concat(Dir, /, DirSlash),
+	member(Path, Files),
+	\+ source_file(Path),		% already did this one above
+	atom_concat(DirSlash, File, Path),
+	file_name_extension(Base, Ext, File),
+	search_file(Path, Query, LineNo, Line).
+
+search_file(Path, Query, LineNo, Line) :-
 	setup_call_cleanup(
 	    open(Path, read, In),
 	    read_string(In, _, String),
