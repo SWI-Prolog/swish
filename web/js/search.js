@@ -263,6 +263,14 @@ define([ "jquery", "config", "typeahead" ],
 	  }
 	};
 
+	// Get the actual query string exchanged between
+	// typeahead and Bloodhound.
+	var of = typeaheadProperties.sources.source;
+	typeaheadProperties.sources.source = function(q, cb) {
+	  sourceRE = new RegExp(RegExp.escape(q));
+	  return of(q, cb);
+	}
+
 	/**
 	 * Assemble the sources
 	 */
