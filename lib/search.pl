@@ -107,6 +107,9 @@ typeahead(Request) :-
 %
 %	@tbd: Limit number of hits?
 
+:- multifile
+	swish_config:source_alias/2.
+
 typeahead(predicates, Query, Template) :-
 	swish_config(templates, Templates),
 	member(Template, Templates),
@@ -115,13 +118,14 @@ typeahead(predicates, Query, Template) :-
 typeahead(sources, Query, hit{alias:Alias, file:File, ext:Ext,
 			      query:Query, line:LineNo, text:Line}) :-
 	source_file(Path),
+	file_name_on_path(Path, Symbolic),
+	file_name_extension(_, Ext, Path),
+	Symbolic =.. [Alias,File],
+	once(swish_config:source_alias(Alias, _)),
 	setup_call_cleanup(
 	    open(Path, read, In),
 	    read_string(In, _, String),
 	    close(In)),
-	file_name_on_path(Path, Symbolic),
-	file_name_extension(_, Ext, Path),
-	Symbolic =.. [Alias,File],
 	split_string(String, "\n", "\r", Lines),
 	nth1(LineNo, Lines, Line),
 	once(sub_string(Line, _, _, _, Query)).
