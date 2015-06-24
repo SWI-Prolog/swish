@@ -161,6 +161,7 @@ _not_ see exactly the same UI for cooperation.  What about
   - Check modified status of tab before closing it.
   - Source search: pass number of items being searched and
     if there are too many hits, balance over files.
+  - Source search: add type icon to file headers.
   - Limit search results to configured public directories.	[OK]
   - Set tab-width per source?
 
