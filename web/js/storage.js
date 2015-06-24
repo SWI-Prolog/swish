@@ -8,11 +8,11 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "modal", "form", "gitty", "history",
+define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 
 	 "laconic", "diff"
        ],
-       function($, config, modal, form, gitty, history) {
+       function($, config, modal, form, gitty, history, tabbed) {
 
 (function($) {
   var pluginName = 'storage';
@@ -127,6 +127,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
       } else {
 	data.file = null;
 	data.meta = null;
+	if ( src.url )
+	  data.url = src.url;
       }
 
       function basename(path) {
@@ -205,6 +207,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
       var method  = "POST";
       var elem    = this;
       var data;
+
+      if ( options.url )
+	return this.storage('saveURL');
 
       if ( meta == "as" ) {
 	this.storage('saveAs');
@@ -314,6 +319,38 @@ define([ "jquery", "config", "modal", "form", "gitty", "history",
 
       return this;
     },
+
+    /**
+     * Save data to the URL it was loaded from.
+     * FIXME: feedback, allow recompilation (if Prolog source)
+     */
+    saveURL: function() {
+      var options = this.data(pluginName);
+      var data = options.getValue();
+      var type = tabbed.type(options.url)||{};
+
+      $.ajax({ url: options.url,
+               dataType: "json",
+	       contentType: type.contentType||"text/plain",
+	       type: "PUT",
+	       data: data,
+	       success: function(reply) {
+		 if ( reply.error ) {
+		   alert(JSON.stringify(reply));
+		 } else {
+		   options.cleanGeneration = options.changeGen();
+		   options.cleanData       = options.getValue();
+		   options.cleanCheckpoint = "save";
+		 }
+	       },
+	       error: function(jqXHR) {
+		 modal.ajaxError(jqXHR);
+	       }
+	     });
+
+      return this;
+    },
+
 
     /**
      * Provide information about the current source in a modal
