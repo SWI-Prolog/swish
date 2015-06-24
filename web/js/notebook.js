@@ -353,6 +353,7 @@ var cellTypes = {
   tabbed.tabTypes.notebook = {
     dataType: "swinb",
     typeName: "notebook",
+    contentType: "text/x-prolog-notebook",
     label: "Notebook",
     create: function(dom) {
       $(dom).notebook();

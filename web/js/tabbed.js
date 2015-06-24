@@ -11,7 +11,16 @@
 define([ "jquery", "laconic", "search" ],
        function() {
 var tabbed = {
-  tabTypes: {}
+  tabTypes: {},
+  type: function(from) {
+    var ext = from.split('.').pop();
+
+    for(var k in tabbed.tabTypes) {
+      if ( tabbed.tabTypes.hasOwnProperty(k) &&
+	   tabbed.tabTypes[k].dataType == ext )
+	return tabbed.tabTypes[k];
+    }
+  }
 };
 
 (function($) {
@@ -152,23 +161,17 @@ var tabbed = {
       if ( typeof(src) == "object" &&
 	   ((src.meta && src.meta.name) || src.url) )
       { var name = (src.meta && src.meta.name) ? src.meta.name : src.url;
-	var ext  = name.split('.').pop();
+	var tabType = tabbed.type(name);
+	var content = $.el.div();
 
-	for(var k in tabbed.tabTypes) {
-	  if ( tabbed.tabTypes.hasOwnProperty(k) &&
-	       tabbed.tabTypes[k].dataType == ext )
-	  { var tabType = tabbed.tabTypes[k];
-	    var content = $.el.div();
-
-	    tab.html("");
-	    tab.tabbed('title', tabType.label, tabType.dataType);
-	    tab.append(content);
-	    tabType.create(content);
-	    $(content).trigger("source", src);
-	    return true;
-	  }
-	}
+	tab.html("");
+	tab.tabbed('title', tabType.label, tabType.dataType);
+	tab.append(content);
+	tabType.create(content);
+	$(content).trigger("source", src);
+	return true;
       }
+
       return false;
     },
 

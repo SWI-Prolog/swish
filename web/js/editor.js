@@ -676,6 +676,7 @@ define([ "cm/lib/codemirror",
 
   tabbed.tabTypes.program = {
     dataType: "pl",
+    contentType: "text/x-prolog",
     label: "Program",
     create: function(dom) {
       $(dom).addClass("prolog-editor")
