@@ -215,13 +215,17 @@ var tabbed = {
      * @param {String} id is the id of the tab to destroy
      */
     removeTab: function(id) {
-      var li = this.tabbed('navTabs').find("a[data-id='"+id+"']").parent();
+      var li  = this.tabbed('navTabs').find("a[data-id='"+id+"']").parent();
+      var tab = $("#"+id);
       var new_active;
 
-      if ( $("#"+id).is(":visible") )
+      if ( tab.find(".storage").storage('unload', "closetab") == false )
+	return;
+
+      if ( tab.is(":visible") )
 	new_active = li.prev() || li.next();
       li.remove();
-      $("#"+id).remove();
+      tab.remove();
       if ( new_active && new_active.length > 0 ) {
 	new_active.find("a").first().tab('show');
       } else if ( this.tabbed('navContent').children().length == 0 ) {

@@ -465,7 +465,10 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	  return message;
 	} else {
 	  var message = "The source editor has unsaved changes.\n"+
-	                "These will be lost if you load a new program";
+	                "These will be lost"+
+			( why == "setSource" ? " if you load a new program" :
+			  why == "closetab"  ? " close this tab" : ""
+			);
 
 	  return confirm(message);
 	}

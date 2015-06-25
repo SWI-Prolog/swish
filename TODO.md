@@ -158,7 +158,7 @@ _not_ see exactly the same UI for cooperation.  What about
   - Use swish('playFile', ...) for the back button.		[OK]
   - Add close-button to runner without title.			[OK]
   - Add help screen for empty notebook.				[OK]
-  - Check modified status of tab before closing it.
+  - Check modified status of tab before closing it.		[OK]
   - Source search: pass number of items being searched and
     if there are too many hits, balance over files.
   - Source search: add type icon to file headers.		[OK]
