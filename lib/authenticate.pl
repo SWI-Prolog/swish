@@ -1,9 +1,9 @@
 /*  Part of SWI-Prolog
 
     Author:        Jan Wielemaker
-    E-mail:        J.Wielemaker@cs.vu.nl
+    E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014, VU University Amsterdam
+    Copyright (C): 2014-2015, VU University Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -32,8 +32,15 @@
 	  ]).
 :- use_module(library(pengines), []).
 :- use_module(library(lists)).
+:- use_module(library(debug)).
 :- use_module(library(crypt)).
+:- use_module(library(sandbox)).
 :- use_module(library(http/http_authenticate)).
+:- use_module(config).
+
+:- multifile
+	swish_config:config/2,
+	swish_config:verify_write_access/3.
 
 /** <module> SWISH login management
 
@@ -61,13 +68,29 @@ password_file(File) :-
 	absolute_file_name(swish(passwd), File, [access(read)]),
 	asserta(password_file_cache(File)).
 
-pengines:authentication_hook(Request, _Application, User) :-
+logged_in(Request, User) :-
 	password_file(File),
-	http_authenticate(basic(File), Request, [User|_Fields]), !.
-pengines:authentication_hook(_Request, _Application, _User) :-
+	http_authenticate(basic(File), Request, [User|_Fields]), !,
+	debug(authenticate, 'Logged in as ~p', [User]).
+logged_in(_Request, _User) :-
 	throw(http_reply(authorise(basic('SWISH user')))).
 
-pengines:not_sandboxed(_, _).
+%%	pengines:authentication_hook(+Request, +Application, -User)
+%
+%	Is called from the  /pengine/create   request  to  establish the
+%	logged in user.
+
+pengines:authentication_hook(Request, _Application, User) :-
+	logged_in(Request, User), !.
+
+pengines:not_sandboxed(_User, _Application).
+
+
+%%	swish_config:verify_write_access(+Request, +File, +Options)
+
+swish_config:verify_write_access(Request, _File, _Options) :-
+	logged_in(Request, _User), !.
+
 
 %%	swish_add_user(+User, +Passwd, +Fields) is det.
 %

@@ -41,6 +41,7 @@
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
+:- use_module(library(http/http_header)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
 :- use_module(library(http/http_json)).
@@ -73,7 +74,8 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 
 :- multifile
 	swish_config:source_alias/2,
-	swish_config:reply_page/1.
+	swish_config:reply_page/1,
+	swish_config:verify_write_access/3. % +Request, +File, +Options
 
 %%	swish_reply(+Options, +Request)
 %
@@ -162,20 +164,24 @@ source_option(_, Options, Options).
 %
 %	File is the file associated with a SWISH request.  A file is
 %	associated if _path_info_ is provided.  If the file does not
-%	exist, an HTTP 404 exception is returned.
+%	exist, an HTTP 404 exception is returned.  Options:
+%
+%	  - alias(-Alias)
+%	    Get the swish_config:source_alias/2 Alias name that
+%	    was used to find File.
 
-source_file(Request, File, _Options) :-
+source_file(Request, File, Options) :-
 	option(path_info(PathInfo), Request), !,
-	(   path_info_file(PathInfo, File)
+	(   path_info_file(PathInfo, File, Options)
 	->  true
 	;   http_404([], Request)
 	).
 
-path_info_file(PathInfo, Path) :-
+path_info_file(PathInfo, Path, Options) :-
 	sub_atom(PathInfo, B, _, A, /),
 	sub_atom(PathInfo, 0, B, _, Alias),
 	sub_atom(PathInfo, _, A, 0, File),
-	catch(swish_config:source_alias(Alias, Options), E,
+	catch(swish_config:source_alias(Alias, AliasOptions), E,
 	      (print_message(warning, E), fail)),
 	Spec =.. [Alias,File],
 	http_safe_file(Spec, []),
@@ -183,7 +189,8 @@ path_info_file(PathInfo, Path) :-
 			   [ access(read),
 			     file_errors(fail)
 			   ]),
-	confirm_access(Path, Options).
+	confirm_access(Path, AliasOptions), !,
+	option(alias(Alias), Options, _).
 
 source_data(Path, Code, [title(Title), type(Ext)]) :-
 	setup_call_cleanup(
@@ -571,18 +578,40 @@ alt(rjs, 'bower_components/requirejs/require.js', -).
 %
 %	Handle non-GET requests.  Such requests may be used to modify
 %	source code.
-%
-%	@tbd: verify content type and encoding.
-%	@tbd: authentication.
 
 swish_rest_reply(put, Request, Options) :-
-	source_file(Request, File, Options), !,
-	http_read_data(Request, Data, [to(string)]),
-	check_write_access(Request, File),
+	merge_options(Options, [alias(_)], Options1),
+	source_file(Request, File, Options1), !,
+	option(content_type(String), Request),
+	http_parse_header_value(content_type, String, Type),
+	read_data(Type, Request, Data, _Meta),
+	verify_write_access(Request, File, Options1),
 	setup_call_cleanup(
 	    open(File, write, Out),
 	    format(Out, '~s', [Data]),
 	    close(Out)),
 	reply_json_dict(true).
 
-check_write_access(_, _).
+read_data(media(Type,_), Request, Data, Meta) :-
+	http_json:json_type(Type), !,
+	http_read_json_dict(Request, Dict),
+	del_dict(data, Dict, Data, Meta).
+read_data(media(text/_,_), Request, Data, _{}) :-
+	http_read_data(Request, Data, [to(string)]).
+
+%%	swish_config:verify_write_access(+Request, +File, +Options) is
+%%	nondet.
+%
+%	Hook that verifies that the HTTP Request  may write to File. The
+%	hook must succeed to grant access. Failure   is  is mapped to an
+%	HTTP _403 Forbidden_ reply. The  hook   may  throw  another HTTP
+%	reply.  By default, the following options are passed:
+%
+%	  - alias(+Alias)
+%	    The swish_config:source_alias/2 Alias used to find File.
+
+verify_write_access(Request, File, Options) :-
+	swish_config:verify_write_access(Request, File, Options), !.
+verify_write_access(Request, _File, _Options) :-
+	option(path(Path), Request),
+	throw(http_reply(forbidden(Path))).
