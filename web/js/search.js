@@ -109,7 +109,7 @@ define([ "jquery", "config", "typeahead" ],
 	  if ( hit.file != currentFile || hit.alias != currentAlias ) {
 	    currentFile = hit.file;
 	    currentAlias = hit.alias;
-	    str = "<div class=\"tt-file-header\">"
+	    str = "<div class=\"tt-file-header type-icon "+hit.ext+"\">"
 	        + "<span class=\"tt-path-alias\">"
 	        + htmlEncode(hit.alias)
 		+ "</span>(<span class=\"tt-path-file\">"
@@ -267,6 +267,8 @@ define([ "jquery", "config", "typeahead" ],
 	// typeahead and Bloodhound.
 	var of = typeaheadProperties.sources.source;
 	typeaheadProperties.sources.source = function(q, cb) {
+	  currentFile = null;
+	  currentAlias = null;
 	  sourceRE = new RegExp(RegExp.escape(q));
 	  return of(q, cb);
 	}
