@@ -43,6 +43,7 @@
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
+:- use_module(library(http/http_json)).
 :- use_module(library(http/http_path)).
 :- if(exists_source(library(http/http_ssl_plugin))).
 :- use_module(library(http/http_ssl_plugin)).
@@ -52,6 +53,7 @@
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(error)).
+:- use_module(library(http/http_client)).
 
 :- use_module(config).
 :- use_module(help).
@@ -89,6 +91,10 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 %	  - q(Query)
 %	  Use Query as the initial query.
 
+swish_reply(Options, Request) :-
+	option(method(Method), Request),
+	Method \== get, !,
+	swish_rest_reply(Method, Request, Options).
 swish_reply(_, Request) :-
 	serve_resource(Request), !.
 swish_reply(_, Request) :-
@@ -145,15 +151,27 @@ source_option(_Request, Options, Options) :-
 	option(code(_), Options),
 	option(format(swish), Options), !.
 source_option(Request, Options0, Options) :-
-	option(path_info(Info), Request),
-	Info \== 'index.html', !,	% Backward compatibility
-	(   source_data(Info, String, Options1)
+	source_file(Request, File, Options0), !,
+	(   source_data(File, String, Options1)
 	->  append([[code(String)], Options1, Options0], Options)
 	;   http_404([], Request)
 	).
 source_option(_, Options, Options).
 
-source_data(PathInfo, Code, [title(Title), type(Ext)]) :-
+%%	source_file(+Request, -File, +Options) is semidet.
+%
+%	File is the file associated with a SWISH request.  A file is
+%	associated if _path_info_ is provided.  If the file does not
+%	exist, an HTTP 404 exception is returned.
+
+source_file(Request, File, _Options) :-
+	option(path_info(PathInfo), Request), !,
+	(   path_info_file(PathInfo, File)
+	->  true
+	;   http_404([], Request)
+	).
+
+path_info_file(PathInfo, Path) :-
 	sub_atom(PathInfo, B, _, A, /),
 	sub_atom(PathInfo, 0, B, _, Alias),
 	sub_atom(PathInfo, _, A, 0, File),
@@ -165,11 +183,14 @@ source_data(PathInfo, Code, [title(Title), type(Ext)]) :-
 			   [ access(read),
 			     file_errors(fail)
 			   ]),
-	confirm_access(Path, Options), !,
+	confirm_access(Path, Options).
+
+source_data(Path, Code, [title(Title), type(Ext)]) :-
 	setup_call_cleanup(
 	    open(Path, read, In, [encoding(utf8)]),
 	    read_string(In, _, Code),
 	    close(In)),
+	file_base_name(Path, File),
 	file_name_extension(Title, Ext, File).
 
 confirm_access(Path, Options) :-
@@ -541,3 +562,27 @@ alt(rjs, 'js/require.js', swish_web('js/require.js')) :-
 	\+ debugging(nominified).
 alt(rjs, 'bower_components/requirejs/require.js', -).
 
+
+		 /*******************************
+		 *	       REST		*
+		 *******************************/
+
+%%	swish_rest_reply(+Method, +Request, +Options) is det.
+%
+%	Handle non-GET requests.  Such requests may be used to modify
+%	source code.
+%
+%	@tbd: verify content type and encoding.
+%	@tbd: authentication.
+
+swish_rest_reply(put, Request, Options) :-
+	source_file(Request, File, Options), !,
+	http_read_data(Request, Data, [to(string)]),
+	check_write_access(Request, File),
+	setup_call_cleanup(
+	    open(File, write, Out),
+	    format(Out, '~s', [Data]),
+	    close(Out)),
+	reply_json_dict(true).
+
+check_write_access(_, _).
