@@ -89,6 +89,7 @@ var cellTypes = {
 	  }
 
 	  copyData("file");
+	  copyData("url");
 	  copyData("title");
 	  if ( window.swish && window.swish.meta_data )
 	    storage.meta = window.swish.meta_data;

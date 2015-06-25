@@ -53,6 +53,7 @@
 :- use_module(library(time)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
+:- use_module(library(uri)).
 :- use_module(library(error)).
 :- use_module(library(http/http_client)).
 
@@ -149,13 +150,21 @@ params_options([_|T0], T) :-
 %	If the data was requested  as   '/Alias/File',  reply using file
 %	Alias(File).
 
-source_option(_Request, Options, Options) :-
-	option(code(_), Options),
-	option(format(swish), Options), !.
+source_option(_Request, Options0, Options) :-
+	option(code(Code), Options0),
+	option(format(swish), Options0), !,
+	(   uri_is_global(Code)
+	->  Options = [url(Code)|Options0]
+	;   Options = Options0
+	).
 source_option(Request, Options0, Options) :-
 	source_file(Request, File, Options0), !,
+	option(path(Path), Request),
 	(   source_data(File, String, Options1)
-	->  append([[code(String)], Options1, Options0], Options)
+	->  append([ [code(String), url(Path)],
+		     Options1,
+		     Options0
+		   ], Options)
 	;   http_404([], Request)
 	).
 source_option(_, Options, Options).
@@ -363,11 +372,15 @@ source(_, _) --> [].
 
 source_data_attrs(Options) -->
 	(source_file_data(Options) -> [] ; []),
+	(source_url_data(Options) -> [] ; []),
 	(source_title_data(Options) -> [] ; []).
 
 source_file_data(Options) -->
 	{ option(file(File), Options) },
 	['data-file'(File)].
+source_url_data(Options) -->
+	{ option(url(URL), Options) },
+	['data-url'(URL)].
 source_title_data(Options) -->
 	{ option(title(File), Options) },
 	['data-title'(File)].
@@ -439,7 +452,7 @@ notebooks(swinb, Options) -->
 		 ])).
 notebooks(_, _) --> [].
 
-%%	download_source(+HREF, -Source, Options) is det.
+%%	download_source(+HREF, -Source, +Options) is det.
 %
 %	Download source from a URL.  Options processed:
 %
@@ -473,7 +486,7 @@ download_source(Source0, Source, Options) :-
 	(   Len =< MaxLen
 	->  Source = Source0
 	;   format(string(Source),
-		   '%ERROR: Content too long (max ~D)~n', [MaxLen])
+		   '% ERROR: Content too long (max ~D)~n', [MaxLen])
 	).
 
 read_source(In, MaxLen, Source, Options) :-
@@ -485,12 +498,12 @@ read_source(In, MaxLen, Source, Options) :-
 	(   Len =< MaxLen
 	->  Source = Source0
 	;   format(string(Source),
-		   '%ERROR: Content too long (max ~D)~n', [MaxLen])
+		   ' % ERROR: Content too long (max ~D)~n', [MaxLen])
 	).
 
 load_error(E, Source) :-
 	message_to_string(E, String),
-	format(string(Source), '%ERROR: ~s~n', [String]).
+	format(string(Source), '% ERROR: ~s~n', [String]).
 
 %%	document_type(-Type, +Options) is det.
 %
