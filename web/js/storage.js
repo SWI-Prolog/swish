@@ -333,6 +333,11 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       var type = tabbed.type(options.url)||{};
       var elem = this;
 
+      if ( options.isClean(options.cleanGeneration) ) {
+	alert("No change");
+	return this;
+      }
+
       $.ajax({ url: options.url,
                dataType: "json",
 	       contentType: type.contentType||"text/plain",
