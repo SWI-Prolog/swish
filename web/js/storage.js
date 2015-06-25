@@ -265,6 +265,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 		   options.cleanGeneration = options.changeGen();
 		   options.cleanData       = options.getValue();
 		   options.cleanCheckpoint = "save";
+		   modal.feedback({ html: "Saved",
+				    owner: elem
+		                  });
 
 		   elem.tabbed('title', meta.name);
 		   history.push(reply);
@@ -328,6 +331,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       var options = this.data(pluginName);
       var data = options.getValue();
       var type = tabbed.type(options.url)||{};
+      var elem = this;
 
       $.ajax({ url: options.url,
                dataType: "json",
@@ -341,6 +345,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 		   options.cleanGeneration = options.changeGen();
 		   options.cleanData       = options.getValue();
 		   options.cleanCheckpoint = "save";
+		   modal.feedback({ html: "Saved",
+				    owner: elem
+		                  });
 		 }
 	       },
 	       error: function(jqXHR) {

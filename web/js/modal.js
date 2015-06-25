@@ -42,6 +42,9 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 	elem.on("ajaxError", function(ev, jqXHR) {
 	  elem.swishModal('showAjaxError', jqXHR);
 	});
+	elem.on("feedback", function(ev, options) {
+	  elem.swishModal('feedback', options);
+	});
       });
     },
 
@@ -193,6 +196,29 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 		 };
 
       this.swishModal('show', data);
+    },
+
+    /**
+     * Display briefly a feedback message
+     * @param {Object} options
+     * @param {String} options.html defines the HTML content that is
+     * rendered.
+     * @param {Number} [options.duration=1500] number of milliseconds
+     * that the message is visible.
+     * @param {Object} [options.owner=$("body")] is the DOM element to
+     * which the feedback window is added.
+     */
+    feedback: function(options) {
+      var win = $.el.div({class:"feedback"});
+      $(win).html(options.html);
+
+      $(options.owner||"body").append(win);
+      setTimeout(function() {
+	$(win).hide(400, function() {
+	  $(win).remove();
+	});
+      }, options.duration||1500);
+      return this;
     }
   }; // methods
 
@@ -284,6 +310,9 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
   return {
     ajaxError: function(jqXHR) {
       $(".swish-event-receiver").trigger("ajaxError", jqXHR);
+    },
+    feedback: function(options) {
+      $(".swish-event-receiver").trigger("feedback", options);
     }
   };
 });
