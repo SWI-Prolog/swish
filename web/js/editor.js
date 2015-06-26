@@ -252,7 +252,7 @@ define([ "cm/lib/codemirror",
 		  function() {
 		    data.cm.setOption("mode", mode);
 		  });
-      } else if ( mode != options.mode ) {
+      } else if ( mode != data.mode ) {
 	data.cm.setOption("mode", mode);
       }
 
