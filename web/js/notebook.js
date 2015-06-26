@@ -247,7 +247,6 @@ var cellTypes = {
 	cleanGeneration: this.notebook('changeGen'),
 	cleanData:       this.notebook('value'),
 	cleanCheckpoint: "load",
-	dataType:        "swinb",
 	typeName:	 "notebook"
       });
 

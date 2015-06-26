@@ -126,7 +126,7 @@ define([ "cm/lib/codemirror",
 	opts      = opts||{};
 	opts.mode = opts.mode||"prolog";
 
-	options      = $.extend({}, modeDefaults[opts.mode]);
+	var options = $.extend({}, modeDefaults[opts.mode]);
 	if ( opts.role && roleDefaults[opts.role] )
 	  options = $.extend(options, roleDefaults[opts.role]);
 	options = $.extend(options, opts);
@@ -135,6 +135,8 @@ define([ "cm/lib/codemirror",
 	  options.keyMap = "emacs";
 
 	if ( options.mode == "prolog" ) {
+	  data.role = options.role;
+
 	  if ( config.http.locations.cm_highlight ) {
 	    options.prologHighlightServer =
 	    { url:  config.http.locations.cm_highlight,
@@ -169,8 +171,7 @@ define([ "cm/lib/codemirror",
 	  elem.append(ta);
 	}
 
-	data.cm              = CodeMirror.fromTextArea(ta, options);
-	data.role            = options.role;
+	data.cm = CodeMirror.fromTextArea(ta, options);
 
 	elem.data(pluginName, data);
 	elem.addClass("swish-event-receiver");
@@ -179,6 +180,7 @@ define([ "cm/lib/codemirror",
 	});
 
 	if ( options.save ) {
+	  storage.typeName = options.typeName||"program";
 	  elem.prologEditor('setupStorage', storage);
 	}
 
@@ -677,8 +679,9 @@ define([ "cm/lib/codemirror",
 
   tabbed.tabTypes.program = {
     dataType: "pl",
-    contentType: "text/x-prolog",
+    typeName: "program",
     label: "Program",
+    contentType: "text/x-prolog",
     create: function(dom) {
       $(dom).addClass("prolog-editor")
             .prologEditor({save:true})

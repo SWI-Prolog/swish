@@ -18,7 +18,6 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
   var pluginName = 'storage';
 
   var defaults = {
-    dataType: "pl",
     typeName: "program"
   }
 
@@ -101,6 +100,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
      */
     setSource: function(src) {
       var data = this.data(pluginName);
+      var type = tabbed.tabTypes[data.typeName];
 
       if ( typeof(src) == "string" )
 	src = {data:src};
@@ -109,7 +109,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       { var name = (src.meta && src.meta.name) ? src.meta.name : src.url;
 	var ext  = name.split('.').pop();
 
-	if ( ext != data.dataType )
+	if ( ext != type.dataType )
 	  return "propagate";
       }
 
@@ -136,12 +136,12 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       }
       var title = (filebase(data.file) ||
 		   filebase(basename(src.url)) ||
-		   capitalizeFirstLetter(data.typeName));
+		   type.label);
 
       if ( !src.url )
 	src.url = config.http.locations.swish;
 
-      this.tabbed('title', title, data.dataType);
+      this.tabbed('title', title, type.dataType);
       history.push(src);
 
       return this;
@@ -203,6 +203,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
      */
     save: function(meta, what) {
       var options = this.data(pluginName);
+      var type    = tabbed.tabTypes[options.typeName];
       var url     = config.http.locations.web_storage;
       var method  = "POST";
       var elem    = this;
@@ -231,7 +232,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	data = { update: "meta-data" };
       } else if ( method == "POST" ) {
 	data = { data: options.getValue(),
-		 type: options.dataType
+		 type: type.dataType
 	       };
 	if ( options.meta ) {			/* rename */
 	  data.previous = options.meta.commit;
@@ -239,7 +240,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       } else {
 	if ( !options.isClean(options.cleanGeneration) ) {
 	  data = { data: options.getValue(),
-		   type: options.dataType
+		   type: type.dataType
 		 };
 	} else if ( gitty.diffTags(options.meta.tags, meta.tags) == null ) {
 	  alert("No change");
@@ -289,7 +290,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       var editor  = this;
       var update  = Boolean(options.file);
       var fork    = options.meta && meta.symbolic != "HEAD";
-      var type    = options.typeName || "program";
+      var type    = tabbed.tabTypes[options.typeName];
 
       if ( meta.public === undefined )
 	meta.public = true;
@@ -303,9 +304,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 			      update ? form.fields.commit_message() : undefined,
 			      form.fields.tags(meta.tags),
 			      form.fields.buttons(
-				{ label: fork   ? "Fork "+type :
-					 update ? "Update "+type :
-						  "Save "+type,
+				{ label: fork   ? "Fork "+type.label :
+					 update ? "Update "+type.label :
+						  "Save "+type.label,
 				  action: function(ev,data) {
 				            editor.storage('save', data);
 					    return false;
@@ -315,7 +316,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 
       form.showDialog({ title: fork   ? "Fork from "+meta.commit.substring(0,7) :
 			       update ? "Save new version" :
-			                "Save "+type+" as",
+			                "Save "+type.label+" as",
 			body:  saveAsBody
 		      });
 
