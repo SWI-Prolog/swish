@@ -689,6 +689,30 @@ define([ "cm/lib/codemirror",
     }
   };
 
+  if ( config.swish.tab_types ) {
+    var editDefaults = {
+      save: true,
+      lineNumbers: true
+    };
+
+    for(var i=0; i<config.swish.tab_types.length; i++) {
+      var tabType = config.swish.tab_types[i];
+      if ( tabType.editor ) {
+	var options = $.extend({typeName:tabType.typeName},
+			       editDefaults,
+			       tabType.editor);
+
+	tabType.create = function(dom) {
+	  $(dom).addClass("prolog-editor")
+	        .prologEditor(options);
+	};
+
+	tabbed.tabTypes[tabType.typeName] = tabType;
+      }
+    }
+  }
+
+
   /**
    * The prologEditor jQuery plugin converts a `<div>` into an code
    * editor based on [CodeMirror](http://codemirror.net)
