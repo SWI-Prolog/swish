@@ -24,7 +24,6 @@ define([ "cm/lib/codemirror",
 	 "cm/mode/prolog/prolog_server",
 
 	 "cm/mode/markdown/markdown",
-	 "cm/mode/htmlmixed/htmlmixed",
 
 	 "cm/addon/edit/matchbrackets",
 	 "cm/addon/comment/continuecomment",
@@ -173,8 +172,9 @@ define([ "cm/lib/codemirror",
 	}
 
 	data.cm = CodeMirror.fromTextArea(ta, options);
-
 	elem.data(pluginName, data);
+	elem.prologEditor('loadMode', options.mode);
+
 	elem.addClass("swish-event-receiver");
 	elem.on("preference", function(ev, pref) {
 	  elem.prologEditor('preference', pref);
@@ -237,6 +237,26 @@ define([ "cm/lib/codemirror",
     setKeybinding: function(schema) {
       schema = schema || "default";
       this.data(pluginName).cm.options.keyMap = schema;
+    },
+
+    /**
+     * Switch the editor to the requested mode, possibly by dynamically
+     * loading the mode.  It seems that if we use RequireJS, we should
+     * also use this for loading modes dynamically.
+     */
+    loadMode: function(mode) {
+      var data = this.data(pluginName);
+
+      if ( !CodeMirror.modes[mode] ) {
+	require(["cm/mode/"+mode+"/"+mode],
+		  function() {
+		    data.cm.setOption("mode", mode);
+		  });
+      } else if ( mode != options.mode ) {
+	data.cm.setOption("mode", mode);
+      }
+
+      return this;
     },
 
     /**
