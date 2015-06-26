@@ -21,34 +21,15 @@ require.config({
     tagmanager:  "../bower_components/tagmanager/tagmanager",
     sha1:        "../bower_components/js-sha1/src/sha1",
 
-    "cm/lib/codemirror": "../bower_components/codemirror/lib/codemirror",
-					/* CodeMirror standard extensions */
-    "cm/addon/edit/matchbrackets": "../bower_components/codemirror/addon/edit/matchbrackets",
-    "cm/addon/comment/continuecomment": "../bower_components/codemirror/addon/comment/continuecomment",
-    "cm/addon/comment/comment": "../bower_components/codemirror/addon/comment/comment",
-    "cm/addon/hint/show-hint": "../bower_components/codemirror/addon/hint/show-hint",
-    "cm/addon/hint/anyword-hint": "../bower_components/codemirror/addon/hint/anyword-hint",
-    "cm/addon/display/placeholder": "../bower_components/codemirror/addon/display/placeholder",
-    "cm/addon/runmode/runmode": "../bower_components/codemirror/addon/runmode/runmode",
-    "cm/keymap/emacs" : "../bower_components/codemirror/keymap/emacs",
-
-					/* Markdown mode to support notebook */
-    "cm/mode/meta" : "../bower_components/codemirror/mode/meta",
-    "cm/mode/xml/xml" : "../bower_components/codemirror/mode/xml/xml",
-    "cm/mode/markdown/markdown" : "../bower_components/codemirror/mode/markdown/markdown",
-
-					/* Our own Prolog mode */
-    "cm/mode/prolog/prolog": "codemirror/mode/prolog/prolog",
-    "cm/mode/prolog/prolog_keys": "codemirror/mode/prolog/prolog_keys",
-    "cm/mode/prolog/prolog_query": "codemirror/mode/prolog/prolog_query",
-    "cm/mode/prolog/prolog_server": "codemirror/mode/prolog/prolog_server",
-
-    "cm/addon/hover/text-hover": "codemirror/addon/hover/text-hover",
+					/* CodeMirror extensions */
+    "cm/mode/prolog": "codemirror/mode/prolog",
     "cm/addon/hover/prolog-hover": "codemirror/addon/hover/prolog-hover",
-
+    "cm/addon/hover/text-hover": "codemirror/addon/hover/text-hover",
     "cm/addon/hint/templates-hint": "codemirror/addon/hint/templates-hint",
     "cm/addon/hint/show-context-info": "codemirror/addon/hint/show-context-info",
-    "cm/mode/prolog/prolog-template-hint": "codemirror/mode/prolog/prolog-template-hint"
+
+					/* Standard CodeMirror */
+    "cm" : "../bower_components/codemirror"
   },
   shim:
   { bootstrap:
