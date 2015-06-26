@@ -259,7 +259,6 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 		 if ( reply.error ) {
 		   alert(JSON.stringify(reply));
 		 } else {
-		   options.url  = reply.url;
 		   options.file = reply.file;
 		   options.meta = reply.meta;
 		   options.cleanGeneration = options.changeGen();
