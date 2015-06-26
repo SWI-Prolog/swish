@@ -24,6 +24,7 @@ define([ "cm/lib/codemirror",
 	 "cm/mode/prolog/prolog_server",
 
 	 "cm/mode/markdown/markdown",
+	 "cm/mode/htmlmixed/htmlmixed",
 
 	 "cm/addon/edit/matchbrackets",
 	 "cm/addon/comment/continuecomment",
