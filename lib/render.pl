@@ -154,7 +154,16 @@ call_term_rendering(Module, Term, Vars, Options, Tokens) :-
 	is_new(State, Name),
 	renderer(Name, RenderModule, _Comment),
 	merge_options(RenderOptions, Options, AllOptions),
-	phrase(RenderModule:term_rendering(Term, Vars, AllOptions), Tokens).
+	catch(phrase(RenderModule:term_rendering(Term, Vars, AllOptions), Tokens),
+	      E, rendering_error(E, Name, Tokens)).
+
+rendering_error(Error, Renderer, Tokens) :-
+	message_to_string(Error, Msg),
+	phrase(html(div(class('render-error'),
+			[ 'Renderer ', span(Renderer),
+			  ' error: ', span(class(error), Msg)
+			])), Tokens).
+
 
 %%	is_new(!State, +M) is semidet.
 %
