@@ -24,7 +24,9 @@ define([ "jquery",
 	 "query",
 	 "runner",
 	 "term",
-	 "laconic"
+	 "laconic",
+	 "d3",
+	 "c3"
        ], function($, config, preferences, history, modal) {
 
 preferences.setDefault("semantic-highlighting", true);
