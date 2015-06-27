@@ -53,26 +53,49 @@ term_rendering(C3, _Vars, _Options) -->
 	  atom_concat(#, Id, RefId),
 	  put_dict(bindto, C3, RefId, C3b)
 	},
-	html(div([ class('render-C3'),
+	html(div([ class(['render-C3', 'reactive-size']),
 		   'data-render'('As C3 chart')
 		 ],
 		 [ div(id(Id), []),
 		   \js_script({|javascript(C3b)||
 (function() {
   if ( $.ajaxScript ) {
-    var w = $.ajaxScript.parents("div.answer").innerWidth();
+    var div  = $.ajaxScript.parent();
     var data = C3b;
+    var chart;
+    var sizing = {};
+    var tmo;
 
-    data.size = data.size||{};
-    if ( data.size.width == undefined ) {
-       data.size.width = Math.max(w*0.8, 100);
-       if ( data.size.height == undefined ) {
-	 data.size.height = data.size.width/2+50;
-       }
+    div.on("reactive-resize", function() {
+      if ( chart ) {
+	if ( tmo ) clearTimeout(tmo);
+	tmo = setTimeout(function() {
+	  if ( updateSize() ) chart.resize(data.size);
+	}, 1000);
+      }
+    });
+
+    function updateSize() {
+      data.size = data.size||{};
+      var w0 = data.size.width;
+      var h0 = data.size.height;
+
+      if ( data.size.width == undefined || sizing.width ) {
+	 var w = div.parents("div.answer").innerWidth();
+	 data.size.width = Math.max(w*0.8, 100);
+	 sizing.width = true;
+	 if ( data.size.height == undefined || sizing.height ) {
+	   data.size.height = data.size.width/2+50;
+	   sizing.height = true;
+	 }
+      }
+
+      return data.size.width != w0 || data.size.height != h0;
     }
 
     require(["d3", "c3"], function(d3, c3) {
-      c3.generate(data);
+      updateSize();
+      chart = c3.generate(data);
     });
   }
 })();

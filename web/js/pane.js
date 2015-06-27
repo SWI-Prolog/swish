@@ -48,7 +48,7 @@ define([ "jquery", "splitter" ],
      * user-initiated resize.
      */
     resize_save: function() {
-      return this.each(function() {
+      this.each(function() {
 	var elem    = $(this);
 	var info    = paneInfo(elem);
 	var length, pos;
@@ -65,6 +65,9 @@ define([ "jquery", "splitter" ],
 
 	info.splitter.resizestart = percent;
       });
+
+      this.find(".reactive-size").trigger("reactive-resize");
+      return this;
     },
 
     /**

@@ -143,6 +143,7 @@ preferences.setDefault("emacs-keybinding", false);
       swishLogo();
       setupModal();
       setupPanes();
+      setupResize();
       $("#search").search();
 
       options = options||{};
@@ -413,6 +414,12 @@ preferences.setDefault("emacs-keybinding", false);
       closePane($(this).parent());
     });
     $(".tabbed").tabbed();
+  }
+
+  function setupResize() {
+    $(window).resize(function() {
+      $(".reactive-size").trigger('reactive-resize');
+    });
   }
 
   /**
