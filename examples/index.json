@@ -17,4 +17,5 @@
 { "file":"japanese.pl",		  "title":"Japanese source" },
 "--",
 { "file":"dict.swinb",		  "title":"Dict tutorial" },
+{ "file":"C3.swinb",		  "title":"Rendering charts using C3.js" }
 ]
