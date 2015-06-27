@@ -1,0 +1,12 @@
+div.feedback {
+  position: absolute;
+  bottom: 3px;
+  left: 0px;
+  right: 3px;
+  padding: 0px 10px 3px;
+  z-index: 1000;
+  border: 1px solid #888;
+  border-radius: 5px;
+  background-color: #cff;
+  box-shadow: 3px 3px 5px #888;
+}
