@@ -58,8 +58,23 @@ term_rendering(C3, _Vars, _Options) -->
 		 ],
 		 [ div(id(Id), []),
 		   \js_script({|javascript(C3b)||
-			       require(["d3", "c3"], function(d3, c3) {
-			         c3.generate(C3b);
-			       });
+(function() {
+  if ( $.ajaxScript ) {
+    var w = $.ajaxScript.parents("div.answer").innerWidth();
+    var data = C3b;
+
+    data.size = data.size||{};
+    if ( data.size.width == undefined ) {
+       data.size.width = Math.max(w*0.8, 100);
+       if ( data.size.height == undefined ) {
+	 data.size.height = data.size.width/2+50;
+       }
+    }
+
+    require(["d3", "c3"], function(d3, c3) {
+      c3.generate(data);
+    });
+  }
+})();
 			      |})
 		 ])).
