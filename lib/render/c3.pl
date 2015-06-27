@@ -31,6 +31,7 @@
 	  [ term_rendering//3			% +Term, +Vars, +Options
 	  ]).
 :- use_module(library(gensym)).
+:- use_module(library(error)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
 :- use_module('../render').
@@ -49,6 +50,7 @@ Render data as a chart.
 
 term_rendering(C3, _Vars, _Options) -->
 	{ is_dict(C3, c3),
+	  valid_c3(C3),
 	  gensym('c3js', Id),
 	  atom_concat(#, Id, RefId),
 	  put_dict(bindto, C3, RefId, C3b)
@@ -101,3 +103,27 @@ term_rendering(C3, _Vars, _Options) -->
 })();
 			      |})
 		 ])).
+
+
+%%	valid_c3(+C3) is det.
+%
+%	Perform sanity tests on the C3 representation.
+
+valid_c3(C3) :-
+	valid_c3_data(C3.data).
+
+valid_c3_data(C3) :-
+	valid_c3_array(C3.get(rows)), !.
+valid_c3_data(C3) :-
+	valid_c3_array(C3.get(columns)), !.
+valid_c3_data(C3) :-
+	throw(error(c3_no_data(C3), _)).
+
+valid_c3_array(Array) :-
+	must_be(list(list(ground)), Array).
+
+:- multifile
+	prolog:error_message//1.
+
+prolog:error_message(c3_no_data(C3)) -->
+	[ 'C3.data contains no rows nor columns: ~p'-[C3] ].
