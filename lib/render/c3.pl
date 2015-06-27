@@ -82,7 +82,7 @@ term_rendering(C3, _Vars, _Options) -->
 
       if ( data.size.width == undefined || sizing.width ) {
 	 var w = div.parents("div.answer").innerWidth();
-	 data.size.width = Math.max(w*0.8, 100);
+	 data.size.width = Math.max(w*0.85, 100);
 	 sizing.width = true;
 	 if ( data.size.height == undefined || sizing.height ) {
 	   data.size.height = data.size.width/2+50;
