@@ -20,6 +20,8 @@ require.config({
     splitter:    "../bower_components/jquery.splitter/js/jquery.splitter-0.15.0",
     tagmanager:  "../bower_components/tagmanager/tagmanager",
     sha1:        "../bower_components/js-sha1/src/sha1",
+    c3:          "../bower_components/c3/c3",
+    d3:          "../bower_components/d3/d3",
 
 					/* CodeMirror extensions */
     "cm/mode/prolog": "codemirror/mode/prolog",

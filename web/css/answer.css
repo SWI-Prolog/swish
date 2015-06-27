@@ -69,3 +69,7 @@ but that is rather expensive.
 .render-svg-tree svg polyline           { fill:none; }
 .render-svg-tree g.noleaf text		{ font-weight: bold;   fill: blue;}
 .render-svg-tree g.leaf text		{ font-weight: normal; fill: black;}
+
+/* C3 renderer */
+
+.render-C3 { display: inline-block; }
