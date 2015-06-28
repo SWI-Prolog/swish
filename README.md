@@ -26,8 +26,7 @@ http://www.swi-prolog.org/download/swish/swish-bower-components.zip.
 Unpack the zip file, maintaining the directory structure, from the swish
 root directory to create the directory web/bower_components.
 
-Last updated: Jun 21, 2015: fix splitter.jquery and typeahead versions
-at 0.15 and 0.10.5 due to compatibility issues.
+Last updated: Jun 28, 2015: Added D3.js and C3.js
 
 ### Get the latest SWI-Prolog
 

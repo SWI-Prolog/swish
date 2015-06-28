@@ -44,50 +44,13 @@
 ## Rendering framework
 
   - Core from Prolog ok.
-  - Need data vizualizations.  What is a good framework?  There are some
-    overviews [1,2,3]. Some tools:
-
-    - d3.js
-      Very capable, but we need something that does not need configuration,
-      only data and selection of the vizualization type.
-    - c3.js
-      Might give pure data, but looks really limited.  Flot might be
-      more lightweight in that case.
-    - NVD3
-      Similar to c3.js.  Looks a bit more promising, but also seems
-      to require more input.
-    - flot
-      Nice and simple, but can only do simple graphs and piecharts.
-    - Flotr2
-      Might be better than flot.
-    - http://ushiroad.com/jsviz/
-      Graphviz alternative in pure JS.
-    - Dagre (https://github.com/cpettitt/dagre)
-      Provides directed graph layout.  Agnostic of shapes.  Can be used
-      together with JointJs.
-    - http://www.jointjs.com
-      General interactive diagramming and charting tool.  Provides layout
-      with Dagre plugin.  Seems weak on tree-like structures.
-    - jQuery Sparklines
-      Lightweight and simple, but only designed for small graphs using small
-      datasets.  Might be nice to show load/stack/CPU, etc.
-  - Special purpose needs:
-    - Something like gvterm?
-    - Parse trees
-    - Geo Maps: Leaflet (Carlo Capelli).
-
-[1] http://datavisualization.ch/tools/13-javascript-libraries-for-visualizations/
-[2] http://jster.net/category/visualization-libraries
-[3] http://blog.profitbricks.com/39-data-visualization-tools-for-big-data/
-
-### Some data vizualization literature:
-
- - "Reviewing data visualization: an analytical taxonomical study"
-   JF Rodrigues, AJM Traina et all, 2006.
- - "The eyes have it: A task by data type taxonomy of information
-   visualizations"
-   https://www.cs.umd.edu/users/ben/papers/Shneiderman1996eyes.pdf
- - "Information Visualization and Visual Data Mining", Daniel A. Keim
+  - Need data vizualizations.  What is a good framework?
+    - Settled for C3.js, which also brings D3.js into the picture.
+      - :- use_rendering(c3).					[OK]
+        - Data representation is not always natural from Prolog.
+	  Need to recognise and map common representations.  E.g.,
+          - Pairs to columns for pie and bar charts.
+	  - Recognise textual labels and set the axis accordingly
 
 ## Sharing
 
@@ -170,7 +133,3 @@ _not_ see exactly the same UI for cooperation.  What about
   - Colouring of /library/http/html_write.pl
     - DCG exports broken?
     - use_module/2 broken.
-
-### Check
-
-  - Handling of background examples (test LPN).
