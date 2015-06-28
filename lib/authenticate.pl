@@ -34,12 +34,14 @@
 :- use_module(library(lists)).
 :- use_module(library(debug)).
 :- use_module(library(crypt)).
-:- use_module(library(sandbox)).
 :- use_module(library(http/http_authenticate)).
+
 :- use_module(config).
+:- use_module(page).
 
 :- multifile
 	swish_config:config/2,
+	swish_config:authenticate/2,
 	swish_config:verify_write_access/3.
 
 /** <module> SWISH login management
@@ -90,6 +92,15 @@ pengines:not_sandboxed(_User, _Application).
 
 swish_config:verify_write_access(Request, _File, _Options) :-
 	logged_in(Request, _User), !.
+
+%%	swish_config:authenticate(+Request, -User)
+%
+%	Called for all SWISH  actions.  May   be  used  to  restrict all
+%	access. Access can only be denied by throwing an exception.
+
+swish_config:authenticate(Request, User) :-
+	\+ swish_config(public_access, true),
+	logged_in(Request, User).
 
 
 %%	swish_add_user(+User, +Passwd, +Fields) is det.

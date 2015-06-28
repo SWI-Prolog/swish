@@ -38,7 +38,8 @@
 
 :- multifile
 	config/2,			% ?Key, ?Value
-	source_alias/2.			% ?Alias, ?Options
+	source_alias/2,			% ?Alias, ?Options
+	authenticate/2.			% +Request, -User
 
 /** <module> Make HTTP locations known to JSON code
 */

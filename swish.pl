@@ -106,12 +106,19 @@ http:location(swish, root(.), [priority(-100)]).
 %	  - community_examples
 %	  Allow marking saved programs as example.  If marked, the
 %	  programs are added to the Examples menu.
+%	  - public_access
+%	  If lib/authenticate.pl is loaded and this flag is `true`,
+%	  _all_ access to SWISH demands authentication.  If false,
+%	  only running queries and saving files is restricted. Note
+%	  that this flag has no effect if no authentication module is
+%	  loaded.
 
 swish_config:config(show_beware,        true).
 swish_config:config(tabled_results,     false).
 swish_config:config(application,        swish).
 swish_config:config(csv_formats,        [prolog]).
 swish_config:config(community_examples, false).
+swish_config:config(public_access,      false).
 
 %%	swish_config:source_alias(Alias, Options) is nondet.
 %

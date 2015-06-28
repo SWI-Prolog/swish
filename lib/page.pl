@@ -71,7 +71,7 @@ swish or parts of swish easily into a page.
 
 http:location(pldoc, swish(pldoc), [priority(100)]).
 
-:- http_handler(swish(.), swish_reply([]), [id(swish), prefix, priority(100)]).
+:- http_handler(swish(.), swish_reply([]), [id(swish), prefix]).
 
 :- multifile
 	swish_config:source_alias/2,
@@ -94,6 +94,9 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 %	  - q(Query)
 %	  Use Query as the initial query.
 
+swish_reply(_Options, Request) :-
+	swish_config:authenticate(Request, _User), % must throw to deny access
+	fail.
 swish_reply(Options, Request) :-
 	option(method(Method), Request),
 	Method \== get, !,
