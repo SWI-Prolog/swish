@@ -283,16 +283,19 @@ preferences.setDefault("emacs-keybinding", false);
 	     { dataType: "json",
 	       success: function(data) {
 		 for(var i=0; i<data.length; i++) {
+		   var ex = data[i];
 		   var title;
 		   var options;
 
-		   if ( data[i] == "--" ) {
+		   if ( ex == "--" || ex.type == "divider" ) {
 		     title = "--";
 		     options = "--";
 		   } else {
-		     title = data[i].title;
-		     options = that.swish('openExampleFunction', data[i]);
-		     options.typeIcon = data[i].href.split('.').pop();
+		     var name = ex.file || ex.href;
+		     title = ex.title;
+		     options = that.swish('openExampleFunction', ex);
+		     if ( name )
+		       options.typeIcon = name.split('.').pop();
 		   }
 
 		   $("#navbar").navbar('extendDropdown', dropdown,
