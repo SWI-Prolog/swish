@@ -36,6 +36,8 @@
 	      except([ file//2
 		     ])).
 :- use_module(library(pldoc/doc_wiki)).
+:- use_module(library(option)).
+:- use_module(storage).
 
 /** <module> SWISH Notebook markdown support
 
@@ -103,6 +105,12 @@ file(File, Options) -->
 	  option(label(Label), Options)
 	}, !,
 	html(a([class(swinb), href(File)], Label)).
+file(File, Options) -->
+	{ file_name_extension(_Base, pl, File),
+	  storage_file(File),
+	  option(label(Label), Options)
+	}, !,
+	html(a([class(store), href(File)], Label)).
 file(File, Options) -->
 	pldoc_html:file(File, Options).
 

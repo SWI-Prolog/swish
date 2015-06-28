@@ -27,7 +27,9 @@
     the GNU General Public License.
 */
 
-:- module(web_storage, []).
+:- module(web_storage,
+	  [ storage_file/1			% ?File
+	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
@@ -311,6 +313,19 @@ random_char(Char) :-
 	Max is Len - 1,
 	random_between(0, Max, I),
 	sub_atom(From, I, 1, _, Char).
+
+
+		 /*******************************
+		 *	    INTERFACE		*
+		 *******************************/
+
+%%	storage_file(?File) is semidet.
+%
+%	True if File is known in the store.
+
+storage_file(File) :-
+	setting(directory, Dir),
+	gitty_file(Dir, File, _Head).
 
 
 		 /*******************************

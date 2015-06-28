@@ -109,8 +109,9 @@ _not_ see exactly the same UI for cooperation.  What about
     - Multiple sources:
       - Allow naming sources?
       - Allow one source to include others in the same notebook?
-    - Allow a notebook to make a link to another in the markdown:
+    - Allow a notebook to make SWISH specific links:
       [Nice example to say hello](hello.swinb)			[OK]
+      [Actions are defined here](actions.pl)			[OK]
     - Avoid hyperlinks to destroy the page.
       - show predicate links in a modal dialog
         - /pldoc/man?predicate=member/2				[OK]
