@@ -130,7 +130,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	      form.fields.buttons(
 		{ label: "Update meta data",
 		  action: function(ev, newMetaData) {
-		    data.editor.prologEditor('save', newMetaData, "only-meta-data");
+		    data.editor.storage('save', newMetaData, "only-meta-data");
 		    return false;
 		  }
 		}));
