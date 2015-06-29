@@ -76,7 +76,8 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 :- multifile
 	swish_config:source_alias/2,
 	swish_config:reply_page/1,
-	swish_config:verify_write_access/3. % +Request, +File, +Options
+	swish_config:verify_write_access/3, % +Request, +File, +Options
+	swish_config:authenticate/2.	    % +Request, -User
 
 %%	swish_reply(+Options, +Request)
 %
