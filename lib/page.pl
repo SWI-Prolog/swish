@@ -123,7 +123,7 @@ swish_reply1(Options) :-
 	option(code(Code), Options),
 	option(format(raw), Options), !,
 	format('Content-type: text/x-prolog~n~n'),
-	format('~s~n', [Code]).
+	format('~s', [Code]).
 swish_reply1(Options) :-
 	swish_config:reply_page(Options), !.
 swish_reply1(Options) :-
