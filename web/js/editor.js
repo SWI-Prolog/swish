@@ -165,13 +165,13 @@ define([ "cm/lib/codemirror",
 	  copyData("title");
 	  if ( window.swish && window.swish.meta_data )
 	    storage.meta = window.swish.meta_data;
+	  data.cm = CodeMirror.fromTextArea(ta, options);
 	} else {
-	  ta = $.el.textarea({placeholder:options.placeholder},
-			     options.value||elem.text());
-	  elem.append(ta);
+	  if ( !options.value )
+	    options.value = elem.text();
+	  data.cm = CodeMirror(elem[0], options);
 	}
 
-	data.cm = CodeMirror.fromTextArea(ta, options);
 	elem.data(pluginName, data);
 	elem.prologEditor('loadMode', options.mode);
 
