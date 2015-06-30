@@ -111,8 +111,8 @@ var cellTypes = {
     delete: function(cell) {
       cell = cell||currentCell(this);
       if ( cell ) {
-	this.notebook('active', cell.next());
-	cell.remove();
+	this.notebook('active', cell.next()||cell.prev());
+	cell.nbCell('close');
 	this.notebook('updatePlaceHolder');
       }
       return this;
@@ -497,6 +497,11 @@ var cellTypes = {
       });
     },
 
+    close: function() {
+      this.find(".prolog-runner").prologRunner('close');
+      return this.remove();
+    },
+
     getSettings: function() {
       return {
         tabled: this.data("tabled") == "true",
@@ -750,7 +755,7 @@ var cellTypes = {
 		  title:  false
                 };
     var runner = $.el.div({class: "prolog-runner"});
-    this.find(".prolog-runner").remove();
+    this.find(".prolog-runner").prologRunner('close');
     this.append(runner);
     $(runner).prologRunner(query);
   };

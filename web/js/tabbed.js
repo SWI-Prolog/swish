@@ -225,6 +225,8 @@ var tabbed = {
       if ( tab.is(":visible") )
 	new_active = li.prev() || li.next();
       li.remove();
+					/* HACK: close embedded runners */
+      tab.find(".prolog-runner").prologRunner('close');
       tab.remove();
       if ( new_active && new_active.length > 0 ) {
 	new_active.find("a").first().tab('show');
