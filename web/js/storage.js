@@ -370,7 +370,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
     match: function(to) {
       for(var k=0; k<this.length; k++) {
 	me = $(this[k]);
-	var data = this.data(pluginName);
+	var data = me.data(pluginName);
 
 	if ( to.file && to.file == data.file )
 	  return me;
