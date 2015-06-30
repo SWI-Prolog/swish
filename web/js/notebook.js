@@ -49,11 +49,9 @@ var cellTypes = {
 	    glyphButton("chevron-up", "up", "Move cell up", "default"),
 	    glyphButton("chevron-down", "down", "Move cell down", "default"),
 	    sep(),
-	    glyphButton("plus", "insertBelow", "Insert cell below", "primary"),
-	    sep(),
-	    glyphButton("play", "run", "Run", "success")
+	    glyphButton("plus", "insertBelow", "Insert cell below", "primary")
 	    ));
-	elem.append($.el.div({class:"nb-view"},
+	elem.append($.el.div({class:"nb-view", tabIndex:"-1"},
 			     content=$.el.div({class:"nb-content"}),
 			     $.el.div({class:"nb-bottom"})));
 
@@ -75,7 +73,19 @@ var cellTypes = {
 	});
 
 	elem.focusin(function(ev) {
-	  elem.notebook('active', $(ev.target).closest(".nb-cell"));
+	  var cell = $(ev.target).closest(".nb-cell");
+	  if ( cell.length > 0 ) {
+	    elem.notebook('active', cell);
+	  } else if ( $(ev.target).closest(".nb-view").length > 0 )
+	  { elem.find(".nb-content").children(".nb-cell.active")
+				    .nbCell('active', false);
+	  }
+	});
+	elem.focusout(function(ev) {
+	  if ( $(ev.target).closest(".notebook")[0] != elem[0] ) {
+	    elem.find(".nb-content").children(".nb-cell.active")
+				    .nbCell('active', false);
+	  }
 	});
 
 	elem.data(pluginName, data);	/* store with element */
@@ -178,14 +188,16 @@ var cellTypes = {
      * @param {Boolean} [focus] if `true`, give the cell the focus
      */
     active: function(cell, focus) {
-      if ( cell && cell.length == 1 )
-      { var current = this.find(".nb-content").children(".nb-cell.active");
+      if ( cell ) {
+	var current = this.find(".nb-content").children(".nb-cell.active");
 
-	if ( !(current.length == 1 && cell[0] == current[0]) ) {
-	  current.nbCell('active', false);
-	  cell.nbCell('active', true);
-	  if ( focus )
-	    cell.focus();
+	if ( cell.length == 1 )
+	{ if ( !(current.length == 1 && cell[0] == current[0]) ) {
+	    current.nbCell('active', false);
+	    cell.nbCell('active', true);
+	    if ( focus )
+	      cell.focus();
+	  }
 	}
       }
     },
