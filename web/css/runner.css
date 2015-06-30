@@ -23,7 +23,7 @@ div.prolog-runner > a.close {
   position: absolute;
   top: -4px;
   right: -10px;
-  z-index: 2000;
+  z-index: 10;
 }
 
 div.prolog-runner:focus {
