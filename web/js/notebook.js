@@ -529,7 +529,7 @@ var cellTypes = {
 		    title: "Table results"
 		  },
 		  { name: "run",
-		    label: "run on load",
+		    label: "run on page load",
 		    value: current.run,
 		    title: "Run when document is loaded"
 		  }
