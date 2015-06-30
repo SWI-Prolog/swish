@@ -305,12 +305,14 @@ CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
       }
     }
 
-    if ( /\d/.test(ch) || ch == "-" && stream.eat(/\d/)) {
+    if ( /\d/.test(ch) || /[+-]/.test(ch) && stream.eat(/\d/)) {
       if ( config.groupedIntegers )
 	stream.match(/^\d*((_|\s+)\d+)*(?:\.\d+)?(?:[eE][+\-]?\d+)?/);
       else
 	stream.match(/^\d*(?:\.\d+)?(?:[eE][+\-]?\d+)?/);
-      return ret(ch == "-" ? "neg-number" : "number", "number");
+      return ret(ch == "-" ? "neg-number" :
+		 ch == "+" ? "pos-number" :
+		 "number");
     }
 
     if ( isSymbolChar.test(ch) ) {

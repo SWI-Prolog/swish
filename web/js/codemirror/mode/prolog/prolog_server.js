@@ -243,6 +243,7 @@ classification of tokens.
 		     "string": "string",
 		     "code": "number",
 		     "neg-number": "number",
+		     "pos-number": "number",
 		     "list_open": "list_open",
 		     "list_close": "list_close",
 		     "qq_open": "qq_open",
@@ -495,6 +496,13 @@ classification of tokens.
 	  } else if ( type == "neg-number" &&
 		      token.text && token.text == "-" ) {
 		/* HACK: A-1 is tokenised as "var" "neg-number" */
+		/* But the server says "var" "atom" "number" */
+		/* Needs operator logic to fix at the client */
+	    state.curToken += 2;
+	    return "number";
+	  } else if ( type == "pos-number" &&
+		      token.text && token.text == "+" ) {
+		/* HACK: A+1 is tokenised as "var" "pos-number" */
 		/* But the server says "var" "atom" "number" */
 		/* Needs operator logic to fix at the client */
 	    state.curToken += 2;
