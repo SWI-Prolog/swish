@@ -108,10 +108,7 @@ CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
 		 *******************************/
 
   function nesting(state) {
-    var len = state.nesting.length;
-    if ( len > 0 )
-      return state.nesting[len-1];
-    return null;
+    return state.nesting.slice(-1)[0];
   }
 
   /* Called on every non-comment token */
