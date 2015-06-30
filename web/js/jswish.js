@@ -204,6 +204,11 @@ preferences.setDefault("emacs-keybinding", false);
      * @param {String} name is the name of the file in the web storage
      */
     playFile: function(file) {
+      existing = this.find(".storage").storage('match', {file:file});
+
+      if ( existing && existing.storage('expose', "Already open") )
+	return this;
+
       var url = config.http.locations.web_storage + "/" + file;
       $.ajax({ url: url,
 	       type: "GET",
@@ -230,6 +235,11 @@ preferences.setDefault("emacs-keybinding", false);
      * @param {Regex}   [options.search] Text searched for.
      */
     playURL: function(options) {
+      existing = this.find(".storage").storage('match', options);
+
+      if ( existing && existing.storage('expose', "Already open") )
+	return this;
+
       $.ajax({ url: options.url,
 	       type: "GET",
 	       data: {format: "raw"},
@@ -258,15 +268,17 @@ preferences.setDefault("emacs-keybinding", false);
      * @returns {Function|String} function that loads an example
      */
     openExampleFunction: function(ex) {
+      var swish = this;
+
       if ( ex.type == "divider" ) {
 	return "--";
       } else if ( ex.type == "store" ) {
 	return function() {
-	  methods.playFile(ex.file);
+	  methods.playFile.call(swish, ex.file);
 	};
       } else {
 	return function() {
-	  methods.playURL({url:ex.href});
+	  methods.playURL.call(swish, {url:ex.href});
 	};
       }
     },

@@ -236,6 +236,18 @@ var tabbed = {
     },
 
     /**
+     * Show indicated tab.
+     * @param {String} id is the id of the tab to show.
+     */
+    show: function(id) {
+      var a = this.tabbed('navTabs').find("a[data-id='"+id+"']");
+      if ( a.length > 0 ) {
+	a.tab('show');
+	return this;
+      }
+    },
+
+    /**
      * Create a label (`li`) for a new tab.
      * @param {String} id is the identifier of the new tab
      * @param {String} label is the textual label of the new tab

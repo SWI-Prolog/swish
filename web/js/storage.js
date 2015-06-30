@@ -363,6 +363,40 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       return this;
     },
 
+    /**
+     * @return {jQuery|undefined} the jQuery storage element that
+     * matches `to`
+     */
+    match: function(to) {
+      for(var k=0; k<this.length; k++) {
+	me = $(this[k]);
+	var data = this.data(pluginName);
+
+	if ( to.file && to.file == data.file )
+	  return me;
+	if ( to.url && to.url == data.url )
+	  return me;
+      }
+    },
+
+    /**
+     * Expose associateted tab
+     * @return {jQuery|undefined} storage plugin if tab could be
+     * exposed.
+     */
+    expose: function(reason) {
+      var tab = this.closest(".tab-pane");
+      if ( tab.length == 1 ) {
+	var tabbed = tab.closest(".tabbed");
+	tabbed.tabbed('show', tab.attr('id'));
+	if ( reason )
+	  modal.feedback({ html: reason,
+	                   owner: this
+	                 });
+
+	return this;
+      }
+    },
 
     /**
      * Provide information about the current source in a modal
