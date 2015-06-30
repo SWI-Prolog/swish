@@ -317,6 +317,8 @@ define([ "jquery", "config", "preferences",
 	    elem.prologRunner('close');
 	  });
 	}
+	if ( query.chunk )
+	  data.chunk = query.chunk;
 	elem.append($.el.div(
 	  {class:"runner-results"}));
 	elem.append(controllerDiv());
@@ -847,6 +849,8 @@ define([ "jquery", "config", "preferences",
 
     if ( (bps = breakpoints(elem)) )
       options.breakpoints = Pengine.stringify(bps);
+    if ( data.chunk )
+      options.chunk = data.chunk;
 
     this.pengine.ask("'$swish wrapper'((" +
 		     termNoFullStop(data.query.query) +

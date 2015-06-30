@@ -127,6 +127,11 @@ _not_ see exactly the same UI for cooperation.  What about
     if there are too many hits, balance over files.
   - Source search: add type icon to file headers.		[OK]
   - Limit search results to configured public directories.	[OK]
+  - Control query parameters:
+    - Table results (boolean)					[OK]
+    - Initial number of results (integer)			[OK]
+    - Run when notebook is loaded (boolean)			[OK]
+
   - Set tab-width per source?
 
 ### Bugs

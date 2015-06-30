@@ -47,6 +47,8 @@ define([ "jquery", "config", "laconic", "tagmanager" ],
 	      else
 		obj[name] = [value];
 	    }
+	  } else if ( type == "number" ) {
+	    obj[name] = parseInt(value);
 	  } else if ( type == "checkbox" ) {
 	    obj[name] = (value == "on" ? true : false);
 	  } else {
@@ -229,6 +231,41 @@ define([ "jquery", "config", "laconic", "tagmanager" ],
 	return elem;
       },
 
+      /**
+       * @param {Object} options
+       * @param {String} options.label
+       * @param {Boolean} options.value
+       */
+      checkboxes: function(boxes) {
+	var boxel;
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("options", "Options", 3),
+		 boxel = $.el.div({class:"col-xs-9"}));
+	for(var k=0; k<boxes.length; k++) {
+	  var box = boxes[k];
+	  var opts = {type: "checkbox", name:box.name, autocomplete:"false"};
+	  if ( box.value )
+	    opts.checked = "checked";
+	  $(boxel).append($.el.label({class:"checkbox-inline"},
+				     $.el.input(opts), box.label));
+	}
+
+	return elem;
+      },
+
+      chunk: function(value) {
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("count", "Initial solutions", 3),
+		 $.el.div({class:"col-xs-9"},
+			  $.el.div({class:"input-group"},
+				   textInput("chunk",
+					     { title:"Initial number of solutions",
+					       type:"number",
+					       value:value}))));
+	return elem;
+      },
 
       /**
        * @param {Object} options
@@ -236,10 +273,13 @@ define([ "jquery", "config", "laconic", "tagmanager" ],
        * primary button.
        * @param {Function} options.action is called with two arguments,
        * the _event_ and the serialized data from the embedded form
+       * @param {Number} options.offset determinis the begin column in
+       * the grid (default 2)
        */
       buttons: function(options) {
 	options    = options||{};
 	var label  = options.label||"Save program";
+	var offset = options.offset||2;
 	var button = $.el.button({ name:"save",
 				   class:"btn btn-primary"
 				 },
@@ -257,7 +297,7 @@ define([ "jquery", "config", "laconic", "tagmanager" ],
 
 	var elem =
 	$.el.div({class:"form-group"},
-		 $.el.div({class:"col-xs-offset-2 col-xs-10"},
+		 $.el.div({class:"col-xs-offset-"+offset+" col-xs-"+(12-offset)},
 			  button,
 			  $.el.button({name:"cancel",
 				       class:"btn btn-danger",
@@ -282,8 +322,9 @@ define([ "jquery", "config", "laconic", "tagmanager" ],
     }
   };
 
-  function label(elemName, text) {
-    return $.el.label({class:"control-label col-xs-2", for:elemName}, text);
+  function label(elemName, text, width) {
+    width = width || 2;
+    return $.el.label({class:"control-label col-xs-"+width+"", for:elemName}, text);
   }
 
   function checkbox(name, options) {
@@ -301,6 +342,7 @@ define([ "jquery", "config", "laconic", "tagmanager" ],
     if ( options.title )       attrs.title       = options.title;
     if ( options.value )       attrs.value       = options.value;
     if ( options.disabled )    attrs.disabled    = options.disabled;
+    if ( options.type )        attrs.type        = options.type;
     return $.el.input(attrs);
   }
 

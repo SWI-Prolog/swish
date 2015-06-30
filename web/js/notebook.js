@@ -10,10 +10,10 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  */
 
-define([ "jquery", "config", "tabbed",
+define([ "jquery", "config", "tabbed", "form",
 	 "laconic", "runner", "storage", "sha1"
        ],
-       function($, config, tabbed) {
+       function($, config, tabbed, form) {
 
 var cellTypes = {
   "program":  { label:"Program" },
@@ -293,6 +293,7 @@ var cellTypes = {
 	  $(cell).nbCell($(this));
 	});
 
+	this.find(".nb-cell.query").nbCell('onload');
 	this.notebook('updatePlaceHolder');
       }
     },
@@ -472,18 +473,92 @@ var cellTypes = {
      * Run the current cell
      */
     run: function() {
-      if ( this.hasClass("runnable") ) {
-	var data = this.data(pluginName);
+      return this.each(function() {
+	var cell = $(this);
+	if ( cell.hasClass("runnable") ) {
+	  var data = cell.data(pluginName);
 
-	return methods.run[data.type].apply(this, arguments);
-      } else {
-	alert("Cell is not runnable");
-      }
-      return this;
+	  return methods.run[data.type].apply(cell, arguments);
+	} else {
+	  console.log("Cell is not runnable: ", cell);
+	}
+      });
     },
 
     runTabled: function() {
       return this.nbCell('run', {tabled:true});
+    },
+
+    onload: function() {
+      return this.each(function() {
+	var cell = $(this);
+	if ( cell.data("run") == "onload" )
+	  cell.nbCell("run");
+      });
+    },
+
+    getSettings: function() {
+      return {
+        tabled: this.data("tabled") == "true",
+	run:    this.data("run")    == "onload",
+	chunk:  parseInt(this.data("chunk")||"1")
+      };
+    },
+
+    /**
+     * Present a modal that shows the current query properties and
+     * allows for changing them.
+     */
+    settings: function() {
+      var elem    = this;
+      var current = this.nbCell('getSettings');
+
+      function querySettingsBody() {
+	this.append($.el.form(
+          { class:"form-horizontal"
+	  },
+	  form.fields.checkboxes(
+		[ { name: "tabled",
+		    label: "table results",
+		    value: current.tabled,
+		    title: "Table results"
+		  },
+		  { name: "run",
+		    label: "run on load",
+		    value: current.run,
+		    title: "Run when document is loaded"
+		  }
+		]),
+	  form.fields.chunk(current.chunk),
+	  form.fields.buttons(
+	  { label: "Apply",
+	    offset: 3,
+	    action: function(ev, values) {
+	      if ( values.tabled != current.tabled ) {
+		if ( values.tabled )
+		  elem.data("tabled", "true");
+		else
+		  elem.removeData("tabled");
+	      }
+	      if ( values.run != current.run ) {
+		if ( values.run )
+		  elem.data("run", "onload");
+		else
+		  elem.removeData("run");
+	      }
+	      if ( values.chunk != current.chunk ) {
+		if ( values.chunk != 1 )
+		  elem.data("chunk",  ""+values.chunk);
+		else
+		  elem.removeData("chunk");
+	      }
+	    }
+	  })));
+      }
+
+      form.showDialog({ title: "Set options for query",
+                        body: querySettingsBody
+                      });
     },
 
     /**
@@ -554,6 +629,19 @@ var cellTypes = {
     var editor;
     var cell = this;
 
+    this.html("");
+
+    options = options||{};
+    function setAttr(name) {
+      if ( options[name] != undefined ) {
+	cell.data(name, ""+options[name]);
+	delete options[name];
+      }
+    }
+    setAttr("tabled");
+    setAttr("chunk");
+    setAttr("run");
+
     options = $.extend({}, options,
       { role: "query",
 	sourceID: function() {
@@ -564,13 +652,12 @@ var cellTypes = {
 	}
       });
 
-    this.html("");
     this.append($.el.div($.el.div({class:"nb-cell-buttons"},
       {class:"btn-group nb-cell-buttons",role:"group"},
+      glyphButton("wrench", "settings", "Settings",
+		  "default", "xs"),
       glyphButton("play", "run",       "Run query",
-		  "success", "xs"),
-      glyphButton("th",   "runTabled", "Run query (table results)",
-		  "success", "xs"))));
+		  "primary", "xs"))));
 
     this.append($.el.div({class:"query"},
 			 $.el.span({class:"prolog-prompt"}, "?-"),
@@ -653,12 +740,14 @@ var cellTypes = {
 
   methods.run.query = function(options) {	/* query */
     var programs = this.nbCell('programs');
+    var settings = this.nbCell('getSettings');
 
     options = options||{};
     var query = { source: programs.prologEditor('getSource'),
-                  query: cellText(this),
-		  tabled: options.tabled||false,
-		  title: false
+                  query:  cellText(this),
+		  tabled: settings.tabled||false,
+		  chunk:  settings.chunk,
+		  title:  false
                 };
     var runner = $.el.div({class: "prolog-runner"});
     this.find(".prolog-runner").remove();
@@ -683,7 +772,20 @@ var cellTypes = {
   };
 
   methods.saveDOM.query = function() {		/* query */
-    return $.el.div({class:"nb-cell query"}, cellText(this));
+    var cell = this;
+    var opts = {class:"nb-cell query"};
+
+    function copyAttr(name) {
+      var value;
+      if ( (value=cell.data(name)) )
+	opts["data-"+name] = value;
+    }
+
+    copyAttr("tabled");
+    copyAttr("chunk");
+    copyAttr("run");
+
+    return $.el.div(opts, cellText(this));
   };
 
 /* ---------------- restoreDOM ---------------- */
@@ -699,7 +801,23 @@ var cellTypes = {
   };
 
   methods.restoreDOM.query = function(dom) {	/* query */
-    methods.type.query.call(this, {value:dom.text().trim()});
+    var opts = { value:dom.text().trim() };
+
+    function getAttr(name) {
+      var value;
+      if ( (value=dom.data(name)) ) {
+	if ( name == "chunk" )
+	  opts.chunk = parseInt(value);
+	else
+	  opts[name] = value;
+      }
+    }
+
+    getAttr("tabled");
+    getAttr("chunk");
+    getAttr("run");
+
+    methods.type.query.call(this, opts);
   };
 
 /* ---------------- changeGen ---------------- */
@@ -715,7 +833,22 @@ var cellTypes = {
   };
 
   methods.changeGen.query = function() {	/* query */
-    return sha1(cellText(this));
+    var text = "";
+    var cell = this;
+
+    function addAttr(name, key) {
+      var value;
+
+      if ( (value=cell.data(name)) )
+	text += key+value;
+    }
+
+    addAttr("tabled", "T");
+    addAttr("chunk", "C");
+    addAttr("run", "R");
+    text += "V"+cellText(this);
+
+    return sha1(text);
   };
 
 
