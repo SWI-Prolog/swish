@@ -445,6 +445,17 @@ classification of tokens.
     }
 
     /**
+     * Test whether we are nested in quoted material.  That happens if
+     * a newline appears in the quoted value, where our CodeMirror
+     * tokeniser gives multiple "string", etc. tokens, while the server
+     * only gives one, so we should not increment the server curToken.
+     */
+    function isQuoted(nesting) {
+      var last = nesting.slice(-1)[0];
+      return last && last.type == "quoted";
+    }
+
+    /**
      * Matches the server token `token` to the current token and updates
      * state.curToken and/or state.curTerm if the two matches.
      *
@@ -468,7 +479,7 @@ classification of tokens.
 	    if ( type == "fullstop" ) {
 	      state.curTerm++;
 	      state.curToken = 0;
-	    } else {
+	    } else if ( !isQuoted(state.nesting) ) {
 	      state.curToken++;
 	    }
 	    return token.type;
