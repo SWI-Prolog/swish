@@ -42,16 +42,16 @@ var cellTypes = {
 
 	elem.append(toolbar = $.el.div(
             {class:"nb-toolbar"},
-	    glyphButton("trash", "delete", "Delete cell"),
-	    glyphButton("copy", "copy", "Copy cell"),
-	    glyphButton("paste", "paste", "Paste cell below"),
+	    glyphButton("trash", "delete", "Delete cell", "warning"),
+	    glyphButton("copy", "copy", "Copy cell", "default"),
+	    glyphButton("paste", "paste", "Paste cell below", "default"),
 	    sep(),
-	    glyphButton("chevron-up", "up", "Move cell up"),
-	    glyphButton("chevron-down", "down", "Move cell down"),
+	    glyphButton("chevron-up", "up", "Move cell up", "default"),
+	    glyphButton("chevron-down", "down", "Move cell down", "default"),
 	    sep(),
-	    glyphButton("plus", "insertBelow", "Insert cell below"),
+	    glyphButton("plus", "insertBelow", "Insert cell below", "primary"),
 	    sep(),
-	    glyphButton("play", "run", "Run")
+	    glyphButton("play", "run", "Run", "success")
 	    ));
 	elem.append($.el.div({class:"nb-view"},
 			     content=$.el.div({class:"nb-content"}),
@@ -567,8 +567,10 @@ var cellTypes = {
     this.html("");
     this.append($.el.div($.el.div({class:"nb-cell-buttons"},
       {class:"btn-group nb-cell-buttons",role:"group"},
-      glyphButton("play", "run",       "Run query",                 "xs"),
-      glyphButton("th",   "runTabled", "Run query (table results)", "xs"))));
+      glyphButton("play", "run",       "Run query",
+		  "success", "xs"),
+      glyphButton("th",   "runTabled", "Run query (table results)",
+		  "success", "xs"))));
 
     this.append($.el.div({class:"query"},
 			 $.el.span({class:"prolog-prompt"}, "?-"),
@@ -748,9 +750,9 @@ var cellTypes = {
   };
 }(jQuery));
 
-function glyphButton(glyph, action, title, size) {
+function glyphButton(glyph, action, title, style, size) {
   size = size||"sm";
-  var btn = $.el.a({href:"#", class:"btn btn-info btn-"+size,
+  var btn = $.el.a({href:"#", class:"btn btn-"+style+" btn-"+size,
 		    title:title, "data-action":action},
 		   $.el.span({class:"glyphicon glyphicon-"+glyph}));
 
