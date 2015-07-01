@@ -36,22 +36,9 @@ preferences.setDefault("emacs-keybinding", false);
   var pluginName = 'swish';
 
   var defaults = {
-    newProgramText:
-      "% Your program goes here\n\n\n\n"+
-      "/** <examples>\n"+
-      "You can specify example queries here.  They show up in the\n"+
-      "Examples menu at the bottom-right, e.g.,\n\n"+
-      "?- append([a,b],Suffix,[a,b,c,d]).\n"+
-      "*/\n",
     menu: {
       "File":
-      { "New": function() {
-	  menuBroadcast("source", { data: defaults.newProgramText,
-				    cleanCheckpoint: "new"
-				  });
-	},
-	"File group": "--",
-	"Save ...": function() {
+      { "Save ...": function() {
 	  menuBroadcast("save", "as");
 	},
 	"Info & history ...": function() {
