@@ -1,20 +1,35 @@
 <div class="notebook">
 
 <div class="nb-cell markdown">
-# The XXX render plugin
+# The chess render plugin
 
 #### Synopsis
 
-    :- use_renderer(XXX).
+    :- use_renderer(chess).
 
 #### Options supported
 
+None
+
 #### Reconised terms
+
+The `chess` render plugin recognises a proper list of integers in the range
+1 .. |List|.  Thus, `[1]` is the only representation for a 1x1 board, a 3x3
+board width queens may be represented as `[1,3,2]`.  A value R in the C-th element of the list places a queen in the C-th column at the R-th row.
 </div>
 
 <div class="nb-cell markdown">
 ## Examples
 
+Examples can be found in the two N-queen demo solvers, the [classical](example/queens.pl) and [clp(fd)](example/clpfd_queens.pl) one.
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(chess).
+</div>
+
+<div class="nb-cell query">
+Board = [1,3,2].
 </div>
 
 </div>

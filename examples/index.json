@@ -4,5 +4,5 @@
 { "file":"examples.swinb",	  "title":"Example programs" },
 "--",
 { "file":"dict.swinb",		  "title":"Dict tutorial" },
-{ "file":"rendering.swinb",	  "title":"Vizualize Prolog data" }
+{ "file":"rendering.swinb",	  "title":"Render data graphically" }
 ]
