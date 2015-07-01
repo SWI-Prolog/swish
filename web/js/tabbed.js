@@ -312,13 +312,25 @@ var tabbed = {
 				  $.el.label("Create a new "),
 				  g=$.el.div({class:"btn-group",role:"group"}),
 				  $.el.label("here.")));
+      var types = [];
+
       for(var k in data.tabTypes) {
-	if ( data.tabTypes.hasOwnProperty(k) )
-	  $(g).append($.el.button({ type:"button",
-				    class:"btn btn-default",
-				    "data-type":k
-				  },
-				  data.tabTypes[k].label));
+	if ( data.tabTypes.hasOwnProperty(k) &&
+	     data.tabTypes[k].order )
+	  types.push(k);
+      }
+      types.sort(function(a,b) {
+	return data.tabTypes[a].order - data.tabTypes[b].order;
+      });
+
+      for(var i = 0; i<types.length; i++) {
+	var type = data.tabTypes[types[i]];
+
+	$(g).append($.el.button({ type:"button",
+				  class:"btn btn-default",
+				  "data-type":type.typeName
+				},
+				type.label));
       }
 
       $(g).on("click", ".btn", function(ev) {
