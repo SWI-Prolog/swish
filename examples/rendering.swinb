@@ -53,6 +53,29 @@ The rendering infrastructure is specialized using a series of _plugins_ provided
      - Define the translation to an HTML fragment using
        library(http/html_write).  The HTML fragment can include _style_
        and (JavaScript) scripts.
+       
+### Embedded JavaScript
+
+Embedded JavaScript is executed explicitly after the provided HTML DOM node has been added to the document.  The infrastructure sets =|$.ajaxScript|= to a `jQuery` object that refers to the script element.  This can be used to find the inserted DOM node without generating an `id` attribute.  The typical
+JavaScript skeleton that avoids poluting the namespace and ensures executing if the node is properly embedded is given below.
+
+```
+(function() {
+  if ( $.ajaxScript ) {
+  // do the work
+  }
+})();
+```
+
+SWISH uses [RequireJS](http://requirejs.org/) for dependency tracking.  This functionality can be exploited to load JavaScript only once.  For example, the [svgtree](example/render_svgtree.swinb) uses this fragment.
+
+```
+  require(["render/svg-tree-drawer", "jquery"], function(svgtree) {
+  // setup the tree
+  });
+```
+
+The RequireJS paths `c3` and `d3` are preconfigured to load [D3.js](http://www.d3js.org) and [C3.js](http://www.c3js.org)
 </div>
 
 </div>
