@@ -16,6 +16,9 @@ You are reading a SWISH _notebook_.  A notebook is a mixture of _text_, _program
     - [Expert system](example/expert_system.pl) illustrates simple
       meta-interpretation of rules and asking for missing knowledge.
     - [Eliza](example/eliza.pl) implements the classical shrink.
+    - [English grammar](example/grammar.pl) DCG rules for parsing
+      some simple English sentences and show the result as an SVG
+      tree.
   - *Puzzles*
     - [Einstein's Riddle](example/houses_puzzle.pl) A famous puzzle
       attributed to Einstein.
