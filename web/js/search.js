@@ -83,6 +83,40 @@ define([ "jquery", "config", "typeahead" ],
 	}
 
 		 /*******************************
+		 *     SEARCH STORE SOURCES	*
+		 *******************************/
+
+	var storeContent = new Bloodhound({
+			     name: "store_content",
+			     limit: 20,
+			     cache: false,
+			     remote: config.http.locations.swish_typeahead +
+				     "?set=store_content&q=%QUERY",
+			     datumTokenizer: sourceLineTokenizer,
+			     queryTokenizer: Bloodhound.tokenizers.whitespace
+	                   });
+	storeContent.initialize();
+
+	var currentFile  = null;
+	var currentAlias = null;
+	function renderStoreSourceLine(hit) {
+	  var str = "";
+
+	  if ( hit.file != currentFile || hit.alias != currentAlias ) {
+	    var ext = hit.file.split('.').pop();
+	    currentFile = hit.file;
+	    currentAlias = hit.alias;
+	    str = "<div class=\"tt-file-header type-icon "+ext+"\">"
+		+ "<span class=\"tt-path-file\">"
+		+ htmlEncode(hit.file)
+		+ "</span>"
+		+ "</div>";
+	  }
+
+	  return str+renderSourceMatch(hit);
+	}
+
+		 /*******************************
 		 *     SEARCH REMOTE SOURCES	*
 		 *******************************/
 
@@ -101,8 +135,6 @@ define([ "jquery", "config", "typeahead" ],
 	  return Bloodhound.tokenizers.whitespace(hit.text);
 	}
 
-	var currentFile  = null;
-	var currentAlias = null;
 	function renderSourceLine(hit) {
 	  var str = "";
 
@@ -256,6 +288,11 @@ define([ "jquery", "config", "typeahead" ],
 	    source: files.ttAdapter(),
 	    templates: { suggestion: renderFile }
 	  },
+	  store_content:		/* file content in gitty */
+	  { name: "store_content",
+	    source: storeContent.ttAdapter(),
+	    templates: { suggestion: renderStoreSourceLine }
+	  },
 	  predicates:			/* built-in and library predicates */
 	  { name: "predicates",
 	    source: predicateMatcher,
@@ -301,7 +338,7 @@ define([ "jquery", "config", "typeahead" ],
 	      function(ev, datum, set) {
 
 		if ( datum.type == "store" ) {
-		  $(ev.target).parents(".swish").swish('playFile', datum.file);
+		  $(ev.target).parents(".swish").swish('playFile', datum);
 		} else if ( datum.arity !== undefined ) {
 		  $(".swish-event-receiver").trigger("pldoc", datum);
 		} else if ( datum.editor !== undefined &&

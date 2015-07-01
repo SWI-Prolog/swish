@@ -201,20 +201,29 @@ preferences.setDefault("emacs-keybinding", false);
 
     /**
      * Play a file from the webstore, loading it through ajax
-     * @param {String} name is the name of the file in the web storage
+     * @param {String|Object} options If a string, the name
+     * of the file in the web storage
+     * @param {String} options.file is the name of the file in the web
+     * storage
+     * @param {Number} [options.line] is the initial line number
+     * @param {String} [options.search] search string to highlight
      */
-    playFile: function(file) {
-      existing = this.find(".storage").storage('match', {file:file});
+    playFile: function(options) {
+      if ( typeof(options) == "string" )
+	options = {file:options};
 
+      var existing = this.find(".storage").storage('match', options);
       if ( existing && existing.storage('expose', "Already open") )
-	return this;
+	return this;				/* FIXME: go to line */
 
-      var url = config.http.locations.web_storage + "/" + file;
+      var url = config.http.locations.web_storage + "/" + options.file;
       $.ajax({ url: url,
 	       type: "GET",
 	       data: {format: "json"},
 	       success: function(reply) {
 		 reply.url = url;
+		 if ( options.line )   reply.line   = options.line;
+		 if ( options.search ) reply.search = options.search;
 		 menuBroadcast("source", reply);
 	       },
 	       error: function(jqXHR) {
@@ -235,10 +244,10 @@ preferences.setDefault("emacs-keybinding", false);
      * @param {Regex}   [options.search] Text searched for.
      */
     playURL: function(options) {
-      existing = this.find(".storage").storage('match', options);
+      var existing = this.find(".storage").storage('match', options);
 
       if ( existing && existing.storage('expose', "Already open") )
-	return this;
+	return this;				/* FIXME: go to line */
 
       $.ajax({ url: options.url,
 	       type: "GET",

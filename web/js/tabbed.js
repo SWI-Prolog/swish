@@ -352,7 +352,7 @@ var tabbed = {
 	  $.el.input({ type: "text",
 		       class: "form-control",
 		       placeholder: "Search sources",
-		       'data-search-in': "sources",
+		       'data-search-in': "sources store_content",
 		     }),
 	  $.el.div({ class: "input-group-btn" },
 		   $.el.button({class:"btn btn-default", type:"submit"},

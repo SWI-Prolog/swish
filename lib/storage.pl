@@ -41,6 +41,7 @@
 :- use_module(library(apply)).
 :- use_module(library(option)).
 :- use_module(library(debug)).
+:- use_module(library(solution_sequences)).
 
 :- use_module(page).
 :- use_module(gitty).
@@ -337,7 +338,13 @@ storage_file(File) :-
 
 %%	swish_search:typeahead(+Set, +Query, -Match) is nondet.
 %
-%	Find files using typeahead from the SWISH search box.
+%	Find files using typeahead  from  the   SWISH  search  box. This
+%	version defines the following sets:
+%
+%	  - file: Search the store for matching file names, matching tag
+%	    or title.
+%	  - store_content: Search the content of the store for matching
+%	    lines.
 %
 %	@tbd caching?
 %	@tbd We should only demand public on public servers.
@@ -368,3 +375,21 @@ meta_match_query(Query, Meta) :-
 	    sub_atom(Title, Before, 1, _, C),
 	    \+ char_type(C, csym)
 	).
+
+swish_search:typeahead(store_content, Query, FileInfo) :-
+	limit(25, search_store_content(Query, FileInfo)).
+
+search_store_content(Query, FileInfo) :-
+	setting(directory, Dir),
+	gitty_file(Dir, File, Head),
+	gitty_data(Dir, Head, Data, Meta),
+	Meta.get(public) == true,
+	limit(5, search_file(File, Meta, Data, Query, FileInfo)).
+
+search_file(File, Meta, Data, Query, FileInfo) :-
+	split_string(Data, "\n", "\r", Lines),
+	nth1(LineNo, Lines, Line),
+	once(sub_string(Line, _, _, _, Query)),
+	FileInfo = Meta.put(_{type:"store", file:File,
+			      line:LineNo, text:Line, query:Query
+			     }).
