@@ -106,21 +106,14 @@ prolog:doc_autolink_extension(swinb, notebook).
 %	  ```
 
 file(File, Options) -->
-	{ file_name_extension(_Base, swinb, File),
-	  option(label(Label), Options)
-	}, !,
-	html(a([class(swinb), href(File)], Label)).
-file(File, Options) -->
-	{ file_name_extension(_Base, pl, File),
-	  storage_file(File),
+	{ storage_file(File),
 	  option(label(Label), Options),
 	  http_location_by_id(swish, Swish),
 	  atomic_list_concat([Swish,'/p/',File], HREF)
 	}, !,
 	html(a([class(store), href(HREF)], Label)).
 file(File, Options) -->
-	{ file_name_extension(_Base, pl, File),
-	  once(sub_atom(File, Pre, _, _Post, /)),
+	{ once(sub_atom(File, Pre, _, _Post, /)),
 	  sub_atom(File, 0, Pre, _, Alias),
 	  swish_config:source_alias(Alias, _Options),
 	  option(label(Label), Options),

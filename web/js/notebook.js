@@ -726,13 +726,13 @@ var cellTypes = {
 	}
       }
 
-      if ( a.hasClass("swinb") || a.hasClass("store") ) {
-	$(ev.target).parents(".swish").swish('playFile', a.attr("href"));
+      if ( a.hasClass("store") ) {
 	ev.preventDefault();
+	$(ev.target).parents(".swish").swish('playFile', a.attr("href"));
       } else if ( a.hasClass("file") ) {
+	ev.preventDefault();
         $(ev.target).parents(".swish")
 	            .swish('playURL', {url: a.attr("href")});
-	ev.preventDefault();
       } else if ( a.hasClass("builtin") ) {
 	var s    = a.attr("href").split("predicate=").pop();
 	var pred = parsePred(decodeURIComponent(s));
