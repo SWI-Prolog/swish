@@ -46,6 +46,7 @@ var tabbed = {
 
 	data.newTab   = options.newTab;
 	data.tabTypes = options.tabTypes || tabbed.tabTypes;
+	elem.data(pluginName, data);	/* store with element */
 
 	elem.addClass("tabbed");
 	elem.tabbed('makeTabbed');
@@ -53,8 +54,6 @@ var tabbed = {
 	elem.on("source", function(ev, src) {
 	  elem.tabbed('tabFromSource', src);
 	});
-
-	elem.data(pluginName, data);	/* store with element */
       });
     },
 
@@ -115,6 +114,10 @@ var tabbed = {
 	var newContentID  = $(ev.target).data("id");
 	$("#"+newContentID+" .swish-event-receiver").trigger("activate-tab");
       });
+
+      if ( this.tabbed('navContent').children().length == 0 ) {
+	this.tabbed('newTab');
+      }
     },
 
     /**

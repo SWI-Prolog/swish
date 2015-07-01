@@ -319,11 +319,8 @@ swish_content(Options) -->
 		 [ div([class([tile, horizontal]), 'data-split'('50%')],
 		       [ div([ class([editors, tabbed])
 			     ],
-			     [ div([ class(['prolog-editor']),
-				     'data-label'('Program')
-				   ],
-				   \source(Type, Options))
-			     | \notebooks(Type, Options)
+			     [ \source(Type, Options),
+			       \notebooks(Type, Options)
 			     ]),
 			 div([class([tile, vertical]), 'data-split'('70%')],
 			     [ div(class('prolog-runners'), []),
@@ -367,11 +364,14 @@ source(pl, Options) -->
 	  phrase(source_data_attrs(Options), Extra)
 	},
 	source_meta_data(Options),
-	html(textarea([ class([source,prolog]),
-			style('display:none')
-		      | Extra
-		      ],
-		      Source)).
+	html(div([ class(['prolog-editor']),
+		   'data-label'('Program')
+		 ],
+		 textarea([ class([source,prolog]),
+			    style('display:none')
+			  | Extra
+			  ],
+			  Source))).
 source(_, _) --> [].
 
 source_data_attrs(Options) -->

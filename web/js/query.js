@@ -99,7 +99,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
       var data = this.data(pluginName);
 
       data.editor = editor[0];
-      if ( editor ) {
+      if ( data.editor ) {
 	data.examples = function() {
 	  var exl    = editor.prologEditor('getExamples')||[];
 	  var global = editor.parents(".swish").swish('examples', true)||[];
