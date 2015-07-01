@@ -29,7 +29,44 @@ translated by the filter.
 <div class="nb-cell markdown">
 ## Examples
 
-The [English grammar](example/grammar.pl) provides an example that renders a parse tree.
+The [English grammar](example/grammar.pl) provides an example that renders a parse tree.  A first usage is explanation of the tree structure of Prolog terms.
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(svgtree).
+</div>
+
+<div class="nb-cell query">
+Tree = a(_, b("hello"), [x,y,z]).
+</div>
+
+<div class="nb-cell markdown">
+The answer rendering is applied *after* SWISH *removes* cycles from the answer.  This means that cyclic terms can be handed to it, but the result might not be what you expected.
+</div>
+
+<div class="nb-cell query">
+Tree = a(Tree).
+</div>
+
+<div class="nb-cell markdown">
+## Using filters to create a tree from custom data
+
+Suppose the data for our tree is stored in the database, like below and we would like to create a tree from this.  We do this by defining a _filter_.
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(svgtree, [filter(myfilter)]).
+
+node('The Netherlands', ['Noord Holland', 'Zuid Holland', 'Utrecht']).
+node('Noord Holland', ['Amsterdam', 'Alkmaar', 'Volendam']).
+node('Amsterdam', ['Amsterdam Zuid', 'Amsterdam Centrum', 'Amsterdam Noord']).
+
+myfilter(Name, Name, Children) :-
+    node(Name, Children).
+</div>
+
+<div class="nb-cell query">
+A = 'The Netherlands'.
 </div>
 
 </div>
