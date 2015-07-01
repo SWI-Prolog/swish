@@ -1,0 +1,20 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# The XXX render plugin
+
+#### Synopsis
+
+    :- use_renderer(XXX).
+
+#### Options supported
+
+#### Reconised terms
+</div>
+
+<div class="nb-cell markdown">
+## Examples
+
+</div>
+
+</div>

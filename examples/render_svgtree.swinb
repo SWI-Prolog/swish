@@ -1,0 +1,35 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# The SVG based tree render plugin
+
+#### Synopsis
+
+    :- use_renderer(svgtree).
+    :- use_renderer(svgtree, Options).
+
+#### Options supported
+
+  - list(Boolean)
+  It `false`, do not render a list as a tree.  Rendering lists as a tree
+  has didactic values but is otherwise mostly confusing.
+  - filter(:NodeFilter)
+  If present, use call(NodeFilter, Term, Label, Children)
+  to extract the label and children of a term.  Operates
+  on terms for which this call succeeds on the top node.
+  If the call fails on a child, the child is rendered as
+  a term.
+
+#### Reconised terms
+
+Any compound term.  If a `filter` options is provided, any term that can be
+translated by the filter.
+</div>
+
+<div class="nb-cell markdown">
+## Examples
+
+The [English grammar](example/grammar.pl) provides an example that renders a parse tree.
+</div>
+
+</div>
