@@ -1,0 +1,58 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Result rendering
+
+SWISH allows for _rendering_ a Prolog answer in a domain specific way.  This
+can be compared to the Prolog _hook_ portray/1, although it currently only applies to the answer as a whole and *not* recursively on terms embedded in an answer.  A renderer is selected using use_rendering/1 or use_rendering/2,
+for example:
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(table).
+</div>
+
+<div class="nb-cell markdown">
+The [table renderer](example/render_table.swinb) recognises a table and renders it as an HTML table.  Press the _play_ button to run the simple example below.
+</div>
+
+<div class="nb-cell query">
+X = [ [ 'Amsterdam', 'The Netherlands' ],
+      [ 'London', 'United Kingdom' ],
+      [ 'Paris', 'France' ]
+    ].
+</div>
+
+<div class="nb-cell markdown">
+## Provided renderers
+
+The following rendering plugins are currently supported.  Please visit the linked notebook for more documentation and examples exploiting these renderers.
+
+  - General purpose renderers
+    - [table](example/render_table.swinb) renders tables
+    - [svgtree](example/render_svgtree.swinb) renders Prolog terms as trees
+    - [c3](example/render_c3.swinb) renders =c3= dicts as charts (line, bar, pie
+      etc.) using [C3.js](http://www.c3js.org)
+    - [codes](example/render_codes.swinb) renders lists of code-points as text.
+  - Domain specific renderers
+    - [chess](example/render_chess.swinb) renders chess positions (currently only
+      N-queen boards).
+    - [sudoku](example/render_sudoku.swinb) renders sudoku puzzles.
+</div>
+
+<div class="nb-cell markdown">
+## Adding a new render plugin
+
+The rendering infrastructure is specialized using a series of _plugins_ provided as Prolog libraries in the directory =lib/render= of the SWISH sources.  A render plugin is a _module_ that performs these steps:
+
+  1. Registering the renderer using register_renderer/2
+  2. Define a rule for term_rendering//3, which
+     - Identifies the Prolog term as suitable for the plugin.  For
+       example, a _table_ renderer requires a datastructure that can be
+       interpreted as a table.
+     - Define the translation to an HTML fragment using
+       library(http/html_write).  The HTML fragment can include _style_
+       and (JavaScript) scripts.
+</div>
+
+</div>

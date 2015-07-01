@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014, VU University Amsterdam
+    Copyright (C): 2014-2015, VU University Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -31,6 +31,8 @@
 	  [ term_rendering//3			% +Term, +Vars, +Options
 	  ]).
 :- use_module(library(apply)).
+:- use_module(library(lists)).
+:- use_module(library(option)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/term_html)).
 :- use_module('../render').
@@ -50,28 +52,29 @@ Render table-like data.
 %	  $ A list of terms of equal arity :
 %	  $ A list of lists of equal length :
 %
-%	@tbd: recogniser more formats, provide options to specify the
-%	header, etc.
+%	@tbd: recognise more formats
 
 term_rendering(Term, _Vars, Options) -->
-	{ is_list_of_terms(Term, _Rows, Cols)
+	{ is_list_of_terms(Term, _Rows, _Cols),
+	  header(Term, Header, Options)
 	}, !,
 	html(div([ style('display:inline-block'),
 		   'data-render'('List of terms as a table')
 		 ],
 		 [ table(class('render-table'),
-			 [ \header(Cols, Options),
+			 [ \header_row(Header),
 			   \rows(Term)
 			 ])
 		 ])).
 term_rendering(Term, _Vars, Options) -->
-	{ is_list_of_lists(Term, _Rows, Cols)
+	{ is_list_of_lists(Term, _Rows, _Cols),
+	  header(Term, Header, Options)
 	}, !,
 	html(div([ style('display:inline-block'),
 		   'data-render'('List of lists as a table')
 		 ],
 		 [ table(class('render-table'),
-			 [ \header(Cols, Options),
+			 [ \header_row(Header),
 			   \rows(Term)
 			 ])
 		 ])).
@@ -94,22 +97,48 @@ cells(Row, Cells) :-
 	compound(Row),
 	compound_name_arguments(Row, _, Cells).
 
-%%	header(+NCols, +Options)// is det.
+%%	header(+Table, -Header:list(Term), +Options) is semidet.
 %
-%	Include a header row  if   an  option header(+ListOfColNames) is
-%	present, whose length matches NCols.
+%	Compute the header to use. Fails if   a  header is specified but
+%	does not match.
 
-header(Cols, Options) -->
-	{ option(header(ColNames), Options),
-	  length(ColNames, Cols)
-	},
-	html(tr(class(hrow), \header_row(ColNames))).
-header(_, _) --> [].
+header(_, _, Options) :-
+	\+ option(header(_), Options), !.
+header([Row|_], ColHead, Options) :-
+	member(header(Header), Options),
+	generalise(Row, GRow),
+	generalise(Header, GRow), !,
+	header_list(Header, ColHead).
 
-header_row([]) --> [].
-header_row([H|T]) -->
+generalise(List, VList) :-
+	is_list(List), !,
+	length(List, Len),
+	length(VList0, Len),
+	VList = VList0.
+generalise(Compound, VCompound) :-
+	compound(Compound), !,
+	compound_name_arity(Compound, Name, Arity),
+	compound_name_arity(VCompound0, Name, Arity),
+	VCompound = VCompound0.
+
+header_list(List, List) :- is_list(List), !.
+header_list(Compound, List) :-
+	Compound =.. [_|List].
+
+
+%%	header_row(ColNames:list)// is det.
+%
+%	Include a header row  if ColNames is not unbound.
+
+header_row(ColNames) -->
+	{ var(ColNames) }, !.
+header_row(ColNames) -->
+	html(tr(class(hrow), \header_columns(ColNames))).
+
+header_columns([]) --> [].
+header_columns([H|T]) -->
 	html(th(\term(H, []))),
-	header_row(T).
+	header_columns(T).
 
 
 %%	is_list_of_terms(@Term, -Rows, -Cols) is semidet.
