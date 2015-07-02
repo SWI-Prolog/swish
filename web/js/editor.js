@@ -533,7 +533,8 @@ define([ "cm/lib/codemirror",
 	function isMyPengineSrc() {
 	  var id;
 
-	  if ( file.startsWith("pengine://") &&
+	  if ( data.pengines &&
+	       file.startsWith("pengine://") &&
 	       (id = file.split("/")[2]) &&
 	       data.pengines.indexOf(id) >= 0 )
 	    return true;
