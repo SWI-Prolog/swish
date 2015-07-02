@@ -95,14 +95,17 @@ var cellTypes = {
 	if ( content.length > 0 ) {
 	  function copyData(name) {
 	    var value = content.data(name);
-	    if ( value ) storage[name] = value;
+	    if ( value ) {
+	      if ( name == "meta" )
+		value = JSON.parse(value);
+	      storage[name] = value;
+	    }
 	  }
 
 	  copyData("file");
 	  copyData("url");
 	  copyData("title");
-	  if ( window.swish && window.swish.meta_data )
-	    storage.meta = window.swish.meta_data;
+	  copyData("meta");
 
 	  elem.notebook('value', content.text());
 	  content.remove();

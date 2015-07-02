@@ -157,14 +157,18 @@ define([ "cm/lib/codemirror",
 	if ( (ta=elem.children("textarea")[0]) ) {
 	  function copyData(name) {
 	    var value = $(ta).data(name);
-	    if ( value ) storage[name] = value;
+	    if ( value ) {
+	      if ( name == "meta" )
+		value = JSON.parse(value);
+	      storage[name] = value;
+	    }
 	  }
 
 	  copyData("file");
 	  copyData("url");
 	  copyData("title");
-	  if ( window.swish && window.swish.meta_data )
-	    storage.meta = window.swish.meta_data;
+	  copyData("meta");
+
 	  data.cm = CodeMirror.fromTextArea(ta, options);
 	} else {
 	  if ( !options.value )

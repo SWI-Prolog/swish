@@ -44,6 +44,7 @@
 :- use_module(library(http/http_header)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
+:- use_module(library(http/json)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_path)).
 :- if(exists_source(library(http/http_ssl_plugin))).
@@ -361,17 +362,19 @@ swish_config_hash -->
 source(pl, Options) -->
 	{ option(code(Spec), Options), !,
 	  download_source(Spec, Source, Options),
-	  phrase(source_data_attrs(Options), Extra)
+	  phrase(source_data_attrs(Options), Extra),
+	  source_meta_data(MetaAttrs, Options)
 	},
-	source_meta_data(Options),
 	html(div([ class(['prolog-editor']),
 		   'data-label'('Program')
+		 | MetaAttrs
 		 ],
-		 textarea([ class([source,prolog]),
-			    style('display:none')
-			  | Extra
-			  ],
-			  Source))).
+		 [ textarea([ class([source,prolog]),
+			      style('display:none')
+			    | Extra
+			    ],
+			    Source)
+		 ])).
 source(_, _) --> [].
 
 source_data_attrs(Options) -->
@@ -390,19 +393,16 @@ source_title_data(Options) -->
 	['data-title'(File)].
 
 
-%%	source_meta_data(+Options)//
+%%	source_meta_data(-Extra, +Options)
 %
 %	Dump the meta-data of the provided file into swish.meta_data.
+%	@tbd: serialize and add
 
-source_meta_data(Options) -->
-	{ option(file(_), Options),
-	  option(meta(Meta), Options)
-	}, !,
-	js_script({|javascript(Meta)||
-		   window.swish = window.swish||{};
-		   window.swish.meta_data = Meta;
-		   |}).
-source_meta_data(_) --> [].
+source_meta_data(['data-meta'(Text)], Options) :-
+	option(file(_), Options),
+	option(meta(Meta), Options), !,
+	atom_json_dict(Text, Meta, []).
+source_meta_data([], _).
 
 background(Options) -->
 	{ option(background(Spec), Options), !,
@@ -442,17 +442,18 @@ query(_) --> [].
 notebooks(swinb, Options) -->
 	{ option(code(Spec), Options),
 	  download_source(Spec, NoteBookText, Options),
-	  phrase(source_data_attrs(Options), Extra)
+	  phrase(source_data_attrs(Options), Extra),
+	  source_meta_data(MetaAttrs, Options)
 	},
 	html(div([ class('notebook'),
 		   'data-label'('Notebook')		% Use file?
+		 | MetaAttrs
 		 ],
 		 [ pre([ class('notebook-data'),
 			 style('display:none')
 		       | Extra
 		       ],
-		       NoteBookText),
-		   \source_meta_data(Options)
+		       NoteBookText)
 		 ])).
 notebooks(_, _) --> [].
 
