@@ -728,7 +728,14 @@ var cellTypes = {
 
       if ( a.hasClass("store") ) {
 	ev.preventDefault();
-	$(ev.target).parents(".swish").swish('playFile', a.attr("href"));
+	var swishStore = config.http.locations.swish + "p/";
+	var href = a.attr("href");
+	if ( href.startsWith(swishStore) ) {
+	  file = href.slice(swishStore.length);
+	  $(ev.target).parents(".swish").swish('playFile', file);
+	} else {
+	  alert("File does not appear to come from gitty store?");
+	}
       } else if ( a.hasClass("file") ) {
 	ev.preventDefault();
         $(ev.target).parents(".swish")

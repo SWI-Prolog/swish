@@ -109,7 +109,8 @@ file(File, Options) -->
 	{ storage_file(File),
 	  option(label(Label), Options),
 	  http_location_by_id(swish, Swish),
-	  atomic_list_concat([Swish,'/p/',File], HREF)
+	  directory_file_path(Swish, p, StoreDir),
+	  directory_file_path(StoreDir, File, HREF)
 	}, !,
 	html(a([class(store), href(HREF)], Label)).
 file(File, Options) -->
