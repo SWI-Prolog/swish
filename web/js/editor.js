@@ -204,6 +204,13 @@ define([ "cm/lib/codemirror",
 	  elem.on("clearMessages", function(ev) {
 	    elem.prologEditor('clearMessages');
 	  });
+	  elem.on("pengine-died", function(ev, id) {
+	    if ( data.pengines ) {
+	      var i = data.pengines.indexOf(id);
+	      if ( i >= 0 )
+		data.pengines.splice(i, 1);
+	    }
+	  });
 	  data.cm.on("gutterClick", function(cm, n) {
 	    var info = cm.lineInfo(n);
 
@@ -215,13 +222,6 @@ define([ "cm/lib/codemirror",
 	      cm.setGutterMarker(n, "Prolog-breakpoints", null);
 	    else
 	      cm.setGutterMarker(n, "Prolog-breakpoints", makeMarker());
-	  });
-	  data.cm.on("pengine-died", function(ev, id) {
-	    if ( data.pengines ) {
-	      var i = data.pengines.indexOf(id);
-	      if ( i >= 0 )
-		data.pengines.splice(i, 1);
-	    }
 	  });
 	}
       });
