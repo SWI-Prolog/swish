@@ -524,6 +524,7 @@ define([ "cm/lib/codemirror",
      */
     showTracePort: function(prompt) {
       var data  = this.data(pluginName);
+      var store = this.data("storage");
 
       if ( data.traceMark ) {
 	data.traceMark.clear();
@@ -531,7 +532,6 @@ define([ "cm/lib/codemirror",
       }
 
       if ( prompt && prompt.source && prompt.source.file ) {
-	var store = this.data("storage");
 	var file  = prompt.source.file;
 
 	function isMyPengineSrc() {
@@ -544,10 +544,22 @@ define([ "cm/lib/codemirror",
 	    return true;
 	}
 
-	if ( isMyPengineSrc() ) {
+	function isMyInclude() {
+	  var prefix = "swish://";
+
+	  if ( file.startsWith(prefix) && store.file ) {
+	    if ( file.slice(prefix.length) == store.file )
+	      return true;
+	  }
+	}
+
+	if ( isMyPengineSrc() || isMyInclude() ) {
 	  if ( prompt.source.from && prompt.source.to ) {
 	    var from = data.cm.charOffsetToPos(prompt.source.from);
 	    var to   = data.cm.charOffsetToPos(prompt.source.to);
+
+	    if ( !this.is(":visible") )
+	      this.storage('expose', "trace");
 
 	    if ( from && to ) {
 	      data.traceMark = data.cm.markText(from, to,

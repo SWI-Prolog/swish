@@ -44,6 +44,8 @@
 :- use_module(library(http/term_html)).
 :- use_module(library(http/html_write)).
 
+:- use_module(gitty).
+
 :- if(current_setting(swish:debug_info)).
 :- set_setting(swish:debug_info, true).
 :- endif.
@@ -284,8 +286,15 @@ frame_file(Frame, File) :-
 	clause(QGoal, _Body, ClauseRef), !,
 	clause_property(ClauseRef, file(File)).
 
+%%	pengine_file(+File) is semidet.
+%
+%	True if File is a Pengine controlled file. This is currently the
+%	main file (pengine://) and (swish://) for included files.
+
 pengine_file(File) :-
-	sub_atom(File, 0, _, _, 'pengine://').
+	sub_atom(File, 0, _, _, 'pengine://'), !.
+pengine_file(File) :-
+	sub_atom(File, 0, _, _, 'swish://').
 
 %%	clause_position(+PC) is semidet.
 %
@@ -324,9 +333,10 @@ subgoal_position(ClauseRef, Port, File, CharA, CharZ) :-
 	end_port(Port), !,
 	clause_end(ClauseRef, File, CharA, CharZ).
 subgoal_position(ClauseRef, PC, File, CharA, CharZ) :-
+	debug(trace(source), 'In clause ~p at ~p', [ClauseRef, PC]),
 	clause_info(ClauseRef, File, TPos, _),
 	(   '$clause_term_position'(ClauseRef, PC, List)
-	->  debug(gtrace(position), 'Term-position: for ref=~w at PC=~w: ~w',
+	->  debug(trace(source), 'Term-position: for ref=~w at PC=~w: ~w',
 		  [ClauseRef, PC, List]),
 	    (   find_subgoal(List, TPos, PosTerm)
 	    ->  true
@@ -464,18 +474,23 @@ update_breakpoints(Breakpoints) :-
 
 %%	prolog_clause:open_source(+File, -Stream) is semidet.
 %
-%	Open the saved pengine source if applicable
+%	Open SWISH non-file sources.
 
 :- multifile prolog_clause:open_source/2.
 
 prolog_clause:open_source(File, Stream) :-
-	pengine_file(File), !,
+	sub_atom(File, 0, _, _, 'pengine://'), !,
 	(   pengine_self(Pengine)
 	->  true
 	;   debugging(trace(_))
 	),
 	pengine_property(Pengine, source(File, Source)),
 	open_string(Source, Stream).
+prolog_clause:open_source(File, Stream) :-
+	atom_concat('swish://', GittyFile, File), !,
+	setting(web_storage:directory, Store),
+	gitty_data(Store, GittyFile, Data, _Meta),
+	open_string(Data, Stream).
 
 
 		 /*******************************
