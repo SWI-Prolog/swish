@@ -79,6 +79,7 @@ define([ "jquery", "config", "preferences",
      * @param {Object} query
      * @param {String} query.query the Prolog query to prove
      * @param {String} [query.source] the Prolog program
+     * @param {prologEditor} [query.editor] the source editor
      * @param {Boolean} [query.iconifyLast=true] define whether or not
      * to iconify the previous runner.
      * @param {Boolean} [query.tabled=false] if `true`, make a table with
@@ -578,8 +579,10 @@ define([ "jquery", "config", "preferences",
 	  var elem = $(this);
 	  var data = elem.data('prologRunner');
 
-	  if ( elem.prologRunner('alive') )
+	  if ( elem.prologRunner('alive') ) {
+	    $(".prolog-editor").trigger('pengine-died', data.prolog.id);
 	    data.prolog.destroy();
+	  }
 	});
 	this.remove();
 
@@ -758,8 +761,10 @@ define([ "jquery", "config", "preferences",
        } else if ( state == "wait-input" ) {
 	 this.find("input").focus();
        }
-       if ( !aliveState(state) )
+       if ( !aliveState(state) ) {
+	 $(".prolog-editor").trigger('pengine-died', data.prolog.id);
 	 data.prolog.destroy();
+       }
      }
      if ( state == "wait-next" || state == "true" ) {
        var runners = RS(this);
@@ -843,9 +848,12 @@ define([ "jquery", "config", "preferences",
 
   function handleCreate() {
     var elem = this.pengine.options.runner;
-    var data = elem.data('prologRunner');
+    var data = elem.data(pluginName);
     var options = {};
     var bps;
+
+    if ( data.query.editor )
+      $(data.query.editor).prologEditor('pengine', {add: this.pengine.id});
 
     if ( (bps = breakpoints(elem)) )
       options.breakpoints = Pengine.stringify(bps);

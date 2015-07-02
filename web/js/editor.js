@@ -212,6 +212,13 @@ define([ "cm/lib/codemirror",
 	    else
 	      cm.setGutterMarker(n, "Prolog-breakpoints", makeMarker());
 	  });
+	  data.cm.on("pengine-died", function(ev, id) {
+	    if ( data.pengines ) {
+	      var i = data.pengines.indexOf(id);
+	      if ( i >= 0 )
+		data.pengines.splice(i, 1);
+	    }
+	  });
 	}
       });
     },
@@ -369,6 +376,21 @@ define([ "cm/lib/codemirror",
     },
 
     /**
+     * @param {Object} options
+     * @param {String} [options.add] Id of pengine to add
+     */
+    pengine: function(options) {
+      var data = this.data(pluginName);
+
+      if ( options.add ) {
+	data.pengines = data.pengines || [];
+	data.pengines.push(options.add);
+      }
+
+      return this;
+    },
+
+    /**
      * print the current content of the editor after applying the
      * the CodeMirror mode to it.
      * @param {String} [src] Prolog source to print. Default is to print
@@ -491,28 +513,43 @@ define([ "cm/lib/codemirror",
     },
 
     /**
-     * Highlight source events
+     * Highlight source events.  The source pengine gets a prompt
+     * with `prompt.file` set to `pengine://<id>/src`.
+     * @param {Object|null} prompt for a tracer action.  Use `null`
+     * to clear.
      */
     showTracePort: function(prompt) {
-      var data = this.data(pluginName);
+      var data  = this.data(pluginName);
 
       if ( data.traceMark ) {
 	data.traceMark.clear();
 	data.traceMark = null;
       }
 
-      if ( prompt && prompt.source &&
-	   prompt.source.file &&
-	   prompt.source.file.startsWith("pengine://") ) {
-	if ( prompt.source.from && prompt.source.to ) {
-	  var from = data.cm.charOffsetToPos(prompt.source.from);
-	  var to   = data.cm.charOffsetToPos(prompt.source.to);
+      if ( prompt && prompt.source && prompt.source.file ) {
+	var store = this.data("storage");
+	var file  = prompt.source.file;
 
-	  if ( from && to ) {
-	    data.traceMark = data.cm.markText(from, to,
-					      { className: "trace "+prompt.port
-					      });
-	    data.cm.scrollIntoView(from, 50);
+	function isMyPengineSrc() {
+	  var id;
+
+	  if ( file.startsWith("pengine://") &&
+	       (id = file.split("/")[2]) &&
+	       data.pengines.indexOf(id) >= 0 )
+	    return true;
+	}
+
+	if ( isMyPengineSrc() ) {
+	  if ( prompt.source.from && prompt.source.to ) {
+	    var from = data.cm.charOffsetToPos(prompt.source.from);
+	    var to   = data.cm.charOffsetToPos(prompt.source.to);
+
+	    if ( from && to ) {
+	      data.traceMark = data.cm.markText(from, to,
+						{ className: "trace "+prompt.port
+						});
+	      data.cm.scrollIntoView(from, 50);
+	    }
 	  }
 	}
       }
