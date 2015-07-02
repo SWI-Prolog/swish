@@ -133,6 +133,19 @@ _not_ see exactly the same UI for cooperation.  What about
     - Run when notebook is loaded (boolean)			[OK]
 
   - Set tab-width per source?
+  - Debug (trace) through included files
+    - Works, except for following the source.
+  - Deal with files/line numbers over multiple files
+  - Mark files as pengine_src, loaded, not_loaded
+    - Only send pengine_src with pengines.
+  - Jump to source for goals.
+  - Staging
+    Control-S (whatever) saves data to `staging area'.
+    - In addition to HEAD, introduce STAGE (gitty solution)?
+    - Save to browser store?
+      - Retrieve on reload?
+      - Make sure running includes the browser version.
+        - Send list of modified tabs
 
 ### Bugs
 
