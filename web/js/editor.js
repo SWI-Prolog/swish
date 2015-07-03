@@ -667,10 +667,10 @@ define([ "cm/lib/codemirror",
 	cm._searchMarkers = [];
       }
 
-      line = line-1;
-      re   = options.regex;
       clearSearchMarkers(cm);
       options = options||{};
+      re      = options.regex;
+      line    = line-1;
 
       if ( re ) {
 	ch = cm.getLine(line).search(re);
