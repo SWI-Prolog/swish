@@ -290,7 +290,7 @@ pengine_logo(_Options) -->
 	},
 	html(a([href(HREF), class('pengine-logo')], &(nbsp))).
 swish_logo(_Options) -->
-	{ http_absolute_location(swish('index.html'), HREF, [])
+	{ http_absolute_location(swish(.), HREF, [])
 	},
 	html(a([href(HREF), class('swish-logo')], &(nbsp))).
 
