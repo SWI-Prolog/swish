@@ -230,6 +230,7 @@ var tabbed = {
 	        .swish('playFile',
 		       { file: store,
 			 newTab: true,
+			 noHistory: true,
 			 prompt: prompt
 		       });
 	    return this;

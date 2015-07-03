@@ -198,6 +198,8 @@ preferences.setDefault("emacs-keybinding", false);
      * page.
      * @param {Boolean} [options.newTab] if `true`, open the file in
      * a new tab.
+     * @param {Boolean} [options.noHistory] if `true`, do not push the
+     * new document to the history.
      * @param {Object} [options.prompt] provided for trace events.  Must
      * be used to highlight the Prolog port at the indicated location.
      */
@@ -226,7 +228,7 @@ preferences.setDefault("emacs-keybinding", false);
 
 		 copyAttrs([ "line",
 			     "regex", "showAllMatches",
-			     "newTab",
+			     "newTab", "noHistory",
 			     "prompt"
 			   ]);
 
@@ -273,7 +275,7 @@ preferences.setDefault("emacs-keybinding", false);
 
 		 copyAttrs([ "line",
 			     "regex", "showAllMatches",
-			     "newTab",
+			     "newTab", "noHistory",
 			     "prompt"
 			   ]);
 

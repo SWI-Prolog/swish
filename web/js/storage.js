@@ -145,7 +145,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	src.url = config.http.locations.swish;
 
       this.tabbed('title', title, type.dataType);
-      history.push(src);
+      if ( !src.noHistory )
+	history.push(src);
 
       return this;
     },
