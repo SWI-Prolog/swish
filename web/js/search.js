@@ -338,6 +338,10 @@ define([ "jquery", "config", "typeahead" ],
 	      function(ev, datum, set) {
 
 		if ( datum.type == "store" ) {
+		  if ( datum.query ) {
+		    datum.regex = new RegExp(RegExp.escape(datum.query), "g");
+		    datum.showAllMatches = true;
+		  }
 		  $(ev.target).parents(".swish").swish('playFile', datum);
 		} else if ( datum.arity !== undefined ) {
 		  $(".swish-event-receiver").trigger("pldoc", datum);
@@ -354,7 +358,7 @@ define([ "jquery", "config", "typeahead" ],
 		  var play = { url:url, line: datum.line };
 
 		  if ( datum.query ) {
-		    play.regex = new RegExp(RegExp.escape(datum.query));
+		    play.regex = new RegExp(RegExp.escape(datum.query), "g");
 		    play.showAllMatches = true;
 		  }
 
