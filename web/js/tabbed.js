@@ -149,6 +149,8 @@ var tabbed = {
      */
     tabFromSource: function(src) {
       var tab = this.tabbed('newTab', $("<span></span>"));
+      if ( typeof(src) == "object" )
+	delete src.newTab;
       if ( !this.tabbed('setSource', tab, src) ) {
 	this.tabbed('removeTab', tab.attr("id"));
       }

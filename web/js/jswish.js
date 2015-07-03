@@ -194,6 +194,8 @@ preferences.setDefault("emacs-keybinding", false);
      * storage
      * @param {Number} [options.line] is the initial line number
      * @param {String} [options.search] search string to highlight
+     * @param {Boolean} [options.newTab] if `true`, open the file in
+     * a new tab.
      */
     playFile: function(options) {
       if ( typeof(options) == "string" )
@@ -211,6 +213,7 @@ preferences.setDefault("emacs-keybinding", false);
 		 reply.url = url;
 		 if ( options.line )   reply.line   = options.line;
 		 if ( options.search ) reply.search = options.search;
+		 if ( options.newTab ) reply.newTab = options.newTab;
 		 menuBroadcast("source", reply);
 	       },
 	       error: function(jqXHR) {

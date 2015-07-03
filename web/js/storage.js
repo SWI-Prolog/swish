@@ -105,6 +105,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       if ( typeof(src) == "string" )
 	src = {data:src};
 
+      if ( src.newTab )
+	return "propagate";
+
       if ( (src.meta && src.meta.name) || src.url )
       { var name = (src.meta && src.meta.name) ? src.meta.name : src.url;
 	var ext  = name.split('.').pop();
