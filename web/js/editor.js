@@ -53,7 +53,7 @@ define([ "cm/lib/codemirror",
     prolog: {
       mode: "prolog",
       role: "source",
-      placeholder: "Your Prolog program goes here ...",
+      placeholder: "Your Prolog rules and facts go here ...",
       lineNumbers: true,
       save: false,
       theme: "prolog",
