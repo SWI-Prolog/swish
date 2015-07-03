@@ -198,9 +198,6 @@ define([ "cm/lib/codemirror",
 	  elem.on("source-error", function(ev, error) {
 	    elem.prologEditor('highlightError', error);
 	  });
-	  elem.on("trace-location", function(ev, prompt) {
-	    elem.prologEditor('showTracePort', prompt);
-	  });
 	  elem.on("clearMessages", function(ev) {
 	    elem.prologEditor('clearMessages');
 	  });
@@ -361,11 +358,18 @@ define([ "cm/lib/codemirror",
 	var data = this.data(pluginName);
 
 	data.cm.setValue(source.data);
-	if ( source.line )
-	  this.prologEditor('gotoLine', source.line, source);
-	if ( data.role == "source" ) {
-	  $(".swish-event-receiver").trigger("program-loaded", this);
+	if ( source.line || source.prompt ) {
+	  data.cm.refresh();
+
+	  if ( source.line ) {
+	    this.prologEditor('gotoLine', source.line, source);
+	  } else {
+	    this.prologEditor('showTracePort', source.prompt);
+	  }
 	}
+
+	if ( data.role == "source" )
+	  $(".swish-event-receiver").trigger("program-loaded", this);
       }
       return this;
     },
@@ -382,6 +386,7 @@ define([ "cm/lib/codemirror",
     /**
      * @param {Object} options
      * @param {String} [options.add] Id of pengine to add
+     * @param {String} [options.has] Match pengine, returning boolean
      */
     pengine: function(options) {
       var data = this.data(pluginName);
@@ -389,9 +394,12 @@ define([ "cm/lib/codemirror",
       if ( options.add ) {
 	data.pengines = data.pengines || [];
 	data.pengines.push(options.add);
-      }
 
-      return this;
+	return this;
+      } else if ( options.has ) {
+	return (data.pengines &&
+		data.pengines.indexOf(options.has) >= 0);
+      }
     },
 
     /**
@@ -521,6 +529,8 @@ define([ "cm/lib/codemirror",
      * with `prompt.file` set to `pengine://<id>/src`.
      * @param {Object|null} prompt for a tracer action.  Use `null`
      * to clear.
+     * @return {jQuery|undefined} `this` if successful.  `undefined`
+     * if this is a valid trace event, but I cannot process it.
      */
     showTracePort: function(prompt) {
       var data  = this.data(pluginName);
@@ -568,10 +578,12 @@ define([ "cm/lib/codemirror",
 	      data.cm.scrollIntoView(from, 50);
 	    }
 	  }
-	}
-      }
 
-      return this;
+	  return this;
+	}
+      } else {
+	return this;
+      }
     },
 
     /**

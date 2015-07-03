@@ -54,6 +54,9 @@ var tabbed = {
 	elem.on("source", function(ev, src) {
 	  elem.tabbed('tabFromSource', src);
 	});
+	elem.on("trace-location", function(ev, prompt) {
+	  elem.tabbed('showTracePort', prompt);
+	});
       });
     },
 
@@ -179,6 +182,67 @@ var tabbed = {
 
       return false;
     },
+
+    /**
+     * Show a tracer port. This implies finding the proper editor,
+     * making sure it is visible and ask it to show to port or, if
+     * no editor is displaying this source, create a new one.
+     * @param {Object} prompt
+     * @param {Object} [prompt.source]
+     * @param {Object} [prompt.source.file] is the file associated
+     * with the debug event.  Currently, we accept
+     *
+     *   - `pengine://<pengine>/src` refers to the editor that provided
+     *     the source for pengine <pengine>
+     *	 - `swish://<file>.pl` refers to an included file from the
+     *	   store.
+     */
+    showTracePort: function(prompt) {
+      if ( prompt && prompt.source && prompt.source.file ) {
+	var file = prompt.source.file;
+	var pengineID, store;
+	var editors;
+
+	function isPengineSrc() {
+	  var id;
+
+	  if ( file.startsWith("pengine://") )
+	    return file.split("/")[2];
+	}
+
+	function isStoreSrc() {
+	  var prefix = "swish://";
+	  if ( file.startsWith(prefix) )
+	    return file.slice(prefix.length);
+	}
+
+	if ( (pengineID=isPengineSrc()) ) {
+	  editors = this.find(".prolog-editor")
+			.filter(function(i, e) {
+			  return $(e).prologEditor('pengine', {has:pengineID});
+			});
+	} else if ( (store=isStoreSrc()) ) {
+	  editors = this.find(".prolog-editor")
+			.storage('match', {file:store});
+
+	  if ( !editors ) {
+	    this.closest(".swish")
+	        .swish('playFile',
+		       { file: store,
+			 newTab: true,
+			 prompt: prompt
+		       });
+	    return this;
+	  }
+	}
+
+	if ( editors )
+	  editors.prologEditor('showTracePort', prompt);
+      }
+
+      return this;
+    },
+
 
     /**
      * Add a new tab using content
