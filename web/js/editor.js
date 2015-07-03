@@ -180,6 +180,7 @@ define([ "cm/lib/codemirror",
 	elem.prologEditor('loadMode', options.mode);
 
 	elem.addClass("swish-event-receiver");
+	elem.addClass("prolog-editor");
 	elem.on("preference", function(ev, pref) {
 	  elem.prologEditor('preference', pref);
 	});
@@ -533,8 +534,10 @@ define([ "cm/lib/codemirror",
      * if this is a valid trace event, but I cannot process it.
      */
     showTracePort: function(prompt) {
+      if ( this.length == 0 )
+	return this;
+
       var data  = this.data(pluginName);
-      var store = this.data("storage");
 
       if ( data.traceMark ) {
 	data.traceMark.clear();
@@ -542,6 +545,7 @@ define([ "cm/lib/codemirror",
       }
 
       if ( prompt && prompt.source && prompt.source.file ) {
+	var store = this.data("storage");
 	var file  = prompt.source.file;
 
 	function isMyPengineSrc() {

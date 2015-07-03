@@ -781,6 +781,9 @@ var cellTypes = {
 		  chunk:  settings.chunk,
 		  title:  false
                 };
+    if ( programs[0] )
+      query.editor = programs[0];
+
     var runner = $.el.div({class: "prolog-runner"});
     this.find(".prolog-runner").prologRunner('close');
     this.append(runner);

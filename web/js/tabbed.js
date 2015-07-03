@@ -222,7 +222,7 @@ var tabbed = {
 			  return $(e).prologEditor('pengine', {has:pengineID});
 			});
 	} else if ( (store=isStoreSrc()) ) {
-	  editors = this.find(".prolog-editor")
+	  editors = this.find(".storage")
 			.storage('match', {file:store});
 
 	  if ( !editors ) {
