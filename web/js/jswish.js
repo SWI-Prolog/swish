@@ -193,9 +193,13 @@ preferences.setDefault("emacs-keybinding", false);
      * @param {String} options.file is the name of the file in the web
      * storage
      * @param {Number} [options.line] is the initial line number
-     * @param {String} [options.search] search string to highlight
+     * @param {RegEx} [options.regex] search to highlight
+     * @param {Boolean} [options.showAllMatches] Show other matches on
+     * page.
      * @param {Boolean} [options.newTab] if `true`, open the file in
      * a new tab.
+     * @param {Object} [options.prompt] provided for trace events.  Must
+     * be used to highlight the Prolog port at the indicated location.
      */
     playFile: function(options) {
       if ( typeof(options) == "string" )
@@ -211,9 +215,21 @@ preferences.setDefault("emacs-keybinding", false);
 	       data: {format: "json"},
 	       success: function(reply) {
 		 reply.url = url;
-		 if ( options.line )   reply.line   = options.line;
-		 if ( options.search ) reply.search = options.search;
-		 if ( options.newTab ) reply.newTab = options.newTab;
+
+		 function copyAttrs(names) {
+		   for(var i=0; i<names.length; i++) {
+		     var name = names[i];
+		     if ( options[name] )
+		       reply[name] = options[name];
+		   }
+		 }
+
+		 copyAttrs([ "line",
+			     "regex", "showAllMatches",
+			     "newTab",
+			     "prompt"
+			   ]);
+
 		 menuBroadcast("source", reply);
 	       },
 	       error: function(jqXHR) {
@@ -247,8 +263,19 @@ preferences.setDefault("emacs-keybinding", false);
 			     url: options.url
 			   };
 
-		 if ( options.line )   msg.line   = options.line;
-		 if ( options.search ) msg.search = options.search;
+		 function copyAttrs(names) {
+		   for(var i=0; i<names.length; i++) {
+		     var name = names[i];
+		     if ( options[name] )
+		       msg[name] = options[name];
+		   }
+		 }
+
+		 copyAttrs([ "line",
+			     "regex", "showAllMatches",
+			     "newTab",
+			     "prompt"
+			   ]);
 
 		 menuBroadcast("source", msg);
 	       },
