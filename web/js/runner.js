@@ -483,7 +483,9 @@ define([ "jquery", "config", "preferences",
 			 button("Retry",     "retry"),
 			 button("Abort",     "abort")));
 
-      $(".swish-event-receiver").trigger("trace-location", prompt);
+      this.closest(".swish")
+          .find(".tabbed")
+          .trigger("trace-location", prompt);
 
       this.prologRunner('setState', "wait-debug");
     },
