@@ -496,9 +496,19 @@ update_head(Store, head(Name, OldCommit, NewCommit)) :-
 	assert(head(Store, Name, NewCommit)).
 update_head(_, _).
 
+%%	remote_updates(+Store, -List) is det.
+%
+%	Find updates from other gitties  on   the  same filesystem. Note
+%	that we have to push/pop the input   context to avoid creating a
+%	notion of an  input  context   which  possibly  relate  messages
+%	incorrectly to the sync file.
+
 remote_updates(Store, List) :-
 	heads_input_stream(Store, Stream),
-	read_new_terms(Stream, List).
+	setup_call_cleanup(
+	    '$push_input_context'(gitty_sync),
+	    read_new_terms(Stream, List),
+	    '$pop_input_context').
 
 read_new_terms(Stream, Terms) :-
 	read(Stream, First),
