@@ -119,11 +119,6 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       if ( this.storage('unload', "setSource") == false )
 	return false;
 
-      data.setValue(src);
-      data.cleanGeneration = data.changeGen();
-      data.cleanData       = src.data;
-      data.cleanCheckpoint = src.cleanCheckpoint || "load";
-
       if ( src.meta ) {
 	data.file = src.meta.name;
 	data.meta = src.meta;
@@ -133,6 +128,11 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	if ( src.url )
 	  data.url = src.url;
       }
+
+      data.setValue(src);
+      data.cleanGeneration = data.changeGen();
+      data.cleanData       = src.data;
+      data.cleanCheckpoint = src.cleanCheckpoint || "load";
 
       function basename(path) {
 	return path ? path.split('/').pop() : null;
