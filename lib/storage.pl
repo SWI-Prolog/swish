@@ -28,7 +28,8 @@
 */
 
 :- module(web_storage,
-	  [ storage_file/1			% ?File
+	  [ storage_file/1,			% ?File
+	    storage_file/3			% +File, -Data, -Meta
 	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
@@ -321,12 +322,17 @@ random_char(Char) :-
 		 *******************************/
 
 %%	storage_file(?File) is semidet.
+%%	storage_file(?File, -Data, -Meta) is semidet.
 %
 %	True if File is known in the store.
 
 storage_file(File) :-
 	setting(directory, Dir),
 	gitty_file(Dir, File, _Head).
+
+storage_file(File, Data, Meta) :-
+	setting(directory, Dir),
+	gitty_data(Dir, File, Data, Meta).
 
 
 		 /*******************************

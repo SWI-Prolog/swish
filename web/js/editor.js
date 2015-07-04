@@ -305,7 +305,7 @@ define([ "cm/lib/codemirror",
 	  } else {
 	    var store = $(this).data("storage");
 	    if ( store )
-	      file = store.file;
+	      file = "swish://"+store.file;
 	  }
 
 	  if ( file )
