@@ -208,6 +208,10 @@ define([ "cm/lib/codemirror",
 	      if ( i >= 0 )
 		data.pengines.splice(i, 1);
 	    }
+	    if ( data.traceMark && data.traceMark.pengine == id ) {
+	      data.traceMark.clear();
+	      data.traceMark = null;
+	    }
 	  });
 	  data.cm.on("gutterClick", function(cm, n) {
 	    var info = cm.lineInfo(n);
@@ -394,7 +398,8 @@ define([ "cm/lib/codemirror",
 
       if ( options.add ) {
 	data.pengines = data.pengines || [];
-	data.pengines.push(options.add);
+	if ( data.pengines.indexOf(options.add) < 0 )
+	  data.pengines.push(options.add);
 
 	return this;
       } else if ( options.has ) {
@@ -579,6 +584,7 @@ define([ "cm/lib/codemirror",
 	      data.traceMark = data.cm.markText(from, to,
 						{ className: "trace "+prompt.port
 						});
+	      data.traceMark.pengine = prompt.pengine;
 	      data.cm.scrollIntoView(from, 50);
 	    }
 	  }

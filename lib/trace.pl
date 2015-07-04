@@ -82,10 +82,11 @@ user:prolog_trace_interception(Port, Frame, _CHP, Action) :-
 	debug(trace, '[~d] ~w: Goal ~p', [Depth0, Port, Goal]),
 	term_html(Goal, GoalString),
 	functor(Port, PortName, _),
-	Prompt0 = _{type:  trace,
-		    port:  PortName,
-		    depth: Depth,
-		    goal:  GoalString
+	Prompt0 = _{type:    trace,
+		    port:    PortName,
+		    depth:   Depth,
+		    goal:    GoalString,
+		    pengine: Pengine
 		   },
 	add_context(Port, Frame, Prompt0, Prompt1),
 	add_source(Port, Frame, Prompt1, Prompt),

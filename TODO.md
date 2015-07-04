@@ -152,8 +152,3 @@ _not_ see exactly the same UI for cooperation.  What about
   - Colouring of /library/http/html_write.pl
     - DCG exports broken?
     - use_module/2 broken.
-    - multi-line strings.					[OK]
-    - number(+2).						[OK]
-    - If there are multiple editors, trace events are fired
-      multiple times.
-    - Clear trace ports on end of trace.
