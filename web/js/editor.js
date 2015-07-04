@@ -500,31 +500,34 @@ define([ "cm/lib/codemirror",
      * `line` and `ch` attributes.
      */
     highlightError: function(error) {
-      var data = this.data(pluginName);
-      var msg  = $(error.data).text();
-      var left;
+      if ( error.location.file &&
+	   this.prologEditor('isMyFile', error.location.file) ) {
+	var data = this.data(pluginName);
+	var msg  = $(error.data).text();
+	var left;
 
-      if ( error.location.ch ) {
-	left = data.cm.charCoords({ line: error.location.line-1,
-				    ch:   error.location.ch
-				  },
-				  "local").left;
-      } else {
-	left = 0;
+	if ( error.location.ch ) {
+	  left = data.cm.charCoords({ line: error.location.line-1,
+				      ch:   error.location.ch
+				    },
+				    "local").left;
+	} else {
+	  left = 0;
+	}
+
+	msg = msg.replace(/^.*?:[0-9][0-9]*: /, "");
+	var elem = $.el.span({class:"source-msg error"},
+			     msg,
+			     $("<span>&times;</span>")[0]);
+	$(elem).css("margin-left", left+"px");
+
+	var widget = data.cm.addLineWidget(error.location.line-1, elem);
+
+	$(elem).on("click", function() {
+	  widget.clear();
+	});
+	$(elem).data("cm-widget", widget);
       }
-
-      msg = msg.replace(/^.*?:[0-9][0-9]*: /, "");
-      var elem = $.el.span({class:"source-msg error"},
-			   msg,
-			   $("<span>&times;</span>")[0]);
-      $(elem).css("margin-left", left+"px");
-
-      var widget = data.cm.addLineWidget(error.location.line-1, elem);
-
-      $(elem).on("click", function() {
-	widget.clear();
-      });
-      $(elem).data("cm-widget", widget);
 
       return this;
     },
@@ -553,6 +556,34 @@ define([ "cm/lib/codemirror",
     },
 
     /**
+     * @param {String} file is the file as known to Prolog,
+     * which is `pengine://<pengine>/src/` for the pengine main file
+     * and `swish://store.pl` for included files.
+     * @return {Boolean} whether or not this is my file.
+     */
+    isMyFile: function(file) {
+      var prefix = "swish://";
+
+      if ( file.startsWith("pengine://") ) {
+	var data = this.data(pluginName);
+
+	if ( data.pengines &&
+	     (id = file.split("/")[2]) &&
+	     data.pengines.indexOf(id) >= 0 )
+	  return true;
+      }
+
+      if ( file.startsWith(prefix) ) {
+	var store = this.data("storage");
+
+	if ( file.slice(prefix.length) == store.file )
+	  return true;
+      }
+
+      return false;
+    },
+
+    /**
      * Highlight source events.  The source pengine gets a prompt
      * with `prompt.file` set to `pengine://<id>/src`.
      * @param {Object|null} prompt for a tracer action.  Use `null`
@@ -572,29 +603,9 @@ define([ "cm/lib/codemirror",
       }
 
       if ( prompt && prompt.source && prompt.source.file ) {
-	var store = this.data("storage");
 	var file  = prompt.source.file;
 
-	function isMyPengineSrc() {
-	  var id;
-
-	  if ( data.pengines &&
-	       file.startsWith("pengine://") &&
-	       (id = file.split("/")[2]) &&
-	       data.pengines.indexOf(id) >= 0 )
-	    return true;
-	}
-
-	function isMyInclude() {
-	  var prefix = "swish://";
-
-	  if ( file.startsWith(prefix) && store.file ) {
-	    if ( file.slice(prefix.length) == store.file )
-	      return true;
-	  }
-	}
-
-	if ( isMyPengineSrc() || isMyInclude() ) {
+	if ( this.prologEditor('isMyFile', file) ) {
 	  if ( prompt.source.from && prompt.source.to ) {
 	    var from = data.cm.charOffsetToPos(prompt.source.from);
 	    var to   = data.cm.charOffsetToPos(prompt.source.to);
