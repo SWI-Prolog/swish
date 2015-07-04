@@ -369,15 +369,12 @@ preferences.setDefault("emacs-keybinding", false);
 
     /**
      * Pick up all breakpoints.  Currently assumes a single source.
+     * @param {String} pengineID is the pengine for which to set
+     * the breakpoints.
      */
-    breakpoints: function() {
-      var list = [];
-      var rc;
-
-      if ( (rc=$(".prolog-editor").prologEditor('getBreakpoints')) )
-	list = list.concat(rc);
-
-      return list;
+    breakpoints: function(pengineID) {
+      return this.find(".prolog-editor")
+                 .prologEditor('getBreakpoints', pengineID)||[];
     },
 
     /**

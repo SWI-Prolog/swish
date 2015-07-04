@@ -475,7 +475,8 @@ define([ "jquery", "config", "preferences",
       addAnswer(this,
 		$.el.div({class:"trace-buttons"},
 			 button("Continue",  "nodebug", function(ev) {
-			   return breakpoints(ev.target);
+			   return breakpoints($(ev.target)
+				    .closest(".prolog-runner"));
 			 }),
 			 button("Step into", "continue"),
 			 button("Step over", "skip"),
@@ -845,7 +846,9 @@ define([ "jquery", "config", "preferences",
 		 *******************************/
 
   function breakpoints(runner) {
-    return $(runner).parents(".swish").swish('breakpoints');
+    var data = runner.data(pluginName);
+
+    return $(runner).parents(".swish").swish('breakpoints', data.prolog.id);
   }
 
   function handleCreate() {

@@ -34,6 +34,7 @@
 :- use_module(library(settings)).
 :- use_module(library(pengines)).
 :- use_module(library(apply)).
+:- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(solution_sequences)).
 :- use_module(library(edinburgh), [debug/0]).
@@ -424,20 +425,35 @@ find_source(Predicate, File, Line) :-
 %
 %	Handle the breakpoints(List) option to  set breakpoints prior to
 %	execution of the query. If breakpoints  are present and enabled,
-%	the goal is executed in debug mode.
+%	the goal is executed in debug mode.  `List` is a list, holding a
+%	dict for each source that  has   breakpoints.  The dict contains
+%	these keys:
+%
+%	  - `file` is the source file.  For the current Pengine source
+%	    this is =|pengine://<pengine>/src|=.
+%	  - `breakpoints` is a list of lines (integers) where to put
+%	    break points.
 
 :- multifile pengines:prepare_goal/3.
 
 pengines:prepare_goal(Goal0, Goal, Options) :-
 	option(breakpoints(Breakpoints), Options),
 	Breakpoints \== [],
-	maplist(set_breakpoint, Breakpoints),
+	maplist(set_file_breakpoints, Breakpoints),
 	Goal = (debug, Goal0).
 
-set_breakpoint(Line) :-
-	debug(trace(break), 'Set breakpoint at line ~p', [Line]),
-	pengine_self(Pengine),
-	pengine_property(Pengine, source(File, Text)),
+set_file_breakpoints(Dict) :-
+	debug(trace(break), 'Set breakpoints at ~p', [Dict]),
+	_{file:FileS, breakpoints:List} :< Dict,
+	atom_string(File, FileS),
+	(   pengine_self(Pengine),
+	    pengine_property(Pengine, source(File, Text))
+	->  maplist(set_pengine_breakpoint(File, Text), List)
+	;   true
+	).
+
+set_pengine_breakpoint(File, Text, Line) :-
+	debug(trace(break), 'Try break at ~q:~d', [File, Line]),
 	line_start(Line, Text, Char),
 	(   set_breakpoint(File, Line, Char, Break)
 	->  !, debug(trace(break), 'Created breakpoint ~p', [Break])
@@ -449,11 +465,35 @@ line_start(N, Text, Start) :-
 	N0 is N - 2,
 	offset(N0, sub_string(Text, Start, _, _, '\n')), !.
 
-%%	current_breakpoints(-Pairs) is det.
+%%	update_breakpoints(+Breakpoints)
+%
+%	Update the active breakpoint  by  comparing   with  the  list if
+%	active breakpoints.
+
+update_breakpoints(Breakpoints) :-
+	pengine_self(Pengine),
+	(   select(PengineBP, Breakpoints, OtherBP),
+	    _{file:FileS, breakpoints:Lines} :< PengineBP,
+	    atom_string(File, FileS),
+	    pengine_property(Pengine, source(File, Text))
+	->  update_pengine_breakpoints(Pengine, File, Text, Lines)
+	;   OtherBP = []
+	),
+	is_list(OtherBP).			% TBD: handle these
+
+update_pengine_breakpoints(_Pengine, File, Text, Lines) :-
+	current_pengine_source_breakpoints(Pairs),
+	debug(trace(break), 'Current: ~p, Request: ~p', [Pairs, Lines]),
+	forall((member(Id-Line, Pairs), \+memberchk(Line, Lines)),
+	       delete_breakpoint(Id)),
+	forall((member(Line, Lines), \+memberchk(_-Line, Pairs)),
+	       set_pengine_breakpoint(File, Text, Line)).
+
+%%	current_pengine_source_breakpoints(-Pairs) is det.
 %
 %	@arg Pairs is a list `Id-Line` for each defined breakpoint.
 
-current_breakpoints(Pairs) :-
+current_pengine_source_breakpoints(Pairs) :-
 	pengine_self(Pengine),
 	findall(Id-Line,
 		( pengine_property(Pengine, source(File, _Text)),
@@ -461,17 +501,6 @@ current_breakpoints(Pairs) :-
 		  breakpoint_property(Id, line_count(Line))
 		),
 		Pairs).
-
-%%	update_breakpoints(+Breakpoints)
-
-update_breakpoints(Breakpoints) :-
-	current_breakpoints(Pairs),
-	debug(trace(break), 'Current: ~p, Request: ~p', [Pairs, Breakpoints]),
-	forall((member(Id-Line, Pairs), \+memberchk(Line, Breakpoints)),
-	       delete_breakpoint(Id)),
-	forall((member(Line, Breakpoints), \+memberchk(_-Line, Pairs)),
-	       set_breakpoint(Line)).
-
 
 %%	prolog_clause:open_source(+File, -Stream) is semidet.
 %

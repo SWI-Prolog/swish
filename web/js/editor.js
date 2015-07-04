@@ -274,14 +274,20 @@ define([ "cm/lib/codemirror",
 
     /**
      * Get the defined breakpoints.
-     * @returns {Array.integer} array of lines that need a breakpoint
+     * @param {String} pengineID is the pengine asking for the
+     * breakpoints.
+     * @returns {Array.Object} an array holding one object per source
+     * with breakpoints.  The object contains `file` and `breakpoints`,
+     * where the latter is an array of integers.
      */
-    getBreakpoints: function() {
-      var breakpoints = [];
-      var offset = 0;
+    getBreakpoints: function(pengineID) {
+      var result = [];
 
       this.each(function() {
-	var cm = $(this).data(pluginName).cm;
+	var data = $(this).data(pluginName);
+	var breakpoints = [];
+	var offset = 0;
+	var cm = data.cm;
 	var line = cm.firstLine();
 	var last = cm.lastLine();
 
@@ -290,10 +296,26 @@ define([ "cm/lib/codemirror",
 	  if ( info.gutterMarkers )
 	    breakpoints.push(offset+line+1);
 	}
-	offset += 2+last;			/* two newlines */
+
+	if ( breakpoints.length > 0 ) {
+	  var file;
+
+	  if ( data.pengines && data.pengines.indexOf(pengineID) >= 0 ) {
+	    file = "pengine://"+pengineID+"/src";
+	  } else {
+	    var store = $(this).data("storage");
+	    if ( store )
+	      file = store.file;
+	  }
+
+	  if ( file )
+	    result.push({ file: file,
+		          breakpoints: breakpoints
+		        });
+	}
       });
 
-      return breakpoints;
+      return result;
     },
 
     /**
