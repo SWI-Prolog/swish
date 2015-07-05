@@ -189,8 +189,8 @@ classification of tokens.
 	return;
       state.uuid = generateUUID();
       msg.uuid   = state.uuid;
-      msg.role   = state.role;
     }
+    msg.role = state.role;
     if ( typeof(state.sourceID) == "function" )
       msg.sourceID = state.sourceID();
 
