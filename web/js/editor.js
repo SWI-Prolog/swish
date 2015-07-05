@@ -55,6 +55,7 @@ define([ "cm/lib/codemirror",
       role: "source",
       placeholder: "Your Prolog rules and facts go here ...",
       lineNumbers: true,
+      autoCurrent: true,
       save: false,
       theme: "prolog",
       matchBrackets: true,
@@ -192,7 +193,8 @@ define([ "cm/lib/codemirror",
 
 	if ( options.mode == "prolog" && data.role == "source" ) {
 	  elem.on("activate-tab", function(ev) {
-	    elem.prologEditor('makeCurrent');
+	    if ( options.autoCurrent )
+	      elem.prologEditor('makeCurrent');
 	    data.cm.refresh();		/* needed if a tab has been opened */
 	  });
 

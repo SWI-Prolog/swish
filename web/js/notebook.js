@@ -88,6 +88,23 @@ var cellTypes = {
 	  }
 	});
 
+	/* Activate the active source or first source.  If the active
+	 * cell is a query, we could activate the source of the query?
+	 */
+	elem.on("activate-tab", function(ev) {
+	  if ( ev.target == elem[0] ) {
+	    var eds = elem.find(".nb-content")
+                          .children(".nb-cell.program");
+	    var aeds = eds.filter(".active");
+	    var nc = aeds[0]||eds[0];
+
+	    if ( nc ) {
+	      $(nc).find(".prolog-editor").prologEditor('makeCurrent');
+	    }
+	    ev.stopPropagation();
+	  }
+	});
+
 	elem.data(pluginName, data);	/* store with element */
 
 					/* restore content */
@@ -640,6 +657,7 @@ var cellTypes = {
     var editor;
 
     options = options||{};
+    options.autoCurrent = false;
 
     this.html("");
     this.append(editor=$.el.div({class:"editor"}));
