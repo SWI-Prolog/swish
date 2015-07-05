@@ -38,8 +38,7 @@ you            need            the             [nightly            build
 system    from    the     current      git     development    repository
 [swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
 
-Jun 21, 2015: use release  7.3.3.   Getting  links between notebooks and
-Dict.get(key) to work requires the git version.
+Jul 5, 2015: SWI-Prolog 7.3.4 supports SWISH completely.
 
 ## Running SWISH
 
