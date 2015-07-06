@@ -726,6 +726,7 @@ var cellTypes = {
 
     function followLink(ev) {
       var a = $(ev.target).closest("a");
+      var done = false;
 
       function parsePred(s) {
 	var pred = {};
@@ -747,7 +748,21 @@ var cellTypes = {
 	}
       }
 
+      function PlDoc(from) {
+	if ( from ) {
+	  var pred = parsePred(decodeURIComponent(from));
+
+	  if ( pred ) {
+	    $(".swish-event-receiver").trigger("pldoc", pred);
+	    ev.preventDefault();
+
+	    return true;
+	  }
+	}
+      }
+
       if ( a.hasClass("store") ) {
+	done = true;
 	ev.preventDefault();
 	var swishStore = config.http.locations.swish + "p/";
 	var href = a.attr("href");
@@ -758,17 +773,19 @@ var cellTypes = {
 	  alert("File does not appear to come from gitty store?");
 	}
       } else if ( a.hasClass("file") ) {
+	done = true;
 	ev.preventDefault();
         $(ev.target).parents(".swish")
 	            .swish('playURL', {url: a.attr("href")});
       } else if ( a.hasClass("builtin") ) {
-	var s    = a.attr("href").split("predicate=").pop();
-	var pred = parsePred(decodeURIComponent(s));
+	done = PlDoc(a.attr("href").split("predicate=").pop());
+      } else {
+	done = PlDoc(a.attr("href").split("object=").pop());
+      }
 
-	if ( pred ) {
-	  $(".swish-event-receiver").trigger("pldoc", pred);
-	  ev.preventDefault();
-	}
+      if ( !done ) {
+	ev.preventDefault();
+	window.open(a.attr("href"), '_blank');
       }
     }
 
