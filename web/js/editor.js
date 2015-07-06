@@ -327,11 +327,14 @@ define([ "cm/lib/codemirror",
      * the jQuery object holds multiple editors, we return the
      * joined content of the editors.
      */
-    getSource: function() {
+    getSource: function(role) {
       var src = [];
 
       this.each(function() {
-	src.push($(this).data(pluginName).cm.getValue());
+	var data = $(this).data(pluginName);
+
+	if ( !role || (role == data.role) )
+	  src.push(data.cm.getValue());
       });
 
       return src.join("\n\n");

@@ -74,7 +74,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 
 	if ( typeof(data.examples) == "object" &&
 	     data.examples[0] &&
-	     !$(qediv).prologEditor('getSource') )
+	     !$(qediv).prologEditor('getSource', "query") )
 	  $(qediv).prologEditor('setSource', data.examples[0]);
 
 	elem.on("current-program", function(ev, editor) {
@@ -110,7 +110,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	  return exl;
 	};
 	data.source = function() {
-	  var src = editor.prologEditor('getSource');
+	  var src = editor.prologEditor('getSource', "program");
 	  var bg  = $(".background.prolog.source").text();
 
 	  if ( bg )
@@ -215,7 +215,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
      * @returns {String} the current query as Prolog text
      */
     getQuery: function() {
-      return this.find(".query").prologEditor('getSource');
+      return this.find(".query").prologEditor('getSource', "query");
     },
 
     /**
