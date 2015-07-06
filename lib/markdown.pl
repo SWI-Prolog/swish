@@ -105,6 +105,9 @@ prolog:doc_autolink_extension(swinb, notebook).
 %	  - [Label](library/lists.pl)
 %	  ```
 
+:- multifile
+	swish_config:source_alias/2.
+
 file(File, Options) -->
 	{ once(sub_atom(File, Pre, _, _Post, /)),
 	  sub_atom(File, 0, Pre, _, Alias),
