@@ -106,14 +106,6 @@ prolog:doc_autolink_extension(swinb, notebook).
 %	  ```
 
 file(File, Options) -->
-	{ storage_file(File),
-	  option(label(Label), Options),
-	  http_location_by_id(swish, Swish),
-	  directory_file_path(Swish, p, StoreDir),
-	  directory_file_path(StoreDir, File, HREF)
-	}, !,
-	html(a([class(store), href(HREF)], Label)).
-file(File, Options) -->
 	{ once(sub_atom(File, Pre, _, _Post, /)),
 	  sub_atom(File, 0, Pre, _, Alias),
 	  swish_config:source_alias(Alias, _Options),
@@ -122,6 +114,14 @@ file(File, Options) -->
 	  directory_file_path(Swish, File, HREF)
 	}, !,
 	html(a([class([alias,file]), href(HREF)], Label)).
+file(File, Options) -->
+	{ storage_file(File),
+	  option(label(Label), Options),
+	  http_location_by_id(swish, Swish),
+	  directory_file_path(Swish, p, StoreDir),
+	  directory_file_path(StoreDir, File, HREF)
+	}, !,
+	html(a([class(store), href(HREF)], Label)).
 file(File, Options) -->
 	pldoc_html:file(File, Options).
 
