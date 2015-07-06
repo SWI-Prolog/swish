@@ -122,6 +122,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       if ( src.meta ) {
 	data.file = src.meta.name;
 	data.meta = src.meta;
+	data.url  = null;
       } else {
 	data.file = null;
 	data.meta = null;
