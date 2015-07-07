@@ -369,6 +369,57 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
     },
 
     /**
+     * @param {Object} [options]
+     * @param {String|Boolean} [options.data=false] if `true`, always
+     * include the content of the storage.  If `"if_modified"`, only
+     * include the content if it is modified.
+     * @param {String} [options.type] if provided, only return objects
+     * associated with files with the given extension.
+     * @return {Array.Object}
+     */
+    getData: function(options) {
+      var result = [];
+
+      options = options||{};
+
+      this.each(function() {
+	var data = $(this).data(pluginName);
+	var obj = {};
+
+	if ( data.meta ) {
+	  obj.type = "store";
+	  obj.name = data.meta.name;
+	} else if ( data.url ) {
+	  obj.type = "url";
+	  obj.url  = data.url;
+	  obj.name = data.url.split("/").pop();
+	} else
+	{ obj.type = "local";
+	}
+
+	if ( $(this).closest(".tab-pane.active").length == 1 )
+	  obj.active = true;
+
+	if ( !options.type ||
+	     ( options.name &&
+	       options.name.split(".").pop() == options.type ) ) {
+	  if ( options.data ) {
+	    var value = data.getValue();
+
+	    obj.modified = (value != data.cleanData);
+	    if ( options.data == true ||
+		 (obj.modified && options.data == "if_modified") )
+	      obj.data = value;
+	  }
+
+	  result.push(obj);
+        }
+      });
+
+      return result;
+    },
+
+    /**
      * @return {jQuery|undefined} the jQuery storage element that
      * matches `to`
      */

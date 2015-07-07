@@ -378,6 +378,20 @@ preferences.setDefault("emacs-keybinding", false);
     },
 
     /**
+     * @param {Object} [options]
+     * @param {Boolean} [options.active=false] If `true`, only return
+     * info on the active tab
+     */
+    tabData: function(options) {
+      options = options||{};
+      if ( options.active ) {
+	return this.find(".tab-pane.active .storage").getData(options);
+      } else {
+	return this.find(".storage").storage('getData', options);
+      }
+    },
+
+    /**
      * Extract examples from `$(".examples.prolog").text()`.  If this
      * does not exist, it returns a function that extracts the examples
      * from the current Prolog source editor.
