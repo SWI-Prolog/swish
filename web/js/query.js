@@ -110,7 +110,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	  return exl;
 	};
 	data.source = function() {
-	  var src = editor.prologEditor('getSource', "program");
+	  var src = editor.prologEditor('getSource', "source");
 	  var bg  = $(".background.prolog.source").text();
 
 	  if ( bg )
