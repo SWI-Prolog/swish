@@ -4,5 +4,6 @@
 { "file":"examples.swinb",	  "title":"Example programs" },
 "--",
 { "file":"dict.swinb",		  "title":"Dict tutorial" },
-{ "file":"rendering.swinb",	  "title":"Render data graphically" }
+{ "file":"rendering.swinb",	  "title":"Render data graphically" },
+{ "file":"jquery.swinb",	  "title":"Access the SWISH interface" }
 ]
