@@ -1,6 +1,8 @@
 MAIN=swish.css
-CSS=$(MAIN) answer.css editor.css navbar.css pane.css query.css \
-	    runner.css term.css
+CSS=$(MAIN) \
+	answer.css diffview.css editor.css gitty.css modal.css \
+	navbar.css notebook.css pane.css runner.css \
+	tabbed.css term.css typeaheadjs.css types.css
 
 all:	swish-min.css swish-min.css.gz
 
