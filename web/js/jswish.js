@@ -385,7 +385,7 @@ preferences.setDefault("emacs-keybinding", false);
     tabData: function(options) {
       options = options||{};
       if ( options.active ) {
-	return this.find(".tab-pane.active .storage").getData(options);
+	return this.find(".tab-pane.active .storage").storage('getData', options);
       } else {
 	return this.find(".storage").storage('getData', options);
       }

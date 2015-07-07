@@ -501,6 +501,34 @@ define([ "jquery", "config", "preferences",
     },
 
     /**
+     * Support arbitrary jQuery requests from Prolog
+     */
+    jQuery: function(prompt) {
+      var request = prompt.data;
+      var receiver;
+
+      if ( typeof(request.selector) == "string" ) {
+	receiver = $(request.selector);
+      } else if ( typeof(request.selector) == "object" ) {
+	switch(request.selector.root) {
+	  case "this":	root = this; break;
+	  case "swish":	root = this.closest(".swish"); break;
+	}
+	if ( request.selector.sub == "" ) {
+	  receiver = root;
+	} else {
+	  receiver = root.find(request.selector.sub);
+	}
+      }
+
+      console.log(receiver);
+      var result = receiver[request.method].apply(receiver, request.arguments);
+      console.log(result);
+
+      prompt.pengine.respond(Pengine.stringify(result));
+    },
+
+    /**
      * send a response (to pengine onprompt handler) to the
      * pengine and add the response to the dialogue as
      * `div class="response">`
@@ -905,15 +933,19 @@ define([ "jquery", "config", "preferences",
 
   function handlePrompt() {
     var elem   = this.pengine.options.runner;
+    var prompt = this.data || "Please enter a Prolog term";
 
-    if ( this.data && this.data.type == "trace" ) {
-      elem.prologRunner('trace', this);
-    } else {
-      var prompt = this.data ? this.data : "Please enter a Prolog term";
-
-      elem.prologRunner('setPrompt', prompt);
-      elem.prologRunner('setState', "wait-input");
+    if ( typeof(prompt) == "object" ) {
+      if ( prompt.type == "trace" ) {
+	return elem.prologRunner('trace', this);
+      } else if ( prompt.type == "jQuery" ) {
+	return elem.prologRunner('jQuery', this);
+      }
+      prompt = JSON.stringify(prompt);
     }
+
+    elem.prologRunner('setPrompt', prompt);
+    elem.prologRunner('setState', "wait-input");
   }
 
   /**
