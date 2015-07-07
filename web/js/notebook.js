@@ -305,7 +305,8 @@ var cellTypes = {
 	var dom = $.el.div({class:"notebook"});
 	this.find(".nb-cell").each(function() {
 	  cell = $(this);
-	  $(dom).append(cell.nbCell('saveDOM'));
+	  if ( cell.text().trim() != "" ) /* remove empty cells */
+	    $(dom).append(cell.nbCell('saveDOM'));
 	});
 
 	var html = $($.el.div(dom)).html();
