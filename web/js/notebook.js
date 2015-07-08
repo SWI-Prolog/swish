@@ -305,7 +305,7 @@ var cellTypes = {
 	var dom = $.el.div({class:"notebook"});
 	this.find(".nb-cell").each(function() {
 	  cell = $(this);
-	  if ( cell.text().trim() != "" ) /* remove empty cells */
+	  if ( !cell.nbCell('isEmpty') )
 	    $(dom).append(cell.nbCell('saveDOM'));
 	});
 
@@ -609,6 +609,10 @@ var cellTypes = {
       var data = this.data(pluginName);
 
       return this.prevAll(".program").first().find(".editor");
+    },
+
+    isEmpty: function() {
+      return methods.isEmpty[this.data(pluginName).type].call(this);
     },
 
     saveDOM: function() {
@@ -922,6 +926,21 @@ var cellTypes = {
     return sha1(text);
   };
 
+/* ---------------- isEmpty ---------------- */
+
+  methods.isEmpty.markdown = function() {	/* markdown */
+    var text = this.data('markdownText') || cellText(this);
+
+    return text.trim() == "";
+  };
+
+  methods.isEmpty.program = function() {	/* program */
+    return cellText(this).trim() == "";
+  };
+
+  methods.isEmpty.query = function() {		/* query */
+    return cellText(this).trim() == "";
+  };
 
 		 /*******************************
 		 *	     UTILITIES		*
