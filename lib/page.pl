@@ -186,6 +186,7 @@ source_option(_, Options, Options).
 
 source_file(Request, File, Options) :-
 	option(path_info(PathInfo), Request), !,
+	PathInfo \== 'index.html',
 	(   path_info_file(PathInfo, File, Options)
 	->  true
 	;   http_404([], Request)
