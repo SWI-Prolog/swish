@@ -59,10 +59,14 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	}
 
 	elem.addClass("storage");
-	if ( options.title||options.file )
+	if ( options.title||options.file||options.url ) {
+	  var file = options.file;
+	  if ( !file && options.url )
+	    file = options.url.split("/").pop();
 	  elem.tabbed('title',
-		      options.title||filebase(options.file),
-		      options.file ? options.file.split('.').pop() : "pl");
+		      options.title||filebase(file),
+		      file ? file.split('.').pop() : "pl");
+	}
 
 	elem.on("source", function(ev, src) {
 	  onStorage(ev, 'setSource', src);
