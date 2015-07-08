@@ -312,13 +312,17 @@ var cellTypes = {
 	/**
 	 * Attributes from .html() are not ordered.  We need a canonical
 	 * representation and therefore we need to reorder the HTML
-	 * attributes.  FIXME: Map attribute names to lowercase and
-	 * preserve element name.
+	 * attributes and map the attribute names to lower case.
 	 */
 	function orderAttrs(s) {
 	  attrs = s.match(/[-a-z]+="[^"]*"/g);
 	  if ( attrs ) {
-	    return "<div "+attrs.sort().join(" ")+">";
+	    var start = s.match(/^<[a-z]* /);
+	    for(var i=0; i<attrs.length; i++) {
+	      var l = attrs[i].split(/=(.*)/);
+	      attrs[i] = l[0].toLowerCase()+"="+l[1];
+	    }
+	    return start[0]+attrs.sort().join(" ")+">";
 	  } else
 	    return s;
 	}
