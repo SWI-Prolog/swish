@@ -309,9 +309,23 @@ var cellTypes = {
 	    $(dom).append(cell.nbCell('saveDOM'));
 	});
 
+	/**
+	 * Attributes from .html() are not ordered.  We need a canonical
+	 * representation and therefore we need to reorder the HTML
+	 * attributes.  FIXME: Map attribute names to lowercase and
+	 * preserve element name.
+	 */
+	function orderAttrs(s) {
+	  attrs = s.match(/[-a-z]+="[^"]*"/g);
+	  if ( attrs ) {
+	    return "<div "+attrs.sort().join(" ")+">";
+	  } else
+	    return s;
+	}
+
 	var html = $($.el.div(dom)).html();
 	return html.replace(/(<div [^>]*>|<\/div>)/g, function(t) {
-	  return "\n"+t+"\n";
+	  return "\n"+orderAttrs(t)+"\n";
 	}).slice(1);
       } else {
 	var notebook = this;
@@ -848,19 +862,20 @@ var cellTypes = {
 
   methods.saveDOM.query = function() {		/* query */
     var cell = this;
-    var opts = {class:"nb-cell query"};
+    var dom  = $.el.div({class:"nb-cell query"}, cellText(this));
 
     function copyAttr(name) {
       var value;
-      if ( (value=cell.data(name)) )
-	opts["data-"+name] = value;
+      if ( (value=cell.data(name)) ) {
+	$(dom).attr("data-"+name, value);
+      }
     }
 
     copyAttr("tabled");
     copyAttr("chunk");
     copyAttr("run");
 
-    return $.el.div(opts, cellText(this));
+    return dom;
   };
 
 /* ---------------- restoreDOM ---------------- */
