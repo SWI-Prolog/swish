@@ -333,8 +333,10 @@ define([ "cm/lib/codemirror",
       this.each(function() {
 	var data = $(this).data(pluginName);
 
-	if ( !role || (role == data.role) )
-	  src.push(data.cm.getValue());
+	if ( data ) {
+	  if ( !role || (role == data.role) )
+	    src.push(data.cm.getValue());
+	}
       });
 
       return src.join("\n\n");
