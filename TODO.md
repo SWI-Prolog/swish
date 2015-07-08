@@ -152,3 +152,7 @@ _not_ see exactly the same UI for cooperation.  What about
   - Colouring of /library/http/html_write.pl
     - DCG exports broken?
     - use_module/2 broken.
+  - Icon, unsaved data:
+    - Open "Access the SWISH interface"
+    - Reload browser
+      - Closing claims the data is changed
