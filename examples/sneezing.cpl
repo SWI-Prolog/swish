@@ -15,7 +15,7 @@ strong_sneezing(X) : 0.2 ; moderate_sneezing(X) : 0.6 :- hay_fever(X).
 flu(bob).
 % bob has certainly the flu
 
-hay_fever (bob).
+hay_fever(bob).
 % bob has certainly hay fever
 
 /** <examples>
