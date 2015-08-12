@@ -156,9 +156,10 @@ pengines:prepare_module(Module, swish, _Options) :-
 
 % load rendering modules
 
-:- use_module(swish(lib/render/sudoku),	 []).
-:- use_module(swish(lib/render/chess),	 []).
-:- use_module(swish(lib/render/table),	 []).
-:- use_module(swish(lib/render/codes),	 []).
-:- use_module(swish(lib/render/svgtree), []).
-:- use_module(swish(lib/render/c3),	 []).
+:- use_module(swish(lib/render/sudoku),	  []).
+:- use_module(swish(lib/render/chess),	  []).
+:- use_module(swish(lib/render/table),	  []).
+:- use_module(swish(lib/render/codes),	  []).
+:- use_module(swish(lib/render/svgtree),  []).
+:- use_module(swish(lib/render/graphviz), []).
+:- use_module(swish(lib/render/c3),	  []).

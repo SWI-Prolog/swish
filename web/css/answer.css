@@ -80,3 +80,7 @@ but that is rather expensive.
 /* C3 renderer */
 
 .render-C3 { display: inline-block; }
+
+/* Graphviz */
+
+.answer svg { vertical-align: top; }
