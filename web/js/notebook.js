@@ -150,16 +150,27 @@ var cellTypes = {
 
     copy: function(cell) {
       cell = cell||currentCell(this);
-      if ( cell )
-	clipboard = $(cell).nbCell('saveDOM');
+      if ( cell ) {
+	var dom = $.el.div({class:"notebook"});
+	$(dom).append($(cell).nbCell('saveDOM'));
+	clipboard = stringifyNotebookDOM(dom);
+      }
     },
 
     paste: function() {
+      var nb = this;
+
       if ( clipboard ) {
-	this.notebook('insert', {
-	  where: "below",
-	  restore: $(clipboard)
+	var dom = $.el.div();
+
+	$(dom).html(clipboard);
+	$(dom).find(".nb-cell").each(function() {
+	  nb.notebook('insert', {
+	    where: "below",
+	    restore: $(this)
+	  });
 	});
+
       } else {
 	alert("Clipboard is empty");
       }
@@ -309,28 +320,7 @@ var cellTypes = {
 	    $(dom).append(cell.nbCell('saveDOM'));
 	});
 
-	/**
-	 * Attributes from .html() are not ordered.  We need a canonical
-	 * representation and therefore we need to reorder the HTML
-	 * attributes and map the attribute names to lower case.
-	 */
-	function orderAttrs(s) {
-	  attrs = s.match(/[-a-z]+="[^"]*"/g);
-	  if ( attrs ) {
-	    var start = s.match(/^<[a-z]* /);
-	    for(var i=0; i<attrs.length; i++) {
-	      var l = attrs[i].split(/=(.*)/);
-	      attrs[i] = l[0].toLowerCase()+"="+l[1];
-	    }
-	    return start[0]+attrs.sort().join(" ")+">";
-	  } else
-	    return s;
-	}
-
-	var html = $($.el.div(dom)).html();
-	return html.replace(/(<div [^>]*>|<\/div>)/g, function(t) {
-	  return "\n"+orderAttrs(t)+"\n";
-	}).slice(1);
+	return stringifyNotebookDOM(dom);
       } else {
 	var notebook = this;
 	var content  = this.find(".nb-content");
@@ -400,6 +390,31 @@ var cellTypes = {
       return active.first();
 
     return null;
+  }
+
+  function stringifyNotebookDOM(dom) {
+    /*
+     * Attributes from .html() are not ordered.  We need a canonical
+     * representation and therefore we need to reorder the HTML
+     * attributes and map the attribute names to lower case.
+     */
+    function orderAttrs(s) {
+      attrs = s.match(/[-a-z]+="[^"]*"/g);
+      if ( attrs ) {
+	var start = s.match(/^<[a-z]* /);
+	for(var i=0; i<attrs.length; i++) {
+	  var l = attrs[i].split(/=(.*)/);
+	  attrs[i] = l[0].toLowerCase()+"="+l[1];
+	}
+	return start[0]+attrs.sort().join(" ")+">";
+      } else
+	return s;
+    }
+
+    var html = $($.el.div(dom)).html();
+    return html.replace(/(<div [^>]*>|<\/div>)/g, function(t) {
+      return "\n"+orderAttrs(t)+"\n";
+    }).slice(1);
   }
 
   tabbed.tabTypes.notebook = {
