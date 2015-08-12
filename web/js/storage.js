@@ -74,6 +74,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	elem.on("save", function(ev, data) {
 	  onStorage(ev, 'save', data);
 	});
+	elem.on("download", function(ev) {
+	  onStorage(ev, 'download');
+	});
 	elem.on("fileInfo", function(ev) {
 	  onStorage(ev, 'info');
 	});
@@ -368,6 +371,23 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 		 modal.ajaxError(jqXHR);
 	       }
 	     });
+
+      return this;
+    },
+
+    download: function() {
+      var options = this.data(pluginName);
+      var type    = tabbed.tabTypes[options.typeName];
+      var data    = options.getValue();
+      var href    = "data:text/plain;charset=UTF-8,"
+	          + encodeURIComponent(data);
+
+      var a = $.el.a({ href:href,
+		       download:options.file||("swish."+type.dataType)
+		     });
+      this.append(a);
+      a.click();
+      $(a).remove();
 
       return this;
     },

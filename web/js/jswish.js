@@ -52,6 +52,9 @@ preferences.setDefault("emacs-keybinding", false);
 	  update: history.updateRecentUL
 	},
 	"Share": "--",
+	"Download": function() {
+	  menuBroadcast("download");
+	},
 	"Collaborate ...": function() {
 	  $("body").swish('collaborate');
 	},
