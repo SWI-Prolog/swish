@@ -60,6 +60,21 @@
   top: 0.1em;
 }
 
+.nb-type-more
+{ padding-bottom: 1em;
+  padding-left: 1em;
+}
+
+.nb-type-more label
+{ margin-right: 1em;
+  position: relative;
+  top: 0.1em;
+}
+
+.nb-type-more input
+{ display: inline;
+}
+
 .nb-cell.active, .nb-cell.active.query > .query
 { border: 1px solid #888;
 }

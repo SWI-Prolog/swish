@@ -157,20 +157,26 @@ var cellTypes = {
       }
     },
 
-    paste: function() {
+    paste: function(text) {
       var nb = this;
 
-      if ( clipboard ) {
+      text = text||clipboard;
+      if ( text ) {
 	var dom = $.el.div();
 
-	$(dom).html(clipboard);
-	$(dom).find(".nb-cell").each(function() {
-	  nb.notebook('insert', {
-	    where: "below",
-	    restore: $(this)
+	$(dom).html(text);
+	var cells = $(dom).find(".nb-cell");
+	if ( cells.length > 0 ) {
+	  $(dom).find(".nb-cell").each(function() {
+	    nb.notebook('insert', {
+	      where: "below",
+	      restore: $(this)
+	    });
 	  });
-	});
-
+	  return this;
+	} else {
+	  alert("Not a SWISH notebook");
+	}
       } else {
 	alert("Clipboard is empty");
       }
@@ -496,6 +502,12 @@ var cellTypes = {
 	  $(g).on("click", ".btn", function(ev) {
 	    elem.nbCell('type', $(ev.target).data('type'));
 	  });
+
+	  elem.append($.el.div({class:"nb-type-more"},
+			       typeMore(),
+			       typeLess($.el.label("Insert notebook from " +
+						   "local file "),
+					fileInsertInput()[0])));
 	}
       });
     },
@@ -983,6 +995,60 @@ var cellTypes = {
   function cellText(cell) {
     return cell.find(".editor").prologEditor('getSource');
   }
+
+  /**
+   * Creates a file input that, after a file is selected, replaces
+   * the cell with the content of the local file.
+   */
+  function fileInsertInput() {
+    var form = $('<input type="file" name="file">');
+
+    form.on("change", function(ev) {
+      var reader = new FileReader();
+      reader.onload = function(theFile) {
+	var cell = $(ev.target).closest(".nb-cell");
+	var nb   = cell.closest(".notebook");
+
+	if ( nb.notebook('paste', reader.result) )
+	  cell.remove();
+      };
+      reader.readAsText(ev.target.files[0]);
+
+      ev.preventDefault();
+      return false;
+    });
+
+    return form;
+  }
+
+  function typeMore() {
+    var div = $('<div class="form-more">' +
+		' <a href="#">more<a>' +
+		'</div>');
+    div.find("a").on("click", function(ev) {
+      var more = $(ev.target).closest(".form-more");
+      more.hide(400);
+      more.next().show(400);
+    });
+    return div[0];
+  }
+
+  function typeLess() {
+    var div = $('<div class="form-less" style="display:none">' +
+		' <div><a href="#" class="less">less<a></div>' +
+		'</div>');
+    for(var i=0; i<arguments.length; i++) {
+      div.append(arguments[i]);
+    }
+    div.find("a.less").on("click", function(ev) {
+      var less = $(ev.target).closest(".form-less");
+      less.hide(400);
+      less.prev().show(400);
+    });
+
+    return div[0];
+  }
+
 
   /**
    * <Class description>
