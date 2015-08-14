@@ -17,12 +17,6 @@
   - Allow moving panes around using drag/drop.  Allow organizing
     in tabs?
 
-## Editor
-
-  - Template based completion					[OK]
-  - Indicate changes to last saved point			[OK]
-  - Download menu?
-
 ## Query editor
 
   - Quickly create a query from a predicate?
@@ -43,14 +37,9 @@
 
 ## Rendering framework
 
-  - Core from Prolog ok.
-  - Need data vizualizations.  What is a good framework?
-    - Settled for C3.js, which also brings D3.js into the picture.
-      - :- use_rendering(c3).					[OK]
-        - Data representation is not always natural from Prolog.
-	  Need to recognise and map common representations.  E.g.,
-          - Pairs to columns for pie and bar charts.
-	  - Recognise textual labels and set the axis accordingly
+  - User provided rendering?
+    - Allow for rewriting answer terms?
+    - Allow generating HTML?  How to deal with security?
 
 ## Sharing
 
@@ -93,51 +82,22 @@ _not_ see exactly the same UI for cooperation.  What about
 
 ## Tabbed editor
 
-  - swish.playFile()
-    - If current tab can accept type, play it there		[OK]
-    - If current tab is a `new tab', play it there		[OK]
-    - else, add a new tab					[OK]
-    - If file is already opened in a tab, switch to that tab.
-  - Add notion of `current source' to be used by the		[OK]
-    bottom-right query editor.  This is:
-    - Visible Prolog editor
-    - If in a notebook, the active one.
-    - Populate the query example window from there
-  - Run Markdown cells when they become inactive		[OK]
   - Notebook
     - Connect query to above source.				[OK]
     - Multiple sources:
       - Allow naming sources?
       - Allow one source to include others in the same notebook?
-    - Allow a notebook to make SWISH specific links:
-      [Nice example to say hello](hello.swinb)			[OK]
-      [Actions are defined here](actions.pl)			[OK]
     - Avoid hyperlinks to destroy the page.
       - show predicate links in a modal dialog
         - /pldoc/man?predicate=member/2				[OK]
 	- other predicate links.
       - Use `target=` for others.
-  - Use type icons for tabs and hide the file extension.	[OK]
-  - Use type icons for examples menu and search results.	[OK]
-  - Use swish('playFile', ...) for the back button.		[OK]
-  - Add close-button to runner without title.			[OK]
-  - Add help screen for empty notebook.				[OK]
-  - Check modified status of tab before closing it.		[OK]
   - Source search: pass number of items being searched and
     if there are too many hits, balance over files.
-  - Source search: add type icon to file headers.		[OK]
-  - Limit search results to configured public directories.	[OK]
-  - Control query parameters:
-    - Table results (boolean)					[OK]
-    - Initial number of results (integer)			[OK]
-    - Run when notebook is loaded (boolean)			[OK]
-
   - Set tab-width per source?
   - Debug (trace) through included files
     - Works, except for following the source.
   - Deal with files/line numbers over multiple files
-  - Mark files as pengine_src, loaded, not_loaded
-    - Only send pengine_src with pengines.
   - Jump to source for goals.
   - Staging
     Control-S (whatever) saves data to `staging area'.
@@ -146,6 +106,21 @@ _not_ see exactly the same UI for cooperation.  What about
       - Retrieve on reload?
       - Make sure running includes the browser version.
         - Send list of modified tabs
+
+## SWISH as Prolog frontend for local usage
+
+  - Deal with login
+    - Limit to localhost
+    - Restrict to user
+      - Password based?
+      - Use cookies and allow only one connection?
+  - Improve source search
+    - Full search
+    - Search file names
+    - Regex support
+  - Mark files as pengine_src, loaded, not_loaded
+    - Only send pengine_src with pengines.
+    - Detect pengine_src based on alias?
 
 ### Bugs
 
