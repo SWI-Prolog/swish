@@ -193,7 +193,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	});
 
 	var url  = config.http.locations.web_storage
-		 + "/" + encodeURI(meta.name);
+		 + encodeURI(meta.name);
 
 	$.ajax({ url: url,
 		 contentType: "application/json",
@@ -320,7 +320,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
 	elem.find(".gitty-diff").html("");
 	var url  = config.http.locations.web_storage
-		 + "/" + encodeURI(data.commit);
+		 + encodeURI(data.commit);
 
 	$.ajax({ url: url,
 		 contentType: "application/json",

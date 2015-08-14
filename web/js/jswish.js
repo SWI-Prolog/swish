@@ -214,7 +214,7 @@ preferences.setDefault("emacs-keybinding", false);
       if ( existing && existing.storage('expose', "Already open") )
 	return this;				/* FIXME: go to line */
 
-      var url = config.http.locations.web_storage + "/" + options.file;
+      var url = config.http.locations.web_storage + options.file;
       $.ajax({ url: url,
 	       type: "GET",
 	       data: {format: "json"},

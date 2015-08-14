@@ -167,7 +167,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	var that = this;
 	var options = this.data(pluginName);
 
-	$.ajax({ url: config.http.locations.web_storage + "/" + file,
+	$.ajax({ url: config.http.locations.web_storage + file,
 		 dataType: "text",
 		 success: function(data) {
 		   that.storage('setSource',
@@ -231,7 +231,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 
       if ( options.file &&
 	   (!meta || !meta.name || meta.name == options.file) ) {
-	url += "/" + encodeURI(options.file);
+	url += encodeURI(options.file);
 	method = "PUT";
       }
 

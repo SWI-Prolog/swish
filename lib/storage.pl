@@ -58,7 +58,7 @@ their own version.
 
 :- setting(directory, atom, storage, 'The directory for storing files.').
 
-:- http_handler(swish(p), web_storage, [ id(web_storage), prefix ]).
+:- http_handler(swish('p/'), web_storage, [ id(web_storage), prefix ]).
 
 %%	web_storage(+Request) is det.
 %
@@ -154,8 +154,7 @@ storage(delete, Request) :-
 	reply_json_dict(true).
 
 request_file(Request, Dir, File) :-
-	option(path_info(PathInfo), Request),
-	atom_concat(/, File, PathInfo),
+	option(path_info(File), Request),
 	(   gitty_file(Dir, File, _Hash)
 	->  true
 	;   http_404([], Request)
@@ -256,8 +255,7 @@ storage_get(diff(RelTo), Dir, _, File, _Request) :-
 	reply_json_dict(Diff).
 
 request_file_or_hash(Request, Dir, FileOrHash, Type) :-
-	option(path_info(PathInfo), Request),
-	atom_concat(/, FileOrHash, PathInfo),
+	option(path_info(FileOrHash), Request),
 	(   gitty_file(Dir, FileOrHash, _Hash)
 	->  Type = file
 	;   is_sha1(FileOrHash)
