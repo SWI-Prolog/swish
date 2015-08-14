@@ -113,6 +113,10 @@ http:location(swish, root(.), [priority(-100)]).
 %	  that this flag has no effect if no authentication module is
 %	  loaded.
 
+% Allow other code to overrule the defaults from this file.
+term_expansion(swish_config:config(Config, _Value), []) :-
+	clause(swish_config:config(Config, _), _).
+
 swish_config:config(show_beware,        true).
 swish_config:config(tabled_results,     false).
 swish_config:config(application,        swish).
