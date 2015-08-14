@@ -359,6 +359,11 @@ swish_config_hash -->
 %	  - file(+File)
 %	  If present and code(String) is present, also associate the
 %	  editor with the given file.  See storage.pl.
+%	  - url(+URL)
+%	  as file(File), but used if the data is loaded from an
+%	  alias/file path.
+%	  - title(+Title)
+%	  Defines the title used for the tab.
 
 source(pl, Options) -->
 	{ option(code(Spec), Options), !,
