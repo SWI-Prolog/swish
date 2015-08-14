@@ -251,11 +251,17 @@ remove_old_data(Time) :-
 	).
 
 has_graphviz_renderer(Renderer) :-
-	process:exe_options(ExeOptions),
+	exe_options(ExeOptions),
 	absolute_file_name(path(Renderer), _,
 			   [ file_errors(fail)
 			   | ExeOptions
 			   ]).
+
+exe_options(Options) :-
+	current_prolog_flag(windows, true), !,
+	Options = [ extensions(['',exe,com]), access(read) ].
+exe_options(Options) :-
+	Options = [ access(execute) ].
 
 no_graph_viz(Renderer) -->
 	html(div([ class('no-graph-viz'),
