@@ -121,6 +121,15 @@ _not_ see exactly the same UI for cooperation.  What about
   - Mark files as pengine_src, loaded, not_loaded
     - Only send pengine_src with pengines.
     - Detect pengine_src based on alias?
+  - Can we capture the real output of the pengine thread?
+    - Rebind pengine user_output (and possibly user_error?)
+      to a stream whose flush operation calls pengine_output/1?
+    - Add a general Prolog stream?
+      - open_prolog_stream(Module, write, Options).
+        Calls:
+	  - create(Stream, Options)
+	  - write(Stream, String)
+	  - close(Stream)
 
 ### Bugs
 
