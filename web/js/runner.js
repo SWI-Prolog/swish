@@ -260,22 +260,17 @@ define([ "jquery", "config", "preferences",
 	    var btn = $.el.button("Send");
 
 	    $(inp).keypress(function(ev) {
-			      var s;
 			      if ( ev.which == 13 &&
-				   (s=termNoFullStop($(inp).val())) != "" ) {
+				   elem.prologRunner('respond', $(inp).val()) ) {
 				$(inp).val("");
 				ev.preventDefault();
-				elem.prologRunner('respond', s);
 				return false;		/* prevent bubbling */
 			      } else if ( ev.key != "Esc" ) {
 				ev.stopPropagation();   /* prevent bubbling */
 			      }
 			    });
 	    $(btn).on("click", function() {
-				 var s;
-				 if ( (s=termNoFullStop($(inp).val())) != "" ) {
-				   elem.prologRunner('respond', s);
-				 }
+				 elem.prologRunner('respond', $(inp).val());
 			       });
 
 	    return {input:inp, button:btn};
@@ -534,10 +529,20 @@ define([ "jquery", "config", "preferences",
      * `div class="response">`
      * @param {String} s plain-text response
      */
-    respond: function(s) {
+    respond: function(text) {
       var data = this.data('prologRunner');
-      addAnswer(this, $.el.div({class:"response"}, s));
+
+      if ( data.wait_for == "term" ) {
+	s = termNoFullStop(text);
+	if ( s == "" )
+	  return null;
+      } else {
+	s = Pengine.stringify(text+"\n");
+      }
+
+      addAnswer(this, $.el.div({class:"response"}, text));
       data.prolog.respond(s);
+      return this;
     },
 
     /**
@@ -933,15 +938,22 @@ define([ "jquery", "config", "preferences",
 
   function handlePrompt() {
     var elem   = this.pengine.options.runner;
+    var data   = elem.data('prologRunner');
     var prompt = this.data || "Please enter a Prolog term";
+
+    data.wait_for = "term";
 
     if ( typeof(prompt) == "object" ) {
       if ( prompt.type == "trace" ) {
 	return elem.prologRunner('trace', this);
       } else if ( prompt.type == "jQuery" ) {
 	return elem.prologRunner('jQuery', this);
+      } else if ( prompt.type == "console" ) {
+	prompt = prompt.prompt || "console> ";
+	data.wait_for = "line";
+      } else {
+	prompt = JSON.stringify(prompt);
       }
-      prompt = JSON.stringify(prompt);
     }
 
     elem.prologRunner('setPrompt', prompt);

@@ -41,6 +41,15 @@ div.render-multi {
 div.render-error { display: inline-block; }
 div.render-error span.error { color: #f00; }
 
+		 /*******************************
+		 *	   CONSOLE OUTPUT	*
+		 *******************************/
+
+pre.console
+{ padding: 0px 9px;
+  border: 0px;
+  margin: 0px;
+}
 
 		 /*******************************
 		 *	GENERAL RENDERERS	*
