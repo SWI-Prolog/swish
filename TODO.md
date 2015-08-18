@@ -137,4 +137,3 @@ _not_ see exactly the same UI for cooperation.  What about
     - DCG exports broken?
     - use_module/2 broken.
     - ?- [file]. broken.
-  - Update examples menu if user example is added/removed.

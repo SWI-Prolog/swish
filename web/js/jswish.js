@@ -316,12 +316,19 @@ preferences.setDefault("emacs-keybinding", false);
 
     /**
      * Populate the examples dropdown of the navigation bar. This
-     * menthod is used by the navigation bar initialization.
+     * method is used by the navigation bar initialization.
      * @param {Object} navbar is the navigation bar
      * @param {Object} dropdown is the examples dropdown
      */
     populateExamples: function(navbar, dropdown) {
       var that = this;
+
+      that.off("examples-changed")
+	  .on("examples-changed", function() {
+	     console.log('Updating examples');
+	     $("#navbar").navbar('clearDropdown', dropdown);
+	     that.swish('populateExamples', navbar, dropdown);
+	   });
       $.ajax(config.http.locations.swish_examples,
 	     { dataType: "json",
 	       success: function(data) {

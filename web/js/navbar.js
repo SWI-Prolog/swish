@@ -90,6 +90,16 @@ define([ "jquery", "preferences", "laconic" ],
     },
 
     /**
+     * @param {String} name is the name of the dropdown to clear
+     */
+    clearDropdown: function(name) {
+      var ul = dropDownUL(this, name);
+
+      ul.html("");
+      return this;
+    },
+
+    /**
      * @example
      * $("#navbar").navbar('extendDropdown', 'File',
      *                     'Save as', function () { ... });
