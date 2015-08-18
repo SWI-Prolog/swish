@@ -70,7 +70,7 @@ pengines:authentication_hook(_Request, swish, User) :-
 pengines:not_sandboxed(_User, _Application).
 
 :- if(current_predicate(getuid/1)).
-current_user(User) :-
+current_user(User) :- !,
 	getuid(UID),
 	user_info(UID, Info),
 	user_data(name, Info, User).
