@@ -325,7 +325,6 @@ preferences.setDefault("emacs-keybinding", false);
 
       that.off("examples-changed")
 	  .on("examples-changed", function() {
-	     console.log('Updating examples');
 	     $("#navbar").navbar('clearDropdown', dropdown);
 	     that.swish('populateExamples', navbar, dropdown);
 	   });
