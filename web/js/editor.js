@@ -366,8 +366,8 @@ define([ "cm/lib/codemirror",
        this.each(function() {
 	 var data = $(this).data(pluginName);
 
-	 if ( data && data.cm && cm.state.prologHighlightServer )
-	   ids.push(cm.state.prologHighlightServer.uuid);
+	 if ( data && data.cm && data.cm.state.prologHighlightServer )
+	   ids.push(data.cm.state.prologHighlightServer.uuid);
 	 else
 	   ids.push(null);
        });

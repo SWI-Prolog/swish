@@ -272,7 +272,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 		 if ( reply.error ) {
 		   alert(JSON.stringify(reply));
 		 } else {
-		   if ( options.meta.example != reply.meta.example ) {
+		   if ( options.meta &&
+			options.meta.example != reply.meta.example ) {
 		     elem.closest(".swish").trigger('examples-changed');
 		   }
 		   options.file = reply.file;
