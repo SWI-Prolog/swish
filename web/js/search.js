@@ -124,6 +124,7 @@ define([ "jquery", "config", "typeahead" ],
 			name: "source",
 			limit: 15,
 			cache: false,
+			query_cache_length: 1,
 			remote: config.http.locations.swish_typeahead +
 				"?set=sources&q=%QUERY",
 			datumTokenizer: sourceLineTokenizer,
