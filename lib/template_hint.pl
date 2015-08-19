@@ -251,7 +251,7 @@ man_predicate_info(PI, Name-Value) :-
 	(   atom_string(PName, PString),
 	    Name-Value = name-PString
 	;   Name-Value = arity-Arity
-	;   Name-Value = mode-ModeLine
+	;   Name-Value = (mode)-ModeLine
 	;   once(catch(predicate(PName, Arity, Summary, _, _), _, fail)),
 	    Name-Value = summary-Summary
 	;   predicate_property(system:PHead, iso),
@@ -285,7 +285,7 @@ pldoc_predicate_info(PI, Name-Value) :-
 	(   atom_string(PName, PString),
 	    Name-Value = name-PString
 	;   Name-Value = arity-Arity
-	;   Name-Value = mode-ModeLine
+	;   Name-Value = (mode)-ModeLine
 	;   Name-Value = summary-Summary
 	;   Det \== unknown,
 	    Name-Value = determinism-Det
