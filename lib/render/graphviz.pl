@@ -31,6 +31,7 @@
 	  [ term_rendering//3			% +Term, +Vars, +Options
 	  ]).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/js_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_path)).
@@ -142,7 +143,55 @@ render_dot(DOTString, Program, _Options) -->	% <svg> rendering
 		       ))
 	},
 	(   { Error == "" }
-	->  html(\[SVG])
+	->  html(div([ class(['render-graphviz', 'reactive-size']),
+		       'data-render'('As Graphviz graph')
+		     ],
+		     [ \[SVG],
+		       \js_script({|javascript||
+(function() {
+   if ( $.ajaxScript ) {
+     var div  = $.ajaxScript.parent();
+     var svg  = div.find("svg");
+     var data = { w0: svg.width(),
+		  h0: svg.height()
+		};
+     var pan;
+
+     function updateSize() {
+       console.log("updateSize");
+       var w = svg.closest("div.answer").innerWidth();
+
+       function reactive() {
+	 if ( !data.reactive ) {
+	   data.reactive = true;
+	   div.on("reactive-resize", updateSize);
+	 }
+       }
+
+       w = Math.max(w*0.85, 100);
+       if ( w < data.w0 ) {
+	 svg.width(w);
+	 svg.height(w = Math.max(w*data.h0/data.w0, w/4));
+	 reactive();
+	 if ( pan ) {
+	   pan.resize();
+	   pan.fit();
+	   pan.center();
+	 }
+       }
+     }
+
+     require(["svg-pan-zoom"], function(svgPanZoom) {
+       updateSize()
+       pan = svgPanZoom(svg[0], {
+			  // controlIconsEnabled: true
+			  maxZoom: 50
+			});
+    });
+   }
+ })();
+		      |})
+		     ]))
 	;   html(div(style('color:red;'),
 		     [ '~w'-[Program], ': ', Error]))
 	).

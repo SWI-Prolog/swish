@@ -93,3 +93,4 @@ but that is rather expensive.
 /* Graphviz */
 
 .answer svg { vertical-align: top; }
+.render-graphviz { display: inline-block; }
