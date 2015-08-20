@@ -112,22 +112,26 @@ swish_reply(SwishOptions, Request) :-
 		   background(_, [optional(true)]),
 		   examples(_,   [optional(true)]),
 		   q(_,          [optional(true)]),
-		   format(_,     [oneof([swish,raw]), default(swish)])
+		   format(_,     [oneof([swish,raw,json]), default(swish)])
 		 ],
 	http_parameters(Request, Params),
 	params_options(Params, Options0),
 	merge_options(Options0, SwishOptions, Options1),
 	source_option(Request, Options1, Options2),
-	swish_reply1(Options2).
+	option(format(Format), Options2),
+	swish_reply2(Format, Options2).
 
-swish_reply1(Options) :-
-	option(code(Code), Options),
-	option(format(raw), Options), !,
+swish_reply2(raw, Options) :-
+	option(code(Code), Options), !,
 	format('Content-type: text/x-prolog~n~n'),
 	format('~s', [Code]).
-swish_reply1(Options) :-
+swish_reply2(json, Options) :-
+	option(code(Code), Options), !,
+	option(meta(Meta), Options, _{}),
+	reply_json_dict(json{data:Code, meta:Meta}).
+swish_reply2(_, Options) :-
 	swish_config:reply_page(Options), !.
-swish_reply1(Options) :-
+swish_reply2(_, Options) :-
 	reply_html_page(
 	    swish(main),
 	    [ title('SWISH -- SWI-Prolog for SHaring'),
@@ -207,13 +211,40 @@ path_info_file(PathInfo, Path, Options) :-
 	confirm_access(Path, AliasOptions), !,
 	option(alias(Alias), Options, _).
 
-source_data(Path, Code, [title(Title), type(Ext)]) :-
+source_data(Path, Code, [title(Title), type(Ext), meta(Meta)]) :-
 	setup_call_cleanup(
 	    open(Path, read, In, [encoding(utf8)]),
 	    read_string(In, _, Code),
 	    close(In)),
+	source_metadata(Path, Code, Meta),
 	file_base_name(Path, File),
 	file_name_extension(Title, Ext, File).
+
+%%	source_metadata(+Path, +Code, -Meta:dict) is det.
+%
+%	Obtain meta information about a local  source file. Defined meta
+%	info is:
+%
+%	  - last_modified:Time
+%	  Last modified stamp of the file.  Always present.
+%	  - loaded:true
+%	  Present of the file is a loaded source file
+%	  - modified_since_loaded:true
+%	  Present if the file loaded, has been edited, but not
+%	  yet reloaded.
+
+source_metadata(Path, Code, Meta) :-
+	findall(Name-Value, source_metadata(Path, Code, Name, Value), Pairs),
+	dict_pairs(Meta, meta, Pairs).
+
+source_metadata(Path, _Code, last_modified, Modified) :-
+	time_file(Path, Modified).
+source_metadata(Path, _Code, loaded, true) :-
+	source_file(Path).
+source_metadata(Path, _Code, modified_since_loaded, true) :-
+	source_file_property(Path, modified(ModifiedWhenLoaded)),
+	time_file(Path, Modified),
+	ModifiedWhenLoaded \== Modified.
 
 confirm_access(Path, Options) :-
 	option(if(Condition), Options), !,
