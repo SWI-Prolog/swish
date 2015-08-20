@@ -22,6 +22,7 @@ require.config({
     sha1:        "../bower_components/js-sha1/src/sha1",
     c3:          "../bower_components/c3/c3",
     d3:          "../bower_components/d3/d3",
+    "svg-pan-zoom": "../bower_components/svg-pan-zoom/dist/svg-pan-zoom.min",
 
 					/* CodeMirror extensions */
     "cm/mode/prolog": "codemirror/mode/prolog",

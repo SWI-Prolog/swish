@@ -15,6 +15,7 @@
     "codemirror": "*",
     "tagmanager": "*",
     "js-sha1": "*",
-    "c3": "*"
+    "c3": "*",
+    "svg-pan-zoom": "*"
   }
 }
