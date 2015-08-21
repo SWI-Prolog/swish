@@ -133,9 +133,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       } else {
 	data.file = null;
 	data.meta = null;
-	if ( src.url )
-	  data.url = src.url;
       }
+      if ( src.url )
+	data.url = src.url;
 
       data.setValue(src);
       data.cleanGeneration = data.changeGen();
