@@ -134,8 +134,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	data.file = null;
 	data.meta = null;
       }
-      if ( src.url )
-	data.url = src.url;
+      data.url  = src.url  || undefined;
+      data.type = src.type || undefined;
 
       data.setValue(src);
       data.cleanGeneration = data.changeGen();
@@ -214,14 +214,14 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
      * is updated.
      */
     save: function(meta, what) {
-      var options = this.data(pluginName);
-      var type    = tabbed.tabTypes[options.typeName];
-      var url     = config.http.locations.web_storage;
-      var method  = "POST";
-      var elem    = this;
-      var data;
+      var data   = this.data(pluginName);
+      var type   = tabbed.tabTypes[data.typeName];
+      var url    = config.http.locations.web_storage;
+      var method = "POST";
+      var elem   = this;
+      var post;
 
-      if ( options.url )
+      if ( (data.type == "filesys" || data.type == "external") && data.url )
 	return this.storage('saveURL');
 
       if ( meta == "as" ) {
@@ -229,58 +229,59 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	return this;
       }
 
-      if ( options.file &&
-	   (!meta || !meta.name || meta.name == options.file) ) {
-	url += encodeURI(options.file);
+      if ( data.file &&
+	   (!meta || !meta.name || meta.name == data.file) ) {
+	url += encodeURI(data.file);
 	method = "PUT";
       }
 
       if ( what == "only-meta-data" ) {
-	meta = gitty.reduceMeta(meta, options.meta)
+	meta = gitty.reduceMeta(meta, data.meta)
 	if ( $.isEmptyObject(meta) ) {
 	  alert("No change");
 	  return;
 	}
-	data = { update: "meta-data" };
+	post = { update: "meta-data" };
       } else if ( method == "POST" ) {
-	data = { data: options.getValue(),
+	post = { data: data.getValue(),
 		 type: type.dataType
 	       };
-	if ( options.meta ) {			/* rename */
-	  data.previous = options.meta.commit;
+	if ( data.meta ) {			/* rename */
+	  post.previous = data.meta.commit;
 	}
       } else {
-	if ( !options.isClean(options.cleanGeneration) ) {
-	  data = { data: options.getValue(),
+	if ( !data.isClean(data.cleanGeneration) ) {
+	  post = { data: data.getValue(),
 		   type: type.dataType
 		 };
-	} else if ( gitty.diffTags(options.meta.tags, meta.tags) == null ) {
+	} else if ( gitty.diffTags(data.meta.tags, meta.tags) == null ) {
 	  alert("No change");
 	  return;
 	}
       }
 
       if ( meta )
-	data.meta = meta;
+	post.meta = meta;
 
       $.ajax({ url: url,
                dataType: "json",
 	       contentType: "application/json",
 	       type: method,
-	       data: JSON.stringify(data),
+	       data: JSON.stringify(post),
 	       success: function(reply) {
 		 if ( reply.error ) {
 		   alert(JSON.stringify(reply));
 		 } else {
-		   if ( options.meta &&
-			options.meta.example != reply.meta.example ) {
+		   if ( data.meta &&
+			data.meta.example != reply.meta.example ) {
 		     elem.closest(".swish").trigger('examples-changed');
 		   }
-		   options.file = reply.file;
-		   options.meta = reply.meta;
-		   options.cleanGeneration = options.changeGen();
-		   options.cleanData       = options.getValue();
-		   options.cleanCheckpoint = "save";
+		   data.file = reply.file;
+		   data.meta = reply.meta;
+		   data.type = "gitty";
+		   data.cleanGeneration = data.changeGen();
+		   data.cleanData       = data.getValue();
+		   data.cleanCheckpoint = "save";
 		   modal.feedback({ html: "Saved",
 				    owner: elem
 		                  });
@@ -487,22 +488,26 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
      * dialog.
      */
     info: function() {
-      var options = this.data(pluginName);
-      var meta = options.meta;
+      var data = this.data(pluginName);
+      var meta = data.meta;
       var editor = this;
       var title;
 
-      if ( options.meta ) {
-	title = $().gitty('title', options.meta);
+      if ( data.type == "gitty" ) {
+	title = $().gitty('title', data.meta);
+      } else if ( data.type == "filesys" ) {
+	title = "File system";
+      } else if ( data.type == "external" ) {
+	title = "External";
       } else {
-	title = "Local source";
+	title = "Scratch source";
       }
 
       function infoBody() {
-	if ( options.meta ) {
-	  options.editor = editor;		/* circular reference */
-	  this.gitty(options);
-	} else {
+	if ( data.type == "gitty" ) {
+	  data.editor = editor;		/* circular reference */
+	  this.gitty(data);
+	} else if ( !data.type ) {
 	  this.append($.el.p("The source is not associated with a file. ",
 			     "Use ",
 			     $.el.b("Save ..."),

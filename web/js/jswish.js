@@ -220,6 +220,7 @@ preferences.setDefault("emacs-keybinding", false);
 	       data: {format: "json"},
 	       success: function(reply) {
 		 reply.url = url;
+		 reply.type = "gitty";
 
 		 function copyAttrs(names) {
 		   for(var i=0; i<names.length; i++) {
@@ -268,15 +269,17 @@ preferences.setDefault("emacs-keybinding", false);
 
 		 if ( typeof(source) == "string" ) {
 		   msg = { data: source };
+		   msg.type = "external";
 		 } else if ( typeof(source) == "object" &&
 			     typeof(source.data) == "string" ) {
 		   msg = source;
+		   msg.type = "filesys";
 		 } else {
 		   alert("Invalid data");
 		   return;
 		 }
 
-		 msg.url = options.url;
+		 msg.url  = options.url;
 
 		 function copyAttrs(names) {
 		   for(var i=0; i<names.length; i++) {
