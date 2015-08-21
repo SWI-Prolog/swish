@@ -88,6 +88,9 @@ swish :-
 	swish(localhost:_Port).
 
 swish(Port) :-
+	http_server_property(Port, goal(swish_ide:http_dispatch)), !,
+	open_browser(Port).
+swish(Port) :-
 	http_server(http_dispatch,
 		    [ port(Port),
 		      workers(16)
