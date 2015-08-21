@@ -237,6 +237,7 @@ source_metadata(Path, Code, Meta) :-
 	findall(Name-Value, source_metadata(Path, Code, Name, Value), Pairs),
 	dict_pairs(Meta, meta, Pairs).
 
+source_metadata(Path, _Code, path, Path).
 source_metadata(Path, _Code, last_modified, Modified) :-
 	time_file(Path, Modified).
 source_metadata(Path, _Code, loaded, true) :-

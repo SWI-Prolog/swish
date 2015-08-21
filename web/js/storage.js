@@ -489,16 +489,16 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
      */
     info: function() {
       var data = this.data(pluginName);
-      var meta = data.meta;
+      var meta = data.meta||{};
       var editor = this;
       var title;
 
       if ( data.type == "gitty" ) {
-	title = $().gitty('title', data.meta);
+	title = $().gitty('title', meta);
       } else if ( data.type == "filesys" ) {
-	title = "File system";
+	title = "File system -- " + basename(meta.path);
       } else if ( data.type == "external" ) {
-	title = "External";
+	title = "External -- " + data.url;
       } else {
 	title = "Scratch source";
       }
@@ -507,6 +507,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	if ( data.type == "gitty" ) {
 	  data.editor = editor;		/* circular reference */
 	  this.gitty(data);
+	} else if ( data.type == "filesys" ) {
+	  filesysInfo(this, meta);
 	} else if ( !data.type ) {
 	  this.append($.el.p("The source is not associated with a file. ",
 			     "Use ",
@@ -605,6 +607,21 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
+  function filesysInfo(form, meta) {
+    var table = $.el.table({class:"table table-striped"});
+
+    $(table).append($.el.tr($.el.th("Path"),
+			    $.el.td(meta.path)));
+    $(table).append($.el.tr($.el.th("Modified"),
+			    $.el.td(new Date(meta.last_modified*1000)
+				    .toLocaleString())));
+    $(table).append($.el.tr($.el.th("Loaded"),
+			    $.el.td(meta.modified_since_loaded ? "yes (modified)":
+				    meta.loaded ? "yes" : "no")));
+
+    form.append(table);
+  }
+
   /**
    * <Class description>
    *
@@ -630,5 +647,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 
   function filebase(file) {
     return file ? file.split('.').slice(0,-1).join(".") : null;
+  }
+
+  function basename(path) {
+    return path ? path.split('/').pop() : null;
   }
 });
