@@ -262,11 +262,21 @@ preferences.setDefault("emacs-keybinding", false);
 
       $.ajax({ url: options.url,
 	       type: "GET",
-	       data: {format: "raw"},
+	       data: {format: "json"},
 	       success: function(source) {
-		 var msg = { data: source,
-			     url: options.url
-			   };
+		 var msg;
+
+		 if ( typeof(source) == "string" ) {
+		   msg = { data: source };
+		 } else if ( typeof(source) == "object" &&
+			     typeof(source.data) == "string" ) {
+		   msg = source;
+		 } else {
+		   alert("Invalid data");
+		   return;
+		 }
+
+		 msg.url = options.url;
 
 		 function copyAttrs(names) {
 		   for(var i=0; i<names.length; i++) {
