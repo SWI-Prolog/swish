@@ -356,7 +356,7 @@ define([ "jquery", "config", "typeahead" ],
 		  var url = encodeURI("/"+datum.alias+
 				      "/"+datum.file+
 				      "."+datum.ext);
-		  var play = { url:url, line: datum.line };
+		  var play = { url:url, line:datum.line };
 
 		  if ( datum.query ) {
 		    play.regex = new RegExp(RegExp.escape(datum.query), "g");
