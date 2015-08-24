@@ -151,7 +151,9 @@ define([ "jquery", "config", "typeahead" ],
 		+ "</div>";
 	  }
 
-	  return str+renderSourceMatch(hit);
+	  if ( hit.text )
+	    str += renderSourceMatch(hit);
+	  return str;
 	}
 
 

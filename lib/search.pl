@@ -117,8 +117,7 @@ typeahead(predicates, Query, Template) :-
 	member(Template, Templates),
 	_{name:Name, arity:_} :< Template,
 	sub_atom(Name, 0, _, _, Query).
-typeahead(sources, Query, hit{alias:Alias, file:Base, ext:Ext,
-			      query:Query, line:LineNo, text:Line}) :-
+typeahead(sources, Query, Hit) :-
 	source_file(Path),
 	(   file_alias_path(Alias, Dir),
 	    once(swish_config:source_alias(Alias, _)),
@@ -126,7 +125,12 @@ typeahead(sources, Query, hit{alias:Alias, file:Base, ext:Ext,
 	->  true
 	),
 	file_name_extension(Base, Ext, File),
-	limit(5, search_file(Path, Query, LineNo, Line)).
+	(   sub_atom(File, 0, _, _, Query)
+	->  Hit = hit{alias:Alias, file:Base, ext:Ext, query:Query}
+	;   Hit = hit{alias:Alias, file:Base, ext:Ext,
+		      query:Query, line:LineNo, text:Line},
+	    limit(5, search_file(Path, Query, LineNo, Line))
+	).
 typeahead(sources, Query, hit{alias:Alias, file:Base, ext:Ext,
 			      query:Query, line:LineNo, text:Line}) :-
 	swish_config:source_alias(Alias, Options),
