@@ -159,8 +159,6 @@ define([ "cm/lib/codemirror",
 	  function copyData(name) {
 	    var value = $(ta).data(name);
 	    if ( value ) {
-	      if ( name == "meta" )
-		value = JSON.parse(value);
 	      storage[name] = value;
 	    }
 	  }
@@ -169,6 +167,8 @@ define([ "cm/lib/codemirror",
 	  copyData("url");
 	  copyData("title");
 	  copyData("meta");
+	  if ( storage.meta && storage.meta.path )
+	    storage.type = "filesys";
 
 	  data.cm = CodeMirror.fromTextArea(ta, options);
 	} else {

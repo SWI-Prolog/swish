@@ -400,12 +400,10 @@ swish_config_hash -->
 source(pl, Options) -->
 	{ option(code(Spec), Options), !,
 	  download_source(Spec, Source, Options),
-	  phrase(source_data_attrs(Options), Extra),
-	  source_meta_data(MetaAttrs, Options)
+	  phrase(source_data_attrs(Options), Extra)
 	},
 	html(div([ class(['prolog-editor']),
 		   'data-label'('Program')
-		 | MetaAttrs
 		 ],
 		 [ textarea([ class([source,prolog]),
 			      style('display:none')
@@ -418,7 +416,8 @@ source(_, _) --> [].
 source_data_attrs(Options) -->
 	(source_file_data(Options) -> [] ; []),
 	(source_url_data(Options) -> [] ; []),
-	(source_title_data(Options) -> [] ; []).
+	(source_title_data(Options) -> [] ; []),
+	(source_meta_data(Options) -> [] ; []).
 
 source_file_data(Options) -->
 	{ option(file(File), Options) },
@@ -429,18 +428,17 @@ source_url_data(Options) -->
 source_title_data(Options) -->
 	{ option(title(File), Options) },
 	['data-title'(File)].
+source_meta_data(Options) -->
+	{ option(meta(Meta), Options), !,
+	  atom_json_dict(Text, Meta, [])
+	},
+	['data-meta'(Text)].
 
-
-%%	source_meta_data(-Extra, +Options)
+%%	background(+Options)//
 %
-%	Dump the meta-data of the provided file into swish.meta_data.
-%	@tbd: serialize and add
-
-source_meta_data(['data-meta'(Text)], Options) :-
-	option(file(_), Options),
-	option(meta(Meta), Options), !,
-	atom_json_dict(Text, Meta, []).
-source_meta_data([], _).
+%	Associate  the  background  program  (if  any).  The  background
+%	program is not displayed in  the  editor,   but  is  sent to the
+%	pengine for execution.
 
 background(Options) -->
 	{ option(background(Spec), Options), !,
@@ -480,12 +478,10 @@ query(_) --> [].
 notebooks(swinb, Options) -->
 	{ option(code(Spec), Options),
 	  download_source(Spec, NoteBookText, Options),
-	  phrase(source_data_attrs(Options), Extra),
-	  source_meta_data(MetaAttrs, Options)
+	  phrase(source_data_attrs(Options), Extra)
 	},
 	html(div([ class('notebook'),
 		   'data-label'('Notebook')		% Use file?
-		 | MetaAttrs
 		 ],
 		 [ pre([ class('notebook-data'),
 			 style('display:none')
