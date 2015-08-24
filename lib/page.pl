@@ -246,6 +246,8 @@ source_metadata(Path, _Code, modified_since_loaded, true) :-
 	source_file_property(Path, modified(ModifiedWhenLoaded)),
 	time_file(Path, Modified),
 	ModifiedWhenLoaded \== Modified.
+source_metadata(Path, _Code, module, Module) :-
+	xref_public_list(Path, _, [module(Module)]).
 
 confirm_access(Path, Options) :-
 	option(if(Condition), Options), !,
