@@ -110,10 +110,13 @@ _not_ see exactly the same UI for cooperation.  What about
 ## SWISH as Prolog frontend for local usage
 
   - Deal with login
-    - Limit to localhost
-    - Restrict to user
-      - Password based?
-      - Use cookies and allow only one connection?
+    - Limit to localhost.  Proposed by Douglas Miles:
+      - Generate random initial URL
+      - Fire on this URL
+      - Esablish session cookie
+      - Demand this cookie and destroy the initial URL
+    - Shared/remote usage
+      - Describe how to setup HTTPS.
   - Improve source search
     - Full search
     - Search file names
@@ -124,7 +127,9 @@ _not_ see exactly the same UI for cooperation.  What about
 
 ### Bugs
 
-  - Colouring of /library/http/html_write.pl
-    - DCG exports broken?
-    - use_module/2 broken.
-    - ?- [file]. broken.
+  - Colouring of /library/http/html_write.pl.  Broken sequences:
+    - DCG exports
+    - use_module/2
+    - ?- [file].
+    - :- op(1150, fx, [(mode), (public)]).
+
