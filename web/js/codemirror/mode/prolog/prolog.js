@@ -91,7 +91,7 @@ CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
   function nextUntilUnescaped(stream, state, end) {
     var next;
     while ((next = stream.next()) != null) {
-      if ( next == end )
+      if ( next == end && end != stream.peek() )
       { state.nesting.pop();
         return false;
       }
