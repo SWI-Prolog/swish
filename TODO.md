@@ -121,6 +121,15 @@ _not_ see exactly the same UI for cooperation.  What about
     - Full search
     - Search file names
     - Regex support
+    - Select search targets
+      - File names
+      - Content
+      - Gitty, filesys, examples
+  - Debugger:
+    - Set breakpoints in non-pengine sources
+      - For shared operation this requires limiting a breakpoint to
+        the pengine thread.
+    - Get a stack overview.
   - Mark files as pengine_src, loaded, not_loaded
     - Only send pengine_src with pengines.
     - Detect pengine_src based on alias?
