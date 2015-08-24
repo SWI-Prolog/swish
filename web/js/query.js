@@ -109,15 +109,19 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 
 	  return exl;
 	};
-	data.source = function() {
-	  var src = editor.prologEditor('getSource', "source");
-	  var bg  = $(".background.prolog.source").text();
+	if ( editor.prologEditor('isPengineSource') ) {
+	  data.source = function() {
+	    var src = editor.prologEditor('getSource', "source");
+	    var bg  = $(".background.prolog.source").text();
 
-	  if ( bg )
-	    src += '\n\n' + bg;
+	    if ( bg )
+	      src += '\n\n' + bg;
 
-	  return src;
-	};
+	    return src;
+	  };
+	} else {
+	  data.source = "";
+	}
 	data.sourceID = function() {
 	  return editor.prologEditor('getSourceID');
 	};
@@ -304,7 +308,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
       if ( typeof(data.source) == "function" )
 	query.source = data.source(q);
       else if ( typeof(data.source) == "string" )
-	query.source = source;
+	query.source = data.source;
       if ( tabled )
 	query.tabled = true;
 

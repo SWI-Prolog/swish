@@ -275,6 +275,29 @@ define([ "cm/lib/codemirror",
     },
 
     /**
+     * True if this source needs to be sent to the pengine.  This is
+     * the case of the source is loaded.  We should also exclude module
+     * files.  How do we detect a module file?  Detecting the module
+     * header without support from Prolog is rather hard: count the
+     * arity and ignore preceeding comments, encoding and conditional
+     * compilation directives.
+     */
+    isPengineSource: function() {
+      var data = $(this).data(pluginName);
+      if ( data && data.role == "source" ) {
+	var storageData = $(this).data('storage');
+
+	if ( storageData && storageData.meta ) {
+	  if ( storageData.meta.loaded ||
+	       storageData.meta.module )
+	    return false;
+	}
+      }
+
+      return this;
+    },
+
+    /**
      * Get the defined breakpoints.
      * @param {String} pengineID is the pengine asking for the
      * breakpoints.
@@ -331,11 +354,13 @@ define([ "cm/lib/codemirror",
       var src = [];
 
       this.each(function() {
-	var data = $(this).data(pluginName);
+	if ( $(this).prologEditor('isPengineSource') ) {
+	  var data = $(this).data(pluginName);
 
-	if ( data ) {
-	  if ( !role || (role == data.role) )
-	    src.push(data.cm.getValue());
+	  if ( data ) {
+	    if ( !role || (role == data.role) )
+	      src.push(data.cm.getValue());
+	  }
 	}
       });
 
