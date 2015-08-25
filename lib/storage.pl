@@ -338,7 +338,7 @@ storage_file(File, Data, Meta) :-
 		 *******************************/
 
 :- multifile
-	swish_search:typeahead/3.	% +Set, +Query, -Match
+	swish_search:typeahead/4.	% +Set, +Query, -Match, +Options
 
 %%	swish_search:typeahead(+Set, +Query, -Match) is nondet.
 %
@@ -353,7 +353,7 @@ storage_file(File, Data, Meta) :-
 %	@tbd caching?
 %	@tbd We should only demand public on public servers.
 
-swish_search:typeahead(file, Query, FileInfo) :-
+swish_search:typeahead(file, Query, FileInfo, _Options) :-
 	setting(directory, Dir),
 	gitty_file(Dir, File, Head),
 	gitty_commit(Dir, Head, Meta),
