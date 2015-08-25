@@ -125,8 +125,18 @@ define([ "jquery", "config", "typeahead" ],
 			limit: 15,
 			cache: false,
 			query_cache_length: 1,
-			remote: config.http.locations.swish_typeahead +
+			remote: {
+			  url: config.http.locations.swish_typeahead +
 				"?set=sources&q=%QUERY",
+			  replace: function(url, query) {
+			    var url = url.replace('%QUERY',
+						  encodeURIComponent(query));
+			    var match = $("label.active > input[name=smatch]").val();
+			    if ( match )
+			      url += "&match="+match;
+			    return url;
+			  }
+			},
 			datumTokenizer: sourceLineTokenizer,
 			queryTokenizer: Bloodhound.tokenizers.whitespace
 	               });

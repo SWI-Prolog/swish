@@ -8,8 +8,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "laconic", "search" ],
-       function() {
+define([ "jquery", "form", "laconic", "search" ],
+       function($, form) {
 var tabbed = {
   tabTypes: {},
   type: function(from) {
@@ -424,21 +424,27 @@ var tabbed = {
     },
 
     searchForm: function() {
-      var form = $.el.form({class: "search-sources"},
+      var sform = $.el.form({class: "search-sources"},
 	$.el.label({class:"control-label"}, 'Open source file containing'),
         $.el.div(
 	  {class: "input-group"},
 	  $.el.input({ type: "text",
-		       class: "form-control",
+		       class: "form-control search",
 		       placeholder: "Search sources",
 		       'data-search-in': "sources store_content",
 		     }),
 	  $.el.div({ class: "input-group-btn" },
 		   $.el.button({class:"btn btn-default", type:"submit"},
-			       $.el.i({class:"glyphicon glyphicon-search"})))));
-      $(form).find("input").search();
+			       $.el.i({class:"glyphicon glyphicon-search"})))),
+	$.el.div({class: "input-group"},
+	  form.fields.radio("smatch",
+	    [ { label:"Start of line", value:"sol"},
+	      { label:"Start of word", value:"sow", active:true},
+	      { label:"Anywhere", value:"anywhere" }
+	    ])));
+      $(sform).find("input.search").search();
 
-      return form;
+      return sform;
     },
 
     /**

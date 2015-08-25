@@ -304,6 +304,30 @@ define([ "jquery", "config", "laconic", "tagmanager" ],
 				       'data-dismiss':"modal"},
 				      "Cancel")));
 	return elem;
+      },
+
+      /**
+       * Bootstrap radio button.  To get the value, use
+       * `$("label.active > input[name=Name]").val();
+       * @param {String} name is the name of the radio button
+       * @param {Array(Object)} buttons is an array of objects with
+       * .active, .label and .value
+       */
+      radio: function(name, buttons) {
+	var elem = $.el.div({class:"btn-group", "data-toggle":"buttons"});
+
+	for(var i=0; i<buttons.length; i++) {
+	  var cls = "btn btn-primary btn-xs";
+	  if ( buttons[i].active )
+	    cls += " active";
+	  $(elem).append($.el.label({class:cls},
+				    $.el.input({type:"radio", name:name,
+				                autocomplete:"off",
+						value:buttons[i].value}),
+				    buttons[i].label));
+	}
+
+        return elem;
       }
     },
 

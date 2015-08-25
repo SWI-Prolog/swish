@@ -42,7 +42,7 @@
 :- use_module(config).
 
 :- multifile
-	typeahead/3.			% +Set, +Query, -Match
+	typeahead/4.			% +Set, +Query, -Match, +Options
 
 /** <module> SWISH search from the navigation bar
 
@@ -89,13 +89,14 @@ search_box(_Options) -->
 
 typeahead(Request) :-
 	http_parameters(Request,
-			[ q(Query, [default('')]),
-			  set(Set, [default(predicates)])
+			[ q(Query,     [default('')]),
+			  set(Set,     [default(predicates)]),
+			  match(Match, [default(sow)])
 			]),
-	findall(Match, typeahead(Set, Query, Match), Matches),
-	reply_json_dict(Matches).
+	findall(Result, typeahead(Set, Query, Result, _{match:Match}), Results),
+	reply_json_dict(Results).
 
-%%	typeahead(+Type, +Query, -Match) is nondet.
+%%	typeahead(+Type, +Query, -Match, +Options:dict) is nondet.
 %
 %	Find  typeahead  suggestions  for  a  specific  search  category
 %	(Type). This oredicate is a   multifile  predicate, which allows
@@ -112,12 +113,12 @@ typeahead(Request) :-
 :- multifile
 	swish_config:source_alias/2.
 
-typeahead(predicates, Query, Template) :-
+typeahead(predicates, Query, Template, _) :-
 	swish_config(templates, Templates),
 	member(Template, Templates),
 	_{name:Name, arity:_} :< Template,
 	sub_atom(Name, 0, _, _, Query).
-typeahead(sources, Query, Hit) :-
+typeahead(sources, Query, Hit, Options) :-
 	source_file(Path),
 	(   file_alias_path(Alias, Dir),
 	    once(swish_config:source_alias(Alias, _)),
@@ -129,12 +130,12 @@ typeahead(sources, Query, Hit) :-
 	->  Hit = hit{alias:Alias, file:Base, ext:Ext, query:Query}
 	;   Hit = hit{alias:Alias, file:Base, ext:Ext,
 		      query:Query, line:LineNo, text:Line},
-	    limit(5, search_file(Path, Query, LineNo, Line))
+	    limit(5, search_file(Path, Query, LineNo, Line, Options))
 	).
 typeahead(sources, Query, hit{alias:Alias, file:Base, ext:Ext,
-			      query:Query, line:LineNo, text:Line}) :-
-	swish_config:source_alias(Alias, Options),
-	option(search(Pattern), Options),
+			      query:Query, line:LineNo, text:Line}, Options) :-
+	swish_config:source_alias(Alias, AliasOptions),
+	option(search(Pattern), AliasOptions),
 	DirSpec =.. [Alias,.],
 	absolute_file_name(DirSpec, Dir,
 			   [ access(read),
@@ -149,17 +150,55 @@ typeahead(sources, Query, hit{alias:Alias, file:Base, ext:Ext,
 	\+ source_file(Path),		% already did this one above
 	atom_concat(DirSlash, File, Path),
 	file_name_extension(Base, Ext, File),
-	limit(5, search_file(Path, Query, LineNo, Line)).
+	limit(5, search_file(Path, Query, LineNo, Line, Options)).
 
-search_file(Path, Query, LineNo, Line) :-
-	debug(swish(search), 'Searching ~q for ~q', [Path, Query]),
+search_file(Path, Query, LineNo, Line, Options) :-
+	debug(swish(search), 'Searching ~q for ~q (~q)', [Path, Query, Options]),
 	setup_call_cleanup(
 	    open(Path, read, In),
 	    read_string(In, _, String),
 	    close(In)),
 	split_string(String, "\n", "\r", Lines),
 	nth1(LineNo, Lines, Line),
-	once(sub_string(Line, _, _, _, Query)).
+	match(Line, Query, Options).
+
+match(Text, Query, Options) :-
+	sub_string(Text, Start, _, _, Query),
+	(   Options.get(match) == sow
+	->  sow(Text, Start), !
+	;   Options.get(match) == sol
+	->  !, Start == 0
+	;   !
+	).
+
+sow(_, 0) :- !.
+sow(Text, Offset) :-
+	Pre is Offset-1,
+	sub_atom(Text, Pre, 1, _, Before),
+	sub_atom(Text, Offset, 1, _, Start),
+	char_class(Start, Class),
+	\+ char_class(Before, Class).
+
+char_class(C, Class) :-
+	var(Class), !,
+	(   target_class(Class),
+	    char_type(C, Class)
+	->  true
+	;   Class = other
+	).
+char_class(C, Class) :-
+	(   target_class(Class)
+	->  char_type(C, Class)
+	;   \+ ( target_class(T),
+	         char_type(C, T)
+	       )
+	).
+
+target_class(lower).
+target_class(upper).
+target_class(digit).
+target_class(space).
+target_class(punct).
 
 %%	search(+Request)
 %
