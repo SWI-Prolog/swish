@@ -90,8 +90,11 @@ define([ "jquery", "config", "typeahead" ],
 			     name: "store_content",
 			     limit: 20,
 			     cache: false,
-			     remote: config.http.locations.swish_typeahead +
+			     remote: {
+			       url: config.http.locations.swish_typeahead +
 				     "?set=store_content&q=%QUERY",
+			       replace:bloodHoundURL
+			     },
 			     datumTokenizer: sourceLineTokenizer,
 			     queryTokenizer: Bloodhound.tokenizers.whitespace
 	                   });
@@ -128,14 +131,7 @@ define([ "jquery", "config", "typeahead" ],
 			remote: {
 			  url: config.http.locations.swish_typeahead +
 				"?set=sources&q=%QUERY",
-			  replace: function(url, query) {
-			    var url = url.replace('%QUERY',
-						  encodeURIComponent(query));
-			    var match = $("label.active > input[name=smatch]").val();
-			    if ( match )
-			      url += "&match="+match;
-			    return url;
-			  }
+			  replace: bloodHoundURL
 			},
 			datumTokenizer: sourceLineTokenizer,
 			queryTokenizer: Bloodhound.tokenizers.whitespace
@@ -424,6 +420,16 @@ define([ "jquery", "config", "typeahead" ],
     String.prototype.startsWith = function(str) {
       return this.lastIndexOf(str, 0) === 0;
     };
+  }
+
+  function bloodHoundURL(url, query) {
+    var url = url.replace('%QUERY',
+			  encodeURIComponent(query));
+    var match = $("label.active > input[name=smatch]").val();
+    if ( match )
+      url += "&match="+match;
+
+    return url;
   }
 
   /**

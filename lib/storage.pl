@@ -47,6 +47,7 @@
 :- use_module(page).
 :- use_module(gitty).
 :- use_module(config).
+:- use_module(search).
 
 /** <module> Store files on behalve of web clients
 
@@ -380,20 +381,20 @@ meta_match_query(Query, Meta) :-
 	    \+ char_type(C, csym)
 	).
 
-swish_search:typeahead(store_content, Query, FileInfo) :-
-	limit(25, search_store_content(Query, FileInfo)).
+swish_search:typeahead(store_content, Query, FileInfo, Options) :-
+	limit(25, search_store_content(Query, FileInfo, Options)).
 
-search_store_content(Query, FileInfo) :-
+search_store_content(Query, FileInfo, Options) :-
 	setting(directory, Dir),
 	gitty_file(Dir, File, Head),
 	gitty_data(Dir, Head, Data, Meta),
 	Meta.get(public) == true,
-	limit(5, search_file(File, Meta, Data, Query, FileInfo)).
+	limit(5, search_file(File, Meta, Data, Query, FileInfo, Options)).
 
-search_file(File, Meta, Data, Query, FileInfo) :-
+search_file(File, Meta, Data, Query, FileInfo, Options) :-
 	split_string(Data, "\n", "\r", Lines),
 	nth1(LineNo, Lines, Line),
-	once(sub_string(Line, _, _, _, Query)),
+	match(Line, Query, Options),
 	FileInfo = Meta.put(_{type:"store", file:File,
 			      line:LineNo, text:Line, query:Query
 			     }).

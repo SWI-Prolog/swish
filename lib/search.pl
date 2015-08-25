@@ -28,7 +28,8 @@
 */
 
 :- module(swish_search,
-	  [ search_box//1		% +Options
+	  [ search_box//1,		% +Options
+	    match/3			% +Line, +Query, +Options
 	  ]).
 :- use_module(library(lists)).
 :- use_module(library(http/html_write)).
@@ -161,6 +162,10 @@ search_file(Path, Query, LineNo, Line, Options) :-
 	split_string(String, "\n", "\r", Lines),
 	nth1(LineNo, Lines, Line),
 	match(Line, Query, Options).
+
+%%	match(+Line:string, +Query:string, +Options:dict) is semidet.
+%
+%	True if Line matches Query, respecting Options.
 
 match(Text, Query, Options) :-
 	sub_string(Text, Start, _, _, Query),
