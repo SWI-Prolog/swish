@@ -113,8 +113,6 @@ var cellTypes = {
 	  function copyData(name) {
 	    var value = content.data(name);
 	    if ( value ) {
-	      if ( name == "meta" )
-		value = JSON.parse(value);
 	      storage[name] = value;
 	    }
 	  }
