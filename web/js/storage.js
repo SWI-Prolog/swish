@@ -415,15 +415,20 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	var data = $(this).data(pluginName);
 	var obj = {};
 
+	obj.type = data.type;
+	if ( data.url ) obj.url = data.url;
 	if ( data.meta ) {
-	  obj.type = "store";
-	  obj.name = data.meta.name;
-	} else if ( data.url ) {
-	  obj.type = "url";
-	  obj.url  = data.url;
-	  obj.name = data.url.split("/").pop();
-	} else
-	{ obj.type = "local";
+	  function copyMeta(name) {
+	    if ( data.meta[name] )
+	      obj[name] = data.meta[name];
+	  }
+
+	  copyMeta("name");
+	  copyMeta("path");
+	  copyMeta("modified");
+	  copyMeta("loaded");
+	  copyMeta("modified_since_loaded");
+	  copyMeta("module");
 	}
 
 	if ( $(this).closest(".tab-pane.active").length == 1 )
