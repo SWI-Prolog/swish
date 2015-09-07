@@ -33,7 +33,7 @@ You are reading a SWISH _notebook_.  A notebook is a mixture of _text_, _program
     - [Knights and Knaves (clp(b))](example/knights_and_knaves.pl)
       solves boolean problems.
   - *Side effects and I/O*
-    - [Read and write](example/o.pl) demonstrates that you can read from
+    - [Read and write](example/io.pl) demonstrates that you can read from
       and write to the web interface.
     - [Assert and retract](example/database.pl) demonstrates using the
       dynamic database.
