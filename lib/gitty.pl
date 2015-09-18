@@ -28,14 +28,15 @@
 */
 
 :- module(gitty,
-	  [ gitty_file/3,		% +Store, ?Name, ?Hash
+	  [ gitty_open/2,		% +Store, +Options
+	    gitty_close/1,		% +Store
+
+	    gitty_file/3,		% +Store, ?Name, ?Hash
 	    gitty_create/5,		% +Store, +Name, +Data, +Meta, -Commit
 	    gitty_update/5,		% +Store, +Name, +Data, +Meta, -Commit
 	    gitty_commit/3,		% +Store, +Name, -Meta
 	    gitty_data/4,		% +Store, +Name, -Data, -Meta
 	    gitty_history/4,		% +Store, +Name, -History, +Options
-	    gitty_scan/1,		% +Store
-	    gitty_rescan/1,		% ?Store
 	    gitty_hash/2,		% +Store, ?Hash
 	    gitty_reserved_meta/1,	% ?Key
 
@@ -44,15 +45,19 @@
 	    data_diff/3,		% +String1, +String2, -Diff
 	    udiff_string/2		% +Diff, -String
 	  ]).
-:- use_module(library(zlib)).
-:- use_module(library(filesex)).
 :- use_module(library(sha)).
 :- use_module(library(lists)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
 :- use_module(library(process)).
 :- use_module(library(debug)).
-:- use_module(library(dcg/basics)).
+:- use_module(library(error)).
+
+:- if(exists_source(library(bdb))).
+:- use_module(gitty_driver_bdb, []).
+:- endif.
+:- use_module(gitty_driver_files, []).
+
 
 /** <module> Single-file GIT like version system
 
@@ -78,24 +83,58 @@ the newly created (gitty_create/5) or updated object (gitty_update/5).
 */
 
 :- dynamic
-	head/3,				% Store, Name, Hash
-	store/2,			% Store, Updated
-	heads_input_stream_cache/2.	% Store, Stream
-:- volatile
-	head/3,
-	store/2,
-	heads_input_stream_cache/2.	% Store, Stream
+	gitty_store_type/2.		% +Store, -Module
 
-% enable/disable syncing remote servers running on  the same file store.
-% This facility requires shared access to files and thus doesn't work on
-% Windows.
+%%	gitty_open(+Store, +Options) is det.
+%
+%	Open a gitty store according to Options.  Defined
+%	options are:
+%
+%	  - driver(+Driver)
+%	  Backend driver to use.  One of =files= or =bdb=.  When
+%	  omitted and the store exists, the current store is
+%	  examined.  If the store does not exist, the default
+%	  is =files=.
 
-:- if(current_prolog_flag(windows, true)).
-remote_sync(false).
-:- else.
-remote_sync(true).
-:- endif.
+gitty_open(Store, Options) :-
+	(   option(driver(Driver), Options)
+	->  true
+	;   default_driver(Store, Driver)
+	),
+	set_driver(Store, Driver).
 
+default_driver(Store, Driver) :-
+	directory_file_path(Store, ref, RefDir),
+	exists_directory(RefDir), !,
+	Driver = files.
+default_driver(Store, Driver) :-
+	directory_file_path(Store, heads, RefDir),
+	exists_file(RefDir), !,
+	Driver = bdb.
+default_driver(_, files).
+
+set_driver(Store, Driver) :-
+	must_be(atom, Store),
+	(   driver_module(Driver, Module)
+	->  retractall(gitty_store_type(Store, _)),
+	    asserta(gitty_store_type(Store, Module))
+	;   domain_error(gitty_driver, Driver)
+	).
+
+driver_module(files, gitty_driver_files).
+driver_module(bdb,   gitty_driver_bdb).
+
+store_driver_module(Store, Module) :-
+	atom(Store), !,
+	gitty_store_type(Store, Module).
+
+%%	gitty_close(+Store) is det.
+%
+%	Close access to the Store.
+
+gitty_close(Store) :-
+	store_driver_module(Store, M),
+	M:gitty_close(Store).
 
 %%	gitty_file(+Store, ?File, ?Head) is nondet.
 %
@@ -103,8 +142,8 @@ remote_sync(true).
 %	revision.
 
 gitty_file(Store, Head, Hash) :-
-	gitty_scan(Store),
-	head(Store, Head, Hash).
+	store_driver_module(Store, M),
+	M:gitty_file(Store, Head, Hash).
 
 %%	gitty_create(+Store, +Name, +Data, +Meta, -Commit) is det.
 %
@@ -113,17 +152,15 @@ gitty_file(Store, Head, Hash) :-
 %	@arg Commit is a dit describing the new Commit
 
 gitty_create(Store, Name, _Data, _Meta, _) :-
-	gitty_scan(Store),
-	head(Store, Name, _), !,
+	gitty_file(Store, Name, _Hash), !,
 	throw(error(gitty(file_exists(Name)),_)).
 gitty_create(Store, Name, Data, Meta, CommitRet) :-
 	save_object(Store, Data, blob, Hash),
 	get_time(Now),
-	Commit = gitty{}.put(Meta)
-		        .put(_{ name:Name,
-				time:Now,
-				data:Hash
-			      }),
+	Commit = gitty{time:Now}.put(Meta)
+		                .put(_{ name:Name,
+					data:Hash
+				      }),
 	format(string(CommitString), '~q.~n', [Commit]),
 	save_object(Store, CommitString, commit, CommitHash),
 	CommitRet = Commit.put(commit, CommitHash),
@@ -137,8 +174,7 @@ gitty_create(Store, Name, Data, Meta, CommitRet) :-
 %	Update document Name using Data and the given meta information
 
 gitty_update(Store, Name, Data, Meta, CommitRet) :-
-	gitty_scan(Store),
-	head(Store, Name, OldHead),
+	gitty_file(Store, Name, OldHead),
 	(   _{previous:OldHead} >:< Meta
 	->  true
 	;   throw(error(gitty(commit_version(OldHead, Meta.previous)), _))
@@ -147,9 +183,9 @@ gitty_update(Store, Name, Data, Meta, CommitRet) :-
 	get_time(Now),
 	save_object(Store, Data, blob, Hash),
 	Commit = gitty{}.put(OldMeta)
+			.put(_{time:Now})
 		        .put(Meta)
 		        .put(_{ name:Name,
-				time:Now,
 				data:Hash,
 				previous:OldHead
 			      }),
@@ -161,17 +197,29 @@ gitty_update(Store, Name, Data, Meta, CommitRet) :-
 	      ( delete_object(Store, CommitHash),
 		throw(E))).
 
+%%	gitty_update_head(+Store, +Name, +OldCommit, +NewCommit) is det.
+%
+%	Update the head of a gitty  store   for  Name.  OldCommit is the
+%	current head and NewCommit is the new  head. If Name is created,
+%	and thus there is no head, OldCommit must be `-`.
+%
+%	This operation can fail because another   writer has updated the
+%	head.  This can both be in-process or another process.
+%
+%	@error gitty(file_exists(Name) if the file already exists
+%	@error gitty(not_at_head(Name, OldCommit) if the head was moved
+%	       by someone else.
+
+gitty_update_head(Store, Name, OldCommit, NewCommit) :-
+	store_driver_module(Store, Module),
+	Module:gitty_update_head(Store, Name, OldCommit, NewCommit).
+
 %%	gitty_data(+Store, +NameOrHash, -Data, -Meta) is semidet.
 %
 %	Get the data in object Name and its meta-data
 
 gitty_data(Store, Name, Data, Meta) :-
-	gitty_scan(Store),
-	head(Store, Name, Head), !,
-	load_commit(Store, Head, Meta),
-	load_object(Store, Meta.data, Data).
-gitty_data(Store, Hash, Data, Meta) :-
-	load_commit(Store, Hash, Meta),
+	gitty_commit(Store, Name, Meta),
 	load_object(Store, Meta.data, Data).
 
 %%	gitty_commit(+Store, +NameOrHash, -Meta) is semidet.
@@ -180,8 +228,8 @@ gitty_data(Store, Hash, Data, Meta) :-
 %	is added to the meta-data to specify the commit hash.
 
 gitty_commit(Store, Name, Meta) :-
-	gitty_scan(Store),
-	head(Store, Name, Head), !,
+	must_be(atom, Name),
+	gitty_file(Store, Name, Head), !,
 	load_commit(Store, Head, Meta).
 gitty_commit(Store, Hash, Meta) :-
 	load_commit(Store, Hash, Meta).
@@ -189,14 +237,14 @@ gitty_commit(Store, Hash, Meta) :-
 load_commit(Store, Hash, Meta) :-
 	load_plain_commit(Store, Hash, Meta0),
 	Meta1 = Meta0.put(commit, Hash),
-	(   head(Store, Meta0.name, Hash)
+	(   gitty_file(Store, Meta0.name, Hash)
 	->  Meta = Meta1.put(symbolic, "HEAD")
 	;   Meta = Meta1
 	).
 
 load_plain_commit(Store, Hash, Meta) :-
-	load_object(Store, Hash, String),
-	term_string(Meta, String, []).
+	store_driver_module(Store, Module),
+	Module:load_plain_commit(Store, Hash, Meta).
 
 %%	gitty_history(+Store, +NameOrHash, -History, +Options) is det.
 %
@@ -225,8 +273,7 @@ gitty_history(Store, Name, History, Options) :-
 	).
 
 history_hash_start(Store, Name, Hash) :-
-	gitty_scan(Store),
-	head(Store, Name, Head), !,
+	gitty_file(Store, Name, Head), !,
 	Hash = Head.
 history_hash_start(_, Hash, Hash).
 
@@ -261,12 +308,15 @@ list_prefix(N, [H|T0], [H|T]) :-
 	list_prefix(N2, T0, T).
 
 
-%%	save_object(+Store, +Data, +Type, -Hash)
+%%	save_object(+Store, +Data:string, +Type, -Hash) is det.
 %
 %	Save an object in a git compatible   way. Data provides the data
 %	as a string.
 %
 %	@see http://www.gitguys.com/topics/what-is-the-format-of-a-git-blob/
+%	@bug We currently delete objects if the head cannot be moved.
+%	This can lead to a race condition.   We need to leave that
+%	to GC.
 
 save_object(Store, Data, Type, Hash) :-
 	sha_new_ctx(Ctx0, []),
@@ -275,21 +325,11 @@ save_object(Store, Data, Type, Hash) :-
 	sha_hash_ctx(Ctx0, Hdr, Ctx1, _),
 	sha_hash_ctx(Ctx1, Data, _, HashBin),
 	hash_atom(HashBin, Hash),
-	sub_atom(Hash, 0, 2, _, Dir0),
-	sub_atom(Hash, 2, 2, _, Dir1),
-	sub_atom(Hash, 4, _, 0, File),
-	directory_file_path(Store, Dir0, D0),
-	ensure_directory(D0),
-	directory_file_path(D0, Dir1, D1),
-	ensure_directory(D1),
-	directory_file_path(D1, File, Path),
-	(   exists_file(Path)
-	->  true
-	;   setup_call_cleanup(
-		gzopen(Path, write, Out, [encoding(utf8)]),
-		format(Out, '~s~s', [Hdr, Data]),
-		close(Out))
-	).
+	store_object(Store, Hash, Hdr, Data).
+
+store_object(Store, Hash, Hdr, Data) :-
+	store_driver_module(Store, Module),
+	Module:store_object(Store, Hash, Hdr, Data).
 
 size_in_bytes(Data, Size) :-
 	setup_call_cleanup(
@@ -299,11 +339,6 @@ size_in_bytes(Data, Size) :-
 	    ),
 	    close(Out)).
 
-ensure_directory(Dir) :-
-	exists_directory(Dir), !.
-ensure_directory(Dir) :-
-	make_directory(Dir).
-
 %%	load_object(+Store, +Hash, -Data) is det.
 %%	load_object(+Store, +Hash, -Data, -Type, -Size) is det.
 %
@@ -312,124 +347,24 @@ ensure_directory(Dir) :-
 load_object(Store, Hash, Data) :-
 	load_object(Store, Hash, Data, _, _).
 load_object(Store, Hash, Data, Type, Size) :-
-	hash_file(Store, Hash, Path),
-	setup_call_cleanup(
-	    gzopen(Path, read, In, [encoding(utf8)]),
-	    read_object(In, Data, Type, Size),
-	    close(In)).
-
-read_object(In, Data, Type, Size) :-
-	get_code(In, C0),
-	read_hdr(C0, In, Hdr),
-	phrase((nonblanks(TypeChars), " ", integer(Size)), Hdr),
-	atom_codes(Type, TypeChars),
-	read_string(In, _, Data).
-
-read_hdr(C, In, [C|T]) :-
-	C > 0, !,
-	get_code(In, C1),
-	read_hdr(C1, In, T).
-read_hdr(_, _, []).
-
-%%	gitty_rescan(?Store) is det.
-%
-%	Update our view of the shared   storage  for all stores matching
-%	Store.
-
-gitty_rescan(Store) :-
-	retractall(store(Store, _)).
-
-%%	gitty_scan(+Store) is det.
-%
-%	Scan gitty store for files (entries),   filling  head/3. This is
-%	performed lazily at first access to the store.
-%
-%	@tdb	Possibly we need to maintain a cached version of this
-%		index to avoid having to open all objects of the gitty
-%		store.
-
-gitty_scan(Store) :-
-	store(Store, _), !,
-	(   remote_sync(true)
-	->  with_mutex(gitty, remote_updates(Store))
-	;   true
-	).
-gitty_scan(Store) :-
-	with_mutex(gitty, gitty_scan_sync(Store)).
-
-:- thread_local
-	latest/3.
-
-gitty_scan_sync(Store) :-
-	store(Store, _), !.
-gitty_scan_sync(Store) :-
-	gitty_scan_latest(Store),
-	forall(retract(latest(Name, Hash, _Time)),
-	       assert(head(Store, Name, Hash))),
-	get_time(Now),
-	assertz(store(Store, Now)).
-
-%%	gitty_scan_latest(+Store)
-%
-%	Scans the gitty store, extracting  the   latest  version of each
-%	named entry.
-
-gitty_scan_latest(Store) :-
-	retractall(head(Store, _, _)),
-	retractall(latest(_, _, _)),
-	(   gitty_hash(Store, Hash),
-	    load_object(Store, Hash, Data, commit, _Size),
-	    term_string(Meta, Data, []),
-	    _{name:Name, time:Time} :< Meta,
-	    (	latest(Name, _, OldTime),
-		OldTime > Time
-	    ->	true
-	    ;	retractall(latest(Name, _, _)),
-		assertz(latest(Name, Hash, Time))
-	    ),
-	    fail
-	;   true
-	).
-
+	store_driver_module(Store, Module),
+	Module:load_object(Store, Hash, Data, Type, Size).
 
 %%	gitty_hash(+Store, ?Hash) is nondet.
 %
 %	True when Hash is an object in the store.
 
 gitty_hash(Store, Hash) :-
-	var(Hash), !,
-	access_file(Store, exist),
-	directory_files(Store, Level0),
-	member(E0, Level0),
-	E0 \== '..',
-	atom_length(E0, 2),
-	directory_file_path(Store, E0, Dir0),
-	directory_files(Dir0, Level1),
-	member(E1, Level1),
-	E1 \== '..',
-	atom_length(E1, 2),
-	directory_file_path(Dir0, E1, Dir),
-	directory_files(Dir, Files),
-	member(File, Files),
-	atom_length(File, 36),
-	atomic_list_concat([E0,E1,File], Hash).
-gitty_hash(Store, Hash) :-
-	hash_file(Store, Hash, File),
-	exists_file(File).
+	store_driver_module(Store, Module),
+	Module:gitty_hash(Store, Hash).
 
 %%	delete_object(+Store, +Hash)
 %
 %	Delete an existing object
 
 delete_object(Store, Hash) :-
-	hash_file(Store, Hash, File),
-	delete_file(File).
-
-hash_file(Store, Hash, Path) :-
-	sub_atom(Hash, 0, 2, _, Dir0),
-	sub_atom(Hash, 2, 2, _, Dir1),
-	sub_atom(Hash, 4, _, 0, File),
-	atomic_list_concat([Store, Dir0, Dir1, File], /, Path).
+	store_driver_module(Store, Module),
+	Module:delete_object(Store, Hash).
 
 %%	gitty_reserved_meta(?Key) is nondet.
 %
@@ -440,119 +375,6 @@ gitty_reserved_meta(time).
 gitty_reserved_meta(data).
 gitty_reserved_meta(previous).
 
-
-		 /*******************************
-		 *	      SYNCING		*
-		 *******************************/
-
-%%	gitty_update_head(+Store, +Name, +OldCommit, +NewCommit) is det.
-%
-%	Update the head of a gitty  store   for  Name.  OldCommit is the
-%	current head and NewCommit is the new  head. If Name is created,
-%	and thus there is no head, OldCommit must be `-`.
-%
-%	This operation can fail because another   writer has updated the
-%	head.  This can both be in-process or another process.
-
-gitty_update_head(Store, Name, OldCommit, NewCommit) :-
-	with_mutex(gitty,
-		   gitty_update_head_sync(Store, Name, OldCommit, NewCommit)).
-
-gitty_update_head_sync(Store, Name, OldCommit, NewCommit) :-
-	remote_sync(true), !,
-	setup_call_cleanup(
-	    heads_output_stream(Store, HeadsOut),
-	    gitty_update_head_sync(Store, Name, OldCommit, NewCommit, HeadsOut),
-	    close(HeadsOut)).
-gitty_update_head_sync(Store, Name, OldCommit, NewCommit) :-
-	gitty_update_head_sync2(Store, Name, OldCommit, NewCommit).
-
-gitty_update_head_sync(Store, Name, OldCommit, NewCommit, HeadsOut) :-
-	gitty_update_head_sync2(Store, Name, OldCommit, NewCommit),
-	format(HeadsOut, '~q.~n', [head(Name, OldCommit, NewCommit)]).
-
-gitty_update_head_sync2(Store, Name, OldCommit, NewCommit) :-
-	gitty_scan(Store),		% fetch remote changes
-	(   OldCommit == (-)
-	->  (   head(Store, Name, _)
-	    ->	throw(error(gitty(file_exists(Name),_)))
-	    ;	assertz(head(Store, Name, NewCommit))
-	    )
-	;   (   retract(head(Store, Name, OldCommit))
-	    ->	assertz(head(Store, Name, NewCommit))
-	    ;	throw(error(gitty(not_at_head(Name, OldCommit)), _))
-	    )
-	).
-
-remote_updates(Store) :-
-	remote_updates(Store, List),
-	maplist(update_head(Store), List).
-
-update_head(Store, head(Name, OldCommit, NewCommit)) :-
-	(   OldCommit == (-)
-	->  \+ head(Store, Name, _)
-	;   retract(head(Store, Name, OldCommit))
-	), !,
-	assert(head(Store, Name, NewCommit)).
-update_head(_, _).
-
-%%	remote_updates(+Store, -List) is det.
-%
-%	Find updates from other gitties  on   the  same filesystem. Note
-%	that we have to push/pop the input   context to avoid creating a
-%	notion of an  input  context   which  possibly  relate  messages
-%	incorrectly to the sync file.
-
-remote_updates(Store, List) :-
-	heads_input_stream(Store, Stream),
-	setup_call_cleanup(
-	    '$push_input_context'(gitty_sync),
-	    read_new_terms(Stream, List),
-	    '$pop_input_context').
-
-read_new_terms(Stream, Terms) :-
-	read(Stream, First),
-	read_new_terms(First, Stream, Terms).
-
-read_new_terms(end_of_file, _, List) :- !,
-	List = [].
-read_new_terms(Term, Stream, [Term|More]) :-
-	read(Stream, Term2),
-	read_new_terms(Term2, Stream, More).
-
-heads_output_stream(Store, Out) :-
-	heads_file(Store, HeadsFile),
-	open(HeadsFile, append, Out,
-	     [ encoding(utf8),
-	       lock(exclusive)
-	     ]).
-
-heads_input_stream(Store, Stream) :-
-	heads_input_stream_cache(Store, Stream0), !,
-	Stream = Stream0.
-heads_input_stream(Store, Stream) :-
-	heads_file(Store, File),
-	between(1, 2, _),
-	catch(open(File, read, In,
-		   [ encoding(utf8),
-		     eof_action(reset)
-		   ]),
-	      _,
-	      create_heads_file(Store)), !,
-	assert(heads_input_stream_cache(Store, In)),
-	Stream = In.
-
-create_heads_file(Store) :-
-	call_cleanup(
-	    heads_output_stream(Store, Out),
-	    close(Out)),
-	fail.					% always fail!
-
-heads_file(Store, HeadsFile) :-
-	ensure_directory(Store),
-	directory_file_path(Store, ref, RefDir),
-	ensure_directory(RefDir),
-	directory_file_path(RefDir, head, HeadsFile).
 
 :- multifile
 	prolog:error_message//1.
