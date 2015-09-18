@@ -52,6 +52,7 @@
 :- use_module(library(process)).
 :- use_module(library(debug)).
 :- use_module(library(error)).
+:- use_module(library(filesex)).
 
 :- if(exists_source(library(bdb))).
 :- use_module(gitty_driver_bdb, []).
@@ -97,6 +98,10 @@ the newly created (gitty_create/5) or updated object (gitty_update/5).
 %	  is =files=.
 
 gitty_open(Store, Options) :-
+	(   exists_directory(Store)
+	->  true
+	;   existence_error(directory, Store)
+	),
 	(   option(driver(Driver), Options)
 	->  true
 	;   default_driver(Store, Driver)
