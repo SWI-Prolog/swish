@@ -177,11 +177,10 @@ gitty_create(Store, Name, _Data, _Meta, _) :-
 gitty_create(Store, Name, Data, Meta, CommitRet) :-
 	save_object(Store, Data, blob, Hash),
 	get_time(Now),
-	Commit = gitty{}.put(Meta)
-		        .put(_{ name:Name,
-				time:Now,
-				data:Hash
-			      }),
+	Commit = gitty{time:Now}.put(Meta)
+		                .put(_{ name:Name,
+					data:Hash
+				      }),
 	format(string(CommitString), '~q.~n', [Commit]),
 	save_object(Store, CommitString, commit, CommitHash),
 	CommitRet = Commit.put(commit, CommitHash),
@@ -204,9 +203,9 @@ gitty_update(Store, Name, Data, Meta, CommitRet) :-
 	get_time(Now),
 	save_object(Store, Data, blob, Hash),
 	Commit = gitty{}.put(OldMeta)
+			.put(_{time:Now})
 		        .put(Meta)
 		        .put(_{ name:Name,
-				time:Now,
 				data:Hash,
 				previous:OldHead
 			      }),
