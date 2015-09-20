@@ -33,6 +33,7 @@
 	  ]).
 :- use_module(gitty).
 :- use_module(library(apply)).
+:- use_module(library(option)).
 
 /** <module> Gitty maintenance tools
 
@@ -111,3 +112,76 @@ gitty_full_history(Store, History) :-
 
 gitty_full_history(Store, File, History) :-
 	gitty_history(Store, File, History, [depth(1000000)]).
+
+%%	gitty_fsck(+Store, +File, +Options)
+%
+%	Check integrity of the store.  Requires the following step:
+%
+%	  - Validate each object
+%	    - Does hash match content?
+%	  - Validate each commit
+%	    - Does the data exists?
+%	    - Does previous exist?
+%	  - Reconstruct heads
+
+gitty_fsck(Store) :-
+	check_objects(Store).
+
+check_objects(Store) :-
+	aggregate_all(count,
+		      ( gitty_hash(Store, Hash),
+			check_object(Store, Hash)
+		      ), Objects),
+	progress(checked_objects(Objects)).
+
+check_object(Store, Hash) :-
+	gitty:fsck_object(Store, Hash), !.
+check_object(Store, Hash) :-
+	gripe(bad_object(Store, Hash)).
+
+
+
+gitty_fsck(Store, File, Options) :-
+	gitty_file(Store, File, Head),
+	check_commit(Store, File, Head, Options).
+
+check_commit(Store, File, Head, Options) :-
+	(   gitty_commit(Store, Head, Commit)
+	->  (   gitty_hash(Store, Commit.data)
+	    ->	true
+	    ;	fix(gitty:delete_object(Store, Head), Options),
+	        gripe(no_data(File, Commit.data))
+	    ),
+	    (   Prev = Commit.get(previous)
+	    ->  check_commit(Store, Commit.name, Prev, Options)
+	    ;   true
+	    )
+	;   fix(gitty:delete_head(Store, Head), Options),
+	    gripe(no_commit(Store, File, Head))
+	).
+
+:- meta_predicate
+	fix(0, +).
+
+fix(Goal, Options) :-
+	option(fix(true), Options), !,
+	call(Goal).
+fix(_, _).
+
+
+gripe(Term) :-
+	print_message(error, gitty(Term)).
+progress(Term) :-
+	print_message(informational, gitty(Term)).
+
+:- multifile prolog:message//1.
+
+prolog:message(gitty(Term)) -->
+	gitty_message(Term).
+
+gitty_message(no_commit(Store, File, Head)) -->
+	[ '~p: file ~p: missing commit object ~p'-[Store, File, Head] ].
+gitty_message(bad_object(Store, Hash)) -->
+	[ '~p: ~p: corrupt object'-[Store, Hash] ].
+gitty_message(checked_objects(Count)) -->
+	[ 'Checked ~D objects'-[Count] ].
