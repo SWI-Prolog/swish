@@ -32,6 +32,7 @@
 	    gitty_file/3,		% +Store, ?Name, ?Hash
 
 	    gitty_update_head/4,	% +Store, +Name, +OldCommit, +NewCommit
+	    delete_head/2,		% +Store, +Name
 	    store_object/4,		% +Store, +Hash, +Header, +Data
 	    delete_object/2,		% +Store, +Hash
 
@@ -102,7 +103,9 @@ bdb_store_sync(Store, Env) :-
 		 [ home(Store),
 		   create(true),
 		   thread(true),
-		   init_txn(true)
+		   init_txn(true),
+		   recover(true),
+		   register(true)
 		 ]),
 	asserta(bdb_env(Store, Env)).
 
@@ -169,12 +172,21 @@ gitty_update_head_sync(Store, Name, OldCommit, NewCommit) :-
 	    )
 	).
 
+%%	delete_head(+Store, +Name) is det.
+%
+%	Delete the named head.
+
+delete_head(Store, Name) :-
+	bdb_handle(Store, heads, BDB),
+	bdb_del(BDB, Name, _Old).
+
 %%	load_plain_commit(+Store, +Hash, -Meta:dict) is semidet.
 %
-%	Load the commit data as a dict.
+%	Load the commit data as a dict. Fails  if Hash does not exist or
+%	is not a commit.
 
 load_plain_commit(Store, Hash, Meta) :-
-	load_object(Store, Hash, String, _Type, _Size),
+	load_object(Store, Hash, String, commit, _Size),
 	term_string(Meta, String, []).
 
 %%	store_object(+Store, +Hash, +Header:string, +Data:string) is det.

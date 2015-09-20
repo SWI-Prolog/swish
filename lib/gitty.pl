@@ -38,6 +38,7 @@
 	    gitty_data/4,		% +Store, +Name, -Data, -Meta
 	    gitty_history/4,		% +Store, +Name, -History, +Options
 	    gitty_hash/2,		% +Store, ?Hash
+
 	    gitty_reserved_meta/1,	% ?Key
 
 	    gitty_diff/4,		% +Store, ?Start, +End, -Diff
@@ -324,9 +325,9 @@ list_prefix(N, [H|T0], [H|T]) :-
 %	to GC.
 
 save_object(Store, Data, Type, Hash) :-
-	sha_new_ctx(Ctx0, []),
 	size_in_bytes(Data, Size),
 	format(string(Hdr), '~w ~d\u0000', [Type, Size]),
+	sha_new_ctx(Ctx0, []),
 	sha_hash_ctx(Ctx0, Hdr, Ctx1, _),
 	sha_hash_ctx(Ctx1, Data, _, HashBin),
 	hash_atom(HashBin, Hash),
@@ -343,6 +344,21 @@ size_in_bytes(Data, Size) :-
 	      byte_count(Out, Size)
 	    ),
 	    close(Out)).
+
+
+%%	fsck_object(+Store, +Hash) is semidet.
+%
+%	Test the integrity of object Hash in Store.
+
+:- public fsck_object/2.
+fsck_object(Store, Hash) :-
+	load_object(Store, Hash, Data, Type, Size),
+	format(string(Hdr), '~w ~d\u0000', [Type, Size]),
+	sha_new_ctx(Ctx0, []),
+	sha_hash_ctx(Ctx0, Hdr, Ctx1, _),
+	sha_hash_ctx(Ctx1, Data, _, HashBin),
+	hash_atom(HashBin, Hash).
+
 
 %%	load_object(+Store, +Hash, -Data) is det.
 %%	load_object(+Store, +Hash, -Data, -Type, -Size) is det.
@@ -380,13 +396,22 @@ gitty_reserved_meta(time).
 gitty_reserved_meta(data).
 gitty_reserved_meta(previous).
 
+		 /*******************************
+		 *	    FSCK SUPPORT	*
+		 *******************************/
 
-:- multifile
-	prolog:error_message//1.
+:- public
+	delete_object/2,
+	delete_head/2.
 
-prolog:error_message(gitty(not_at_head(Name, _OldCommit))) -->
-	[ 'Gitty: cannot update head for "~w" because it was \c
-	   updated by someone else'-[Name] ].
+%%	delete_head(+Store, +Head) is det.
+%
+%	Delete Head from the administration.  Used if the head is
+%	inconsistent.
+
+delete_head(Store, Head) :-
+	store_driver_module(Store, Module),
+	Module:delete_head(Store, Head).
 
 
 		 /*******************************
@@ -704,3 +729,17 @@ longest(L1, L2, Longest) :-
 	->  Longest = L1
 	;   Longest = L2
 	).
+
+		 /*******************************
+		 *	      MESSAGES		*
+		 *******************************/
+:- multifile
+	prolog:error_message//1.
+
+prolog:error_message(gitty(not_at_head(Name, _OldCommit))) -->
+	[ 'Gitty: cannot update head for "~w" because it was \c
+	   updated by someone else'-[Name] ].
+prolog:error_message(gitty(file_exists(Name))) -->
+	[ 'Gitty: File exists: ~p'-[Name] ].
+
+

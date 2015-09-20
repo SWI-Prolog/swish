@@ -32,6 +32,7 @@
 	    gitty_file/3,		% +Store, ?Name, ?Hash
 
 	    gitty_update_head/4,	% +Store, +Name, +OldCommit, +NewCommit
+	    delete_head/2,		% +Store, +Name
 	    store_object/4,		% +Store, +Hash, +Header, +Data
 	    delete_object/2,		% +Store, +Hash
 
@@ -379,3 +380,12 @@ heads_file(Store, HeadsFile) :-
 	directory_file_path(Store, ref, RefDir),
 	ensure_directory(RefDir),
 	directory_file_path(RefDir, head, HeadsFile).
+
+%%	delete_head(+Store, +Head) is det.
+%
+%	Delete Head from Store. Used  by   gitty_fsck/1  to remove heads
+%	that have no commits. Should  we   forward  this  to remotes, or
+%	should they do their own thing?
+
+delete_head(Store, Head) :-
+	retractall(head(Store, Head, _)).
