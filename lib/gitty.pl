@@ -183,7 +183,7 @@ gitty_update(Store, Name, Data, Meta, CommitRet) :-
 	gitty_file(Store, Name, OldHead),
 	(   _{previous:OldHead} >:< Meta
 	->  true
-	;   throw(error(gitty(commit_version(OldHead, Meta.previous)), _))
+	;   throw(error(gitty(commit_version(Name, OldHead, Meta.previous)), _))
 	),
 	load_plain_commit(Store, OldHead, OldMeta),
 	get_time(Now),
@@ -402,7 +402,8 @@ gitty_reserved_meta(previous).
 
 :- public
 	delete_object/2,
-	delete_head/2.
+	delete_head/2,
+	set_head/3.
 
 %%	delete_head(+Store, +Head) is det.
 %
@@ -412,6 +413,15 @@ gitty_reserved_meta(previous).
 delete_head(Store, Head) :-
 	store_driver_module(Store, Module),
 	Module:delete_head(Store, Head).
+
+%%	set_head(+Store, +File, +Head) is det.
+%
+%	Register Head as the Head hash for File, removing possible
+%	old head.
+
+set_head(Store, File, Head) :-
+	store_driver_module(Store, Module),
+	Module:set_head(Store, File, Head).
 
 
 		 /*******************************
@@ -741,5 +751,7 @@ prolog:error_message(gitty(not_at_head(Name, _OldCommit))) -->
 	   updated by someone else'-[Name] ].
 prolog:error_message(gitty(file_exists(Name))) -->
 	[ 'Gitty: File exists: ~p'-[Name] ].
+prolog:error_message(gitty(commit_version(Name, _Head, _Previous))) -->
+	[ 'Gitty: ~p: cannot update (modified by someone else)'-[Name] ].
 
 

@@ -28,12 +28,14 @@
 */
 
 :- module(gitty_tools,
-	  [ gitty_copy_store/3,		% StoreIn, StoreOut, Driver
-	    gitty_compare_stores/2	% Store1, Store2
+	  [ gitty_copy_store/3,		% +StoreIn, +StoreOut, +Driver
+	    gitty_compare_stores/2,	% +Store1, +Store2
+	    gitty_fsck/2		% +Store, +Options
 	  ]).
 :- use_module(gitty).
 :- use_module(library(apply)).
 :- use_module(library(option)).
+:- use_module(library(aggregate)).
 
 /** <module> Gitty maintenance tools
 
@@ -113,52 +115,137 @@ gitty_full_history(Store, History) :-
 gitty_full_history(Store, File, History) :-
 	gitty_history(Store, File, History, [depth(1000000)]).
 
-%%	gitty_fsck(+Store, +File, +Options)
+%%	gitty_fsck(+Store, +Options)
 %
 %	Check integrity of the store.  Requires the following step:
 %
-%	  - Validate each object
-%	    - Does hash match content?
+%	  - Validate objects by recomputing and comparing their hash
+%	    fix: remove bad objects
 %	  - Validate each commit
 %	    - Does the data exists?
 %	    - Does previous exist?
 %	  - Reconstruct heads
 
-gitty_fsck(Store) :-
-	check_objects(Store).
+gitty_fsck(Store, Options) :-
+	gitty_open(Store, []),
+	check_objects(Store, Options),
+	load_commits(Store),
+	check_heads(Store, Options),
+	check_commits(Store, Options).
 
-check_objects(Store) :-
+check_objects(Store, Options) :-
 	aggregate_all(count,
 		      ( gitty_hash(Store, Hash),
-			check_object(Store, Hash)
+			check_object(Store, Hash, Options)
 		      ), Objects),
 	progress(checked_objects(Objects)).
 
-check_object(Store, Hash) :-
+%%	check_object(+Store, +Hash) is det.
+%
+%	Check  the  validity  of  the  object    indicated  by  Hash  by
+%	recomputing the hash from the object   content.  If fix(true) is
+%	specified, bad objects are deleted from the store.
+
+check_object(Store, Hash, _) :-
 	gitty:fsck_object(Store, Hash), !.
-check_object(Store, Hash) :-
-	gripe(bad_object(Store, Hash)).
+check_object(Store, Hash, Options) :-
+	gripe(bad_object(Store, Hash)),
+	fix(gitty:delete_object(Store, Hash), Options).
 
+%%	load_commits(+Store) is det.
+%
+%	Load all commits into a dynamic predicate
+%
+%	  commit(Store, CommitHash, PrevCommitHash, DataHash)
 
+:- dynamic
+	commit/5.			% Store, Commit, Prev, Name, Data
 
-gitty_fsck(Store, File, Options) :-
-	gitty_file(Store, File, Head),
-	check_commit(Store, File, Head, Options).
+load_commits(Store) :-
+	clean_commits(Store),
+	(   gitty_hash(Store, Hash),
+	    gitty_commit(Store, Hash, Commit),
+	    (	Prev = Commit.get(previous)
+	    ->	true
+	    ;	Prev = (-)
+	    ),
+	    assertz(commit(Store, Commit.commit, Prev, Commit.name, Commit.data)),
+	    fail
+	;   true
+	).
 
-check_commit(Store, File, Head, Options) :-
+clean_commits(Store) :-
+	retractall(commit(Store, _, _, _, _)).
+
+%%	check_heads(+Store, +Options)
+%
+%	Verify the head admin.
+
+check_heads(Store, Options) :-
+	forall(head(Store, File, Head),
+	       check_head(Store, File, Head, Options)),
+	forall(gitty_file(Store, File, Head),
+	       check_head_exists(Store, File, Head, Options)).
+
+check_head(Store, File, Head, Options) :-
+	(   gitty_file(Store, File, Head)
+	->  true
+	;   gitty_file(Store, File, WrongHash)
+	->  gripe(head_mismatch(Store, File, Head, WrongHash)),
+	    fix(gitty:set_head(Store, File, Head), Options)
+	;   gripe(lost_head(Store, File, Head)),
+	    fix(gitty:set_head(Store, File, Head), Options)
+	).
+
+check_head_exists(Store, File, Head, Options) :-
+	(   head(Store, File, Head)
+	->  true
+	;   (   option(fix(true), Options)
+	    ->	assertion(\+head(Store, File, _))
+	    ;	true
+	    ),
+	    gripe(lost_file(Store, File)),
+	    fix(gitty:delete_head(Store, File), Options)
+	).
+
+head(Store, File, Head) :-
+	commit(Store, Head, _, File, _),
+	\+ commit(Store, _, Head, _, _).
+
+%%	check_commits(Store, Options)
+%
+%	Check connectivity of all commits.
+
+check_commits(Store, Options) :-
+	forall(gitty_file(Store, _File, Head),
+	       check_commit(Store, Head, Options)).
+
+%%	check_commit(+Store, +Head, +Options) is det.
+%
+%	Validate a commit. First checks the  connectivety. If this fails
+%	we have some options:
+%
+%	  - Remove the most recent part of the history until it becomes
+%	    consistent.
+%	  - If data is missing from an older commit, rewrite the
+%	    history.
+
+check_commit(Store, Head, Options) :-
 	(   gitty_commit(Store, Head, Commit)
 	->  (   gitty_hash(Store, Commit.data)
 	    ->	true
-	    ;	fix(gitty:delete_object(Store, Head), Options),
-	        gripe(no_data(File, Commit.data))
+	    ;	gripe(no_data(Commit.data)),
+		fail
 	    ),
 	    (   Prev = Commit.get(previous)
-	    ->  check_commit(Store, Commit.name, Prev, Options)
+	    ->  check_commit(Store, Prev, Options)
 	    ;   true
 	    )
-	;   fix(gitty:delete_head(Store, Head), Options),
-	    gripe(no_commit(Store, File, Head))
-	).
+	;   gripe(no_commit(Store, Head)),
+	    fail
+	), !.
+check_commit(_, _, _).
+
 
 :- meta_predicate
 	fix(0, +).
@@ -183,5 +270,11 @@ gitty_message(no_commit(Store, File, Head)) -->
 	[ '~p: file ~p: missing commit object ~p'-[Store, File, Head] ].
 gitty_message(bad_object(Store, Hash)) -->
 	[ '~p: ~p: corrupt object'-[Store, Hash] ].
+gitty_message(lost_file(Store, File)) -->
+	[ '~p: ~p: lost file'-[Store, File] ].
+gitty_message(lost_head(Store, File, Head)) -->
+	[ '~p: ~p: lost head: ~p'-[Store, File, Head] ].
+gitty_message(head_mismatch(Store, File, Head, WrongHash)) -->
+	[ '~p: ~p: wrong head (~p --> ~p)'-[Store, File, WrongHash, Head] ].
 gitty_message(checked_objects(Count)) -->
 	[ 'Checked ~D objects'-[Count] ].

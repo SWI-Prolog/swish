@@ -33,6 +33,7 @@
 
 	    gitty_update_head/4,	% +Store, +Name, +OldCommit, +NewCommit
 	    delete_head/2,		% +Store, +Name
+	    set_head/3,			% +Store, +Name, +Hash
 	    store_object/4,		% +Store, +Hash, +Header, +Data
 	    delete_object/2,		% +Store, +Hash
 
@@ -179,6 +180,14 @@ gitty_update_head_sync(Store, Name, OldCommit, NewCommit) :-
 delete_head(Store, Name) :-
 	bdb_handle(Store, heads, BDB),
 	bdb_del(BDB, Name, _Old).
+
+%%	set_head(+Store, +File, +Hash) is det.
+%
+%	Set the head of the given File to Hash
+
+set_head(Store, File, Hash) :-
+	bdb_handle(Store, heads, BDB),
+	bdb_put(BDB, File, Hash).
 
 %%	load_plain_commit(+Store, +Hash, -Meta:dict) is semidet.
 %

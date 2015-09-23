@@ -33,6 +33,7 @@
 
 	    gitty_update_head/4,	% +Store, +Name, +OldCommit, +NewCommit
 	    delete_head/2,		% +Store, +Name
+	    set_head/3,			% +Store, +Name, +Hash
 	    store_object/4,		% +Store, +Hash, +Header, +Data
 	    delete_object/2,		% +Store, +Hash
 
@@ -46,7 +47,6 @@
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
 :- use_module(library(apply)).
-:- use_module(library(error)).
 :- use_module(library(dcg/basics)).
 
 /** <module> Gitty plain files driver
@@ -389,3 +389,11 @@ heads_file(Store, HeadsFile) :-
 
 delete_head(Store, Head) :-
 	retractall(head(Store, Head, _)).
+
+%%	set_head(+Store, +File, +Hash) is det.
+%
+%	Set the head of the given File to Hash
+
+set_head(Store, File, Hash) :-
+	retractall(head(Store, File, _)),
+	asserta(head(Store, File, Hash)).
