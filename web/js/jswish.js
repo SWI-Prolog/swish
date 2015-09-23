@@ -26,7 +26,8 @@ define([ "jquery",
 	 "term",
 	 "laconic",
 	 "d3",
-	 "c3"
+	 "c3",
+	 "svg-pan-zoom"
        ], function($, config, preferences, history, modal) {
 
 preferences.setDefault("semantic-highlighting", true);
