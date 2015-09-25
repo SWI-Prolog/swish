@@ -199,6 +199,17 @@ gitty_scan(Store) :-
 gitty_scan_sync(Store) :-
 	store(Store, _), !.
 gitty_scan_sync(Store) :-
+	remote_sync(true), !,
+	restore_heads_from_remote(Store).
+gitty_scan_sync(Store) :-
+	read_heads_from_objects(Store).
+
+%%	read_heads_from_objects(+Store) is det.
+%
+%	Establish the head(Store,File,Hash)  relation   by  reading  all
+%	objects and adding a fact for the most recent commit.
+
+read_heads_from_objects(Store) :-
 	gitty_scan_latest(Store),
 	forall(retract(latest(Name, Hash, _Time)),
 	       assert(head(Store, Name, Hash))),
@@ -380,6 +391,45 @@ heads_file(Store, HeadsFile) :-
 	directory_file_path(Store, ref, RefDir),
 	ensure_directory(RefDir),
 	directory_file_path(RefDir, head, HeadsFile).
+
+%%	restore_heads_from_remote(Store)
+%
+%	Restore the known heads by reading the remote sync file.
+
+restore_heads_from_remote(Store) :-
+	heads_file(Store, File),
+	exists_file(File),
+	setup_call_cleanup(
+	    open(File, read, In, [encoding(utf8)]),
+	    restore_heads(Store, In),
+	    close(In)), !.
+restore_heads_from_remote(Store) :-
+	read_heads_from_objects(Store),
+	heads_file(Store, File),
+	setup_call_cleanup(
+	    open(File, write, Out, [encoding(utf8)]),
+	    save_heads(Store, Out),
+	    close(Out)), !.
+
+restore_heads(Store, In) :-
+	read(In, Term0),
+	Term0 == epoch(_),
+	read(In, Term1),
+	restore_heads(Term1, In, Store).
+
+restore_heads(end_of_file, _, _) :- !.
+restore_heads(head(File, _, Hash), In, Store) :-
+	retractall(head(Store, File, _)),
+	assertz(head(Store, File, Hash)),
+	read(In, Term),
+	restore_heads(Term, In, Store).
+
+save_heads(Store, Out) :-
+	get_time(Now),
+	format(Out, 'epoch(~0f).~n~n', [Now]),
+	forall(head(Store, File, Hash),
+	       format(Out, '~q.~n', [head(File, -, Hash)])).
+
 
 %%	delete_head(+Store, +Head) is det.
 %
