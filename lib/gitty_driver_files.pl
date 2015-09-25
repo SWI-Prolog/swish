@@ -402,7 +402,9 @@ restore_heads_from_remote(Store) :-
 	setup_call_cleanup(
 	    open(File, read, In, [encoding(utf8)]),
 	    restore_heads(Store, In),
-	    close(In)), !.
+	    close(In)), !,
+	get_time(Now),
+	assertz(store(Store, Now)).
 restore_heads_from_remote(Store) :-
 	read_heads_from_objects(Store),
 	heads_file(Store, File),
