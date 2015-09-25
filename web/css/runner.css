@@ -168,7 +168,7 @@ pre.msg-error         { color: red; font-weight: bold}
 /* Deal with tabled output */
 
 table.prolog-answers    { width: 100%; }
-table.prolog-answers td { padding: 0px 5px; border: 1px solid #888;}
+table.prolog-answers td { padding: 0px 5px; border: 1px solid #888; vertical-align: top; }
 table.prolog-answers th { padding: 0px 5px; border: 1px solid #888; text-align: center;}
 
 table.prolog-answers tr:nth-child(odd)  { background-color: #eee; }
