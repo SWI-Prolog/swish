@@ -415,7 +415,7 @@ restore_heads_from_remote(Store) :-
 
 restore_heads(Store, In) :-
 	read(In, Term0),
-	Term0 == epoch(_),
+	Term0 = epoch(_),
 	read(In, Term1),
 	restore_heads(Term1, In, Store).
 
