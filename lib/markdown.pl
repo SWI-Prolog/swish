@@ -30,6 +30,7 @@
 :- module(swish_markdown, []).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
+:- use_module(library(http/http_client)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/html_head)).
 :- use_module(library(pldoc/doc_html),
@@ -55,12 +56,20 @@ This module translates markdown cells for teh SWISH Notebook into HTML
 %	document.
 
 markdown(Request) :-
+	option(method(get), Request), !,
         http_parameters(Request,
                         [ text(Data, [optional(true), default('')])
                         ]),
         atom_codes(Data, Codes),
         wiki_file_codes_to_dom(Codes, '/', DOM), % FIXME: What file to pass?
         phrase(html(DOM), Tokens),
+        format('Content-type: text/html; charset=UTF-8\n\n'),
+        print_html(Tokens).
+markdown(Request) :-
+	option(method(post), Request), !,
+	http_read_data(Request, Codes, [to(codes)]),
+	wiki_file_codes_to_dom(Codes, '/', DOM),
+	phrase(html(DOM), Tokens),
         format('Content-type: text/html; charset=UTF-8\n\n'),
         print_html(Tokens).
 

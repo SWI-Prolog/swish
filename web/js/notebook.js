@@ -837,16 +837,24 @@ var cellTypes = {
       }
     }
 
-    $.get(config.http.locations.markdown,
-	  { text: markdownText
-	  },
-	  function(data) {
-	    cell.html(data);
-	    cell.removeClass("runnable");
-	    cell.data('markdownText', markdownText);
-	    cell.on("dblclick", makeEditable);
-	    cell.on("click", "a", followLink);
-	  });
+    function setHTML(data) {
+      cell.html(data);
+      cell.removeClass("runnable");
+      cell.data('markdownText', markdownText);
+      cell.on("dblclick", makeEditable);
+      cell.on("click", "a", followLink);
+    }
+
+    if ( markdownText.trim() != "" )
+    { $.ajax({ type: "POST",
+	       url: config.http.locations.markdown,
+	       data: markdownText,
+	       contentType: "text/plain; charset=UTF-8",
+	       success: setHTML
+	     });
+    } else
+    { setHTML("");
+    }
   };
 
   methods.run.program = function() {		/* program */
