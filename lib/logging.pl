@@ -57,6 +57,11 @@ swish_log(create(Pengine, Application, Options0)) :-
 	format_time(string(HDate), '%+', Now),
 	http_log('/*~s*/ pengine(~3f, ~q).~n',
 		 [HDate, Now, create(Pengine, Application, Options)]).
+swish_log(send(Pengine, Event)) :-
+	get_time(Now),
+	format_time(string(HDate), '%+', Now),
+	http_log('/*~s*/ pengine(~3f, ~q).~n',
+		 [HDate, Now, send(Pengine, Event)]).
 
 :- dynamic
 	text_hash/2.
