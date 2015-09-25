@@ -61,6 +61,17 @@ their own version.
 
 :- http_handler(swish('p/'), web_storage, [ id(web_storage), prefix ]).
 
+:- initialization open_gittystore.
+
+open_gittystore :-
+	setting(directory, Dir),
+	(   exists_directory(Dir)
+	->  true
+	;   make_directory(Dir)
+	),
+	gitty_open(Dir, []).
+
+
 %%	web_storage(+Request) is det.
 %
 %	Restfull HTTP handler to store data on behalf of the client in a
