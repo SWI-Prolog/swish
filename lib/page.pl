@@ -163,14 +163,14 @@ source_option(_Request, Options0, Options) :-
 	option(code(Code), Options0),
 	option(format(swish), Options0), !,
 	(   uri_is_global(Code)
-	->  Options = [url(Code)|Options0]
+	->  Options = [url(Code),st_type(external)|Options0]
 	;   Options = Options0
 	).
 source_option(Request, Options0, Options) :-
 	source_file(Request, File, Options0), !,
 	option(path(Path), Request),
 	(   source_data(File, String, Options1)
-	->  append([ [code(String), url(Path)],
+	->  append([ [code(String), url(Path), st_type(filesys)],
 		     Options1,
 		     Options0
 		   ], Options)
@@ -421,7 +421,8 @@ source_data_attrs(Options) -->
 	(source_file_data(Options) -> [] ; []),
 	(source_url_data(Options) -> [] ; []),
 	(source_title_data(Options) -> [] ; []),
-	(source_meta_data(Options) -> [] ; []).
+	(source_meta_data(Options) -> [] ; []),
+	(source_st_type_data(Options) -> [] ; []).
 
 source_file_data(Options) -->
 	{ option(file(File), Options) },
@@ -432,6 +433,9 @@ source_url_data(Options) -->
 source_title_data(Options) -->
 	{ option(title(File), Options) },
 	['data-title'(File)].
+source_st_type_data(Options) -->
+	{ option(st_type(Type), Options) },
+	['data-st_type'(Type)].
 source_meta_data(Options) -->
 	{ option(meta(Meta), Options), !,
 	  atom_json_dict(Text, Meta, [])

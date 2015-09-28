@@ -167,8 +167,7 @@ define([ "cm/lib/codemirror",
 	  copyData("url");
 	  copyData("title");
 	  copyData("meta");
-	  if ( storage.meta && storage.meta.path )
-	    storage.type = "filesys";
+	  copyData("st_type");
 
 	  data.cm = CodeMirror.fromTextArea(ta, options);
 	} else {

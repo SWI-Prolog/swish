@@ -121,6 +121,7 @@ var cellTypes = {
 	  copyData("url");
 	  copyData("title");
 	  copyData("meta");
+	  copyData("st_type");
 
 	  elem.notebook('value', content.text());
 	  content.remove();

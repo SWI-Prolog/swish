@@ -247,7 +247,8 @@ storage_get(Request, Format) :-
 
 storage_get(swish, Dir, _, FileOrHash, Request) :-
 	gitty_data(Dir, FileOrHash, Code, Meta),
-	swish_reply([code(Code),file(FileOrHash),meta(Meta)], Request).
+	swish_reply([code(Code),file(FileOrHash),st_type(gitty),meta(Meta)],
+		    Request).
 storage_get(raw, Dir, _, FileOrHash, _Request) :-
 	gitty_data(Dir, FileOrHash, Code, Meta),
 	file_mime_type(Meta.name, MIME),

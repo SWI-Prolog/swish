@@ -270,11 +270,11 @@ preferences.setDefault("emacs-keybinding", false);
 
 		 if ( typeof(source) == "string" ) {
 		   msg = { data: source };
-		   msg.type = "external";
+		   msg.st_type = "external";
 		 } else if ( typeof(source) == "object" &&
 			     typeof(source.data) == "string" ) {
 		   msg = source;
-		   msg.type = "filesys";
+		   msg.st_type = "filesys";
 		 } else {
 		   alert("Invalid data");
 		   return;

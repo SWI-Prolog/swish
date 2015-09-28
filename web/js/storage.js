@@ -134,8 +134,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	data.file = null;
 	data.meta = null;
       }
-      data.url  = src.url  || undefined;
-      data.type = src.type || undefined;
+      data.url     = src.url     || undefined;
+      data.st_type = src.st_type || undefined;
 
       data.setValue(src);
       data.cleanGeneration = data.changeGen();
@@ -221,7 +221,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       var elem   = this;
       var post;
 
-      if ( (data.type == "filesys" || data.type == "external") && data.url )
+      if ( (data.st_type == "filesys" || data.st_type == "external") && data.url )
 	return this.storage('saveURL');
 
       if ( meta == "as" ) {
@@ -278,7 +278,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 		   }
 		   data.file = reply.file;
 		   data.meta = reply.meta;
-		   data.type = "gitty";
+		   data.st_type = "gitty";
 		   data.cleanGeneration = data.changeGen();
 		   data.cleanData       = data.getValue();
 		   data.cleanCheckpoint = "save";
@@ -498,23 +498,23 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       var editor = this;
       var title;
 
-      if ( data.type == "gitty" ) {
+      if ( data.st_type == "gitty" ) {
 	title = $().gitty('title', meta);
-      } else if ( data.type == "filesys" ) {
+      } else if ( data.st_type == "filesys" ) {
 	title = "File system -- " + basename(meta.path);
-      } else if ( data.type == "external" ) {
+      } else if ( data.st_type == "external" ) {
 	title = "External -- " + data.url;
       } else {
 	title = "Scratch source";
       }
 
       function infoBody() {
-	if ( data.type == "gitty" ) {
+	if ( data.st_type == "gitty" ) {
 	  data.editor = editor;		/* circular reference */
 	  this.gitty(data);
-	} else if ( data.type == "filesys" ) {
+	} else if ( data.st_type == "filesys" ) {
 	  filesysInfo(this, meta);
-	} else if ( !data.type ) {
+	} else if ( !data.st_type ) {
 	  this.append($.el.p("The source is not associated with a file. ",
 			     "Use ",
 			     $.el.b("Save ..."),
@@ -578,7 +578,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	return undefined;
 
       if ( data.meta ) {
-	history.addRecent({ type: "gitty",
+	history.addRecent({ st_type: "gitty",
 			    id:	  data.meta.name	/* FIXME: add hash? */
 			  });
       }
