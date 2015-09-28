@@ -92,6 +92,10 @@
   float: right;
 }
 
+.nb-cell a.active span.glyphicon-cloud
+{ color: #bef;
+}
+
 .nb-cell.query, .nb-cell.program
 { border: 0px;
   background: transparent;

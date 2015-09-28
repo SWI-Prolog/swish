@@ -653,6 +653,7 @@ var cellTypes = {
 		       editor.hasClass("single-line")
 				? "triangle-left"
 				: "triangle-bottom");
+      this.find("a[data-action=single_line]").blur();
       return this;
     },
 
@@ -666,6 +667,7 @@ var cellTypes = {
 	a.addClass("active");
       else
 	a.removeClass("active");
+      a.blur();
       return this;
     },
 
