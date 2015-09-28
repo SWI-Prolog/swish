@@ -79,6 +79,10 @@
 { border: 1px solid #888;
 }
 
+.nb-cell div.editor.single-line
+{ height: 2em;
+}
+
 .nb-cell .CodeMirror
 { border-radius: 5px;
 }

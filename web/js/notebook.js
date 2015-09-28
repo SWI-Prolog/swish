@@ -644,6 +644,32 @@ var cellTypes = {
     },
 
     /**
+     * Change the editor of a program cell to fixed (one line) height
+     */
+    single_line: function() {
+      var editor = this.find(".editor");
+      editor.toggleClass("single-line");
+      glyphButtonGlyph(this, "single_line",
+		       editor.hasClass("single-line")
+				? "triangle-left"
+				: "triangle-bottom");
+      return this;
+    },
+
+    /**
+     * Toggle a program fragment to be background/non-background
+     */
+    background: function() {
+      this.toggleClass("background");
+      var a = this.find("a[data-action=background]");
+      if ( this.hasClass("background") )
+	a.addClass("active");
+      else
+	a.removeClass("active");
+      return this;
+    },
+
+    /**
      * Currently simply returns the preceeding program cell.
      * @return {jQuery} set of prologEditor elements that form the
      * sources for the receiving query cell.
@@ -711,10 +737,10 @@ var cellTypes = {
 
     var buttons = $.el.div(
       {class:"btn-group nb-cell-buttons", role:"group"},
-      glyphButton("wrench", "settings", "Settings",
+      glyphButton("triangle-bottom", "single_line", "Single line",
 		  "default", "xs"),
-      glyphButton("play", "run",       "Run query",
-		  "primary", "xs"));
+      glyphButton("cloud", "background", "Use as background program",
+		  "success", "xs"));
     this.append(buttons,
 		editor=$.el.div({class:"editor with-buttons"}));
     $(editor).prologEditor(options);
@@ -1096,6 +1122,14 @@ function glyphButton(glyph, action, title, style, size) {
 		   $.el.span({class:"glyphicon glyphicon-"+glyph}));
 
   return btn;
+}
+
+function glyphButtonGlyph(elem, action, glyph) {
+  var span = elem.find("a[data-action="+action+"] > span.glyphicon");
+
+  span.removeClass(function(i,s) {
+    return s.match(/glyphicon-[-a-z]*/g).join(" ");
+  }).addClass("glyphicon-"+glyph);
 }
 
 function sep() {
