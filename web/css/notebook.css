@@ -79,7 +79,7 @@
 { border: 1px solid #888;
 }
 
-.nb-cell div.editor.single-line
+.nb-cell.singleline div.editor
 { height: 2em;
 }
 

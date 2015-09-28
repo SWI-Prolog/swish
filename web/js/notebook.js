@@ -646,14 +646,13 @@ var cellTypes = {
     /**
      * Change the editor of a program cell to fixed (one line) height
      */
-    single_line: function() {
-      var editor = this.find(".editor");
-      editor.toggleClass("single-line");
-      glyphButtonGlyph(this, "single_line",
-		       editor.hasClass("single-line")
+    singleline: function() {
+      this.toggleClass("singleline");
+      glyphButtonGlyph(this, "singleline",
+		       this.hasClass("singleline")
 				? "triangle-left"
 				: "triangle-bottom");
-      this.find("a[data-action=single_line]").blur();
+      this.find("a[data-action=singleline]").blur();
       return this;
     },
 
@@ -662,8 +661,7 @@ var cellTypes = {
      */
     background: function() {
       this.toggleClass("background");
-      var a = this.find("a[data-action=background]");
-      a.blur();
+      this.find("a[data-action=background]").blur();
       return this;
     },
 
@@ -737,16 +735,18 @@ var cellTypes = {
 
     var buttons = $.el.div(
       {class:"btn-group nb-cell-buttons", role:"group"},
-      glyphButton("triangle-bottom", "single_line", "Single line",
+      glyphButton("triangle-bottom", "singleline", "Show only first line",
 		  "default", "xs"),
       bg=glyphButton("cloud", "background", "Use as background program",
 		     "success", "xs"));
-    if ( options.background )
-    { $(bg).addClass("active");
-      this.addClass("background");
-    }
     this.append(buttons,
 		editor=$.el.div({class:"editor with-buttons"}));
+    if ( options.background )
+    { this.addClass("background");
+    }
+    if ( options.singleline )
+    { this.nbCell('singleline');
+    }
     $(editor).prologEditor(options);
   }
 
@@ -944,6 +944,7 @@ var cellTypes = {
     }
 
     copyClassAttr("background");
+    copyClassAttr("singleline");
 
     return dom;
   };
@@ -985,6 +986,7 @@ var cellTypes = {
     }
 
     getAttr("background");
+    getAttr("singleline");
 
     methods.type.program.call(this, opts);
   };
@@ -1027,6 +1029,7 @@ var cellTypes = {
     }
 
     addClassAttr("background", "B");
+    addClassAttr("singleline", "S");
 
     text += "V"+cellText(this);
     return sha1(text);
