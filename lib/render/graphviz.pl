@@ -158,7 +158,6 @@ render_dot(DOTString, Program, _Options) -->	% <svg> rendering
      var pan;
 
      function updateSize() {
-       console.log("updateSize");
        var w = svg.closest("div.answer").innerWidth();
 
        function reactive() {
