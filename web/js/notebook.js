@@ -679,8 +679,12 @@ var cellTypes = {
      */
     programs: function() {
       var data = this.data(pluginName);
+      var programs = this.closest(".notebook")
+	                 .find(".nb-cell.program.background .editor")
+			 .add(this.prevAll(".program").first().find(".editor"));
 
-      return this.prevAll(".program").first().find(".editor");
+      console.log(programs);
+      return programs;
     },
 
     isEmpty: function() {
@@ -743,9 +747,10 @@ var cellTypes = {
       glyphButton("triangle-bottom", "single_line", "Single line",
 		  "default", "xs"),
       bg=glyphButton("cloud", "background", "Use as background program",
-		  "success", "xs"));
+		     "success", "xs"));
     if ( options.background )
     { $(bg).addClass("active");
+      this.addClass("background");
       this.data("background", true);
     }
     this.append(buttons,
