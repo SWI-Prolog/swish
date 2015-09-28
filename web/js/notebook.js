@@ -663,7 +663,8 @@ var cellTypes = {
     background: function() {
       this.toggleClass("background");
       var a = this.find("a[data-action=background]");
-      if ( this.hasClass("background") )
+      this.data("background", this.hasClass("background"));
+      if ( this.data("background") )
 	a.addClass("active");
       else
 	a.removeClass("active");
@@ -730,7 +731,7 @@ var cellTypes = {
   }
 
   methods.type.program = function(options) {	/* program */
-    var editor;
+    var editor, bg;
 
     options = options||{};
     options.autoCurrent = false;
@@ -741,8 +742,12 @@ var cellTypes = {
       {class:"btn-group nb-cell-buttons", role:"group"},
       glyphButton("triangle-bottom", "single_line", "Single line",
 		  "default", "xs"),
-      glyphButton("cloud", "background", "Use as background program",
+      bg=glyphButton("cloud", "background", "Use as background program",
 		  "success", "xs"));
+    if ( options.background )
+    { $(bg).addClass("active");
+      this.data("background", true);
+    }
     this.append(buttons,
 		editor=$.el.div({class:"editor with-buttons"}));
     $(editor).prologEditor(options);
@@ -932,7 +937,19 @@ var cellTypes = {
   };
 
   methods.saveDOM.program = function() {	/* program */
-    return $.el.div({class:"nb-cell program"}, cellText(this));
+    var cell = this;
+    var dom = $.el.div({class:"nb-cell program"}, cellText(this));
+
+    function copyAttr(name) {
+      var value;
+      if ( (value=cell.data(name)) ) {
+	$(dom).attr("data-"+name, value);
+      }
+    }
+
+    copyAttr("background");
+
+    return dom;
   };
 
   methods.saveDOM.query = function() {		/* query */
@@ -962,7 +979,18 @@ var cellTypes = {
   };
 
   methods.restoreDOM.program = function(dom) {	/* program */
-    methods.type.program.call(this, {value:dom.text().trim()});
+    var opts = { value:dom.text().trim() };
+
+    function getAttr(name) {
+      var value;
+      if ( (value=dom.data(name)) ) {
+	opts[name] = value;
+      }
+    }
+
+    getAttr("background");
+
+    methods.type.program.call(this, opts);
   };
 
   methods.restoreDOM.query = function(dom) {	/* query */
