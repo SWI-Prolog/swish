@@ -663,11 +663,6 @@ var cellTypes = {
     background: function() {
       this.toggleClass("background");
       var a = this.find("a[data-action=background]");
-      this.data("background", this.hasClass("background"));
-      if ( this.data("background") )
-	a.addClass("active");
-      else
-	a.removeClass("active");
       a.blur();
       return this;
     },
@@ -682,8 +677,6 @@ var cellTypes = {
       var programs = this.closest(".notebook")
 	                 .find(".nb-cell.program.background .editor")
 			 .add(this.prevAll(".program").first().find(".editor"));
-
-      console.log(programs);
       return programs;
     },
 
@@ -751,7 +744,6 @@ var cellTypes = {
     if ( options.background )
     { $(bg).addClass("active");
       this.addClass("background");
-      this.data("background", true);
     }
     this.append(buttons,
 		editor=$.el.div({class:"editor with-buttons"}));
@@ -945,14 +937,13 @@ var cellTypes = {
     var cell = this;
     var dom = $.el.div({class:"nb-cell program"}, cellText(this));
 
-    function copyAttr(name) {
-      var value;
-      if ( (value=cell.data(name)) ) {
-	$(dom).attr("data-"+name, value);
+    function copyClassAttr(name) {
+      if ( cell.hasClass(name) ) {
+	$(dom).attr("data-"+name, true);
       }
     }
 
-    copyAttr("background");
+    copyClassAttr("background");
 
     return dom;
   };
@@ -1027,7 +1018,18 @@ var cellTypes = {
   };
 
   methods.changeGen.program = function() {	/* program */
-    return sha1(cellText(this));
+    var text = "";
+    var cell = this;
+
+    function addClassAttr(name, key) {
+      if ( cell.hasClass(name) )
+	text += key;
+    }
+
+    addClassAttr("background", "B");
+
+    text += "V"+cellText(this);
+    return sha1(text);
   };
 
   methods.changeGen.query = function() {	/* query */

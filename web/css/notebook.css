@@ -92,7 +92,7 @@
   float: right;
 }
 
-.nb-cell a.active span.glyphicon-cloud
+.nb-cell.background span.glyphicon-cloud
 { color: #bef;
 }
 
