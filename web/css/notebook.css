@@ -75,7 +75,7 @@
 { display: inline;
 }
 
-.nb-cell.active, .nb-cell.active.query > .query
+.nb-cell.active, .nb-cell.active > .with-buttons
 { border: 1px solid #888;
 }
 
@@ -88,12 +88,12 @@
   float: right;
 }
 
-.nb-cell.query
+.nb-cell.query, .nb-cell.program
 { border: 0px;
   background: transparent;
 }
 
-.nb-cell.query > .query
+.nb-cell > .with-buttons
 { background-color: #eee;
   border: 1px solid #ccc;
   border-radius: 5px;

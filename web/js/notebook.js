@@ -708,7 +708,15 @@ var cellTypes = {
     options.autoCurrent = false;
 
     this.html("");
-    this.append(editor=$.el.div({class:"editor"}));
+
+    var buttons = $.el.div(
+      {class:"btn-group nb-cell-buttons", role:"group"},
+      glyphButton("wrench", "settings", "Settings",
+		  "default", "xs"),
+      glyphButton("play", "run",       "Run query",
+		  "primary", "xs"));
+    this.append(buttons,
+		editor=$.el.div({class:"editor with-buttons"}));
     $(editor).prologEditor(options);
   }
 
@@ -747,7 +755,7 @@ var cellTypes = {
 		  "primary", "xs"));
 
     this.append(buttons,
-		$.el.div({class:"query"},
+		$.el.div({class:"query with-buttons"},
 			 $.el.span({class:"prolog-prompt"}, "?-"),
 			 editor=$.el.div({class:"editor query"})));
 
