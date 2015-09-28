@@ -739,16 +739,18 @@ var cellTypes = {
 	}
       });
 
-    this.append($.el.div($.el.div({class:"nb-cell-buttons"},
-      {class:"btn-group nb-cell-buttons",role:"group"},
+    var buttons = $.el.div(
+      {class:"btn-group nb-cell-buttons", role:"group"},
       glyphButton("wrench", "settings", "Settings",
 		  "default", "xs"),
       glyphButton("play", "run",       "Run query",
-		  "primary", "xs"))));
+		  "primary", "xs"));
 
-    this.append($.el.div({class:"query"},
+    this.append(buttons,
+		$.el.div({class:"query"},
 			 $.el.span({class:"prolog-prompt"}, "?-"),
 			 editor=$.el.div({class:"editor query"})));
+
     $(editor).prologEditor(options);
     this.addClass("runnable");
   }

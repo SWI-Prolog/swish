@@ -83,9 +83,9 @@
 { border-radius: 5px;
 }
 
-.nb-cell-buttons
-{ text-align: right;
-  width: 100%;
+.nb-cell .nb-cell-buttons
+{ display: inline-block;
+  float: right;
 }
 
 .nb-cell.query
@@ -97,6 +97,7 @@
 { background-color: #eee;
   border: 1px solid #ccc;
   border-radius: 5px;
+  width: calc(100% - 50px);
 }
 
 .nb-cell .prolog-prompt
