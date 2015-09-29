@@ -125,6 +125,10 @@
 { margin-bottom: 1em;
 }
 
+.nb-cell.not-for-query
+{ opacity: 0.5;
+}
+
 .nb-placeholder
 { opacity: 0.5;
 }

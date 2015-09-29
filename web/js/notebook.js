@@ -225,15 +225,24 @@ var cellTypes = {
      */
     active: function(cell, focus) {
       if ( cell ) {
-	var current = this.find(".nb-content").children(".nb-cell.active");
+	var current = this.find(".nb-content .nb-cell.active");
+
+	function removeNotForQuery(elem) {
+	  elem.find(".nb-content .nb-cell.not-for-query")
+	      .removeClass("not-for-query");
+	}
 
 	if ( cell.length == 1 )
 	{ if ( !(current.length == 1 && cell[0] == current[0]) ) {
+	    removeNotForQuery(this);
 	    current.nbCell('active', false);
 	    cell.nbCell('active', true);
 	    if ( focus )
 	      cell.focus();
 	  }
+	} else
+	{ removeNotForQuery(this);
+	  current.nbCell('active', false);
 	}
       }
     },
@@ -523,6 +532,12 @@ var cellTypes = {
 	  case "program":
 	    this.find(".editor").prologEditor('makeCurrent');
 	    break;
+	  case "query":
+	    this.closest(".notebook")
+                .find(".nb-cell.program")
+                .not(this.nbCell("program_cells"))
+                .addClass("not-for-query");
+	    break;
 	}
       } else if ( this.length > 0 ) {
 	this.removeClass("active");
@@ -667,16 +682,22 @@ var cellTypes = {
     },
 
     /**
-     * Currently simply returns the preceeding program cell.
-     * @return {jQuery} set of prologEditor elements that form the
+     * Returns all program cells in current notebook that are loaded
+     * for executing the receiving query.
+     * @return {jQuery} set of nbCell elements that form the
      * sources for the receiving query cell.
      */
-    programs: function() {
+    program_cells: function() {
       var data = this.data(pluginName);
       var programs = this.closest(".notebook")
-	                 .find(".nb-cell.program.background .editor")
-			 .add(this.prevAll(".program").first().find(".editor"));
+	                 .find(".nb-cell.program.background")
+			 .add(this.prevAll(".program").first());
       return programs;
+    },
+
+    programs: function() {
+      var cells = this.nbCell('program_cells');
+      return cells.find(".editor");
     },
 
     isEmpty: function() {
