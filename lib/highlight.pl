@@ -328,12 +328,7 @@ enriched_tokens(TB, _Data, Tokens) :-		% source window
 	xref(UUID),
 	server_tokens(TB, Tokens).
 enriched_tokens(TB, Data, Tokens) :-		% query window
-	(   [SourceIdS|_] = Data.get(sourceID)
-	->  true
-	;   SourceIdS = Data.get(sourceID),
-	    atomic(SourceIdS)
-	), !,
-	atom_string(SourceID, SourceIdS),
+	json_source_id(Data.get(sourceID), SourceID),
 	memory_file_to_string(TB, Query),
 	with_mutex(swish_highlight_query,
 		   prolog_colourise_query(Query, SourceID, colour_item(TB))),
@@ -342,6 +337,25 @@ enriched_tokens(TB, _Data, Tokens) :-
 	memory_file_to_string(TB, Query),
 	prolog_colourise_query(Query, module(swish), colour_item(TB)),
 	collect_tokens(TB, Tokens).
+
+%%	json_source_id(+Input, -SourceID)
+%
+%	Translate the Input, which is  either  a   string  or  a list of
+%	strings into an  atom  or  list   of  atoms.  Older  versions of
+%	SWI-Prolog only accept a single atom source id.
+
+:- if(current_predicate(prolog_colour:to_list/2)).
+json_source_id(StringList, SourceIDList) :-
+	is_list(StringList), !,
+	maplist(atom_string, SourceIDList, StringList).
+:- else.				% old version (=< 7.3.7)
+json_source_id([String|_], SourceID) :-
+	maplist(atom_string, SourceID, String).
+:- endif.
+json_source_id(String, SourceID) :-
+	string(String),
+	atom_string(SourceID, String).
+
 
 %%	shadow_editor(+Data, -MemoryFile) is det.
 %
