@@ -664,6 +664,7 @@ var cellTypes = {
      */
     singleline: function() {
       this.toggleClass("singleline");
+      this.find(".editor").prologEditor('refresh');
       glyphButtonGlyph(this, "singleline",
 		       this.hasClass("singleline")
 				? "triangle-left"

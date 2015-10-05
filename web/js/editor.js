@@ -574,6 +574,16 @@ define([ "cm/lib/codemirror",
     },
 
     /**
+     * Refresh the editor.  This is often needed if it is resized.
+     */
+    refresh: function() {
+      var data = this.data(pluginName);
+      if ( data )
+	data.cm.refresh();
+      return this;
+    },
+
+    /**
      * Remove all inline messages from the editor
      */
     clearMessages: function() {
