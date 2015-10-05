@@ -328,7 +328,7 @@ enriched_tokens(TB, _Data, Tokens) :-		% source window
 	xref(UUID),
 	server_tokens(TB, Tokens).
 enriched_tokens(TB, Data, Tokens) :-		% query window
-	json_source_id(Data.get(sourceID), SourceID),
+	json_source_id(Data.get(sourceID), SourceID), !,
 	memory_file_to_string(TB, Query),
 	with_mutex(swish_highlight_query,
 		   prolog_colourise_query(Query, SourceID, colour_item(TB))),
@@ -346,7 +346,8 @@ enriched_tokens(TB, _Data, Tokens) :-
 
 :- if(current_predicate(prolog_colour:to_list/2)).
 json_source_id(StringList, SourceIDList) :-
-	is_list(StringList), !,
+	is_list(StringList),
+	StringList \== [], !,
 	maplist(atom_string, SourceIDList, StringList).
 :- else.				% old version (=< 7.3.7)
 json_source_id([String|_], SourceID) :-
