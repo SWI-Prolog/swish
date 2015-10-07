@@ -30,10 +30,14 @@
 :- module(swish_render_c3,
 	  [ term_rendering//3			% +Term, +Vars, +Options
 	  ]).
+:- use_module(library(apply)).
 :- use_module(library(gensym)).
 :- use_module(library(error)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
+:- if(exists_source(library(dicts))).
+:- use_module(library(dicts)).
+:- endif.
 :- use_module('../render').
 
 :- register_renderer(c3, "Render data as tables").
@@ -48,9 +52,10 @@ Render data as a chart.
 %	Renders Term as a C3.js chart. This renderer recognises C3, as a
 %	dict with tag `c3`.
 
-term_rendering(C3, _Vars, _Options) -->
-	{ is_dict(C3, c3),
-	  valid_c3(C3),
+term_rendering(C30, _Vars, _Options) -->
+	{ is_dict(C30, Tag),
+	  Tag == c3,
+	  valid_c3(C30, C3),
 	  gensym('c3js', Id),
 	  atom_concat(#, Id, RefId),
 	  put_dict(bindto, C3, RefId, C3b)
@@ -105,22 +110,66 @@ term_rendering(C3, _Vars, _Options) -->
 		 ])).
 
 
-%%	valid_c3(+C3) is det.
+%%	valid_c3(+C3In, -C3Out) is det.
 %
 %	Perform sanity tests on the C3 representation.
 
-valid_c3(C3) :-
-	valid_c3_data(C3.data).
+valid_c3(C30, C31) :-
+	Data0 = C30.data,
+	valid_c3_data(Data0, Data),
+	(   same_term(Data0, Data)
+	->  C31 = C30
+	;   C31 = C30.put(data,Data)
+	).
 
-valid_c3_data(C3) :-
-	valid_c3_array(C3.get(rows)), !.
-valid_c3_data(C3) :-
-	valid_c3_array(C3.get(columns)), !.
-valid_c3_data(C3) :-
-	throw(error(c3_no_data(C3), _)).
+valid_c3_data(Data0, Data) :-
+	Rows0 = Data0.get(rows), !,
+	must_be(acyclic, Rows0),
+	rows_to_matrix(Rows0, Rows),
+	must_be(list(ground), Rows),
+	(   same_term(Rows0, Rows)
+	->  Data0 = Data
+	;   Data = Data0.put(rows,Rows)
+	).
+valid_c3_data(Data, Data) :-
+	valid_c3_array(Data.get(columns)), !.
+valid_c3_data(Data, Data) :-
+	throw(error(c3_no_data(Data), _)).
 
 valid_c3_array(Array) :-
 	must_be(list(list(ground)), Array).
+
+%%	rows_to_matrix(+RowsIn, -Rows) is semidet.
+%
+%	Translate alternative row representations into  a list of lists.
+%	Recognised input rows are:
+%
+%	  * Dicts having the same set of keys (if library(dicts) is
+%	    available)
+%	  * Compounds having same name and arity, e.g., pairs.
+%	  * Lists having the same length
+
+:- if(current_predicate(dicts_to_compounds/4)).
+rows_to_matrix(Dicts, [Keys|Rows]) :-
+	dicts_same_keys(Dicts, Keys), !,
+	dicts_to_compounds(Dicts, Keys, dict_fill(undefined), Compounds),
+	maplist(compound_arguments, Compounds, Rows).
+:- endif.
+rows_to_matrix(Compounds, Rows) :-
+	maplist(name_arity_compound(_Name, _Arity), Compounds, Rows), !.
+rows_to_matrix(Lists, Lists) :-
+	maplist(length_list(_Columns), Lists).
+
+name_arity_compound(Name, Arity, Compound, Arguments) :-
+	compound(Compound),
+	compound_name_arity(Compound, Name, Arity),
+	compound_name_arguments(Compound, Name, Arguments).
+
+compound_arguments(Compound, Arguments) :-
+	compound_name_arguments(Compound, _, Arguments).
+
+length_list(Length, List) :-
+	length(List, Length).
 
 :- multifile
 	prolog:error_message//1.
