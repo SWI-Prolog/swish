@@ -40,6 +40,68 @@ chart(Sine).
 </div>
 
 <div class="nb-cell markdown">
+## Alternatives for the the data
+
+By nature, Prolog is a relational language and the set of solutions naturally form a table, where each solution is a row.  C3 wants to see a JSON array-of-arrays, where each sub-array is a row and the first row defines the column names, much as you are used to in a spreadsheet.  The above creates the data as follows:
+
+```
+rows: [ [x, sine],
+        [0, 0.0],
+        [10, 0.173...],
+        ...
+      ]
+```
+
+The c3 rendering library allows the rows to be compound terms.  If we have
+a simple X-Y chart we can thus represent the same data as Prolog _pairs_,
+a representation that is more common in the Prolog world.
+
+```
+rows: [ x - sine,
+        0 - 0.0,
+        10 - 0.173...,
+        ...
+      ]
+```
+
+Finally, we can use _dicts_.  If we do so, we can omit the first row that 
+defines the column names as the dict _keys_ are used for that.  So, the data can be represented as:
+
+```
+rows: [ r{x:0, sin:0.0},
+        r{x:10, sin:0.173}
+        ...
+      ]
+```
+
+Predicates from library(dicts) can be used to combine series.  For example, dicts_join/4 can be used to combine two series on a common key.  The example below illustrates this.
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(c3).
+
+sin(X,Y) :-
+    between(0,36,I),
+    X is I*10,
+    Y is sin(X*pi/180).
+
+cos(X,Y) :-
+    between(0,36,I),
+    X is I*10,
+    Y is cos(X*pi/180).
+
+chart(Chart) :-
+    findall(r{x:X,sin:Y}, sin(X,Y), SinData),	% create sin-series
+    findall(r{x:X,cos:Y}, cos(X,Y), CosData),	% create cos-series
+    dicts_join(x, SinData, CosData, Data),		% join on common 'x' key
+    Chart = c3{data:_{x:x, rows:Data}}.
+</div>
+
+<div class="nb-cell query">
+chart(Chart).
+</div>
+
+<div class="nb-cell markdown">
 ## Creating pie and bar charts
 
 In this example we compute some simple statistics on HTML pages.  First, we create a program that created a sorted list of `[Tag,Count]` pairs for each element that appears on a page.  Note that the pairs are typically represented as `Tag-Count`, but this representation does not fit C3 well.  In this example we stay with the C3 representation.
