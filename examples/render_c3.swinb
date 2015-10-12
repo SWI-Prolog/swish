@@ -125,7 +125,7 @@ frequency_count(Elems, Popular) :-
     sort(2, &gt;=, Counted, Popular).
 
 count_same([], []).
-count_same([H|T0], [[H,C]|T]) :-
+count_same([H|T0], [H-C|T]) :-
     count_same(H, T0, 1, C, T1),
     count_same(T1, T).
 
@@ -159,7 +159,7 @@ Chart = c3{data:_{columns:_Pairs, type:pie}}.
 
 <div class="nb-cell query">
 popular_elements(_Pairs),
-Chart = c3{data:_{x:elem, rows:[[elem,count]|_Pairs], type:bar},
+Chart = c3{data:_{x:elem, rows:[elem-count|_Pairs], type:bar},
    	       axis:_{x:_{type:category}}}.
 </div>
 
