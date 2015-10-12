@@ -132,13 +132,17 @@ valid_c3_data(Data0, Data) :-
 	->  Data0 = Data
 	;   Data = Data0.put(rows,Rows)
 	).
-valid_c3_data(Data, Data) :-
-	valid_c3_array(Data.get(columns)), !.
+valid_c3_data(Data0, Data) :-
+	Columns0 = Data0.get(columns), !,
+	must_be(acyclic, Columns0),
+	rows_to_matrix(Columns0, Columns),
+	must_be(list(ground), Columns),
+	(   same_term(Columns0, Columns)
+	->  Data0 = Data
+	;   Data = Data0.put(columns,Columns)
+	).
 valid_c3_data(Data, Data) :-
 	throw(error(c3_no_data(Data), _)).
-
-valid_c3_array(Array) :-
-	must_be(list(list(ground)), Array).
 
 %%	rows_to_matrix(+RowsIn, -Rows) is semidet.
 %
