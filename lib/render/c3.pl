@@ -31,6 +31,7 @@
 	  [ term_rendering//3			% +Term, +Vars, +Options
 	  ]).
 :- use_module(library(apply)).
+:- use_module(library(lists)).
 :- use_module(library(gensym)).
 :- use_module(library(error)).
 :- use_module(library(http/html_write)).
@@ -151,7 +152,10 @@ valid_c3_array(Array) :-
 
 :- if(current_predicate(dicts_to_compounds/4)).
 rows_to_matrix(Dicts, [Keys|Rows]) :-
-	dicts_same_keys(Dicts, Keys), !,
+	maplist(is_dict, Dicts), !,
+	maplist(dict_keys, Dicts, KeysList),
+	append(KeysList, Keys0),
+	sort(Keys0, Keys),
 	dicts_to_compounds(Dicts, Keys, dict_fill(undefined), Compounds),
 	maplist(compound_arguments, Compounds, Rows).
 :- endif.
