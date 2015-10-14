@@ -617,7 +617,7 @@ define([ "cm/lib/codemirror",
       if ( file.startsWith(prefix) ) {
 	var store = this.data("storage");
 
-	if ( file.slice(prefix.length) == store.file )
+	if ( store && file.slice(prefix.length) == store.file )
 	  return true;
       }
 
