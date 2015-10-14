@@ -34,6 +34,7 @@
 :- use_module(library(lists)).
 :- use_module(library(gensym)).
 :- use_module(library(error)).
+:- use_module(library(dif)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
 :- if(exists_source(library(dicts))).
@@ -164,7 +165,8 @@ rows_to_matrix(Dicts, [Keys|Rows]) :-
 	maplist(compound_arguments, Compounds, Rows).
 :- endif.
 rows_to_matrix(Compounds, Rows) :-
-	maplist(name_arity_compound(_Name, _Arity), Compounds, Rows), !.
+	dif(Name, []), dif(Arity, 2),		% avoid lists
+	maplist(name_arity_compound(Name, Arity), Compounds, Rows), !.
 rows_to_matrix(Lists, Lists) :-
 	maplist(length_list(_Columns), Lists).
 
