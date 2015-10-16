@@ -165,7 +165,7 @@ rows_to_matrix(Dicts, [Keys|Rows]) :-
 	maplist(compound_arguments, Compounds, Rows).
 :- endif.
 rows_to_matrix(Compounds, Rows) :-
-	dif(Name, []), dif(Arity, 2),		% avoid lists
+	dif(Name/Arity, []/2),		% avoid lists
 	maplist(name_arity_compound(Name, Arity), Compounds, Rows), !.
 rows_to_matrix(Lists, Lists) :-
 	maplist(length_list(_Columns), Lists).
