@@ -10,10 +10,10 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  */
 
-define([ "jquery", "config", "tabbed", "form",
+define([ "jquery", "config", "tabbed", "form", "preferences",
 	 "laconic", "runner", "storage", "sha1"
        ],
-       function($, config, tabbed, form) {
+       function($, config, tabbed, form, preferences) {
 
 var cellTypes = {
   "program":  { label:"Program" },
@@ -780,6 +780,9 @@ var cellTypes = {
     this.html("");
 
     options = options||{};
+    if ( options.tabled == undefined )
+      options.tabled = preferences.getVal("tabled_results");
+
     function setAttr(name) {
       if ( options[name] != undefined ) {
 	cell.data(name, ""+options[name]);
@@ -1030,6 +1033,8 @@ var cellTypes = {
     getAttr("tabled");
     getAttr("chunk");
     getAttr("run");
+    if ( opts.tabled == undefined )
+      opts.tabled = false;
 
     methods.type.query.call(this, opts);
   };
