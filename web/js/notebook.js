@@ -979,9 +979,14 @@ var cellTypes = {
     var cell = this;
     var dom  = $.el.div({class:"nb-cell query"}, cellText(this));
 
+    function isDefault(name, value) {
+      if ( name == 'tabled' && !value ) return true;
+      return false;
+    }
+
     function copyAttr(name) {
       var value;
-      if ( (value=cell.data(name)) ) {
+      if ( (value=cell.data(name)) && !isDefault(name,value) ) {
 	$(dom).attr("data-"+name, value);
       }
     }
