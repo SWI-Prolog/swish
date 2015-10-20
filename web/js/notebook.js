@@ -980,7 +980,7 @@ var cellTypes = {
     var dom  = $.el.div({class:"nb-cell query"}, cellText(this));
 
     function isDefault(name, value) {
-      if ( name == 'tabled' && !value ) return true;
+      if ( name == 'tabled' && (!value || value == "false") ) return true;
       return false;
     }
 
