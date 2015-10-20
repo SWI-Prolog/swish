@@ -93,13 +93,17 @@ stat_field_value(_, String, Number) :-
 	number_string(Number, String).
 
 :- if(current_predicate(sysconf/1)).
+% the weird way to call sysconf confuses ClioPatria's cpack code
+% analysis enough to accept this ...
 term_expansion(clockticks(sysconf), Expansion) :-
-	(   call(sysconf(clk_tck(TicksPerSec)))
+	(   member(Sysconf, [sysconf(clk_tck(TicksPerSec))]),
+	    call(Sysconf)
 	->  Expansion = clockticks(TicksPerSec)
 	;   Expansion = clockticks(100)
 	).
 term_expansion(pagesize(sysconf), Expansion) :-
-	(   call(sysconf(pagesize(Bytes)))
+	(   member(Sysconf, [sysconf(pagesize(Bytes))]),
+	    call(Sysconf)
 	->  Expansion = pagesize(Bytes)
 	;   Expansion = pagesize(4096)
 	).
