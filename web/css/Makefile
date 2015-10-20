@@ -7,7 +7,7 @@ CSS=$(MAIN) \
 all:	swish-min.css swish-min.css.gz
 
 swish-min.css: $(CSS)
-	cleancss -o $@ $(MAIN)
+	cleancss --skip-restructuring -o $@ $(MAIN)
 	swipl css-inline.pl $@
 
 swish-min.css.gz: swish-min.css
