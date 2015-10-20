@@ -154,13 +154,13 @@ insert([H|T], TB, ChPos0, ChPos, Changed) :-
 	->  Len	= 0
 	;   Changed = true,
 	    string_length(H, Len),
-	    debug(swish(change), 'Insert ~q at ~d', [H, ChPos0]),
+	    debug(cm(change), 'Insert ~q at ~d', [H, ChPos0]),
 	    insert_memory_file(TB, ChPos0, H)
 	),
 	ChPos1 is ChPos0+Len,
 	(   T == []
 	->  ChPos2 = ChPos1
-	;   debug(swish(change), 'Adding newline at ~d', [ChPos1]),
+	;   debug(cm(change), 'Adding newline at ~d', [ChPos1]),
 	    Changed = true,
 	    insert_memory_file(TB, ChPos1, '\n'),
 	    ChPos2 is ChPos1+1
@@ -233,32 +233,67 @@ destroy_editor(_).
 
 %%	gc_editors
 %
-%	Garbage collect all editors that have   not been accessed for 15
+%	Garbage collect all editors that have   not been accessed for 60
 %	minutes.
+%
+%	@tbd  Normally,  deleting  a  highlight    state   can  be  done
+%	aggressively as it will be recreated  on demand. But, coloring a
+%	query passes the UUIDs of related sources and as yet there is no
+%	way to restore this. We could fix  that by replying to the query
+%	colouring with the UUIDs for which we do not have sources, after
+%	which the client retry the query-color request with all relevant
+%	sources.
 
 :- dynamic
 	gced_editors/1.
 
+editor_max_idle_time(3600).
+
 gc_editors :-
-	gced_editors(Then),
 	get_time(Now),
-	(   Now - Then < 300
+	(   gced_editors(Then),
+	    editor_max_idle_time(MaxIdle),
+	    Now - Then < MaxIdle/3
 	->  true
 	;   retractall(gced_editors(_)),
 	    asserta(gced_editors(Now)),
 	    fail
 	).
 gc_editors :-
-	forall(garbage_editor(UUID, 900),
-	       destroy_editor(UUID)).
+	editor_max_idle_time(MaxIdle),
+	forall(garbage_editor(UUID, MaxIdle),
+	       destroy_old_editor(UUID)).
 
 garbage_editor(UUID, TimeOut) :-
 	get_time(Now),
 	current_editor(UUID, _TB, _Role, Created),
-	Created - Now > TimeOut,
-	\+ ( editor_last_access(UUID, Access),
-	     Access - Now < TimeOut
-	   ).
+	Now - Created > TimeOut,
+	(   editor_last_access(UUID, Access)
+	->  Now - Access > TimeOut
+	;   true
+	).
+
+destroy_old_editor(UUID) :-
+	with_mutex(swish_gc_editor,
+		   destroy_old_editor_sync(UUID)).
+
+destroy_old_editor_sync(UUID) :-
+	editor_max_idle_time(MaxIdle),
+	garbage_editor(UUID, MaxIdle), !,
+	debug(cm(gc), 'GC highlight state for ~q', [UUID]),
+	destroy_editor(UUID).
+destroy_old_editor_sync(_).
+
+%%	fetch_editor(+UUID, -MemFile) is semidet.
+%
+%	Fetch existing editor for source UUID. Make sure the last access
+%	time is updated to avoid concurrent GC of the editor.
+
+fetch_editor(UUID, TB) :-
+	with_mutex(swish_gc_editor,
+		   ( current_editor(UUID, TB, _Role, _),
+		     update_access(UUID)
+		   )).
 
 update_access(UUID) :-
 	get_time(Now),
@@ -288,7 +323,7 @@ codemirror_leave(Request) :-
 	debug(cm(leave), 'Leaving editor ~p', [Data]),
 	(   atom_string(UUID, Data.get(uuid))
 	->  forall(current_editor(UUID, _TB, _Role, _),
-		   destroy_editor(UUID))
+		   with_mutex(swish_gc_editor, destroy_editor(UUID)))
 	;   true
 	),
 	reply_json_dict(true).
@@ -402,14 +437,21 @@ enriched_tokens(TB, _Data, Tokens) :-
 json_source_id(StringList, SourceIDList) :-
 	is_list(StringList),
 	StringList \== [], !,
-	maplist(atom_string, SourceIDList, StringList).
+	maplist(string_source_id, StringList, SourceIDList).
 :- else.				% old version (=< 7.3.7)
 json_source_id([String|_], SourceID) :-
-	maplist(atom_string, SourceID, String).
+	maplist(string_source_id, String, SourceID).
 :- endif.
 json_source_id(String, SourceID) :-
 	string(String),
-	atom_string(SourceID, String).
+	string_source_id(String, SourceID).
+
+string_source_id(String, SourceID) :-
+	atom_string(SourceID, String),
+	(   fetch_editor(SourceID, _TB)
+	->  true
+	;   true
+	).
 
 
 %%	shadow_editor(+Data, -MemoryFile) is det.
@@ -431,8 +473,7 @@ json_source_id(String, SourceID) :-
 
 shadow_editor(Data, TB) :-
 	atom_string(UUID, Data.get(uuid)),
-	current_editor(UUID, TB, _Role, _), !,
-	update_access(UUID),
+	fetch_editor(UUID, TB), !,
 	(   Text = Data.get(text)
 	->  size_memory_file(TB, Size),
 	    delete_memory_file(TB, 0, Size),
@@ -449,7 +490,7 @@ shadow_editor(Data, TB) :-
 	Text = Data.get(text), !,
 	atom_string(UUID, Data.uuid),
 	create_editor(UUID, TB, Data),
-	debug(swish(change), 'Initialising editor to ~q', [Text]),
+	debug(cm(change), 'Initialising editor to ~q', [Text]),
 	insert_memory_file(TB, 0, Text).
 shadow_editor(Data, TB) :-
 	_{role:_} :< Data, !,
