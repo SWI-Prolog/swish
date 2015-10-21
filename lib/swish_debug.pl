@@ -142,7 +142,7 @@ swish_stat_collector(Thread, Dims, Interval) :-
 %	  Number of running pengines
 %	  * pengines_created
 %	  Total number of pengines created
-%	  * d_pengines
+%	  * d_pengines_created
 %	  Pengines created per second
 %	  * rss
 %	  Total resident memory
