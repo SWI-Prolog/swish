@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
+
+<url>
+  <loc>http://cplint.lamping.unife.it/</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/index.html</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/coin.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/dice.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/epidemic.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/earthquake.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/sneezing.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/eruption.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/mendel.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/bloodtype.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/path.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/alarm.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/hmm.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/pcfg.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/uwcse.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/cora.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/monty.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/jail.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/trigger.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/light.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/coin2.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/threesideddice.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/example/mendelc.cpl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+</urlset>

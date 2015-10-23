@@ -12,6 +12,7 @@
 %
 %    Start the web-server on Port.
 
+:- http_handler('/sitemap.xml', http_reply_file('sitemap.xml', []),[]).
 server :-
 	server(3050).
 server(Port) :-
