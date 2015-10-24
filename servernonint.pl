@@ -12,7 +12,7 @@
 %
 %    Start the web-server on Port.
 
-:- http_handler('/sitemap.xml', http_reply_file('sitemap.xml', []),[]).
+:- http_handler('/sitemap.xml', http_reply_file(swish('sitemap.xml'), []),[]).
 server :-
 	server(3050).
 server(Port) :-
