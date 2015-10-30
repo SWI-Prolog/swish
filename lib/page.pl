@@ -65,7 +65,8 @@ swish or parts of swish easily into a page.
 
 http:location(pldoc, swish(pldoc), [priority(100)]).
 
-:- http_handler(swish(.), swish_reply([]), [id(swish), prefix, priority(100)]).
+:- http_handler(swish(.), swish_reply([]), [id(swish_home), prefix, priority(100)]).
+:- http_handler(swish('app.html'), swish_reply_app([]), [id(swish), prefix, priority(100)]).
 
 :- multifile
 	swish_config:source_alias/1,
@@ -123,6 +124,44 @@ swish_reply1(Options) :-
 		   ])
 	    ],
 	    \swish_page(Options)).
+
+swish_reply_app(_, Request) :-
+	serve_resource(Request), !.
+swish_reply_app(_, Request) :-
+	swish_reply_config(Request), !.
+swish_reply_app(SwishOptions, Request) :-
+	Params = [ code(_,	 [optional(true)]),
+		   background(_, [optional(true)]),
+		   examples(_,   [optional(true)]),
+		   q(_,          [optional(true)]),
+		   format(_,     [oneof([swish,raw]), default(swish)])
+		 ],
+	http_parameters(Request, Params),
+	params_options(Params, Options0),
+	merge_options(Options0, SwishOptions, Options1),
+	source_option(Request, Options1, Options2),
+	swish_reply1_app(Options2).
+
+swish_reply1_app(Options) :-
+	option(code(Code), Options),
+	option(format(raw), Options), !,
+	format('Content-type: text/x-prolog~n~n'),
+	format('~s~n', [Code]).
+swish_reply1_app(Options) :-
+	swish_config:reply_page(Options), !.
+swish_reply1_app(Options) :-
+	reply_html_page(
+	    swish(main),
+            [ title('cplint on SWISH -- SWI-Prolog for SHaring'),
+	      link([ rel('shortcut icon'),
+		     href('/icons/favicon.ico')
+		   ]),
+	      link([ rel('apple-touch-icon'),
+		     href('/icons/swish-touch-icon.png')
+		   ])
+	    ],
+	    \swish_page_app(Options)).
+
 
 params_options([], []).
 params_options([H0|T0], [H|T]) :-
@@ -193,12 +232,51 @@ swish_page(Options) -->
 	swish_navbar(Options),
 	swish_content(Options).
 
+swish_page_app(Options) -->
+	swish_navbar_app(Options),
+	swish_content(Options).
+
 %%	swish_navbar(+Options)//
 %
 %	Generate the swish navigation bar.
 
+swish_navbar_app(Options) -->
+	swish_resources,
+	html(nav([ class([navbar, 'navbar-default']),
+		   role(navigation)
+		 ],
+		 [ div(class('navbar-header'),
+		       [ \collapsed_button,
+			 \swish_logos(Options)
+		       ]),
+		   div([ class([collapse, 'navbar-collapse']),
+			 id(navbar)
+		       ],
+		       [ ul([class([nav, 'navbar-nav'])], []),
+			 \search_form(Options)
+		       ])
+		 ])).
+
 swish_navbar(Options) -->
 	swish_resources,
+	html(div([itemscope, itemtype('http://schema.org/SoftwareSourceCode')],
+	[
+	div([style('display:inline-block;text-align:left;margin: 10px 5px')],
+	[span([itemprop(targetProduct), itemscope, itemtype('http://schema.org/WebApplication')],
+	[span([style('color:maroon')],['cplint on ']),
+	span([style('color:darkblue')],['SWI']),
+	span([style('color:maroon')],['SH']),
+	' is a web application for trying ',
+	span([itemprop(applicationCategory)],['probabilistic logic programming']),
+	' with a  web browser on ',
+	span([itemprop(operatingSystem)],['any operating system']),
+	'. It was written by ',
+	span([itemprop(author)],['Fabrizio Riguzzi and Riccardo Zese']),
+	'.'])]),
+	div([style('display:inline-block;margin: 10px 5px;text-align:right')],[a([href('/app.html')],['Dismiss'])
+	]
+	)]
+	)),
 	html(nav([ class([navbar, 'navbar-default']),
 		   role(navigation)
 		 ],
