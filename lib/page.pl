@@ -265,7 +265,7 @@ swish_navbar(Options) -->
 	[span([style('color:maroon')],['cplint on ']),
 	span([style('color:darkblue')],['SWI']),
 	span([style('color:maroon')],['SH']),
-	' is a web application for trying probabilistic logic programming',
+	' is a web application for probabilistic logic programming',
 	' with a Javascript-enabled web browser.',
 	&(nbsp), &(nbsp),
 	a([href('/help/about.html'),target('_blank')],['About']),
