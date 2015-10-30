@@ -15,6 +15,10 @@
   <changefreq>weekly</changefreq>
 </url>
 <url>
+  <loc>http://cplint.lamping.unife.it/app.html</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
   <loc>http://cplint.lamping.unife.it/help/about.html</loc>
   <changefreq>weekly</changefreq>
 </url>
