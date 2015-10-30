@@ -114,13 +114,15 @@ swish_reply1(Options) :-
 swish_reply1(Options) :-
 	reply_html_page(
 	    swish(main),
-            [ title('cplint on SWISH -- SWI-Prolog for SHaring'),
+            [ title('cplint on SWISH -- SWI-Prolog for SHaring',[]),
 	      link([ rel('shortcut icon'),
 		     href('/icons/favicon.ico')
 		   ]),
 	      link([ rel('apple-touch-icon'),
 		     href('/icons/swish-touch-icon.png')
-		   ])
+		   ]),	
+	       meta([name('msvalidate.01'), 
+ 		content('A9C78799EC9EDC7CE041CB7CD8E2D76E')])
 	    ],
 	    \swish_page(Options)).
 
@@ -259,7 +261,7 @@ search_form(Options) -->
 swish_content(Options) -->
 	swish_resources,
 	swish_config_hash,
-	html(div([id(content), class([container, swish])],
+	html(div([ id(content), class([container, swish])],
 		 [ div([class([tile, horizontal]), 'data-split'('50%')],
 		       [ div(class('prolog-editor'), \source(Options)),
 			 div([class([tile, vertical]), 'data-split'('70%')],
@@ -443,6 +445,14 @@ swish_js  --> html_post(head, \include_swish_js).
 swish_css --> html_post(head, \include_swish_css).
 
 include_swish_js -->
+        html(script([],[
+  '(function(i,s,o,g,r,a,m){i[''GoogleAnalyticsObject'']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,''script'',''//www.google-analytics.com/analytics.js'',''ga'');
+
+  ga(''create'', ''UA-16202613-9'', ''auto'');
+  ga(''send'', ''pageview'');'])),
 	{ swish_resource(js, JS),
 	  swish_resource(rjs, RJS),
 	  http_absolute_location(swish(js/JS), SwishJS, []),
