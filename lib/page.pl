@@ -115,7 +115,7 @@ swish_reply1(Options) :-
 swish_reply1(Options) :-
 	reply_html_page(
 	    swish(main),
-            [ title('cplint on SWISH -- SWI-Prolog for SHaring',[]),
+            [ title('cplint on SWISH -- Probabilistic Logic Programming',[]),
 	      link([ rel('shortcut icon'),
 		     href('/icons/favicon.ico')
 		   ]),
@@ -154,7 +154,7 @@ swish_reply1_app(Options) :-
 swish_reply1_app(Options) :-
 	reply_html_page(
 	    swish(main),
-            [ title('cplint on SWISH -- SWI-Prolog for SHaring'),
+            [ title('cplint on SWISH -- Probabilistic Logic Programming'),
 	      link([ rel('shortcut icon'),
 		     href('/icons/favicon.ico')
 		   ]),
