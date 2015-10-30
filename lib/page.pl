@@ -261,7 +261,7 @@ swish_navbar_app(Options) -->
 
 swish_navbar(Options) -->
 	swish_resources,
-	html(div([style('margin: 10px 5px')],
+	html(div([style('margin: 10px 5px;text-align:center;')],
 	[span([style('color:maroon')],['cplint on ']),
 	span([style('color:darkblue')],['SWI']),
 	span([style('color:maroon')],['SH']),
