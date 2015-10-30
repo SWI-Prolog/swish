@@ -261,24 +261,20 @@ swish_navbar_app(Options) -->
 
 swish_navbar(Options) -->
 	swish_resources,
-	html(div([itemscope, itemtype('http://schema.org/SoftwareSourceCode')],
-	[
-	div([style('display:inline-block;text-align:left;margin: 10px 5px')],
-	[span([itemprop(targetProduct), itemscope, itemtype('http://schema.org/WebApplication')],
+	html(div([style('margin: 10px 5px')],
 	[span([style('color:maroon')],['cplint on ']),
 	span([style('color:darkblue')],['SWI']),
 	span([style('color:maroon')],['SH']),
-	' is a web application for trying ',
-	span([itemprop(applicationCategory)],['probabilistic logic programming']),
-	' with a  web browser on ',
-	span([itemprop(operatingSystem)],['any operating system']),
-	'. It was written by ',
-	span([itemprop(author)],['Fabrizio Riguzzi and Riccardo Zese']),
-	'.'])]),
-	div([style('display:inline-block;margin: 10px 5px;text-align:right')],[a([href('/app.html')],['Dismiss'])
-	]
-	)]
-	)),
+	' is a web application for trying probabilistic logic programming',
+	' with a Javascript-enabled web browser.',
+	&(nbsp), &(nbsp),
+	a([href('/help/about.html'),target('_blank')],['About']),
+	&(nbsp), &(nbsp),
+	a([href('/help/help.html'),target('_blank')],['Help']),
+	&(nbsp), &(nbsp),
+	a([href('/app.html')],['Dismiss'])
+	])
+	),
 	html(nav([ class([navbar, 'navbar-default']),
 		   role(navigation)
 		 ],
