@@ -243,7 +243,7 @@ swish_page_app(Options) -->
 %	Generate the swish navigation bar.
 
 swish_navbar_app(Options) -->
-	swish_resources,
+	swish_resources_app,
 	html(nav([ class([navbar, 'navbar-default']),
 		   role(navigation)
 		 ],
@@ -261,7 +261,7 @@ swish_navbar_app(Options) -->
 
 swish_navbar(Options) -->
 	swish_resources,
-	html(div([style('margin: 10px 5px;text-align:center;')],
+	html(div([style('height:23px;margin: 10px 5px;text-align:center;')],
 	[span([style('color:maroon')],['cplint on ']),
 	span([style('color:darkblue')],['SWI']),
 	span([style('color:maroon')],['SH']),
@@ -333,7 +333,7 @@ search_form(Options) -->
 %	  Load initial source from HREF
 
 swish_content(Options) -->
-	swish_resources,
+%	swish_resources,
 	swish_config_hash,
 	html(div([ id(content), class([container, swish])],
 		 [ div([class([tile, horizontal]), 'data-split'('50%')],
@@ -515,8 +515,13 @@ swish_resources -->
 	swish_css,
 	swish_js.
 
+swish_resources_app -->
+	swish_css_app,
+	swish_js.
+
 swish_js  --> html_post(head, \include_swish_js).
 swish_css --> html_post(head, \include_swish_css).
+swish_css_app --> html_post(head, \include_swish_css_app).
 
 include_swish_js -->
         html(script([],[
@@ -553,6 +558,14 @@ include_swish_css -->
 		    href(SwishCSS)
 		  ])).
 
+include_swish_css_app -->
+	{ swish_resource(css_app, CSS),
+	  http_absolute_location(swish(css/CSS), SwishCSS, [])
+	},
+	html(link([ rel(stylesheet),
+		    href(SwishCSS)
+		  ])).
+
 swish_resource(Type, ID) :-
 	alt(Type, ID, File),
 	(   File == (-)
@@ -565,6 +578,9 @@ alt(js,  'swish',         swish_web('js/swish.js')).
 alt(css, 'swish-min.css', swish_web('css/swish-min.css')) :-
 	\+ debugging(nominified).
 alt(css, 'swish.css',     swish_web('css/swish.css')).
+alt(css_app, 'swish-minapp.css', swish_web('css/swish-minapp.css')) :-
+	\+ debugging(nominified).
+alt(css_app, 'swishapp.css',     swish_web('css/swishapp.css')).
 alt(rjs, 'js/require.js', swish_web('js/require.js')) :-
 	\+ debugging(nominified).
 alt(rjs, 'bower_components/requirejs/require.js', -).
