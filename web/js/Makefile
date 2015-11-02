@@ -5,7 +5,9 @@ JQ=jquery.jsdoc
 CONF=conf.json
 MAIN=swish.js
 
-all:	doc min require.js
+all:	 min require.js
+
+#all:	 doc min require.js
 
 doc::	$(CONF) $(JQ) $(JS)
 	jsdoc -p -c $(CONF) $(JQ) $(JS)
