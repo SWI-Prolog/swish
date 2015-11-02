@@ -270,9 +270,10 @@ swish_navbar(Options) -->
 	&(nbsp), &(nbsp),
 	a([href('/help/about.html'),target('_blank')],['About']),
 	&(nbsp), &(nbsp),
-	a([href('/help/help.html'),target('_blank')],['Help']),
+	a([href('/help/help.html'),target('_blank')],['Help'])
+/*,
 	&(nbsp), &(nbsp),
-	a([href('/app.html')],['Dismiss'])
+	a([href('/app.html')],['Dismiss'])*/
 	])
 	),
 	html(nav([ class([navbar, 'navbar-default']),
