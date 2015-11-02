@@ -261,7 +261,7 @@ swish_navbar_app(Options) -->
 
 swish_navbar(Options) -->
 	swish_resources,
-	html(div([style('height:23px;margin: 10px 5px;text-align:center;')],
+	html(div([id('navbarhelp'),style('height:23px;margin: 10px 5px;text-align:center;')],
 	[span([style('color:maroon')],['cplint on ']),
 	span([style('color:darkblue')],['SWI']),
 	span([style('color:maroon')],['SH']),
@@ -270,10 +270,9 @@ swish_navbar(Options) -->
 	&(nbsp), &(nbsp),
 	a([href('/help/about.html'),target('_blank')],['About']),
 	&(nbsp), &(nbsp),
-	a([href('/help/help.html'),target('_blank')],['Help'])
-/*,
+	a([href('/help/help.html'),target('_blank')],['Help']),
 	&(nbsp), &(nbsp),
-	a([href('/app.html')],['Dismiss'])*/
+	a([id('dismisslink'),href('')],['Dismiss'])
 	])
 	),
 	html(nav([ class([navbar, 'navbar-default']),
