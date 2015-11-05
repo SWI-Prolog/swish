@@ -782,7 +782,8 @@ builtin(integer(_)).
 builtin(var(_)).
 builtin(_ @> _).
 builtin(memberchk(_,_)).
-
+builtin(select(_,_,_)).
+builtin(dif(_,_)).
 
 average(L,Av):-
         sum_list(L,Sum),
