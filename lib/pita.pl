@@ -63,9 +63,13 @@ setting(single_var,false). %false:1 variable for every grounding of a rule; true
 s(M:Goal,P):-
   M:rule_n(NR),
   init_test(NR,Env),
+  findall((Goal,P),get_p(M:Goal,Env,P),L),
+  end_test(Env),
+  member((Goal,P),L).
+
+get_p(M:Goal,Env,P):-
   get_node(M:Goal,Env,BDD),
-  ret_prob(Env,BDD,P),
-  end_test(Env).
+  ret_prob(Env,BDD,P).
 
 load(FileIn,C1,R):-
   open(FileIn,read,SI),
@@ -78,7 +82,7 @@ get_node(Goal,Env,B):-
   setting(depth,DB),
   retractall(v(_,_,_)),
   add_bdd_arg_db(Goal,Env,BDD,DB,Goal1),%DB=depth bound
-  (bagof(BDD,Goal1,L)->
+  (bagof(BDD,Goal1,L)*->
     or_list(L,Env,B)
   ;
     zero(Env,B)
@@ -87,7 +91,7 @@ get_node(Goal,Env,B):-
 get_node(Goal,Env,B):- %with DB=false
   retractall(v(_,_,_)),
   add_bdd_arg(Goal,Env,BDD,Goal1),
-  (bagof(BDD,Goal1,L)->
+  (bagof(BDD,Goal1,L)*->
     or_list(L,Env,B)
   ;  
     zero(Env,B)
@@ -732,6 +736,7 @@ user:term_expansion(Head, (Head1:-one(Env,One))) :-
 user:term_expansion((:- cplint), []) :-
   prolog_load_context(module, M),
   assert(cplint_module(M)),
+  retractall(M:rule_n(_)),
   assert(M:rule_n(0)).
 
 user:term_expansion((:- end_cplint), []) :-
