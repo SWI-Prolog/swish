@@ -22,11 +22,27 @@ tell_executed(b):1/2; tell_executed(c):1/2:-
 % the jailer says that b will be executed with probability 1/2 or c will be
 % executed with probability 1/2 if a is safe
 
+% Version 1
+/*
 tell_executed(A):-
   member(A,[b,c]),
   member(B,[b,c]),
   A\=B,
   safe(B).
+*/
+
+% Version 2
+/*
+tell_executed(A):-
+  member(A,[b,c]),
+  member(B,[b,c]),
+  dif(A,B),
+  safe(B).
+*/
+
+tell_executed(A):-
+  select(Safe, [b,c], [A]),
+  safe(Safe).
 % the jailer says that A will be executed with certainty if there is a prisoner
 % B in {b,c} different from A that is safe
 
