@@ -78,7 +78,7 @@ get_node(Goal,Env,B):-
   setting(depth,DB),
   retractall(v(_,_,_)),
   add_bdd_arg_db(Goal,Env,BDD,DB,Goal1),%DB=depth bound
-  (bagof(BDD,Goal1,L)->
+  (bagof(BDD,Goal1,L) ->
     or_list(L,Env,B)
   ;
     zero(Env,B)
@@ -87,7 +87,7 @@ get_node(Goal,Env,B):-
 get_node(Goal,Env,B):- %with DB=false
   retractall(v(_,_,_)),
   add_bdd_arg(Goal,Env,BDD,Goal1),
-  (bagof(BDD,Goal1,L)->
+  (bagof(BDD,Goal1,L) ->
     or_list(L,Env,B)
   ;  
     zero(Env,B)
