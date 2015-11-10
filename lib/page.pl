@@ -517,9 +517,10 @@ swish_resources -->
 
 swish_resources_app -->
 	swish_css_app,
-	swish_js.
+	swish_js_app.
 
 swish_js  --> html_post(head, \include_swish_js).
+swish_js_app  --> html_post(head, \include_swish_js_app).
 swish_css --> html_post(head, \include_swish_css).
 swish_css_app --> html_post(head, \include_swish_css_app).
 
@@ -533,6 +534,25 @@ include_swish_js -->
   ga(''create'', ''UA-16202613-9'', ''auto'');
   ga(''send'', ''pageview'');'])),
 	{ swish_resource(js, JS),
+	  swish_resource(rjs, RJS),
+	  http_absolute_location(swish(js/JS), SwishJS, []),
+	  http_absolute_location(swish(RJS),   SwishRJS, [])
+	},
+	rjs_timeout(JS),
+	html(script([ src(SwishRJS),
+		      'data-main'(SwishJS)
+		    ], [])).
+
+include_swish_js_app -->
+        html(script([],[
+  '(function(i,s,o,g,r,a,m){i[''GoogleAnalyticsObject'']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,''script'',''//www.google-analytics.com/analytics.js'',''ga'');
+
+  ga(''create'', ''UA-16202613-9'', ''auto'');
+  ga(''send'', ''pageview'');'])),
+	{ swish_resource(js_app, JS),
 	  swish_resource(rjs, RJS),
 	  http_absolute_location(swish(js/JS), SwishJS, []),
 	  http_absolute_location(swish(RJS),   SwishRJS, [])
@@ -575,6 +595,9 @@ swish_resource(Type, ID) :-
 alt(js,  'swish-min',     swish_web('js/swish-min.js')) :-
 	\+ debugging(nominified).
 alt(js,  'swish',         swish_web('js/swish.js')).
+alt(js_app,  'swish-minapp',     swish_web('js/swish-minapp.js')) :-
+	\+ debugging(nominified).
+alt(js_app,  'swishapp',         swish_web('js/swishapp.js')).
 alt(css, 'swish-min.css', swish_web('css/swish-min.css')) :-
 	\+ debugging(nominified).
 alt(css, 'swish.css',     swish_web('css/swish.css')).
