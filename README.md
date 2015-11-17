@@ -1,5 +1,16 @@
 # SWISH: A web based SWI-Prolog environment
 
+## Online version
+
+SWISH can be used to access [SWI-Prolog](http://www.swi-prolog.org) at
+the address below. We try to keep this server continuously online. You
+can use this server for playing, courses or sharing and discussing
+ideas. We have not yet dealt with scalable hosting nor with really
+reliable and scalable storage for saved programs. We hope to keep all
+your programs online for at least multiple years.
+
+  - http://swish.swi-prolog.org/
+
 ## Installation
 
 ### Get JavaScript requirements
