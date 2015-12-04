@@ -212,8 +212,11 @@ swish_stats(stats{ cpu:CPU,
 		   rss:RSS,
 		   stack:Stack,
 		   pengines:Pengines,
-		   pengines_created:PenginesCreated
+		   pengines_created:PenginesCreated,
+		   time:Time
 		 }) :-
+	get_time(Now),
+	Time is floor(Now),
 	statistics(process_cputime, PCPU),
 	statistics(cputime, MyCPU),
 	CPU is PCPU-MyCPU,
