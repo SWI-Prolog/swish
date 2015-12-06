@@ -150,7 +150,8 @@ reply(Event, Pengine, StartTime, [Time-H|T], T) :-
 	      [Event, H, Sleep]),
 %	sleep(Sleep),
 	debug(playback(reply), 'Reply: ~p', [H]),
-	(   pengine_send(H, Pengine)
+	(   catch(pengine_send(H, Pengine), E,
+		  print_message(error, E))
 	->  true
 	;   print_message(error, replay(Pengine, failed(H)))
 	).
