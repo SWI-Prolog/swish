@@ -158,6 +158,7 @@ pengines:prepare_module(Module, swish, _Options) :-
 
 :- use_module(library(clpfd), []).
 :- use_module(library(clpb), []).
+:- use_module(library(chr), []).
 
 % load rendering modules
 
