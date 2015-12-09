@@ -1,0 +1,140 @@
+/* Style for the SWISH notebook
+*/
+
+.nb-toolbar, .nb-content
+{ width: 100%;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+.nb-toolbar
+{ position: absolute;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin-bottom: 1em;
+  border-bottom: 1px solid #ddd;
+}
+
+.nb-view
+{ position: absolute;
+  top: 40px;
+  height: calc(100% - 40px);
+  width: 100%;
+  overflow-y: auto;
+}
+
+.nb-content
+{ position: relative;
+  width: 100%;
+}
+
+.nb-bottom
+{ width: 100%;
+  height: 30%;
+}
+
+.dropdown.cell-type
+{ display: inline;
+}
+
+.nb-cell.markdown:not(.runnable)
+{ background-color: transparent;
+  border: 0px;
+}
+
+.nb-cell
+{ box-sizing: border-box;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.nb-type-select
+{ padding: 1em 0px 1em 0px;
+}
+
+.nb-type-select > label
+{ margin-left: 1em;
+  margin-right: 1em;
+  position: relative;
+  top: 0.1em;
+}
+
+.nb-type-more
+{ padding-bottom: 1em;
+  padding-left: 1em;
+}
+
+.nb-type-more label
+{ margin-right: 1em;
+  position: relative;
+  top: 0.1em;
+}
+
+.nb-type-more input
+{ display: inline;
+}
+
+.nb-cell.active, .nb-cell.active > .with-buttons
+{ border: 1px solid #888;
+}
+
+.nb-cell.singleline div.editor
+{ height: 2em;
+}
+
+.nb-cell .CodeMirror
+{ border-radius: 5px;
+}
+
+.nb-cell .nb-cell-buttons
+{ display: inline-block;
+  float: right;
+}
+
+.nb-cell.background span.glyphicon-cloud
+{ color: #bef;
+}
+
+.nb-cell.query, .nb-cell.program
+{ border: 0px;
+  background: transparent;
+}
+
+.nb-cell > .with-buttons
+{ background-color: #eee;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: calc(100% - 50px);
+}
+
+.nb-cell .prolog-prompt
+{ float: left;
+  width: 44px;			/* CodeMirror gutter width */
+  padding-right: 0.3em;
+  padding-top: 0.2em;
+  font-weight: bold;
+  text-align: right;
+}
+
+.nb-cell .editor.query
+{ margin-left: 44px;		/* CodeMirror gutter width */
+}
+
+.nb-cell.program, .nb-cell.query
+{ margin-bottom: 1em;
+}
+
+.nb-cell.not-for-query
+{ opacity: 0.5;
+}
+
+.nb-placeholder
+{ opacity: 0.5;
+}
+
+/* Notebook markdown */
+
+.nb-cell.markdown pre.code    { width: 90%; margin: auto; margin-bottom: 1em;}
+.nb-cell.markdown dl.termlist { margin-left: 5%; }
+.nb-cell.markdown dl.termlist dd { margin-left: 2em; }

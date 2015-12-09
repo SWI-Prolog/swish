@@ -1,0 +1,61 @@
+/* Support tabs in panes */
+
+div.tabbed {
+  height: 100%;
+}
+
+div.tab-content	{
+  height: calc(100% - 40px);
+}
+
+div.tab-pane {
+  position: relative;
+  height: 100%;
+}
+
+span.glyphicon.xclose:hover {
+  opacity: 0.8;
+}
+
+span.glyphicon.xclose {
+  margin-left: 5px;
+  opacity: 0.2;
+}
+
+a.tab-new.compact > span {
+  padding: 6px 0px;
+}
+
+.nav > li > a.compact {
+  padding: 0px 5px;	/* top/bottom left/right */
+}
+
+.tabbed-select: {
+  width: 100%;
+}
+
+.tabbed-create {
+  margin: 2em 0px 1em;
+  text-align: center;
+}
+
+.tabbed-create label {
+  margin-left: 1em;
+  margin-right: 1em;
+}
+
+.tab-icon {
+  padding: 0px;
+  background-repeat: no-repeat;
+  background-size: 70%;
+  background-position: 50% 40%;
+  display: inline-block;
+  vertical-align: middle;
+  height: 30px;
+  width: 30px;
+}
+
+form.search-sources {
+  margin: 3em auto 1em;
+  width: 80%;
+}

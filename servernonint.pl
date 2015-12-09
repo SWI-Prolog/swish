@@ -10,7 +10,10 @@
 %%    server is det.
 %%    server(?Port) is det.
 %
-%    Start the web-server on Port.
+%    Start the web-server on Port.  Port  may   be  unbound  to make the
+%    system  select  a  free  port.  Port  can   also  be  of  the  form
+%    `localhost:Port`  to  bind  the  server    only  to  the  localhost
+%    interface.
 
 :- http_handler('/sitemap.xml', http_reply_file(swish('sitemap.xml'), []),[]).
 server :-

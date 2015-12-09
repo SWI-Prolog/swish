@@ -46,7 +46,7 @@
 .cm-s-prolog span.cm-no_option_name    {color: red;}
 .cm-s-prolog span.cm-flag_name         {color: blue;}
 .cm-s-prolog span.cm-no_flag_name      {color: red;}
-.cm-s-prolog span.cm-error             {background-color: #fa0;}
+.cm-s-prolog span.cm-error             {border-bottom: 1px dashed #f00; }
 .cm-s-prolog span.cm-link	       {color: #762;}
 .cm-s-prolog span.cm-expanded	       {color: blue; text-decoration: underline;}
 /* xpce */

@@ -91,7 +91,7 @@ CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
   function nextUntilUnescaped(stream, state, end) {
     var next;
     while ((next = stream.next()) != null) {
-      if ( next == end )
+      if ( next == end && end != stream.peek() )
       { state.nesting.pop();
         return false;
       }
@@ -108,10 +108,7 @@ CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
 		 *******************************/
 
   function nesting(state) {
-    var len = state.nesting.length;
-    if ( len > 0 )
-      return state.nesting[len-1];
-    return null;
+    return state.nesting.slice(-1)[0];
   }
 
   /* Called on every non-comment token */
@@ -308,12 +305,14 @@ CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
       }
     }
 
-    if ( /\d/.test(ch) || ch == "-" && stream.eat(/\d/)) {
+    if ( /\d/.test(ch) || /[+-]/.test(ch) && stream.eat(/\d/)) {
       if ( config.groupedIntegers )
 	stream.match(/^\d*((_|\s+)\d+)*(?:\.\d+)?(?:[eE][+\-]?\d+)?/);
       else
 	stream.match(/^\d*(?:\.\d+)?(?:[eE][+\-]?\d+)?/);
-      return ret(ch == "-" ? "neg-number" : "number", "number");
+      return ret(ch == "-" ? "neg-number" :
+		 ch == "+" ? "pos-number" :
+		 "number");
     }
 
     if ( isSymbolChar.test(ch) ) {
