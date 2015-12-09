@@ -7,12 +7,15 @@
   "dependencies":
   { "jquery": "*",
     "jquery-ui": "*",
-    "jquery.splitter": "0.14.0", 
+    "jquery.splitter": "0.15",
     "bootstrap": "*",
-    "typeahead.js": "0.10.5", 
+    "typeahead.js": "0.10.5",
     "laconic": "*",
     "requirejs": "*",
     "codemirror": "*",
-    "tagmanager": "*"
+    "tagmanager": "*",
+    "js-sha1": "*",
+    "c3": "*",
+    "svg-pan-zoom": "*"
   }
 }

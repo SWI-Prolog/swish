@@ -83,17 +83,19 @@ term_rendering(Term, _Vars, Options) -->
 		 [ span([]),
 		   \js_script({|javascript(Dict)||
 (function() {
-  var span = $.ajaxScript.parent().find("span")[0];
+  if ( $.ajaxScript ) {
+    var span = $.ajaxScript.parent().find("span")[0];
 
-  require(["render/svg-tree-drawer", "jquery"], function(svgtree) {
-    var tree = new TreeDrawer(span, Dict);
-    if ( !tree.filters.label ) {
-      tree.addFilter('label', function(label,node) {
-	return typeof(label) == "object" ? $(label.html)[0] : label;
-      });
-    }
-    tree.draw();
-  });
+    require(["render/svg-tree-drawer", "jquery"], function(svgtree) {
+      var tree = new TreeDrawer(span, Dict);
+      if ( !tree.filters.label ) {
+	tree.addFilter('label', function(label,node) {
+	  return typeof(label) == "object" ? $(label.html)[0] : label;
+	});
+      }
+      tree.draw();
+    });
+  }
 })();
 		  |})
 		 ])).

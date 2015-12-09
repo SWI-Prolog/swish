@@ -1,0 +1,165 @@
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+  <title>Debugging a query</title>
+  </head>
+  <body>
+
+<style>
+table.runner-states {
+  border: 1px solid #ccc;
+  width: 90%;
+  margin: auto;
+}
+table.runner-states th {
+  font-style:italic;
+  white-space:nowrap;
+  padding-right:2em;
+  padding-left:5px;
+  vertical-align:top;
+}
+table.runner-states tr:nth-child(even) {
+  background-color: #eee;
+}
+table.runner-states tr.group th {
+  color: #fff;
+  background-color: #aaa;
+  text-align: center;
+}
+div.explain-trace-button { display:inline-block; width:70%; vertical-align:top; }
+div.trace-buttons { margin-bottom: 1em; }
+div.trace-buttons button.inline { vertical-align:bottom; margin-left: 0px;
+				  width: 1.5em; height: 1.5em;
+				}
+</style>
+
+<h2>Write clean code</h2>
+
+<p>
+Most novices try to write a single rule using a long and complicated
+control structure that produces the desired answer. The rule typically
+doesn't work, so they start adding additional control structures and
+conditions to fix the corner cases. Suprisingly quickly, it gets very
+difficult to read the rule. Recognise this? You need to write monolitic
+queries in query languages such as SQL or SPARQL. Prolog allows for
+<em>composing</em> rules from simpler ones. <strong>Use
+composition!</strong>
+
+
+<p>
+First of all, make sure your program consists of small predicates, where
+the body (the part after the <code>:-</code> operator) is typically a
+simple sequence (<em>conjunction</em>) of sub-queries (goals).  In
+particular
+
+  <ul>
+    <li>Keep the number of sub-queries of a clause <em>low</em>.
+        Say below 5.  If you need more, there exists typically a
+	meaningful <em>concept</em> that can be expressed as a
+	helper predicate to reduce the length of the conjunction.
+
+    <li>Avoid the use of control structures such as
+        <code>( If -> Then ; Else )</code>, and in particular nested
+        versions thereof.
+
+    <li>Avoid complex control structures as arguments to
+        <em>meta-predicates</em> such as <code>findall/3</code>.
+  </ul>
+
+<p>
+Following the above guidelines (1) makes your program easier to read,
+(2) makes it easier to formulate new queries (<em>code reuse</em>) and
+(3) <strong>makes the program easier to debug</strong>.
+
+
+<h2>My query still gives the wrong result (or <b>false</b>)</h2>
+
+<p>
+If the answer is wrong, you may consider tracing the execution of the
+query. To start debugging at a particular place in the source, set a
+<em>breakpoint</em> by clicking a line number in the <em>gutter</em> of
+the editor. To trace from the beginning, use the menu <strong>Solutions
+-> Debug (trace)</strong>. Note that you can add a (conditional) call to
+<code>trace/0</code> anywhere in the program to start debugging at that
+point.
+
+<p>
+In trace mode, you single-step through the execution of the program. The
+<span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> debugger only shows calls appearing in
+the current source files; details for called predicates are hidden. The
+following buttons are displayed below the <em>port</em>
+
+<div class="trace-buttons">
+  <button class="nodebug" title="Continue"></button>
+  <div class="explain-trace-button">
+Continue without debugging.  Execution will stop on completion,
+reaching a <em>breakpoint</em> or <em>error</em>.  Breakpoints
+may be set and cleared before using this button.
+  </div><br>
+  <button class="continue" title="Step into"></button>
+  <div class="explain-trace-button">
+Advance a single step.  If possible, go <em>into</em> the next rule.
+  </div><br>
+  <button class="skip" title="Step over"></button>
+  <div class="explain-trace-button">
+Advance a single step.  Step <em>over</em> the next rule.
+  </div><br>
+  <button class="up" title="Step out"></button>
+Complete execution of this rule, stopping in the <em>parent</em><br>
+  <button class="retry" title="Retry"></button>
+  <div class="explain-trace-button">
+This is <strong>Prolog's secret weapon</strong>: if you are at the end
+(<b>Exit</b> <b>Fail</b> or <b>Exception</b>), you can go back to the
+beginning and now use <button class="continue inline" title="Step
+into"></button> instead of <button class="skip inline" title="Step
+over"></button> to get more details.
+  </div><br>
+  <button class="abort" title="Abort"></button>
+  <div class="explain-trace-button">
+  Abort executing this query.
+  </div>
+</div>
+
+<p>
+<div class="trace-buttons">
+Note that the nice small predicates not only makes reading and reusing
+your code easy, but also facilitates <em>hierarchical</em> debugging by
+first stepping <em>over</em> (<button class="skip inline" title="Step
+over"></button>) all details and as soon as a goal gives an unexpected
+result, <em>retry</em> (<button class="retry inline"
+title="Retry"></button>) and step <em>into</em> (<button class="continue
+inline" title="Step into"></button>) the rule.
+</div>
+
+
+<h2>My query raises an error</h2>
+
+<p>
+If your query contains an error, such as dividing by zero or adding a
+number to an atom, Prolog will <em>raise an exception</em>. <span
+style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
+tries to start the tracer as soon as possible. Unfortunately, Prolog
+optimization sometimes causes that it cannot stop right there or that
+much of the execution context is not available.  In that case, run the
+query in <em>debug mode</em> as illustrated below.
+
+<pre>
+?- debug, goal.
+</pre>
+
+<p>
+<div class="trace-buttons">
+That should stop at the error location. If you wonder about the context,
+use the <em>Step Out</em> (<button class="up inline" title="Step
+out"></button>) button to get to a higher level and <em>Retry</em>
+(<button class="retry inline" title="Retry"></button>) to follow the
+execution that leads to the error in detail (<button class="continue
+inline" title="Step into"></button>).
+</div>
+
+</body>
+</html>
+
+

@@ -539,8 +539,13 @@ define([ "cm/lib/codemirror",
       var data = this.data(pluginName);
 
       if ( pref.name == "semantic-highlighting" ) {
-	data.cm.setOption("prologHighlightServer",
+	if (data.cm.options.codeType == "lpad") {
+	  data.cm.setOption("prologHighlightServer",
+			  { enabled: false });
+	} else {
+	  data.cm.setOption("prologHighlightServer",
 			  { enabled: pref.value });
+	}
       }
 
       if ( pref.name == "emacs-keybinding") {
