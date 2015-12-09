@@ -46,22 +46,17 @@ var tokenHelp = {
     }
   },
 
-  "goal_recursion": "Recursive call",
-  "goal_dynamic":   "Dynamic predicate",
-  "goal_undefined": "Undefined predicate",
-  "goal_local": function(data, cm) {
-    if ( data && data.file ) {
-      return $.el.div("Predicate included from ",
-		      $.el.span({class:"file-path"},
-				data.file));
-    } else if ( data && data.line ) {
-      return "Predicate defined in line "+data.line;
-    } else {
-      return "Locally defined predicate";
-    }
-  },
-
+  "goal_recursion":    "Recursive call",
+  "goal_dynamic":      "Dynamic predicate",
+  "goal_undefined":    "Undefined predicate",
+  "goal_local":        function(data, cm) {
+			 return localDef("predicate",data,cm)
+		       },
+  "goal_constraint":   function(data, cm) {
+			 return localDef("CHR constraint",data,cm)
+		       },
   "head_unreferenced": "Predicate is not called",
+  "head_constraint":   "CHR constraint",
 
   "file": function(data, cm) {
     if ( data ) {
@@ -142,6 +137,23 @@ function fileName(data, cm) {
     return data.file.substring(last+1);
 
   return data.file;
+}
+
+function localDef(type, data, cm) {
+  if ( data && data.file ) {
+    return $.el.div(capitalizeFirstLetter(type)+
+		    " included from ",
+		    $.el.span({class:"file-path"},
+			      data.file));
+  } else if ( data && data.line ) {
+    return capitalizeFirstLetter(type) + " defined in line "+data.line;
+  } else {
+    return "Locally defined " + type;
+  }
+}
+
+function capitalizeFirstLetter(string) {
+    return string[0].toUpperCase() + string.slice(1);
 }
 
 CodeMirror.registerHelper("textHover", "prolog", function(cm, data, node) {

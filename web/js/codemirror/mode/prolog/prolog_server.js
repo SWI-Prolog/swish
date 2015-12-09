@@ -276,6 +276,7 @@ classification of tokens.
 		     "expanded": "expanded",
 		     "comment_string":"string",
 		     "identifier": "atom",
+		     "delimiter": "atom",
 		     "module": "atom",
 
 		     "head_exported": "atom",

@@ -690,6 +690,7 @@ style(meta(_Spec),	 meta,				   []).
 style(op_type(_Type),	 op_type,			   [text]).
 style(functor,		 functor,			   [text]).
 style(control,		 control,			   [text]).
+style(delimiter,	 delimiter,			   [text]).
 style(identifier,	 identifier,			   [text]).
 style(module(_Module),   module,			   [text]).
 style(error,		 error,				   [text]).
@@ -740,21 +741,21 @@ neck_text(method(send), (:->)).
 neck_text(method(get),  (:<-)).
 neck_text(directive,    (:-)).
 
-head_type(exported,	head_exported).
-head_type(public(_),	head_public).
-head_type(extern(_),	head_extern).
-head_type(dynamic,	head_dynamic).
-head_type(multifile,	head_multifile).
-head_type(unreferenced,	head_unreferenced).
-head_type(hook,		head_hook).
-head_type(meta,		head_meta).
-head_type(constraint,	head_constraint).
-head_type(imported,	head_imported).
-head_type(built_in,	head_built_in).
-head_type(iso,		head_iso).
-head_type(def_iso,	head_def_iso).
-head_type(def_swi,	head_def_swi).
-head_type(_,		head).
+head_type(exported,	 head_exported).
+head_type(public(_),	 head_public).
+head_type(extern(_),	 head_extern).
+head_type(dynamic,	 head_dynamic).
+head_type(multifile,	 head_multifile).
+head_type(unreferenced,	 head_unreferenced).
+head_type(hook,		 head_hook).
+head_type(meta,		 head_meta).
+head_type(constraint(_), head_constraint).
+head_type(imported,	 head_imported).
+head_type(built_in,	 head_built_in).
+head_type(iso,		 head_iso).
+head_type(def_iso,	 head_def_iso).
+head_type(def_swi,	 head_def_swi).
+head_type(_,		 head).
 
 goal_type(built_in,	      goal_built_in,	 []).
 goal_type(imported(File),     goal_imported,	 [file(File)]).
