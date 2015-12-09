@@ -900,7 +900,7 @@ define([ "jquery", "config", "preferences",
 
     this.pengine.ask("'$swish wrapper'((" +
 		     termNoFullStop(data.query.query) +
-		     "))", options);
+		     "), Residuals)", options);
     elem.prologRunner('setState', "running");
   }
 
