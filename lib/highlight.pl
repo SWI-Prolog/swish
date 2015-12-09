@@ -28,7 +28,7 @@
 */
 
 :- module(swish_highlight,
-	  [
+	  [ current_highlight_state/2
 	  ]).
 :- use_module(library(debug)).
 :- use_module(library(http/http_dispatch)).
@@ -151,16 +151,16 @@ remove([H|T], TB, ChPos, Changed) :-
 insert([], _, ChPos, ChPos, _) :- !.
 insert([H|T], TB, ChPos0, ChPos, Changed) :-
 	(   H == ""
-	->  true
+	->  Len	= 0
 	;   Changed = true,
 	    string_length(H, Len),
-	    debug(swish(change), 'Insert ~q at ~d', [H, ChPos0]),
+	    debug(cm(change), 'Insert ~q at ~d', [H, ChPos0]),
 	    insert_memory_file(TB, ChPos0, H)
 	),
 	ChPos1 is ChPos0+Len,
 	(   T == []
 	->  ChPos2 = ChPos1
-	;   debug(swish(change), 'Adding newline at ~d', [ChPos1]),
+	;   debug(cm(change), 'Adding newline at ~d', [ChPos1]),
 	    Changed = true,
 	    insert_memory_file(TB, ChPos1, '\n'),
 	    ChPos2 is ChPos1+1
@@ -168,7 +168,8 @@ insert([H|T], TB, ChPos0, ChPos, Changed) :-
 	insert(T, TB, ChPos2, ChPos, Changed).
 
 :- dynamic
-	current_editor/3,			% UUID, MemFile, Role
+	current_editor/4,			% UUID, MemFile, Role, Time
+	editor_last_access/2,			% UUID, Time
 	xref_upto_data/1.			% UUID
 
 create_editor(UUID, Editor, Change) :-
@@ -179,7 +180,25 @@ create_editor(UUID, Editor, Change) :-
 	->  atom_string(Role, RoleString)
 	;   Role = source
 	),
-	asserta(current_editor(UUID, Editor, Role)).
+	get_time(Now),
+	asserta(current_editor(UUID, Editor, Role, Now)).
+
+%%	current_highlight_state(?UUID, -State) is nondet.
+%
+%	Return info on the current highlighter
+
+current_highlight_state(UUID,
+			highlight{data:Editor,
+				  role:Role,
+				  created:Created,
+				  access:Access
+				 }) :-
+	current_editor(UUID, Editor, Role, Created),
+	(   editor_last_access(Editor, Access)
+	->  true
+	;   Access = Created
+	).
+
 
 %%	uuid_like(+UUID) is semidet.
 %
@@ -190,7 +209,7 @@ create_editor(UUID, Editor, Change) :-
 uuid_like(UUID) :-
 	split_string(UUID, "-", "", Parts),
 	maplist(string_length, Parts, [8,4,4,4,12]),
-	\+ current_editor(UUID, _, _).
+	\+ current_editor(UUID, _, _, _).
 
 %%	destroy_editor(+UUID)
 %
@@ -200,27 +219,96 @@ uuid_like(UUID) :-
 destroy_editor(UUID) :-
 	must_be(atom, UUID),
 	retractall(xref_upto_data(UUID)),
-	current_editor(UUID, Editor, _), !,
+	retractall(editor_last_access(UUID, _)),
+	current_editor(UUID, Editor, _, _), !,
 	(   xref_source_id(Editor, SourceID)
 	->  xref_clean(SourceID),
 	    destroy_state_module(UUID)
 	;   true
 	),
 	% destroy late to make xref_source_identifier/2 work.
-	retractall(current_editor(UUID, Editor, _)),
+	retractall(current_editor(UUID, Editor, _, _)),
 	free_memory_file(Editor).
 destroy_editor(_).
 
+%%	gc_editors
+%
+%	Garbage collect all editors that have   not been accessed for 60
+%	minutes.
+%
+%	@tbd  Normally,  deleting  a  highlight    state   can  be  done
+%	aggressively as it will be recreated  on demand. But, coloring a
+%	query passes the UUIDs of related sources and as yet there is no
+%	way to restore this. We could fix  that by replying to the query
+%	colouring with the UUIDs for which we do not have sources, after
+%	which the client retry the query-color request with all relevant
+%	sources.
+
+:- dynamic
+	gced_editors/1.
+
+editor_max_idle_time(3600).
+
+gc_editors :-
+	get_time(Now),
+	(   gced_editors(Then),
+	    editor_max_idle_time(MaxIdle),
+	    Now - Then < MaxIdle/3
+	->  true
+	;   retractall(gced_editors(_)),
+	    asserta(gced_editors(Now)),
+	    fail
+	).
+gc_editors :-
+	editor_max_idle_time(MaxIdle),
+	forall(garbage_editor(UUID, MaxIdle),
+	       destroy_old_editor(UUID)).
+
+garbage_editor(UUID, TimeOut) :-
+	get_time(Now),
+	current_editor(UUID, _TB, _Role, Created),
+	Now - Created > TimeOut,
+	(   editor_last_access(UUID, Access)
+	->  Now - Access > TimeOut
+	;   true
+	).
+
+destroy_old_editor(UUID) :-
+	with_mutex(swish_gc_editor,
+		   destroy_old_editor_sync(UUID)).
+
+destroy_old_editor_sync(UUID) :-
+	editor_max_idle_time(MaxIdle),
+	garbage_editor(UUID, MaxIdle), !,
+	debug(cm(gc), 'GC highlight state for ~q', [UUID]),
+	destroy_editor(UUID).
+destroy_old_editor_sync(_).
+
+%%	fetch_editor(+UUID, -MemFile) is semidet.
+%
+%	Fetch existing editor for source UUID. Make sure the last access
+%	time is updated to avoid concurrent GC of the editor.
+
+fetch_editor(UUID, TB) :-
+	with_mutex(swish_gc_editor,
+		   ( current_editor(UUID, TB, _Role, _),
+		     update_access(UUID)
+		   )).
+
+update_access(UUID) :-
+	get_time(Now),
+	retractall(editor_last_access(UUID, _)),
+	asserta(editor_last_access(UUID, Now)).
 
 :- multifile
 	prolog:xref_source_identifier/2,
 	prolog:xref_open_source/2.
 
 prolog:xref_source_identifier(UUID, UUID) :-
-	current_editor(UUID, _, _).
+	current_editor(UUID, _, _, _).
 
 prolog:xref_open_source(UUID, Stream) :-
-	current_editor(UUID, TB, _Role), !,
+	current_editor(UUID, TB, _Role, _), !,
 	open_memory_file(TB, read, Stream).
 
 
@@ -234,8 +322,8 @@ codemirror_leave(Request) :-
 	http_read_json_dict(Request, Data, []),
 	debug(cm(leave), 'Leaving editor ~p', [Data]),
 	(   atom_string(UUID, Data.get(uuid))
-	->  forall(current_editor(UUID, _TB, _Role),
-		   destroy_editor(UUID))
+	->  forall(current_editor(UUID, _TB, _Role, _),
+		   with_mutex(swish_gc_editor, destroy_editor(UUID)))
 	;   true
 	),
 	reply_json_dict(true).
@@ -246,7 +334,7 @@ codemirror_leave(Request) :-
 
 mark_changed(MemFile, Changed) :-
 	(   Changed == true
-	->  current_editor(UUID, MemFile, _Role),
+	->  current_editor(UUID, MemFile, _Role, _),
 	    retractall(xref_upto_data(UUID))
 	;   true
 	).
@@ -256,7 +344,7 @@ mark_changed(MemFile, Changed) :-
 xref(UUID) :-
 	xref_upto_data(UUID), !.
 xref(UUID) :-
-	current_editor(UUID, MF, _Role),
+	current_editor(UUID, MF, _Role, _),
 	xref_source_id(MF, SourceId),
 	xref_state_module(MF, Module),
 	xref_source(SourceId,
@@ -280,7 +368,7 @@ xref(UUID) :-
 %	;   SourceId = Master
 %	).
 xref_source_id(TB, UUID) :-
-	current_editor(UUID, TB, _Role).
+	current_editor(UUID, TB, _Role, _).
 
 %%	xref_state_module(+TB, -Module) is semidet.
 %
@@ -288,7 +376,7 @@ xref_source_id(TB, UUID) :-
 %	temporary module based on the UUID of the source.
 
 xref_state_module(TB, UUID) :-
-	current_editor(UUID, TB, _Role),
+	current_editor(UUID, TB, _Role, _),
 	(   module_property(UUID, class(temporary))
 	->  true
 	;   set_module(UUID:class(temporary)),
@@ -320,22 +408,51 @@ codemirror_tokens(Request) :-
 	    ;	change_failed(Data.uuid, Reason)
 	    )
 	;   reply_json_dict(json{tokens:[[]]})
-	).
+	),
+	gc_editors.
 
 
 enriched_tokens(TB, _Data, Tokens) :-		% source window
-	current_editor(UUID, TB, source), !,
+	current_editor(UUID, TB, source, _), !,
 	xref(UUID),
 	server_tokens(TB, Tokens).
 enriched_tokens(TB, Data, Tokens) :-		% query window
-	atom_string(SourceID, Data.get(sourceID)),
+	json_source_id(Data.get(sourceID), SourceID), !,
 	memory_file_to_string(TB, Query),
-	prolog_colourise_query(Query, SourceID, colour_item(TB)),
+	with_mutex(swish_highlight_query,
+		   prolog_colourise_query(Query, SourceID, colour_item(TB))),
 	collect_tokens(TB, Tokens).
 enriched_tokens(TB, _Data, Tokens) :-
 	memory_file_to_string(TB, Query),
-	prolog_colourise_query(Query, swish, colour_item(TB)),
+	prolog_colourise_query(Query, module(swish), colour_item(TB)),
 	collect_tokens(TB, Tokens).
+
+%%	json_source_id(+Input, -SourceID)
+%
+%	Translate the Input, which is  either  a   string  or  a list of
+%	strings into an  atom  or  list   of  atoms.  Older  versions of
+%	SWI-Prolog only accept a single atom source id.
+
+:- if(current_predicate(prolog_colour:to_list/2)).
+json_source_id(StringList, SourceIDList) :-
+	is_list(StringList),
+	StringList \== [], !,
+	maplist(string_source_id, StringList, SourceIDList).
+:- else.				% old version (=< 7.3.7)
+json_source_id([String|_], SourceID) :-
+	maplist(string_source_id, String, SourceID).
+:- endif.
+json_source_id(String, SourceID) :-
+	string(String),
+	string_source_id(String, SourceID).
+
+string_source_id(String, SourceID) :-
+	atom_string(SourceID, String),
+	(   fetch_editor(SourceID, _TB)
+	->  true
+	;   true
+	).
+
 
 %%	shadow_editor(+Data, -MemoryFile) is det.
 %
@@ -350,25 +467,30 @@ enriched_tokens(TB, _Data, Tokens) :-
 %	state that must be reused, but  this   is  not true (for example
 %	because we have been restarted).
 %
-%	@throws cm(existence_error)
+%	@throws cm(existence_error) if the target editor did not exist
+%	@throws cm(out_of_sync) if the changes do not apply due to an
+%	internal error or a lost message.
 
 shadow_editor(Data, TB) :-
 	atom_string(UUID, Data.get(uuid)),
-	current_editor(UUID, TB, _Role), !,
+	fetch_editor(UUID, TB), !,
 	(   Text = Data.get(text)
 	->  size_memory_file(TB, Size),
 	    delete_memory_file(TB, 0, Size),
 	    insert_memory_file(TB, 0, Text),
 	    mark_changed(TB, true)
 	;   Changes = Data.get(changes)
-	->  maplist(apply_change(TB, Changed), Changes),
+	->  (   maplist(apply_change(TB, Changed), Changes)
+	    ->	true
+	    ;	throw(cm(out_of_sync))
+	    ),
 	    mark_changed(TB, Changed)
 	).
 shadow_editor(Data, TB) :-
 	Text = Data.get(text), !,
 	atom_string(UUID, Data.uuid),
 	create_editor(UUID, TB, Data),
-	debug(swish(change), 'Initialising editor to ~q', [Text]),
+	debug(cm(change), 'Initialising editor to ~q', [Text]),
 	insert_memory_file(TB, 0, Text).
 shadow_editor(Data, TB) :-
 	_{role:_} :< Data, !,
@@ -396,13 +518,13 @@ shadow_editor(_Data, _TB) :-
 	server_tokens/1.
 
 show_mirror(Role) :-
-	current_editor(_UUID, TB, Role), !,
+	current_editor(_UUID, TB, Role, _), !,
 	memory_file_to_string(TB, String),
 	write(user_error, String).
 
 server_tokens(Role) :-
-	current_editor(_UUID, TB, Role), !,
-	server_tokens(TB, Tokens),
+	current_editor(_UUID, TB, Role, _), !,
+	enriched_tokens(TB, _{}, Tokens),
 	print_term(Tokens, [output(user_error)]).
 
 %%	server_tokens(+TextBuffer, -Tokens) is det.
@@ -411,7 +533,7 @@ server_tokens(Role) :-
 %		represents the tokens found in a single toplevel term.
 
 server_tokens(TB, GroupedTokens) :-
-	current_editor(UUID, TB, _Role),
+	current_editor(UUID, TB, _Role, _),
 	setup_call_cleanup(
 	    open_memory_file(TB, read, Stream),
 	    ( set_stream_file(TB, Stream),
@@ -492,16 +614,16 @@ atomic_special(atom, Start, Len, TB, Type, Attrs) :-
 	).
 
 json_attributes([], [], _, _, _).
-json_attributes([H0|T0], [H|T], TB, Start, Len) :-
-	json_attribute(H0, H, TB, Start, Len), !,
+json_attributes([H0|T0], Attrs, TB, Start, Len) :-
+	json_attribute(H0, Attrs, T, TB, Start, Len), !,
 	json_attributes(T0, T, TB, Start, Len).
 json_attributes([_|T0], T, TB, Start, Len) :-
 	json_attributes(T0, T, TB, Start, Len).
 
-
-json_attribute(text, text(Text), TB, Start, Len) :- !,
+json_attribute(text, [text(Text)|T], T, TB, Start, Len) :- !,
 	memory_file_substring(TB, Start, Len, _, Text).
-json_attribute(Term, Term, _, _, _).
+json_attribute(line(File:Line), [line(Line),file(File)|T], T, _, _, _) :- !.
+json_attribute(Term, [Term|T], T, _, _, _).
 
 colour_item(_TB, Style, Start, Len) :-
 	(   style(Style)
@@ -571,7 +693,7 @@ style(control,		 control,			   [text]).
 style(identifier,	 identifier,			   [text]).
 style(module(_Module),   module,			   [text]).
 style(error,		 error,				   [text]).
-style(type_error(_Expect), error,			   [text]).
+style(type_error(Expect), error,		      [text,expected(Expect)]).
 style(syntax_error(_Msg,_Pos), syntax_error,		   []).
 style(predicate_indicator, atom,			   [text]).
 style(predicate_indicator, atom,			   [text]).

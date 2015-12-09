@@ -21,9 +21,9 @@ Copyright (c) 2011, Fabrizio Riguzzi and Elena Bellodi
 
 */
 
-:- module(pita,[s/2,set/2,setting/2,
+:- module(pita,[s/2,set/2,pita_setting/2,
    one/2,zero/2,and/4,or/4,bdd_not/3,get_var_n/5,add_var/5,equality/4,
-     or_list/3]).
+     or_list/3]). %,cplint/0, end_cplint/0
 :-meta_predicate s(:,-).
 :-use_module(library(lists)).
 :-use_module(library(rbtrees)).
@@ -34,22 +34,22 @@ Copyright (c) 2011, Fabrizio Riguzzi and Elena Bellodi
 :- thread_local v/3,rule_n/1, cplint_module/1.
 
 
+:- multifile init_test/2,ret_prob/3,end_test/1,one/2,zero/2,and/4,or/4,add_var/5,equality/4,remove/3.
 
 
-
-setting(epsilon_parsing, 1e-5).
+pita_setting(epsilon_parsing, 1e-5).
 /* on, off */
 
-setting(bagof,false).
+pita_setting(bagof,false).
 /* values: false, intermediate, all, extra */
 
-setting(compiling,off).
+pita_setting(compiling,off).
 
 :-set_prolog_flag(unknown,warning).
 
-setting(depth_bound,false).  %if true, it limits the derivation of the example to the value of 'depth'
-setting(depth,2).
-setting(single_var,false). %false:1 variable for every grounding of a rule; true: 1 variable for rule (even if a rule has more groundings),simpler.
+pita_setting(depth_bound,false).  %if true, it limits the derivation of the example to the value of 'depth'
+pita_setting(depth,2).
+pita_setting(single_var,false). %false:1 variable for every grounding of a rule; true: 1 variable for rule (even if a rule has more groundings),simpler.
 
 
 
@@ -78,8 +78,8 @@ load(FileIn,C1,R):-
   process_clauses(C,[],C1,[],R).
 
 get_node(Goal,Env,B):-
-  setting(depth_bound,true),!,
-  setting(depth,DB),
+  pita_setting(depth_bound,true),!,
+  pita_setting(depth,DB),
   retractall(v(_,_,_)),
   add_bdd_arg_db(Goal,Env,BDD,DB,Goal1),%DB=depth bound
   (bagof(BDD,Goal1,L)*->
@@ -405,7 +405,7 @@ process_head(HeadList, HeadList).
 process_head_ground([Head:ProbHead], Prob, [Head:ProbHead1|Null]) :-!,
   ProbHead1 is ProbHead,
   ProbLast is 1 - Prob - ProbHead1,
-  setting(epsilon_parsing, Eps), 
+  pita_setting(epsilon_parsing, Eps), 
   EpsNeg is - Eps, 
   ProbLast > EpsNeg, 
   (ProbLast > Eps ->
@@ -449,8 +449,8 @@ or_list1([H|T],Env,B0,B1):-
 
 /* set(Par,Value) can be used to set the value of a parameter */
 set(Parameter,Value):-
-  retract(setting(Parameter,_)),
-  assert(setting(Parameter,Value)).
+  retract(pita_setting(Parameter,_)),
+  assert(pita_setting(Parameter,Value)).
 
 extract_vars_list(L,[],V):-
   rb_new(T),
@@ -480,7 +480,7 @@ extract_vars_tree([Term|Tail], Var0, Var1) :-
 
 user:term_expansion((Head :- Body), Clauses):-
   prolog_load_context(module, M),cplint_module(M),
-  setting(depth_bound,true),
+  pita_setting(depth_bound,true),
 % disjunctive clause with more than one head atom e depth_bound
   Head = (_;_), !, 
   list2or(HeadListOr, Head), 
@@ -493,7 +493,7 @@ user:term_expansion((Head :- Body), Clauses):-
   extract_vars_list(List,[],VC),
   get_next_rule_number(R),
   get_probs(HeadList,Probs),
-  (setting(single_var,true)->
+  (pita_setting(single_var,true)->
     generate_rules_db(HeadList,Env,Body1,[],R,Probs,DB,BDDAnd,0,Clauses,Module)
   ;
     generate_rules_db(HeadList,Env,Body1,VC,R,Probs,DB,BDDAnd,0,Clauses,Module)
@@ -513,7 +513,7 @@ user:term_expansion((Head :- Body), Clauses):-
   extract_vars_list(List,[],VC),
   get_next_rule_number(R),
   get_probs(HeadList,Probs),
-  (setting(single_var,true)->
+  (pita_setting(single_var,true)->
     generate_rules(HeadList,Env,Body1,[],R,Probs,BDDAnd,0,Clauses,Module)
   ;
     generate_rules(HeadList,Env,Body1,VC,R,Probs,BDDAnd,0,Clauses,Module)
@@ -528,7 +528,7 @@ user:term_expansion((Head :- Body), []) :-
 user:term_expansion((Head :- Body), Clauses) :- 
 % disjunctive clause with a single head atom e depth_bound
   prolog_load_context(module, M),cplint_module(M),
-  setting(depth_bound,true),
+  pita_setting(depth_bound,true),
   ((Head:-Body) \= ((user:term_expansion(_,_) ):- _ )),
   list2or(HeadListOr, Head),
   process_head(HeadListOr, HeadList),
@@ -557,7 +557,7 @@ user:term_expansion((Head :- Body), Clauses) :-
 user:term_expansion((Head :- Body), Clauses) :- 
 % disjunctive clause with a single head atom e DB, con prob. diversa da 1
   prolog_load_context(module, M),cplint_module(M),
-  setting(depth_bound,true),
+  pita_setting(depth_bound,true),
   ((Head:-Body) \= ((user:term_expansion(_,_) ):- _ )),
   Head = (H:_), !, 
   list2or(HeadListOr, Head), 
@@ -570,7 +570,7 @@ user:term_expansion((Head :- Body), Clauses) :-
   extract_vars_list(List,[],VC),
   get_next_rule_number(R),
   get_probs(HeadList,Probs),%***test single_var
-  (setting(single_var,true)->
+  (pita_setting(single_var,true)->
     generate_clause_db(H,Env,Body2,[],R,Probs,DB,BDDAnd,0,Clauses,Module)
   ;
     generate_clause_db(H,Env,Body2,VC,R,Probs,DB,BDDAnd,0,Clauses,Module)
@@ -591,7 +591,7 @@ user:term_expansion((Head :- Body), Clauses) :-
   extract_vars_list(List,[],VC),
   get_next_rule_number(R),
   get_probs(HeadList,Probs),%***test single_vars
-  (setting(single_var,true)->
+  (pita_setting(single_var,true)->
     generate_clause(H,Env,Body2,[],R,Probs,BDDAnd,0,Clauses,Module)
   ;
     generate_clause(H,Env,Body2,VC,R,Probs,BDDAnd,0,Clauses,Module)
@@ -607,7 +607,7 @@ user:term_expansion((Head :- Body),Clauses) :-
 user:term_expansion((Head :- Body),Clauses) :- 
 % definite clause with depth_bound
   prolog_load_context(module, M),cplint_module(M),  
-  setting(depth_bound,true),
+  pita_setting(depth_bound,true),
    ((Head:-Body) \= ((user:term_expansion(_,_)) :- _ )),!,
   list2and(BodyList, Body), 
   process_body_db(BodyList,BDD,BDDAnd,DB,[],_Vars,BodyList2,Env,Module),
@@ -629,7 +629,7 @@ user:term_expansion((Head :- Body),Clauses) :-
 
 user:term_expansion(Head,Clauses) :- 
   prolog_load_context(module, M),cplint_module(M),
-  setting(depth_bound,true),
+  pita_setting(depth_bound,true),
 % disjunctive FACT with more than one head atom e db
   Head=(_;_), !, 
   list2or(HeadListOr, Head), 
@@ -637,7 +637,7 @@ user:term_expansion(Head,Clauses) :-
   extract_vars_list(HeadList,[],VC),
   get_next_rule_number(R),
   get_probs(HeadList,Probs),
-  (setting(single_var,true)->
+  (pita_setting(single_var,true)->
     generate_rules_fact_db(HeadList,_Env,[],R,Probs,0,Clauses,_Module)
   ;
     generate_rules_fact_db(HeadList,_Env,VC,R,Probs,0,Clauses,_Module)
@@ -652,7 +652,7 @@ user:term_expansion(Head,Clauses) :-
   extract_vars_list(HeadList,[],VC),
   get_next_rule_number(R),
   get_probs(HeadList,Probs), %**** test single_var
-  (setting(single_var,true)->
+  (pita_setting(single_var,true)->
     generate_rules_fact(HeadList,_Env,[],R,Probs,0,Clauses,_Module)
   ;
     generate_rules_fact(HeadList,_Env,VC,R,Probs,0,Clauses,_Module)
@@ -666,7 +666,7 @@ user:term_expansion(Head,[]) :-
   
 user:term_expansion(Head,Clause) :- 
   prolog_load_context(module, M),cplint_module(M),
-  setting(depth_bound,true),
+  pita_setting(depth_bound,true),
 % disjunctive fact with a single head atom con prob.1 e db
   (Head \= ((user:term_expansion(_,_)) :- _ )),
   Head = (H:P),P=:=1.0, !,
@@ -685,7 +685,7 @@ user:term_expansion(Head,Clause) :-
 
 user:term_expansion(Head,Clause) :- 
   prolog_load_context(module, M),cplint_module(M),
-  setting(depth_bound,true),
+  pita_setting(depth_bound,true),
 % disjunctive fact with a single head atom e prob. generiche, con db
   (Head \= ((user:term_expansion(_,_)) :- _ )),
   Head=(H:_), !, 
@@ -695,7 +695,7 @@ user:term_expansion(Head,Clause) :-
   get_next_rule_number(R),
   get_probs(HeadList,Probs),
   add_bdd_arg_db(H,Env,BDD,_DB,_Module,Head1),
-  (setting(single_var,true)->
+  (pita_setting(single_var,true)->
     Clause=(Head1:-(get_var_n(Env,R,[],Probs,V),equality(Env,V,0,BDD)))
   ;
     Clause=(Head1:-(get_var_n(Env,R,VC,Probs,V),equality(Env,V,0,BDD)))
@@ -712,7 +712,7 @@ user:term_expansion(Head,Clause) :-
   get_next_rule_number(R),
   get_probs(HeadList,Probs),
   add_bdd_arg(H,Env,BDD,_Module,Head1),%***test single_var
-  (setting(single_var,true)->
+  (pita_setting(single_var,true)->
     Clause=(Head1:-(get_var_n(Env,R,[],Probs,V),equality(Env,V,0,BDD)))
   ;
     Clause=(Head1:-(get_var_n(Env,R,VC,Probs,V),equality(Env,V,0,BDD)))
@@ -720,7 +720,7 @@ user:term_expansion(Head,Clause) :-
 
 user:term_expansion(Head, (Head1:-one(Env,One))) :- 
   prolog_load_context(module, M),cplint_module(M),
-  setting(depth_bound,true),
+  pita_setting(depth_bound,true),
 % definite fact with db
   (Head \= ((user:term_expansion(_,_) ):- _ )),
   (Head\= end_of_file),!,
@@ -798,7 +798,7 @@ average(L,Av):-
 :- multifile sandbox:safe_primitive/1.
 
 sandbox:safe_primitive(pita:set(_,_)).
-sandbox:safe_primitive(pita:setting(_,_)).
+sandbox:safe_primitive(pita:pita_setting(_,_)).
 sandbox:safe_primitive(pita:init_test(_,_)).
 sandbox:safe_primitive(pita:ret_prob(_,_,_)).
 sandbox:safe_primitive(pita:end_test(_)).

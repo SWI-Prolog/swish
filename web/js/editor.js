@@ -13,13 +13,17 @@ define([ "cm/lib/codemirror",
 	 "preferences",
 	 "form",
 	 "cm/mode/prolog/prolog-template-hint",
-	 "gitty",
+	 "modal",
+	 "tabbed",
 
+	 "storage",
 
 	 "cm/mode/prolog/prolog",
 	 "cm/mode/prolog/prolog_keys",
 	 "cm/mode/prolog/prolog_query",
 	 "cm/mode/prolog/prolog_server",
+
+	 "cm/mode/markdown/markdown",
 
 	 "cm/addon/edit/matchbrackets",
 	 "cm/addon/comment/continuecomment",
@@ -35,12 +39,57 @@ define([ "cm/lib/codemirror",
 	 "cm/addon/hint/templates-hint",
 	 "cm/addon/hint/show-context-info",
 
-         "jquery", "laconic"
+         "jquery", "laconic",
+
+	 "cm/keymap/emacs",
        ],
-       function(CodeMirror, config, preferences, form, templateHint, gitty) {
+       function(CodeMirror, config, preferences, form, templateHint,
+		modal, tabbed) {
 
 (function($) {
   var pluginName = 'prologEditor';
+
+  var modeDefaults = {
+    prolog: {
+      mode: "prolog",
+      role: "source",
+      placeholder: "Your Prolog rules and facts go here ...",
+      lineNumbers: true,
+      autoCurrent: true,
+      save: false,
+      theme: "prolog",
+      matchBrackets: true,
+      textHover: true,
+      prologKeys: true,
+      codeType: "prolog",
+      extraKeys: {
+	"Ctrl-Space": "autocomplete",
+	"Alt-/": "autocomplete",
+      },
+      hintOptions: {
+      hint: templateHint.getHints,
+      completeSingle: false
+      }
+    },
+    
+    markdown: {
+      mode: "markdown",
+      placeholder: "Your markdown block goes here ...",
+      lineWrapping: true,
+      save: false
+    }
+  };
+
+  var roleDefaults = {
+    query: {
+      mode: "prolog",
+      role: "query",
+      placeholder: "Your query goes here ...",
+      lineNumbers: false,
+      lineWrapping: true,
+      save: false
+    }
+  };
 
   /** @lends $.fn.prologEditor */
   var methods = {
@@ -53,6 +102,8 @@ define([ "cm/lib/codemirror",
      * sets the placeholder for the editor.
      * @param {Boolean} [options.lineNumbers=true] defines whether or
      * not a left-gutter with line numbers is displayed.
+     * @param {Boolean} [options.save=false] defines whether the
+     * editor responds to storage events.
      * @param {String} [options.mode="prolog"] defines the mode used by
      * CodeMirror.
      * @param {String} [options.theme="prolog"] defines the CSS used for
@@ -66,84 +117,115 @@ define([ "cm/lib/codemirror",
      * "autocomplete".
      *
      */
-    _init: function(options) {
+    _init: function(opts) {
 
       return this.each(function() {
 	var elem = $(this);
-	var data = {};
-	var ta;					/* textarea */
+	var storage = {};		/* storage meta-data */
+	var data = {};			/* our data */
+	var ta;				/* textarea */
 
-	options = $.extend({
-	  role: "source",
-	  placeholder: "Your Logic Program with Annotated Disjunctions goes here ...",
-	  lineNumbers: true,
-	  mode: "prolog",
-	  theme: "prolog",
-	  matchBrackets: true,
-	  textHover: true,
-	  prologKeys: true,
-	  extraKeys: {
-	    "Ctrl-Space": "autocomplete",
-	    "Alt-/": "autocomplete",
-	  },
-	  hintOptions: {
-	    hint: templateHint.getHints,
-	    completeSingle: false
+	opts      = opts||{};
+	opts.mode = opts.mode||"prolog";
+
+	var options = $.extend({}, modeDefaults[opts.mode]);
+	if ( opts.role && roleDefaults[opts.role] )
+	  options = $.extend(options, roleDefaults[opts.role]);
+	options = $.extend(options, opts);
+
+	if ( preferences.getVal("emacs-keybinding") )
+	  options.keyMap = "emacs";
+
+	if ( options.mode == "prolog" ) {
+	  data.role = options.role;
+
+	  if ( config.http.locations.cm_highlight ) {
+	    options.prologHighlightServer =
+	    { url:  config.http.locations.cm_highlight,
+	      role: options.role,
+	      enabled: preferences.getVal("semantic-highlighting")
+	    };
+	    if ( options.sourceID )
+	      options.prologHighlightServer.sourceID = options.sourceID;
+	    options.extraKeys["Ctrl-R"] = "refreshHighlight";
 	  }
-	}, options);
 
-	if ( config.http.locations.cm_highlight ) {
-	  options.prologHighlightServer =
-	  { url:  config.http.locations.cm_highlight,
-	    role: options.role,
-	    enabled: preferences.getVal("semantic-highlighting")
-	  };
-	  if ( options.sourceID )
-	    options.prologHighlightServer.sourceID = options.sourceID;
-	  options.extraKeys["Ctrl-R"] = "refreshHighlight";
+	  if ( options.role == "source" ) {
+	    options.continueComments = "Enter";
+	    options.gutters = ["Prolog-breakpoints"]
+	  }
 	}
-
-	if ( options.role != "query" )
-	  options.continueComments = "Enter";
 
 	if ( (ta=elem.children("textarea")[0]) ) {
-	  var file = $(ta).attr("data-file");
+	  function copyData(name) {
+	    var value = $(ta).data(name);
+	    if ( value ) {
+	      storage[name] = value;
+	    }
+	  }
 
-	  if ( file )
-	    data.file = file;
-	  if ( window.swish && window.swish.meta_data )
-	    data.meta = window.swish.meta_data;
+	  copyData("file");
+	  copyData("url");
+	  copyData("title");
+	  copyData("meta");
+	  copyData("st_type");
+
+	  data.cm = CodeMirror.fromTextArea(ta, options);
 	} else {
-	  ta = $.el.textarea({placeholder:options.placeholder},
-			     elem.text());
-	  elem.append(ta);
+	  if ( !options.value )
+	    options.value = elem.text();
+	  data.cm = CodeMirror(elem[0], options);
 	}
 
-	data.cm              = CodeMirror.fromTextArea(ta, options);
-	data.cleanGeneration = data.cm.changeGeneration();
-	data.role            = options.role;
-
 	elem.data(pluginName, data);
+	elem.prologEditor('loadMode', options.mode);
+
 	elem.addClass("swish-event-receiver");
+	elem.addClass("prolog-editor");
 	elem.on("preference", function(ev, pref) {
 	  elem.prologEditor('preference', pref);
 	});
 
-	if ( data.role == "source" ) {
-	  elem.on("source", function(ev, src) {
-	    elem.prologEditor('setSource', src);
+	if ( options.save ) {
+	  storage.typeName = options.typeName||"program";
+	  elem.prologEditor('setupStorage', storage);
+	}
+
+	if ( options.mode == "prolog" && data.role == "source" ) {
+	  elem.on("activate-tab", function(ev) {
+	    if ( options.autoCurrent )
+	      elem.prologEditor('makeCurrent');
+	    data.cm.refresh();		/* needed if a tab has been opened */
 	  });
-	  elem.on("saveProgram", function(ev, data) {
-	    elem.prologEditor('save', data);
-	  });
-	  elem.on("fileInfo", function() {
-	    elem.prologEditor('info');
-	  });
+
 	  elem.on("source-error", function(ev, error) {
 	    elem.prologEditor('highlightError', error);
 	  });
 	  elem.on("clearMessages", function(ev) {
 	    elem.prologEditor('clearMessages');
+	  });
+	  elem.on("pengine-died", function(ev, id) {
+	    if ( data.pengines ) {
+	      var i = data.pengines.indexOf(id);
+	      if ( i >= 0 )
+		data.pengines.splice(i, 1);
+	    }
+	    if ( data.traceMark && data.traceMark.pengine == id ) {
+	      data.traceMark.clear();
+	      data.traceMark = null;
+	    }
+	  });
+	  data.cm.on("gutterClick", function(cm, n) {
+	    var info = cm.lineInfo(n);
+
+	    function makeMarker() {
+	      return $("<span class=\"breakpoint-marker\">&#9679;</span>")[0];
+	    }
+
+	    if ( info.gutterMarkers )
+	      cm.setGutterMarker(n, "Prolog-breakpoints", null);
+	    else
+	      cm.setGutterMarker(n, "Prolog-breakpoints", makeMarker());
 	  });
 	}
       });
@@ -157,246 +239,257 @@ define([ "cm/lib/codemirror",
      */
 
     getOption: function(opt) {
-      var elem = this;
-      return elem.data(pluginName)[opt];
+      return this.data(pluginName)[opt];
     },
 
     /**
-     * @returns {String} current contents of the editor
+     * @example // Set the keybinding for the editor
+     * $(element).prologEditor('setKeybinding', 'emacs') set
+     * keybinding schema emacs.
+     * @param {String} schema Name of the keybinding
+     * return {*}
      */
-    getSource: function() {
-      return this.data(pluginName).cm.getValue();
+    setKeybinding: function(schema) {
+      schema = schema || "default";
+      this.data(pluginName).cm.options.keyMap = schema;
     },
 
     /**
-     * @return {String|null} UUID of the source used for server-side
-     * analysis
+     * Switch the editor to the requested mode, possibly by dynamically
+     * loading the mode.  It seems that if we use RequireJS, we should
+     * also use this for loading modes dynamically.
+     */
+    loadMode: function(mode) {
+      var data = this.data(pluginName);
+
+      if ( !CodeMirror.modes[mode] ) {
+	require(["cm/mode/"+mode+"/"+mode],
+		  function() {
+		    data.cm.setOption("mode", mode);
+		  });
+      } else if ( mode != data.mode ) {
+	data.cm.setOption("mode", mode);
+      }
+
+      return this;
+    },
+
+    /**
+     * True if this source needs to be sent to the pengine.  This is
+     * the case of the source is loaded.  We should also exclude module
+     * files.  How do we detect a module file?  Detecting the module
+     * header without support from Prolog is rather hard: count the
+     * arity and ignore preceeding comments, encoding and conditional
+     * compilation directives.
+     */
+    isPengineSource: function() {
+      var data = $(this).data(pluginName);
+      if ( data && data.role == "source" ) {
+	var storageData = $(this).data('storage');
+
+	if ( storageData && storageData.meta ) {
+	  if ( storageData.meta.loaded ||
+	       storageData.meta.module )
+	    return false;
+	}
+      }
+
+      return this;
+    },
+
+    /**
+     * Get the defined breakpoints.
+     * @param {String} pengineID is the pengine asking for the
+     * breakpoints.
+     * @returns {Array.Object} an array holding one object per source
+     * with breakpoints.  The object contains `file` and `breakpoints`,
+     * where the latter is an array of integers.
+     */
+    getBreakpoints: function(pengineID) {
+      var result = [];
+
+      this.each(function() {
+	var data = $(this).data(pluginName);
+	var breakpoints = [];
+	var offset = 0;
+	var cm = data.cm;
+	var line = cm.firstLine();
+	var last = cm.lastLine();
+
+	for( ; line < last; line++ ) {
+	  var info = cm.lineInfo(line);
+	  if ( info.gutterMarkers )
+	    breakpoints.push(offset+line+1);
+	}
+
+	if ( breakpoints.length > 0 ) {
+	  var file;
+
+	  if ( data.pengines && data.pengines.indexOf(pengineID) >= 0 ) {
+	    file = "pengine://"+pengineID+"/src";
+	  } else {
+	    var store = $(this).data("storage");
+	    if ( store )
+	      file = "swish://"+store.file;
+	  }
+
+	  if ( file )
+	    result.push({ file: file,
+		          breakpoints: breakpoints
+		        });
+	}
+      });
+
+      return result;
+    },
+
+    /**
+     * FIXME: Add indication of the source, such that errors
+     * can be relayed to the proper editor.
+     * @returns {String} current contents of the editor.  If
+     * the jQuery object holds multiple editors, we return the
+     * joined content of the editors.
+     */
+    getSource: function(role) {
+      var src = [];
+
+      this.each(function() {
+	if ( $(this).prologEditor('isPengineSource') ) {
+	  var data = $(this).data(pluginName);
+
+	  if ( data ) {
+	    if ( !role || (role == data.role) )
+	      src.push(data.cm.getValue());
+	  }
+	}
+      });
+
+      return src.join("\n\n");
+    },
+    
+    /**
+     * FIXME: Add indication of the code type, such that errors
+     * can be relayed to the proper editor.
+     * @returns {String} current code type of the contents of the editor.  If
+     * the jQuery object holds multiple editors, we return the
+     * joined content of the editors.
+     */
+    getCodeType: function(role) {
+      var src = [];
+
+      this.each(function() {
+	if ( $(this).prologEditor('isPengineSource') ) {
+	  var data = $(this).data(pluginName);
+	  if ( data ) {
+	    if ( !role || (role == data.role) )
+	      src.push(data.cm.options.codeType);
+	  }
+	}
+      });
+
+      if (src.length == 1)
+        return src[0];
+      else {
+        if ($.inArray('lpad', src) > -1)
+          return "lpad"
+        else
+          return "prolog"
+      }
+    },
+
+    /**
+     * @returns {Object} holding extended source information
+     */
+    getSourceEx: function() {
+      var obj = { value: this.data(pluginName).cm.getValue()
+		};
+      var bps = this.prologEditor('getBreakpoints');
+      if ( bps.length > 0 )
+	obj.breakpoints = bps;
+
+      return obj;
+    },
+
+    /**
+     * @return {String[]} UUIDs of the sources used for
+     * server-side analysis.  The array may contain `null`s
+     * for sources that have no server side backup.
      */
      getSourceID: function() {
-       var cm = this.data(pluginName).cm;
+       var ids = [];
 
-       if ( cm.state.prologHighlightServer ) {
-	 return cm.state.prologHighlightServer.uuid;
-       }
-       return null;
+       this.each(function() {
+	 var data = $(this).data(pluginName);
+
+	 if ( data && data.cm && data.cm.state.prologHighlightServer )
+	   ids.push(data.cm.state.prologHighlightServer.uuid);
+	 else
+	   ids.push(null);
+       });
+
+       return ids;
      },
 
     /**
-     * @param {String|Object} src becomes the new contents of the editor
-     * @param {String} Object.data contains the data in the case that
-     * `src` is an object.
+     * @param {String} source sets the new content for the editor.  If
+     * the editor is associated with a storage plugin, the call is
+     * forwarded to the storage plugin.
+     * @param {Boolean} [direct=false] if this parameter is `true`, the
+     * message is never delegated to the storage
      */
-    setSource: function(src) {
-      var options = this.data(pluginName);
+    setSource: function(source, direct) {
+      if ( typeof(source) == "string" )
+	source = {data:source};
 
-      if ( typeof(src) == "string" )
-	src = {data:src};
+      if ( this.data('storage') && direct != true ) {
+	this.storage('setSource', source);
+      } else {
+	var data = this.data(pluginName);
 
-      this.data(pluginName).cm.setValue(src.data);
+	data.cm.setValue(source.data);
+	if ( source.line || source.prompt ) {
+	  data.cm.refresh();
 
-      if ( options.role == "source" ) {
-	if ( src.meta ) {
-	  options.file = src.meta.name;
-	  options.meta = src.meta;
-	} else {
-	  options.file = null;
-	  options.meta = null;
+	  if ( source.line ) {
+	    this.prologEditor('gotoLine', source.line, source);
+	  } else {
+	    this.prologEditor('showTracePort', source.prompt);
+	  }
 	}
 
-	if ( !src.url )
-	  src.url = config.http.locations.swish;
-
-	updateHistory(src);
-      }
-
-      return this;
-    },
-
-    /**
-     * Load document from the server.
-     */
-    load: function(file) {
-      if ( file ) {
-	var that = this;
-	var options = this.data(pluginName);
-
-	$.ajax({ url: config.http.locations.web_storage + "/" + file,
-		 dataType: "text",
-		 success: function(data) {
-		   that.prologEditor('setSource', data);
-		   options.file = file;
-		 },
-		 error: function(jqXHDR, textStatus) {
-		   alert("Failed to load document: "+textStatus);
-		 }
-	       });
+	if ( data.role == "source" )
+	  $(".swish-event-receiver").trigger("program-loaded", this);
       }
       return this;
     },
 
     /**
-     * Save the current document to the server.  Depending on the
-     * arguments, this function implements several forms of saving:
-     *
-     *   - Without arguments arguments, it implements "Save".
-     *   - With ("as"), it implements "Save as", which opens a
-     *     dialog which calls this method again, but now with
-     *     meta-data in the first argument.
-     *   - With ({...}) it performs the save operation of "Save as"
-     *   - With ({...}, "only-meta-data") it only updates the meta
-     *     data on the server.
-     *
-     * @param {Object} [meta] provides additional meta-information.
-     * Currently defined fields are `author`, `email`,
-     * `title`, `keywords` and `description`. Illegal fields are ignored
-     * by the server.
-     * @param {String} [what] If `"only-meta-data"`, only the meta-data
-     * is updated.
+     * Advertise this editor as the current editor.  This is the
+     * one used by the default query editor.
      */
-    save: function(meta, what) {
-      var options = this.data(pluginName);
-      var url     = config.http.locations.web_storage;
-      var method  = "POST";
-      var data;
+    makeCurrent: function() {
+      $(".swish-event-receiver").trigger("current-program", this);
+      return this;
+    },
 
-      if ( meta == "as" ) {
-	this.prologEditor('saveAs');
+    /**
+     * @param {Object} options
+     * @param {String} [options.add] Id of pengine to add
+     * @param {String} [options.has] Match pengine, returning boolean
+     */
+    pengine: function(options) {
+      var data = this.data(pluginName);
+
+      if ( options.add ) {
+	data.pengines = data.pengines || [];
+	if ( data.pengines.indexOf(options.add) < 0 )
+	  data.pengines.push(options.add);
+
 	return this;
+      } else if ( options.has ) {
+	return (data.pengines &&
+		data.pengines.indexOf(options.has) >= 0);
       }
-
-      if ( options.file &&
-	   (!meta || !meta.name || meta.name == options.file) ) {
-	url += "/" + encodeURI(options.file);
-	method = "PUT";
-      }
-
-      if ( what == "only-meta-data" ) {
-	meta = gitty.reduceMeta(meta, options.meta)
-	if ( $.isEmptyObject(meta) ) {
-	  alert("No change");
-	  return;
-	}
-	data = { update: "meta-data" };
-      } else if ( method == "POST" ) {
-	data = { data: this.prologEditor('getSource'),
-		 type: "pl"
-	       };
-	if ( options.meta ) {			/* rename */
-	  data.previous = options.meta.commit;
-	}
-      } else {
-	if ( !options.cm.isClean(options.cleanGeneration) ) {
-	  data = { data: this.prologEditor('getSource'),
-		   type: "pl"
-		 };
-	} else if ( sameSet(options.meta.tags, meta.tags) ) {
-	  alert("No change");
-	  return;
-	}
-      }
-
-      if ( meta )
-	data.meta = meta;
-
-      $.ajax({ url: url,
-               dataType: "json",
-	       contentType: "application/json",
-	       type: method,
-	       data: JSON.stringify(data),
-	       success: function(reply) {
-		 if ( reply.error ) {
-		   alert(JSON.stringify(reply));
-		 } else {
-		   options.url  = reply.url;
-		   options.file = reply.file;
-		   options.meta = reply.meta;
-		   updateHistory(reply);
-		 }
-	       },
-	       error: function() {
-		 alert("Failed to save document");
-	       }
-	     });
-
-      return this;
-    },
-
-    /**
-     * Provide a Save As dialog
-     */
-    saveAs: function() {
-      var options = this.data(pluginName);
-      var meta    = options.meta||{};
-      var editor  = this;
-      var update  = Boolean(options.file);
-      var fork    = options.meta && meta.symbolic != "HEAD";
-
-      if ( meta.public === undefined )
-	meta.public = true;
-
-      function saveAsBody() {
-	this.append($.el.form({class:"form-horizontal"},
-			      form.fields.fileName(fork ? null: options.file,
-						   meta.public),
-			      form.fields.title(meta.title),
-			      form.fields.author(meta.author),
-			      update ? form.fields.commit_message() : undefined,
-			      form.fields.tags(meta.tags),
-			      form.fields.buttons(
-				{ label: fork   ? "Fork program" :
-					 update ? "Update program" :
-						  "Save program",
-				  action: function(ev,data) {
-					    console.log(data);
-				            editor.prologEditor('save', data);
-					    return false;
-				          }
-				})));
-      }
-
-      form.showDialog({ title: fork   ? "Fork from "+meta.commit.substring(0,7) :
-			       update ? "Save new version" :
-			                "Save program as",
-			body:  saveAsBody
-		      });
-
-      return this;
-    },
-
-    /**
-     * Provide information about the current source in a modal
-     * dialog.
-     */
-    info: function() {
-      var options = this.data(pluginName);
-      var meta = options.meta;
-      var editor = this;
-      var title;
-
-      if ( options.meta ) {
-	title = $().gitty('title', options.meta);
-      } else {
-	title = "Local source";
-      }
-
-      function infoBody() {
-	if ( options.meta ) {
-	  options.editor = editor;		/* circular reference */
-	  this.gitty(options);
-	} else {
-	  this.append($.el.p("The source is not associated with a file. ",
-			     "Use ",
-			     $.el.b("Save ..."),
-			     " to save the source with meta information."
-			    ));
-	}
-      }
-
-      form.showDialog({ title: title,
-			body:  infoBody
-		      });
-
-      return this;
     },
 
     /**
@@ -425,8 +518,8 @@ define([ "cm/lib/codemirror",
 		 printWithIframe($.el.div($.el.style(data),
 					  pre));
 	       },
-	       error: function() {
-		 printWithIframe(pre);
+	       error: function(jqXHDR) {
+		 modal.ajaxError(jqXHR);
 	       }
              });
 
@@ -450,6 +543,14 @@ define([ "cm/lib/codemirror",
 			  { enabled: pref.value });
       }
 
+      if ( pref.name == "emacs-keybinding") {
+	if (pref.value == true) {
+	  data.cm.setOption("keyMap", "emacs");
+	} else {
+	  data.cm.setOption("keyMap", "default");
+	}
+      }
+
       return this;
     },
 
@@ -461,32 +562,55 @@ define([ "cm/lib/codemirror",
      * `line` and `ch` attributes.
      */
     highlightError: function(error) {
-      var data = this.data(pluginName);
-      var msg  = $(error.data).text();
-      var left;
+      if ( error.location.file &&
+	   this.prologEditor('isMyFile', error.location.file) ) {
+	var data = this.data(pluginName);
+	var msg  = $(error.data).text();
+	var left;
 
-      if ( error.location.ch ) {
-	left = data.cm.charCoords({ line: error.location.line-1,
-				    ch:   error.location.ch
-				  },
-				  "local").left;
-      } else {
-	left = 0;
+	if ( error.location.ch ) {
+	  left = data.cm.charCoords({ line: error.location.line-1,
+				      ch:   error.location.ch
+				    },
+				    "local").left;
+	} else {
+	  left = 0;
+	}
+
+	msg = msg.replace(/^.*?:[0-9][0-9]*: /, "");
+	var elem = $.el.span({class:"source-msg error"},
+			     msg,
+			     $("<span>&times;</span>")[0]);
+	$(elem).css("margin-left", left+"px");
+
+	var widget = data.cm.addLineWidget(error.location.line-1, elem);
+
+	$(elem).on("click", function() {
+	  widget.clear();
+	});
+	$(elem).data("cm-widget", widget);
       }
 
-      msg = msg.replace(/^.*?:[0-9][0-9]*: /, "");
-      var elem = $.el.span({class:"source-msg error"},
-			   msg,
-			   $("<span>&times;</span>")[0]);
-      $(elem).css("margin-left", left+"px");
+      return this;
+    },
 
-      var widget = data.cm.addLineWidget(error.location.line-1, elem);
+    /**
+     * Re-run the highlighting.  Used for query editors if the
+     * associated editor has changed.
+     */
+    refreshHighlight: function() {
+      var data = this.data(pluginName);
+      data.cm.serverAssistedHighlight(true);
+      return this;
+    },
 
-      $(elem).on("click", function() {
-	widget.clear();
-      });
-      $(elem).data("cm-widget", widget);
-
+    /**
+     * Refresh the editor.  This is often needed if it is resized.
+     */
+    refresh: function() {
+      var data = this.data(pluginName);
+      if ( data )
+	data.cm.refresh();
       return this;
     },
 
@@ -494,9 +618,87 @@ define([ "cm/lib/codemirror",
      * Remove all inline messages from the editor
      */
     clearMessages: function() {
-      return this.find(".source-msg").each(function() {
+      this.find(".source-msg").each(function() {
 	$(this).data("cm-widget").clear();
       });
+
+      this.prologEditor('showTracePort', null);
+
+      return this;
+    },
+
+    /**
+     * @param {String} file is the file as known to Prolog,
+     * which is `pengine://<pengine>/src/` for the pengine main file
+     * and `swish://store.pl` for included files.
+     * @return {Boolean} whether or not this is my file.
+     */
+    isMyFile: function(file) {
+      var prefix = "swish://";
+
+      if ( file.startsWith("pengine://") ) {
+	var data = this.data(pluginName);
+
+	if ( data.pengines &&
+	     (id = file.split("/")[2]) &&
+	     data.pengines.indexOf(id) >= 0 )
+	  return true;
+      }
+
+      if ( file.startsWith(prefix) ) {
+	var store = this.data("storage");
+
+	if ( store && file.slice(prefix.length) == store.file )
+	  return true;
+      }
+
+      return false;
+    },
+
+    /**
+     * Highlight source events.  The source pengine gets a prompt
+     * with `prompt.file` set to `pengine://<id>/src`.
+     * @param {Object|null} prompt for a tracer action.  Use `null`
+     * to clear.
+     * @return {jQuery|undefined} `this` if successful.  `undefined`
+     * if this is a valid trace event, but I cannot process it.
+     */
+    showTracePort: function(prompt) {
+      if ( this.length == 0 )
+	return this;
+
+      var data  = this.data(pluginName);
+
+      if ( data.traceMark ) {
+	data.traceMark.clear();
+	data.traceMark = null;
+      }
+
+      if ( prompt && prompt.source && prompt.source.file ) {
+	var file  = prompt.source.file;
+
+	if ( this.prologEditor('isMyFile', file) ) {
+	  if ( prompt.source.from && prompt.source.to ) {
+	    var from = data.cm.charOffsetToPos(prompt.source.from);
+	    var to   = data.cm.charOffsetToPos(prompt.source.to);
+
+	    if ( !this.is(":visible") )
+	      this.storage('expose', "trace");
+
+	    if ( from && to ) {
+	      data.traceMark = data.cm.markText(from, to,
+						{ className: "trace "+prompt.port
+						});
+	      data.traceMark.pengine = prompt.pengine;
+	      data.cm.scrollIntoView(from, 50);
+	    }
+	  }
+
+	  return this;
+	}
+      } else {
+	return this;
+      }
     },
 
     /**
@@ -592,10 +794,10 @@ define([ "cm/lib/codemirror",
 	cm._searchMarkers = [];
       }
 
-      line = line-1;
-      re   = options.regex;
       clearSearchMarkers(cm);
       options = options||{};
+      re      = options.regex;
+      line    = line-1;
 
       if ( re ) {
 	ch = cm.getLine(line).search(re);
@@ -638,31 +840,94 @@ define([ "cm/lib/codemirror",
 	if ( cm._searchMarkers.length > 0 )
 	  cm.on("cursorActivity", clearSearchMarkers);
       }
+    },
+
+    /**
+     * @return {Integer} change generation for this editor
+     */
+    changeGen: function() {
+      return this.data(pluginName).cm.changeGeneration();
+    },
+
+    /**
+     * Associate the editor with the server side (gitty) source
+     */
+    setupStorage: function(storage) {
+      var data = this.data(pluginName);
+      var elem = this;
+
+      storage.setValue = function(source) {
+	elem.prologEditor('setSource', source, true);
+      };
+      storage.getValue = function() {
+	return data.cm.getValue();
+      };
+      storage.changeGen = function() {
+	return data.cm.changeGeneration();
+      };
+      storage.isClean = function(generation) {
+	return data.cm.isClean(generation);
+      };
+
+      storage.cleanGeneration = data.cm.changeGeneration();
+      storage.cleanData       = data.cm.getValue();
+      storage.cleanCheckpoint = "load";
+
+      this.storage(storage);
+      return this;
     }
 
   }; // methods
 
-  function updateHistory(reply) {
-    var cpath = window.location.pathname;
+  tabbed.tabTypes.prolog = {
+    dataType: "pl",
+    typeName: "prolog",
+    label: "Prolog",
+    contentType: "text/x-prolog",
+    order: 100,
+    create: function(dom) {
+      $(dom).addClass("prolog-editor")
+            .prologEditor({save:true})
+	    .prologEditor('makeCurrent');
+    }
+  };
+  
+  tabbed.tabTypes.lpad = {
+    dataType: "pl",
+    typeName: "lpad",
+    label: "LPAD",
+    contentType: "text/x-prolog",
+    order: 100,
+    create: function(dom) {
+      $(dom).addClass("prolog-editor")
+            .prologEditor({placeholder: "Your LPAD rules and facts go here ...", save:true, codeType: "lpad"})
+	    .prologEditor('makeCurrent');
+    }
+  };
 
-    if ( cpath != reply.url ) {
-      window.history.pushState({location:reply.url},
-			       "",
-			       reply.url);
-      document.title = "SWISH -- "
-                     + (reply.file ? reply.file
-			           : "SWI-Prolog for SHaring");
+  if ( config.swish.tab_types ) {
+    var editDefaults = {
+      save: true,
+      lineNumbers: true
+    };
+
+    for(var i=0; i<config.swish.tab_types.length; i++) {
+      var tabType = config.swish.tab_types[i];
+      if ( tabType.editor ) {
+	var options = $.extend({typeName:tabType.typeName},
+			       editDefaults,
+			       tabType.editor);
+
+	tabType.create = function(dom) {
+	  $(dom).addClass("prolog-editor")
+	        .prologEditor(options);
+	};
+
+	tabbed.tabTypes[tabType.typeName] = tabType;
+      }
     }
   }
 
-  window.onpopstate = function(e) {
-    if ( e.state ) {
-      if ( e.state.location ) {
-	window.location =  e.state.location;
-      }
-    } else
-      window.location.reload(true);
-  }
 
   /**
    * The prologEditor jQuery plugin converts a `<div>` into an code
@@ -691,6 +956,33 @@ define([ "cm/lib/codemirror",
     }
   };
 }(jQuery));
+
+		 /*******************************
+		 *	     FUNCTIONS		*
+		 *******************************/
+
+CodeMirror.prototype.charOffsetToPos = function(offset) {
+  var line = this.firstLine();
+  var last = this.lastLine();
+  var charno = 0;
+
+  for( ; line < last; line++ ) {
+    var text = this.getLine(line);
+
+    if ( charno <= offset && charno+text.length >= offset )
+      return {line:line, ch:offset-charno};
+
+    charno += text.length + 1;		/* one extra for the newline */
+  }
+};
+
+
+		 /*******************************
+		 *	      EMACS		*
+		 *******************************/
+
+CodeMirror.keyMap.emacs.Enter = "newlineAndIndent";
+
 
 		 /*******************************
 		 *	STYLE CONFIGURATION	*

@@ -5,12 +5,25 @@ div.prolog-runners {
   background-repeat: no-repeat;
   background-position: 35% 50%;
   overflow: auto;
+  padding: 0px 5px 0px;
 }
 
 div.prolog-runner {
-  margin: 2px 5px;		/* top/bottom,left/right */
+  position: relative;
+  margin: 2px 0px 2px;		/* top,left/right,bottom */
   border: 1px solid #ccc;
   border-radius: 5px;
+}
+
+div.prolog-runner.tabled {
+  border: 0px;
+}
+
+div.prolog-runner > a.close {
+  position: absolute;
+  top: -4px;
+  right: -10px;
+  z-index: 10;
 }
 
 div.prolog-runner:focus {
@@ -21,7 +34,9 @@ div.prolog-runner.iconic > div.runner-results { display: none; }
 
 div.runner-title {
   padding: 0px 5px 2px;
+  border-width: 2px;
   border-radius: 5px;
+  box-sizing: border-box;
 }
 
 div.prolog-runner:focus div.runner-title {
@@ -31,12 +46,13 @@ div.prolog-runner:focus div.runner-title {
 div.runner-results {
   padding: 2px 0px 2px 0px;
   background-color: #fff;
+  border-radius: 5px;
 }
 
 span.answer-no  { float: right; color: #060; font-size: 80%; margin-right: 2px;
 		  font-style: italic;
 		}
-div.answer	{ padding-left: 5px; }
+div.answer	{ padding-left: 5px; border-radius: 5px; }
 div.answer.even { background-color: #eee; }
 div.answer.odd  { background-color: #fff; }
 div.response    { font-style: italic; color: blue; font-size: 90%;
@@ -119,6 +135,7 @@ div.runner-title > button:hover {
 span.runner-state.idle,
 span.runner-state.wait-next,
 span.runner-state.wait-input { background-image: url("../icons/logo.png");    }
+span.runner-state.wait-debug { background-image: url("../icons/debug.png");   }
 span.runner-state.running    { background-image: url("../icons/running.gif"); }
 span.runner-state.true,
 span.runner-state.stopped,
@@ -151,7 +168,7 @@ pre.msg-error         { color: red; font-weight: bold}
 /* Deal with tabled output */
 
 table.prolog-answers    { width: 100%; }
-table.prolog-answers td { padding: 0px 5px; border: 1px solid #888;}
+table.prolog-answers td { padding: 0px 5px; border: 1px solid #888; vertical-align: top; }
 table.prolog-answers th { padding: 0px 5px; border: 1px solid #888; text-align: center;}
 
 table.prolog-answers tr:nth-child(odd)  { background-color: #eee; }
@@ -166,3 +183,51 @@ td.answer-nth { color: #060; font-size: 80%; font-style: italic;
 		background-color: #eee;
 		vertical-align: top;
 	      }
+
+/* The debugger */
+
+div.trace-buttons button > span { display: none; }
+div.trace-buttons button
+{ display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-size: 90%;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  margin-left: 5px;
+}
+
+button.nodebug  { background-image: url("../icons/continue.png"); }
+button.continue { background-image: url("../icons/stepInto.png"); }
+button.skip     { background-image: url("../icons/stepOver.png"); }
+button.up       { background-image: url("../icons/stepOut.png"); }
+button.retry    { background-image: url("../icons/retry.png"); }
+button.abort    { background-image: url("../icons/abort.png"); }
+
+span.depth
+{ display: inline-block;
+  font-weight: bold;
+  background-image: url("../icons/depth.png");
+}
+
+span.port
+{ font-weight: bold;
+  padding-right: 0.5ex;
+  margin-right: 0.5ex;
+  background-color: #ccf;
+  display: inline-block;
+  width: 11ex;
+  text-align: right;
+  border-radius: 5px;
+}
+
+span.port.fail { color: #f00; }
+span.port.redo { color: #ff0; }
+span.port.exit { color: #0c0; }
+span.port.exception { color: #f0f; }
+
+div.prolog-exception
+{ color: #f00;
+  font-size: 80%;
+  margin-left: 5em;
+}

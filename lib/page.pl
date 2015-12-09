@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014, VU University Amsterdam
+    Copyright (C): 2014-2015, VU University Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -41,15 +41,22 @@
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
+:- use_module(library(http/http_header)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
+:- use_module(library(http/json)).
+:- use_module(library(http/http_json)).
 :- use_module(library(http/http_path)).
 :- if(exists_source(library(http/http_ssl_plugin))).
 :- use_module(library(http/http_ssl_plugin)).
 :- endif.
 :- use_module(library(debug)).
 :- use_module(library(time)).
+:- use_module(library(lists)).
 :- use_module(library(option)).
+:- use_module(library(uri)).
+:- use_module(library(error)).
+:- use_module(library(http/http_client)).
 
 :- use_module(config).
 :- use_module(help).
@@ -65,12 +72,13 @@ swish or parts of swish easily into a page.
 
 http:location(pldoc, swish(pldoc), [priority(100)]).
 
-:- http_handler(swish(.), swish_reply([]), [id(swish_home), prefix, priority(100)]).
-:- http_handler(swish('app.html'), swish_reply_app([]), [id(swish), prefix, priority(100)]).
+:- http_handler(swish(.), swish_reply([]), [id(swish), prefix]).
 
 :- multifile
-	swish_config:source_alias/1,
-	swish_config:reply_page/1.
+	swish_config:source_alias/2,
+	swish_config:reply_page/1,
+	swish_config:verify_write_access/3, % +Request, +File, +Options
+	swish_config:authenticate/2.	    % +Request, -User
 
 %%	swish_reply(+Options, +Request)
 %
@@ -88,6 +96,13 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 %	  - q(Query)
 %	  Use Query as the initial query.
 
+swish_reply(_Options, Request) :-
+	swish_config:authenticate(Request, _User), % must throw to deny access
+	fail.
+swish_reply(Options, Request) :-
+	option(method(Method), Request),
+	Method \== get, !,
+	swish_rest_reply(Method, Request, Options).
 swish_reply(_, Request) :-
 	serve_resource(Request), !.
 swish_reply(_, Request) :-
@@ -97,73 +112,39 @@ swish_reply(SwishOptions, Request) :-
 		   background(_, [optional(true)]),
 		   examples(_,   [optional(true)]),
 		   q(_,          [optional(true)]),
-		   format(_,     [oneof([swish,raw]), default(swish)])
+		   format(_,     [oneof([swish,raw,json]), default(swish)])
 		 ],
 	http_parameters(Request, Params),
 	params_options(Params, Options0),
 	merge_options(Options0, SwishOptions, Options1),
 	source_option(Request, Options1, Options2),
-	swish_reply1(Options2).
+	option(format(Format), Options2),
+	swish_reply2(Format, Options2).
 
-swish_reply1(Options) :-
-	option(code(Code), Options),
-	option(format(raw), Options), !,
+swish_reply2(raw, Options) :-
+	option(code(Code), Options), !,
 	format('Content-type: text/x-prolog~n~n'),
-	format('~s~n', [Code]).
-swish_reply1(Options) :-
+	format('~s', [Code]).
+swish_reply2(json, Options) :-
+	option(code(Code), Options), !,
+	option(meta(Meta), Options, _{}),
+	reply_json_dict(json{data:Code, meta:Meta}).
+swish_reply2(_, Options) :-
 	swish_config:reply_page(Options), !.
-swish_reply1(Options) :-
+swish_reply2(_, Options) :-
 	reply_html_page(
 	    swish(main),
-            [ title('cplint on SWISH -- Probabilistic Logic Programming',[]),
+	    [ title('cplint on SWISH -- Probabilistic Logic Programming'),
 	      link([ rel('shortcut icon'),
 		     href('/icons/favicon.ico')
 		   ]),
 	      link([ rel('apple-touch-icon'),
 		     href('/icons/swish-touch-icon.png')
-		   ]),	
-	       meta([name('msvalidate.01'), 
- 		content('A9C78799EC9EDC7CE041CB7CD8E2D76E')])
+		   ]),  
+              meta([name('msvalidate.01'), 
+                content('A9C78799EC9EDC7CE041CB7CD8E2D76E')])
 	    ],
 	    \swish_page(Options)).
-
-swish_reply_app(_, Request) :-
-	serve_resource(Request), !.
-swish_reply_app(_, Request) :-
-	swish_reply_config(Request), !.
-swish_reply_app(SwishOptions, Request) :-
-	Params = [ code(_,	 [optional(true)]),
-		   background(_, [optional(true)]),
-		   examples(_,   [optional(true)]),
-		   q(_,          [optional(true)]),
-		   format(_,     [oneof([swish,raw]), default(swish)])
-		 ],
-	http_parameters(Request, Params),
-	params_options(Params, Options0),
-	merge_options(Options0, SwishOptions, Options1),
-	source_option(Request, Options1, Options2),
-	swish_reply1_app(Options2).
-
-swish_reply1_app(Options) :-
-	option(code(Code), Options),
-	option(format(raw), Options), !,
-	format('Content-type: text/x-prolog~n~n'),
-	format('~s~n', [Code]).
-swish_reply1_app(Options) :-
-	swish_config:reply_page(Options), !.
-swish_reply1_app(Options) :-
-	reply_html_page(
-	    swish(main),
-            [ title('cplint on SWISH -- Probabilistic Logic Programming'),
-	      link([ rel('shortcut icon'),
-		     href('/icons/favicon.ico')
-		   ]),
-	      link([ rel('apple-touch-icon'),
-		     href('/icons/swish-touch-icon.png')
-		   ])
-	    ],
-	    \swish_page_app(Options)).
-
 
 params_options([], []).
 params_options([H0|T0], [H|T]) :-
@@ -180,23 +161,48 @@ params_options([_|T0], T) :-
 %	If the data was requested  as   '/Alias/File',  reply using file
 %	Alias(File).
 
-source_option(_Request, Options, Options) :-
-	option(code(_), Options),
-	option(format(swish), Options), !.
+source_option(_Request, Options0, Options) :-
+	option(code(Code), Options0),
+	option(format(swish), Options0), !,
+	(   uri_is_global(Code)
+	->  Options = [url(Code),st_type(external)|Options0]
+	;   Options = Options0
+	).
 source_option(Request, Options0, Options) :-
-	option(path_info(Info), Request),
-	Info \== 'index.html', !,	% Backward compatibility
-	(   source_data(Info, String)
-	->  Options = [code(String)|Options0]
+	source_file(Request, File, Options0), !,
+	option(path(Path), Request),
+	(   source_data(File, String, Options1)
+	->  append([ [code(String), url(Path), st_type(filesys)],
+		     Options1,
+		     Options0
+		   ], Options)
 	;   http_404([], Request)
 	).
 source_option(_, Options, Options).
 
-source_data(Info, Code) :-
-	sub_atom(Info, B, _, A, /),
-	sub_atom(Info, 0, B, _, Alias),
-	sub_atom(Info, _, A, 0, File),
-	catch(swish_config:source_alias(Alias), E,
+%%	source_file(+Request, -File, +Options) is semidet.
+%
+%	File is the file associated with a SWISH request.  A file is
+%	associated if _path_info_ is provided.  If the file does not
+%	exist, an HTTP 404 exception is returned.  Options:
+%
+%	  - alias(-Alias)
+%	    Get the swish_config:source_alias/2 Alias name that
+%	    was used to find File.
+
+source_file(Request, File, Options) :-
+	option(path_info(PathInfo), Request), !,
+	PathInfo \== 'index.html',
+	(   path_info_file(PathInfo, File, Options)
+	->  true
+	;   http_404([], Request)
+	).
+
+path_info_file(PathInfo, Path, Options) :-
+	sub_atom(PathInfo, B, _, A, /),
+	sub_atom(PathInfo, 0, B, _, Alias),
+	sub_atom(PathInfo, _, A, 0, File),
+	catch(swish_config:source_alias(Alias, AliasOptions), E,
 	      (print_message(warning, E), fail)),
 	Spec =.. [Alias,File],
 	http_safe_file(Spec, []),
@@ -204,10 +210,57 @@ source_data(Info, Code) :-
 			   [ access(read),
 			     file_errors(fail)
 			   ]),
+	confirm_access(Path, AliasOptions), !,
+	option(alias(Alias), Options, _).
+
+source_data(Path, Code, [title(Title), type(Ext), meta(Meta)]) :-
 	setup_call_cleanup(
 	    open(Path, read, In, [encoding(utf8)]),
 	    read_string(In, _, Code),
-	    close(In)).
+	    close(In)),
+	source_metadata(Path, Code, Meta),
+	file_base_name(Path, File),
+	file_name_extension(Title, Ext, File).
+
+%%	source_metadata(+Path, +Code, -Meta:dict) is det.
+%
+%	Obtain meta information about a local  source file. Defined meta
+%	info is:
+%
+%	  - last_modified:Time
+%	  Last modified stamp of the file.  Always present.
+%	  - loaded:true
+%	  Present of the file is a loaded source file
+%	  - modified_since_loaded:true
+%	  Present if the file loaded, has been edited, but not
+%	  yet reloaded.
+
+source_metadata(Path, Code, Meta) :-
+	findall(Name-Value, source_metadata(Path, Code, Name, Value), Pairs),
+	dict_pairs(Meta, meta, Pairs).
+
+source_metadata(Path, _Code, path, Path).
+source_metadata(Path, _Code, last_modified, Modified) :-
+	time_file(Path, Modified).
+source_metadata(Path, _Code, loaded, true) :-
+	source_file(Path).
+source_metadata(Path, _Code, modified_since_loaded, true) :-
+	source_file_property(Path, modified(ModifiedWhenLoaded)),
+	time_file(Path, Modified),
+	ModifiedWhenLoaded \== Modified.
+source_metadata(Path, _Code, module, Module) :-
+	file_name_extension(_, Ext, Path),
+	prolog_file_type(Ext, prolog),
+	xref_public_list(Path, _, [module(Module)]).
+
+confirm_access(Path, Options) :-
+	option(if(Condition), Options), !,
+	must_be(oneof([loaded]), Condition),
+	eval_condition(Condition, Path).
+confirm_access(_, _).
+
+eval_condition(loaded, Path) :-
+	source_file(Path).
 
 %%	serve_resource(+Request) is semidet.
 %
@@ -234,47 +287,27 @@ swish_page(Options) -->
 	swish_navbar(Options),
 	swish_content(Options).
 
-swish_page_app(Options) -->
-	swish_navbar_app(Options),
-	swish_content(Options).
-
 %%	swish_navbar(+Options)//
 %
 %	Generate the swish navigation bar.
 
-swish_navbar_app(Options) -->
-	swish_resources_app,
-	html(nav([ class([navbar, 'navbar-default']),
-		   role(navigation)
-		 ],
-		 [ div(class('navbar-header'),
-		       [ \collapsed_button,
-			 \swish_logos(Options)
-		       ]),
-		   div([ class([collapse, 'navbar-collapse']),
-			 id(navbar)
-		       ],
-		       [ ul([class([nav, 'navbar-nav'])], []),
-			 \search_form(Options)
-		       ])
-		 ])).
-
 swish_navbar(Options) -->
 	swish_resources,
 	html(div([id('navbarhelp'),style('height:23px;margin: 10px 5px;text-align:center;')],
-	[span([style('color:maroon')],['cplint on ']),
-	span([style('color:darkblue')],['SWI']),
-	span([style('color:maroon')],['SH']),
-	' is a web application for probabilistic logic programming',
-	' with a Javascript-enabled browser.',
-	&(nbsp), &(nbsp),
-	a([href('/help/about.html'),target('_blank')],['About']),
-	&(nbsp), &(nbsp),
-	a([href('/help/help.html'),target('_blank')],['Help']),
-	&(nbsp), &(nbsp),
-	a([id('dismisslink'),href('')],['Dismiss'])
-	])
-	),
+        [span([style('color:maroon')],['cplint on ']),
+        span([style('color:darkblue')],['SWI']),
+        span([style('color:maroon')],['SH']),
+        ' is a web application for probabilistic logic programming',
+        ' with a Javascript-enabled browser.',
+        &(nbsp), &(nbsp),
+        a([href('/help/about.html'),target('_blank')],['About']),
+        &(nbsp), &(nbsp),
+        a([href('/help/help.html'),target('_blank')],['Help']),
+        &(nbsp), &(nbsp),
+        a([id('dismisslink'),href('')],['Dismiss'])
+        ])
+        ),
+
 	html(nav([ class([navbar, 'navbar-default']),
 		   role(navigation)
 		 ],
@@ -311,7 +344,7 @@ pengine_logo(_Options) -->
 	},
 	html(a([href(HREF), class('pengine-logo')], &(nbsp))).
 swish_logo(_Options) -->
-	{ http_absolute_location(swish('index.html'), HREF, [])
+	{ http_absolute_location(swish(.), HREF, [])
 	},
 	html(a([href(HREF), class('swish-logo')], &(nbsp))).
 
@@ -333,11 +366,17 @@ search_form(Options) -->
 %	  Load initial source from HREF
 
 swish_content(Options) -->
-%	swish_resources,
+	{ document_type(Type, Options)
+	},
+	swish_resources,
 	swish_config_hash,
-	html(div([ id(content), class([container, swish])],
+	html(div([id(content), class([container, swish])],
 		 [ div([class([tile, horizontal]), 'data-split'('50%')],
-		       [ div(class('prolog-editor'), \source(Options)),
+		       [ div([ class([editors, tabbed])
+			     ],
+			     [ \source(Type, Options),
+			       \notebooks(Type, Options)
+			     ]),
 			 div([class([tile, vertical]), 'data-split'('70%')],
 			     [ div(class('prolog-runners'), []),
 			       div(class('prolog-query'), \query(Options))
@@ -362,7 +401,7 @@ swish_config_hash -->
 		   |}).
 
 
-%%	source(+Options)//
+%%	source(+Type, +Options)//
 %
 %	Associate the source with the SWISH   page. The source itself is
 %	stored  in  the  textarea  from  which  CodeMirror  is  created.
@@ -373,36 +412,58 @@ swish_config_hash -->
 %	  - file(+File)
 %	  If present and code(String) is present, also associate the
 %	  editor with the given file.  See storage.pl.
+%	  - url(+URL)
+%	  as file(File), but used if the data is loaded from an
+%	  alias/file path.
+%	  - title(+Title)
+%	  Defines the title used for the tab.
 
-source(Options) -->
+source(pl, Options) -->
 	{ option(code(Spec), Options), !,
 	  download_source(Spec, Source, Options),
-	  (   option(file(File), Options)
-	  ->  Extra = ['data-file'(File)]
-	  ;   Extra = []
-	  )
+	  phrase(source_data_attrs(Options), Extra)
 	},
-	source_meta_data(File, Options),
-	html(textarea([ class([source,prolog]),
-			style('display:none')
-		      | Extra
-		      ],
-		      Source)).
-source(_) --> [].
+	html(div([ class(['prolog-editor']),
+		   'data-label'('Program')
+		 ],
+		 [ textarea([ class([source,prolog]),
+			      style('display:none')
+			    | Extra
+			    ],
+			    Source)
+		 ])).
+source(_, _) --> [].
 
-%%	source_meta_data(+File, +Options)//
+source_data_attrs(Options) -->
+	(source_file_data(Options) -> [] ; []),
+	(source_url_data(Options) -> [] ; []),
+	(source_title_data(Options) -> [] ; []),
+	(source_meta_data(Options) -> [] ; []),
+	(source_st_type_data(Options) -> [] ; []).
+
+source_file_data(Options) -->
+	{ option(file(File), Options) },
+	['data-file'(File)].
+source_url_data(Options) -->
+	{ option(url(URL), Options) },
+	['data-url'(URL)].
+source_title_data(Options) -->
+	{ option(title(File), Options) },
+	['data-title'(File)].
+source_st_type_data(Options) -->
+	{ option(st_type(Type), Options) },
+	['data-st_type'(Type)].
+source_meta_data(Options) -->
+	{ option(meta(Meta), Options), !,
+	  atom_json_dict(Text, Meta, [])
+	},
+	['data-meta'(Text)].
+
+%%	background(+Options)//
 %
-%	Dump the meta-data of the provided file into swish.meta_data.
-
-source_meta_data(File, Options) -->
-	{ nonvar(File),
-	  option(meta(Meta), Options)
-	}, !,
-	js_script({|javascript(Meta)||
-		   window.swish = window.swish||{};
-		   window.swish.meta_data = Meta;
-		   |}).
-source_meta_data(_, _) --> [].
+%	Associate  the  background  program  (if  any).  The  background
+%	program is not displayed in  the  editor,   but  is  sent to the
+%	pengine for execution.
 
 background(Options) -->
 	{ option(background(Spec), Options), !,
@@ -434,8 +495,28 @@ query(Options) -->
 		      Query)).
 query(_) --> [].
 
+%%	notebooks(+Type, +Options)//
+%
+%	We have opened a notebook. Embed the notebook data in the
+%	left-pane tab area.
 
-%%	download_source(+HREF, -Source, Options) is det.
+notebooks(swinb, Options) -->
+	{ option(code(Spec), Options),
+	  download_source(Spec, NoteBookText, Options),
+	  phrase(source_data_attrs(Options), Extra)
+	},
+	html(div([ class('notebook'),
+		   'data-label'('Notebook')		% Use file?
+		 ],
+		 [ pre([ class('notebook-data'),
+			 style('display:none')
+		       | Extra
+		       ],
+		       NoteBookText)
+		 ])).
+notebooks(_, _) --> [].
+
+%%	download_source(+HREF, -Source, +Options) is det.
 %
 %	Download source from a URL.  Options processed:
 %
@@ -458,7 +539,7 @@ download_source(HREF, Source, Options) :-
 		  TMO,
 		  setup_call_cleanup(
 		      http_open(HREF, In,
-				[ cert_verify_hook(ssl_verify)
+				[ cert_verify_hook(cert_accept_any)
 				]),
 		      read_source(In, MaxLen, Source, Options),
 		      close(In))),
@@ -469,7 +550,7 @@ download_source(Source0, Source, Options) :-
 	(   Len =< MaxLen
 	->  Source = Source0
 	;   format(string(Source),
-		   '%ERROR: Content too long (max ~D)~n', [MaxLen])
+		   '% ERROR: Content too long (max ~D)~n', [MaxLen])
 	).
 
 read_source(In, MaxLen, Source, Options) :-
@@ -481,24 +562,28 @@ read_source(In, MaxLen, Source, Options) :-
 	(   Len =< MaxLen
 	->  Source = Source0
 	;   format(string(Source),
-		   '%ERROR: Content too long (max ~D)~n', [MaxLen])
+		   ' % ERROR: Content too long (max ~D)~n', [MaxLen])
 	).
 
 load_error(E, Source) :-
 	message_to_string(E, String),
-	format(string(Source), '%ERROR: ~s~n', [String]).
+	format(string(Source), '% ERROR: ~s~n', [String]).
 
-:- public ssl_verify/5.
-
-%%	ssl_verify(+SSL, +ProblemCert, +AllCerts, +FirstCert, +Error)
+%%	document_type(-Type, +Options) is det.
 %
-%	Currently we accept  all  certificates.   We  organise  our  own
-%	security using SHA1 signatures, so  we   do  not  care about the
-%	source of the data.
+%	Determine the type of document.
+%
+%	@arg Type is one of `notebook` or `prolog`
 
-ssl_verify(_SSL,
-	   _ProblemCertificate, _AllCertificates, _FirstCertificate,
-	   _Error).
+document_type(Type, Options) :-
+	(   option(type(Type0), Options)
+	->  Type = Type0
+	;   option(meta(Meta), Options),
+	    file_name_extension(_, Type0, Meta.name),
+	    Type0 \== ''
+	->  Type = Type0
+	;   Type = pl
+	).
 
 
 		 /*******************************
@@ -515,44 +600,19 @@ swish_resources -->
 	swish_css,
 	swish_js.
 
-swish_resources_app -->
-	swish_css_app,
-	swish_js_app.
-
 swish_js  --> html_post(head, \include_swish_js).
-swish_js_app  --> html_post(head, \include_swish_js_app).
 swish_css --> html_post(head, \include_swish_css).
-swish_css_app --> html_post(head, \include_swish_css_app).
 
 include_swish_js -->
-        html(script([],[
-  '(function(i,s,o,g,r,a,m){i[''GoogleAnalyticsObject'']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,''script'',''//www.google-analytics.com/analytics.js'',''ga'');
+	html(script([],[
+      '(function(i,s,o,g,r,a,m){i[''GoogleAnalyticsObject'']=r;i[r]=i[r]||function(){
+       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,''script'',''//www.google-analytics.com/analytics.js'',''ga'');
 
-  ga(''create'', ''UA-16202613-9'', ''auto'');
-  ga(''send'', ''pageview'');'])),
-	{ swish_resource(js, JS),
-	  swish_resource(rjs, RJS),
-	  http_absolute_location(swish(js/JS), SwishJS, []),
-	  http_absolute_location(swish(RJS),   SwishRJS, [])
-	},
-	rjs_timeout(JS),
-	html(script([ src(SwishRJS),
-		      'data-main'(SwishJS)
-		    ], [])).
-
-include_swish_js_app -->
-        html(script([],[
-  '(function(i,s,o,g,r,a,m){i[''GoogleAnalyticsObject'']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,''script'',''//www.google-analytics.com/analytics.js'',''ga'');
-
-  ga(''create'', ''UA-16202613-9'', ''auto'');
-  ga(''send'', ''pageview'');'])),
-	{ swish_resource(js_app, JS),
+        ga(''create'', ''UA-16202613-9'', ''auto'');
+        ga(''send'', ''pageview'');'])),
+        { swish_resource(js, JS),
 	  swish_resource(rjs, RJS),
 	  http_absolute_location(swish(js/JS), SwishJS, []),
 	  http_absolute_location(swish(RJS),   SwishRJS, [])
@@ -578,14 +638,6 @@ include_swish_css -->
 		    href(SwishCSS)
 		  ])).
 
-include_swish_css_app -->
-	{ swish_resource(css_app, CSS),
-	  http_absolute_location(swish(css/CSS), SwishCSS, [])
-	},
-	html(link([ rel(stylesheet),
-		    href(SwishCSS)
-		  ])).
-
 swish_resource(Type, ID) :-
 	alt(Type, ID, File),
 	(   File == (-)
@@ -595,16 +647,56 @@ swish_resource(Type, ID) :-
 alt(js,  'swish-min',     swish_web('js/swish-min.js')) :-
 	\+ debugging(nominified).
 alt(js,  'swish',         swish_web('js/swish.js')).
-alt(js_app,  'swish-minapp',     swish_web('js/swish-minapp.js')) :-
-	\+ debugging(nominified).
-alt(js_app,  'swishapp',         swish_web('js/swishapp.js')).
 alt(css, 'swish-min.css', swish_web('css/swish-min.css')) :-
 	\+ debugging(nominified).
 alt(css, 'swish.css',     swish_web('css/swish.css')).
-alt(css_app, 'swish-minapp.css', swish_web('css/swish-minapp.css')) :-
-	\+ debugging(nominified).
-alt(css_app, 'swishapp.css',     swish_web('css/swishapp.css')).
 alt(rjs, 'js/require.js', swish_web('js/require.js')) :-
 	\+ debugging(nominified).
 alt(rjs, 'bower_components/requirejs/require.js', -).
 
+
+		 /*******************************
+		 *	       REST		*
+		 *******************************/
+
+%%	swish_rest_reply(+Method, +Request, +Options) is det.
+%
+%	Handle non-GET requests.  Such requests may be used to modify
+%	source code.
+
+swish_rest_reply(put, Request, Options) :-
+	merge_options(Options, [alias(_)], Options1),
+	source_file(Request, File, Options1), !,
+	option(content_type(String), Request),
+	http_parse_header_value(content_type, String, Type),
+	read_data(Type, Request, Data, _Meta),
+	verify_write_access(Request, File, Options1),
+	setup_call_cleanup(
+	    open(File, write, Out),
+	    format(Out, '~s', [Data]),
+	    close(Out)),
+	reply_json_dict(true).
+
+read_data(media(Type,_), Request, Data, Meta) :-
+	http_json:json_type(Type), !,
+	http_read_json_dict(Request, Dict),
+	del_dict(data, Dict, Data, Meta).
+read_data(media(text/_,_), Request, Data, _{}) :-
+	http_read_data(Request, Data, [to(string)]).
+
+%%	swish_config:verify_write_access(+Request, +File, +Options) is
+%%	nondet.
+%
+%	Hook that verifies that the HTTP Request  may write to File. The
+%	hook must succeed to grant access. Failure   is  is mapped to an
+%	HTTP _403 Forbidden_ reply. The  hook   may  throw  another HTTP
+%	reply.  By default, the following options are passed:
+%
+%	  - alias(+Alias)
+%	    The swish_config:source_alias/2 Alias used to find File.
+
+verify_write_access(Request, File, Options) :-
+	swish_config:verify_write_access(Request, File, Options), !.
+verify_write_access(Request, _File, _Options) :-
+	option(path(Path), Request),
+	throw(http_reply(forbidden(Path))).

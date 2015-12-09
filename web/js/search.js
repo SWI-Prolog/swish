@@ -36,7 +36,7 @@ define([ "jquery", "config", "typeahead" ],
 
 	var files = new Bloodhound({
 			name: "files",
-			remote: config.http.locations.typeahead +
+			remote: config.http.locations.swish_typeahead +
 				"?set=file&q=%QUERY",
 			datumTokenizer: fileTokenizer,
 			queryTokenizer: Bloodhound.tokenizers.whitespace
@@ -48,9 +48,18 @@ define([ "jquery", "config", "typeahead" ],
 	}
 
 	function renderFile(f) {
-	  var str = "<div class=\"tt-match file\">"
+	  function filetype(file) {
+	    return file.split('.').pop();
+	  }
+	  function filebase(file) {
+	    return file.split('.').slice(0,-1).join(".");
+	  }
+
+	  var str = "<div class=\"tt-match file type-icon "
+	          + filetype(f.name)
+	          + "\">"
 		  + "<span class=\"tt-label\">"
-		  + htmlEncode(f.name);
+		  + htmlEncode(filebase(f.name));
 	          + "</span>";
 
 	  if ( f.tags ) {
@@ -72,6 +81,87 @@ define([ "jquery", "config", "typeahead" ],
 
 	  return str;
 	}
+
+		 /*******************************
+		 *     SEARCH STORE SOURCES	*
+		 *******************************/
+
+	var storeContent = new Bloodhound({
+			     name: "store_content",
+			     limit: 20,
+			     cache: false,
+			     remote: {
+			       url: config.http.locations.swish_typeahead +
+				     "?set=store_content&q=%QUERY",
+			       replace:bloodHoundURL
+			     },
+			     datumTokenizer: sourceLineTokenizer,
+			     queryTokenizer: Bloodhound.tokenizers.whitespace
+	                   });
+	storeContent.initialize();
+
+	var currentFile  = null;
+	var currentAlias = null;
+	function renderStoreSourceLine(hit) {
+	  var str = "";
+
+	  if ( hit.file != currentFile || hit.alias != currentAlias ) {
+	    var ext = hit.file.split('.').pop();
+	    currentFile = hit.file;
+	    currentAlias = hit.alias;
+	    str = "<div class=\"tt-file-header type-icon "+ext+"\">"
+		+ "<span class=\"tt-path-file\">"
+		+ htmlEncode(hit.file)
+		+ "</span>"
+		+ "</div>";
+	  }
+
+	  return str+renderSourceMatch(hit);
+	}
+
+		 /*******************************
+		 *     SEARCH REMOTE SOURCES	*
+		 *******************************/
+
+	var sources = new Bloodhound({
+			name: "source",
+			limit: 15,
+			cache: false,
+			query_cache_length: 1,
+			remote: {
+			  url: config.http.locations.swish_typeahead +
+				"?set=sources&q=%QUERY",
+			  replace: bloodHoundURL
+			},
+			datumTokenizer: sourceLineTokenizer,
+			queryTokenizer: Bloodhound.tokenizers.whitespace
+	               });
+	sources.initialize();
+
+	function sourceLineTokenizer(hit) {
+	  return Bloodhound.tokenizers.whitespace(hit.text);
+	}
+
+	function renderSourceLine(hit) {
+	  var str = "";
+
+	  if ( hit.file != currentFile || hit.alias != currentAlias ) {
+	    currentFile = hit.file;
+	    currentAlias = hit.alias;
+	    str = "<div class=\"tt-file-header type-icon "+hit.ext+"\">"
+	        + "<span class=\"tt-path-alias\">"
+	        + htmlEncode(hit.alias)
+		+ "</span>(<span class=\"tt-path-file\">"
+		+ htmlEncode(hit.file)
+		+ ")</span>"
+		+ "</div>";
+	  }
+
+	  if ( hit.text )
+	    str += renderSourceMatch(hit);
+	  return str;
+	}
+
 
 		 /*******************************
 		 *    PREDICATE COMPLETION	*
@@ -183,9 +273,65 @@ define([ "jquery", "config", "typeahead" ],
 		  + "<span class=\"tt-text\">"
 		  + htmlEncode(text)
 	          + "</span>"
-	          + "</span>";
+	          + "</span>"
+		  + "</div>";
 
 	  return str;
+	}
+
+
+	var typeaheadProperties = {
+	  source:			/* local source */
+	  { name: "source",
+	    source: sourceMatcher,
+	    templates: { suggestion: renderSourceMatch }
+	  },
+	  sources:			/* remote sources */
+	  { name: "sources",
+	    source: sources.ttAdapter(),
+	    templates: { suggestion: renderSourceLine },
+	    limit: 15
+	  },
+	  files:			/* files in gitty on name and tags */
+	  { name: "files",
+	    source: files.ttAdapter(),
+	    templates: { suggestion: renderFile }
+	  },
+	  store_content:		/* file content in gitty */
+	  { name: "store_content",
+	    source: storeContent.ttAdapter(),
+	    templates: { suggestion: renderStoreSourceLine }
+	  },
+	  predicates:			/* built-in and library predicates */
+	  { name: "predicates",
+	    source: predicateMatcher,
+	    templates: { suggestion: renderPredicate }
+	  }
+	};
+
+	// Get the actual query string exchanged between
+	// typeahead and Bloodhound.
+	var of = typeaheadProperties.sources.source;
+	typeaheadProperties.sources.source = function(q, cb) {
+	  currentFile = null;
+	  currentAlias = null;
+	  sourceRE = new RegExp(RegExp.escape(q));
+	  return of(q, cb);
+	}
+
+	/**
+	 * Assemble the sources
+	 */
+
+	function ttSources(from) {
+	  var sources = [];
+	  var src = from.replace(/\s+/g, ' ').split(" ");
+
+	  for(var i=0; i<src.length; i++) {
+	    sources.push(typeaheadProperties[src[i]]);
+	  }
+
+	  return sources;
 	}
 
 
@@ -193,26 +339,19 @@ define([ "jquery", "config", "typeahead" ],
 		 *	     TYPEAHEAD		*
 		 *******************************/
 
-	elem.typeahead({ minLength: 1,
+	elem.typeahead({ minLength: 2,
 			 highlight: true
 		       },
-		       [ { name: "source",
-			   source: sourceMatcher,
-			   templates: { suggestion: renderSourceMatch }
-		         },
-			 { name: "files",
-			   source: files.ttAdapter(),
-			   templates: { suggestion: renderFile }
-		         },
-			 { name: "predicates",
-			   source: predicateMatcher,
-			   templates: { suggestion: renderPredicate }
-		         }
-		       ])
+		       ttSources(elem.data("search-in")))
 	  .on('typeahead:selected typeahead:autocompleted',
 	      function(ev, datum, set) {
+
 		if ( datum.type == "store" ) {
-		  $(ev.target).parents(".swish").swish('playFile', datum.file);
+		  if ( datum.query ) {
+		    datum.regex = new RegExp(RegExp.escape(datum.query), "g");
+		    datum.showAllMatches = true;
+		  }
+		  $(ev.target).parents(".swish").swish('playFile', datum);
 		} else if ( datum.arity !== undefined ) {
 		  $(".swish-event-receiver").trigger("pldoc", datum);
 		} else if ( datum.editor !== undefined &&
@@ -221,6 +360,18 @@ define([ "jquery", "config", "typeahead" ],
 					       { regex: datum.regex,
 						 showAllMatches: true
 					       });
+		} else if ( datum.alias !== undefined ) {
+		  var url = encodeURI("/"+datum.alias+
+				      "/"+datum.file+
+				      "."+datum.ext);
+		  var play = { url:url, line:datum.line };
+
+		  if ( datum.query ) {
+		    play.regex = new RegExp(RegExp.escape(datum.query), "g");
+		    play.showAllMatches = true;
+		  }
+
+		  $(ev.target).parents(".swish").swish('playURL', play);
 		} else {
 		  elem.data("target", {datum:datum, set:set});
 		  console.log(elem.data("target"));
@@ -271,6 +422,16 @@ define([ "jquery", "config", "typeahead" ],
     };
   }
 
+  function bloodHoundURL(url, query) {
+    var url = url.replace('%QUERY',
+			  encodeURIComponent(query));
+    var match = $("label.active > input[name=smatch]").val();
+    if ( match )
+      url += "&match="+match;
+
+    return url;
+  }
+
   /**
    * <Class description>
    *
@@ -293,4 +454,9 @@ define([ "jquery", "config", "typeahead" ],
     }
   };
 }(jQuery));
+
+RegExp.escape = function(string) {
+  return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+};
+
 });

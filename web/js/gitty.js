@@ -7,8 +7,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "form", "laconic" ],
-       function($, config, form) {
+define([ "jquery", "config", "form", "modal", "laconic" ],
+       function($, config, form, modal) {
 
 (function($) {
   var pluginName = 'gitty';
@@ -118,7 +118,7 @@ define([ "jquery", "config", "form", "laconic" ],
 
 	tab.html("");
 	formel = $.el.form({class:"form-horizontal"},
-		      form.fields.fileName(meta.name, meta.public,
+		      form.fields.fileName(meta.name, meta.public, meta.example,
 					   true), // disabled
 		      form.fields.title(meta.title),
 		      form.fields.author(meta.author),
@@ -130,7 +130,7 @@ define([ "jquery", "config", "form", "laconic" ],
 	      form.fields.buttons(
 		{ label: "Update meta data",
 		  action: function(ev, newMetaData) {
-		    data.editor.prologEditor('save', newMetaData, "only-meta-data");
+		    data.editor.storage('save', newMetaData, "only-meta-data");
 		    return false;
 		  }
 		}));
@@ -193,7 +193,7 @@ define([ "jquery", "config", "form", "laconic" ],
 	});
 
 	var url  = config.http.locations.web_storage
-		 + "/" + encodeURI(meta.name);
+		 + encodeURI(meta.name);
 
 	$.ajax({ url: url,
 		 contentType: "application/json",
@@ -206,8 +206,8 @@ define([ "jquery", "config", "form", "laconic" ],
 		   elem.gitty('fillHistoryTable', reply);
 		   data.history = data.commit;
 		 },
-		 error: function() {
-		   alert("Failed to fetch history");
+		 error: function(jqXHDR) {
+		   modal.ajaxError(jqXHR);
 		 }
 	       });
       });
@@ -320,7 +320,7 @@ define([ "jquery", "config", "form", "laconic" ],
 
 	elem.find(".gitty-diff").html("");
 	var url  = config.http.locations.web_storage
-		 + "/" + encodeURI(data.commit);
+		 + encodeURI(data.commit);
 
 	$.ajax({ url: url,
 		 contentType: "application/json",
@@ -331,8 +331,8 @@ define([ "jquery", "config", "form", "laconic" ],
 		   elem.gitty('fillDiff', reply);
 		   data.diff = data.commit;
 		 },
-		 error: function() {
-		   alert("Failed to fetch diff");
+		 error: function(jqXHR) {
+		   modal.ajaxError(jqXHR);
 		 }
 	       });
       });
@@ -432,6 +432,7 @@ define([ "jquery", "config", "form", "laconic" ],
     diffAttr("title");
     diffAttr("data");
     diffAttr("public");
+    diffAttr("example");
 
     if ( (d=diffTags(m1.tags, m2.tags)) )
       diff.tags = d;
@@ -494,6 +495,7 @@ define([ "jquery", "config", "form", "laconic" ],
 
   return {
     diffMeta:   diffMeta,
-    reduceMeta: reduceMeta
+    reduceMeta: reduceMeta,
+    diffTags:   diffTags
   };
 });

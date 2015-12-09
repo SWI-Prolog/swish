@@ -43,3 +43,20 @@
   background-color: #bee;
 }
 
+		 /*******************************
+		 *	 DEBUGGER SUPPORT	*
+		 *******************************/
+
+.CodeMirror .trace.call      { background-color: #0f0; }
+.CodeMirror .trace.exit      { background-color: #0f0; }
+.CodeMirror .trace.fail      { background-color: #f00; }
+.CodeMirror .trace.redo      { background-color: #ff0; }
+.CodeMirror .trace.exception { background-color: #f0f; }
+
+.Prolog-breakpoints { width: 1em; }
+.breakpoint-marker
+{ color: #822;
+  padding-left: 4px;
+  font-size: 120%;
+  position: relative; top: -0.2em;
+}

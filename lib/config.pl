@@ -36,6 +36,11 @@
 :- use_module(library(http/http_json)).
 :- use_module(library(option)).
 
+:- multifile
+	config/2,			% ?Key, ?Value
+	source_alias/2,			% ?Alias, ?Options
+	authenticate/2.			% +Request, -User
+
 /** <module> Make HTTP locations known to JSON code
 */
 
@@ -110,11 +115,20 @@ swish_config(Config) :-
 %	Define a name/value pair that will end   up  in the SWISH config
 %	object (see =web/js/config.js=)
 
-:- multifile config/2.
-
 swish_config(Key, Value) :-
 	config(Key, Value).
 
+%%	source_alias(?Alias, ?Options) is nondet.
+%
+%	Multifile hook that  defines   properties  of file_search_path/2
+%	aliases wrt. storage handling.  Defined options are:
+%
+%	  - access(Access)
+%	  One of `read` or `both`.
+%	  - search(Pattern)
+%	  The _New Tab_ search form searches in files that satisfy the
+%	  given pattern in the matching directories.  Pattern is handed
+%	  to expand_file_name/2.
 
 		 /*******************************
 		 *	      MESSAGES		*

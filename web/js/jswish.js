@@ -10,42 +10,52 @@
 define([ "jquery",
 	 "config",
 	 "preferences",
+	 "history",
+	 "modal",
 	 "jquery-ui",
 	 "splitter",
 	 "bootstrap",
 	 "pane",
+	 "tabbed",
+	 "notebook",
 	 "navbar",
 	 "search",
 	 "editor",
 	 "query",
 	 "runner",
-	 "modal",
 	 "term",
-	 "laconic"
-       ], function($, config, preferences) {
+	 "laconic",
+	 "d3",
+	 "c3",
+	 "svg-pan-zoom"
+       ], function($, config, preferences, history, modal) {
 
-preferences.setDefault("semantic-highlighting", false);
+preferences.setDefault("semantic-highlighting", true);
+preferences.setDefault("emacs-keybinding", false);
 
 (function($) {
   var pluginName = 'swish';
 
   var defaults = {
-    newProgramText: "% Your program goes here\n\n\n\n"+
-		     "/** <examples>\n\n\n"+
-		     "*/\n",
     menu: {
       "File":
-      { "New": function() {
-	  menuBroadcast("source", { data: defaults.newProgramText });
-	},
-	"File group": "--",
-	"Save ...": function() {
-	  menuBroadcast("saveProgram", "as");
+      { "Save ...": function() {
+	  menuBroadcast("save", "as");
 	},
 	"Info & history ...": function() {
 	  menuBroadcast("fileInfo");
 	},
+	"Open recent": {
+	  type: "submenu",
+	  action: function(ev) {
+	    history.openRecent(ev, $(this).data('document'));
+	  },
+	  update: history.updateRecentUL
+	},
 	"Share": "--",
+	"Download": function() {
+	  menuBroadcast("download");
+	},
 	"Collaborate ...": function() {
 	  $("body").swish('collaborate');
 	},
@@ -58,10 +68,22 @@ preferences.setDefault("semantic-highlighting", false);
       { "Clear messages": function() {
 	  menuBroadcast("clearMessages");
 	},
+	"Changes": "--",
+	"View changes": function() {
+	  menuBroadcast("diff");
+	},
+	"Revert changes": function() {
+	  menuBroadcast("revert");
+	},
 	"Options": "--",
 	"Semantic highlighting": {
 	  preference: "semantic-highlighting",
 	  type: "checkbox"
+	},
+	"Emacs Keybinding": {
+	  preference: "emacs-keybinding",
+	  type: "checkbox",
+	  value: "false"
 	}
       },
       "Examples": function(navbar, dropdown) {
@@ -78,14 +100,20 @@ preferences.setDefault("semantic-highlighting", false);
 	"Runner ...": function() {
 	  menuBroadcast("help", {file:"runner.html"});
 	},
+	"Debugging ...": function() {
+	  menuBroadcast("help", {file:"debug.html"});
+	},
+	"Notebook ...": function() {
+	  menuBroadcast("help", {file:"notebook.html"});
+	},
 	"Background": "--",
-	"SWISH Beware! ...": function() {
+	"Limitations ...": function() {
 	  menuBroadcast("help", {file:"beware.html"});
 	},
-	"SWISH Caveats ...": function() {
+	"Caveats ...": function() {
 	  menuBroadcast("help", {file:"caveats.html"});
 	},
-	"Prolog Background ...": function() {
+	"Background ...": function() {
 	  menuBroadcast("help", {file:"background.html"});
 	},
       }
@@ -108,6 +136,7 @@ preferences.setDefault("semantic-highlighting", false);
       swishLogo();
       setupModal();
       setupPanes();
+      setupResize();
       $("#search").search();
 
       options = options||{};
@@ -119,18 +148,22 @@ preferences.setDefault("semantic-highlighting", false);
 
 	$("#navbar").navbar(defaults.menu);
 
-	data.editor = $(".prolog-editor").prologEditor();
+	var  editor = $(".prolog-editor").prologEditor({save:true});
 	data.runner = $(".prolog-runners").prologRunners();
 	data.query  = $(".prolog-query").queryEditor(
           { source:   function() {
 	      return elem.swish('prologSource');
 	    },
 	    sourceID: function() {
-	      return data.editor.prologEditor('getSourceID');
+	      return editor.prologEditor('getSourceID');
 	    },
 	    examples: elem.swish('examples'),
 	    runner:   data.runner,
-	  }).trigger("source");
+	  });
+
+	editor.prologEditor('makeCurrent');
+
+	$(".notebook").notebook();
 
 	if ( options.show_beware )
 	  menuBroadcast("help", {file:"beware.html", notagain:"beware"});
@@ -159,23 +192,116 @@ preferences.setDefault("semantic-highlighting", false);
 
     /**
      * Play a file from the webstore, loading it through ajax
-     * @param {String} name is the name of the file in the web storage
+     * @param {String|Object} options If a string, the name
+     * of the file in the web storage
+     * @param {String} options.file is the name of the file in the web
+     * storage
+     * @param {Number} [options.line] is the initial line number
+     * @param {RegEx} [options.regex] search to highlight
+     * @param {Boolean} [options.showAllMatches] Show other matches on
+     * page.
+     * @param {Boolean} [options.newTab] if `true`, open the file in
+     * a new tab.
+     * @param {Boolean} [options.noHistory] if `true`, do not push the
+     * new document to the history.
+     * @param {Object} [options.prompt] provided for trace events.  Must
+     * be used to highlight the Prolog port at the indicated location.
      */
-    playFile: function(file) {
-      var url = config.http.locations.web_storage + "/" + file;
+    playFile: function(options) {
+      if ( typeof(options) == "string" )
+	options = {file:options};
+
+      var existing = this.find(".storage").storage('match', options);
+      if ( existing && existing.storage('expose', "Already open") )
+	return this;				/* FIXME: go to line */
+
+      var url = config.http.locations.web_storage + options.file;
       $.ajax({ url: url,
 	       type: "GET",
 	       data: {format: "json"},
 	       success: function(reply) {
 		 reply.url = url;
+		 reply.type = "gitty";
+
+		 function copyAttrs(names) {
+		   for(var i=0; i<names.length; i++) {
+		     var name = names[i];
+		     if ( options[name] )
+		       reply[name] = options[name];
+		   }
+		 }
+
+		 copyAttrs([ "line",
+			     "regex", "showAllMatches",
+			     "newTab", "noHistory",
+			     "prompt"
+			   ]);
+
 		 menuBroadcast("source", reply);
 	       },
-	       error: function() {
-		 alert("Failed to load example");
+	       error: function(jqXHR) {
+		 modal.ajaxError(jqXHR);
 	       }
 	     });
 
       return this;
+    },
+
+    /**
+     * Load file from a URL.  This fetches the data from the URL and
+     * broadcasts a `"source"` event that is normally picked up by
+     * the tabbed pane.
+     * @param {Object}   options
+     * @param {String}   options.url     URL to load.
+     * @param {Integer} [options.line]   Line to go to.
+     * @param {Regex}   [options.search] Text searched for.
+     */
+    playURL: function(options) {
+      var existing = this.find(".storage").storage('match', options);
+
+      if ( existing && existing.storage('expose', "Already open") )
+	return this;				/* FIXME: go to line */
+
+      $.ajax({ url: options.url,
+	       type: "GET",
+	       data: {format: "json"},
+	       success: function(source) {
+		 var msg;
+
+		 if ( typeof(source) == "string" ) {
+		   msg = { data: source };
+		   msg.st_type = "external";
+		 } else if ( typeof(source) == "object" &&
+			     typeof(source.data) == "string" ) {
+		   msg = source;
+		   msg.st_type = "filesys";
+		 } else {
+		   alert("Invalid data");
+		   return;
+		 }
+
+		 msg.url  = options.url;
+
+		 function copyAttrs(names) {
+		   for(var i=0; i<names.length; i++) {
+		     var name = names[i];
+		     if ( options[name] )
+		       msg[name] = options[name];
+		   }
+		 }
+
+		 copyAttrs([ "line",
+			     "regex", "showAllMatches",
+			     "newTab", "noHistory",
+			     "prompt"
+			   ]);
+
+		 menuBroadcast("source", msg);
+	       },
+	       error: function(jqXHR) {
+		 modal.ajaxError(jqXHR);
+	       }
+      });
     },
 
     /**
@@ -184,42 +310,59 @@ preferences.setDefault("semantic-highlighting", false);
      * @param {String} ex.file is the (file) name of the example
      * @param {String} ex.href is the URL from which to download the
      * program.
-     * @returns {Function} function that loads an example
+     * @returns {Function|String} function that loads an example
      */
     openExampleFunction: function(ex) {
-      return function() {
-	$.ajax({ url: ex.href,
-	         type: "GET",
-		 data: {format: "raw"},
-		 success: function(source) {
-		   menuBroadcast("source",
-				 { data: source,
-				   url: ex.href
-				 });
-		 },
-		 error: function() {
-		   alert("Failed to load example");
-		 }
-	       });
-      };
+      var swish = this;
+
+      if ( ex.type == "divider" ) {
+	return "--";
+      } else if ( ex.type == "store" ) {
+	return function() {
+	  methods.playFile.call(swish, ex.file);
+	};
+      } else {
+	return function() {
+	  methods.playURL.call(swish, {url:ex.href});
+	};
+      }
     },
 
     /**
      * Populate the examples dropdown of the navigation bar. This
-     * menthod is used by the navigation bar initialization.
+     * method is used by the navigation bar initialization.
      * @param {Object} navbar is the navigation bar
      * @param {Object} dropdown is the examples dropdown
      */
     populateExamples: function(navbar, dropdown) {
       var that = this;
+
+      that.off("examples-changed")
+	  .on("examples-changed", function() {
+	     $("#navbar").navbar('clearDropdown', dropdown);
+	     that.swish('populateExamples', navbar, dropdown);
+	   });
       $.ajax(config.http.locations.swish_examples,
 	     { dataType: "json",
 	       success: function(data) {
 		 for(var i=0; i<data.length; i++) {
+		   var ex = data[i];
+		   var title;
+		   var options;
+
+		   if ( ex == "--" || ex.type == "divider" ) {
+		     title = "--";
+		     options = "--";
+		   } else {
+		     var name = ex.file || ex.href;
+		     title = ex.title;
+		     options = that.swish('openExampleFunction', ex);
+		     if ( name )
+		       options.typeIcon = name.split('.').pop();
+		   }
+
 		   $("#navbar").navbar('extendDropdown', dropdown,
-				       data[i].title,
-				       that.swish('openExampleFunction',
-						  data[i]));
+				       title, options);
 		 }
 	       }
 	     });
@@ -239,7 +382,7 @@ preferences.setDefault("semantic-highlighting", false);
       var list = [];
       var src;
 
-      if ( (src=$(".prolog-editor").prologEditor('getSource')) )
+      if ( (src=$(".prolog-editor").prologEditor('getSource', "source")) )
 	list.push(src);
       if ( (src=$(".background.prolog.source").text()) )
 	list.push(src);
@@ -248,20 +391,47 @@ preferences.setDefault("semantic-highlighting", false);
     },
 
     /**
+     * Pick up all breakpoints.  Currently assumes a single source.
+     * @param {String} pengineID is the pengine for which to set
+     * the breakpoints.
+     */
+    breakpoints: function(pengineID) {
+      return this.find(".prolog-editor")
+                 .prologEditor('getBreakpoints', pengineID)||[];
+    },
+
+    /**
+     * @param {Object} [options]
+     * @param {Boolean} [options.active=false] If `true`, only return
+     * info on the active tab
+     */
+    tabData: function(options) {
+      options = options||{};
+      if ( options.active ) {
+	return this.find(".tab-pane.active .storage").storage('getData', options);
+      } else {
+	return this.find(".storage").storage('getData', options);
+      }
+    },
+
+    /**
      * Extract examples from `$(".examples.prolog").text()`.  If this
      * does not exist, it returns a function that extracts the examples
      * from the current Prolog source editor.
+     * @param {Boolean} [onlyglobal] if `true`, only extract globally
+     * listed examples.
      * @returns {Array.String|null|Function}
      */
-    examples: function() {
+    examples: function(onlyglobal) {
       var text = $(".examples.prolog").text();
 
-      if ( text )
+      if ( text ) {
 	return $().prologEditor('getExamples', text, false);
-      else
+      } else if ( onlyglobal != true ) {
 	return function() {
 	  return $(".prolog-editor").prologEditor('getExamples');
 	};
+      }
     },
 
     /**
@@ -294,8 +464,7 @@ preferences.setDefault("semantic-highlighting", false);
    */
   function swishLogo() {
     $(".swish-logo")
-	      .append($.el.b($.el.span({style:"color:maroon"}, "cplint on "),
-$.el.span({style:"color:darkblue"}, "SWI"),
+      .append($.el.b($.el.span({style:"color:darkblue"}, "SWI"),
 		     $.el.span({style:"color:maroon"}, "SH")))
       .css("margin-left", "30px")
       .css("font-size", "24px")
@@ -322,6 +491,13 @@ $.el.span({style:"color:darkblue"}, "SWI"),
     $(window).resize(function() { $(".tile").tile('resize'); });
     $('body').on("click", "button.close-pane", function() {
       closePane($(this).parent());
+    });
+    $(".tabbed").tabbed();
+  }
+
+  function setupResize() {
+    $(window).resize(function() {
+      $(".reactive-size").trigger('reactive-resize');
     });
   }
 

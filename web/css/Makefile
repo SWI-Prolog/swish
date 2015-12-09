@@ -1,22 +1,17 @@
 MAIN=swish.css
-CSS=$(MAIN) answer.css editor.css navbar.css pane.css query.css \
-	    runner.css term.css
-MAINAPP=swishapp.css
-CSSAPP=$(MAINAPP) answer.css editor.css navbar.css paneapp.css query.css \
-	    runner.css term.css
+CSS=$(MAIN) \
+	answer.css diffview.css editor.css gitty.css modal.css \
+	navbar.css notebook.css pane.css runner.css \
+	tabbed.css term.css typeaheadjs.css types.css
 
-all: swish-min.css swish-minapp.css
+all:	swish-min.css swish-min.css.gz
 
 swish-min.css: $(CSS)
-	cleancss -o $@ $(MAIN)
+	cleancss --skip-restructuring -o $@ $(MAIN)
 	swipl css-inline.pl $@
-	gzip -fk $@
 
-swish-minapp.css: $(CSSAPP)
-	cleancss -o $@ $(MAINAPP)
-	swipl css-inline.pl $@
-	gzip -fk $@
-
+swish-min.css.gz: swish-min.css
+	gzip < $< > $@
 
 clean::
-	rm -f swish-min.css swish-min.css.gz swish-minapp.css swish-minapp.css.gz
+	rm -f swish-min.css swish-min.css.gz

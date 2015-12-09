@@ -46,10 +46,6 @@ define([ "jquery", "preferences", "laconic" ],
 	}
 
 	elem.on("click", "a", function(ev) { runMenu(this, ev); } );
-	$("a#dismisslink").click(function(){ var el; el=document.getElementById("navbarhelp"); el.style.position = "absolute"; el.style.left="-9999px"; 
-	document.getElementById("content").style.height= "calc(100% - 55px)"; 
-	$(window).trigger('resize');
-	return false;});
       });
     },
 
@@ -94,6 +90,16 @@ define([ "jquery", "preferences", "laconic" ],
     },
 
     /**
+     * @param {String} name is the name of the dropdown to clear
+     */
+    clearDropdown: function(name) {
+      var ul = dropDownUL(this, name);
+
+      ul.html("");
+      return this;
+    },
+
+    /**
      * @example
      * $("#navbar").navbar('extendDropdown', 'File',
      *                     'Save as', function () { ... });
@@ -108,43 +114,86 @@ define([ "jquery", "preferences", "laconic" ],
     }
   }; // methods
 
-  function appendDropdown(dropdown, label, onclick) {
-    if ( onclick == "--" ) {
+  /**
+   * Append something to a navbar dropdown.
+   *
+   * @param {Object} dropdown is the jQuery object representing the
+   * dropdown.
+   * @param {String} label is the label for the menu entry
+   * @param {any} options defines the action.  There are many variations:
+   *   - The string `"--"` creates a _divider_
+   *   - A function creates a normal menu entry that calls the function
+   *     when selected
+   *   - An object with `.type == "checkbox"` creates a checkbox.  In
+   *     addition
+   *	 - if `.preference` exists, the checkbox is associated with the
+   *	   named preference, otherwise
+   *	 - if `.action' exists, it is called on change with the new
+   *	   value as argument.
+   *   - An object with `.type == "submenu" creates a submenu.
+   *   - An object with `.typeIcon` gets an icon indicating the type
+   */
+  function appendDropdown(dropdown, label, options) {
+    if ( options == "--" ) {
       dropdown.append($.el.li({class:"divider"}));
-    } else if ( typeof(onclick) == "function" ) {
-      var a = $.el.a(label);
+    } else if ( typeof(options) == "function" ) {	/* Simple action */
+      var a;
 
-      $(a).data('action', onclick);
-      if ( onclick.name )
-	$(a).attr("id", onclick.name);
+      if ( options.typeIcon ) {
+	a = $.el.a($.el.span({class:"dropdown-icon type-icon "+options.typeIcon}),
+		   label);
+      } else {
+	a = $.el.a(label);
+      }
+
+      $(a).data('action', options);
+      if ( options.name )
+	$(a).attr("id", options.name);
 
       dropdown.append($.el.li(a));
-    } else {
-      if ( onclick.type == "checkbox" ) {
+    } else {						/* Checkbox item */
+      if ( options.type == "checkbox" ) {
 	var cb = $($.el.input({type:"checkbox"}));
 
-	if ( onclick.preference !== undefined ) {
+	if ( options.preference !== undefined ) {
 	  cb.addClass("swish-event-receiver");
-	  if ( preferences.getVal(onclick.preference) )
+	  if ( preferences.getVal(options.preference) )
 	    cb.prop("checked", true);
 	  cb.on("click", function() {
-	    preferences.setVal(onclick.preference, $(this).prop("checked"));
+	    preferences.setVal(options.preference, $(this).prop("checked"));
 	  });
 	  cb.on("preference", function(pref) {
-	    if ( pref.name == onclick.preference )
+	    if ( pref.name == options.preference )
 	      cb.prop("checked", pref.value);
 	  });
 	} else {
-	  if ( onclick.checked )
-	    cb.prop("checked", onclick.checked);
+	  if ( options.checked )
+	    cb.prop("checked", options.checked);
 
 	  cb.on("click", function() {
-	    onclick.action($(this).prop("checked"));
+	    options.action($(this).prop("checked"));
 	  });
 	}
         dropdown.append($.el.li({class:"checkbox"},
 				cb[0],
 				$.el.span(label)));
+      } else if ( options.type == "submenu" ) {		/* Submenu */
+	var submenu = $.el.ul({class:"dropdown-menu sub-menu"});
+
+	dropdown.append($.el.li($.el.a({class:"trigger right-caret"}, label),
+				submenu));
+	if ( options.action )
+	  $(submenu).data('action', options.action);
+	if ( options.items ) {
+	  for(var i=0; i<options.items.length; i++) {
+	    $(submenu).append($.el.li($.el.a(options.items[i])));
+	  }
+	}
+	if ( options.update ) {
+	  $(submenu).on("update", function(ev) {
+	    options.update.call(ev.target);
+	  });
+	}
       } else {
 	alert("Unknown navbar item");
       }
@@ -158,15 +207,63 @@ define([ "jquery", "preferences", "laconic" ],
   }
 
   function runMenu(a, ev) {
-    var action = $(a).data('action');
+    if ( $(a).hasClass("trigger") ) {
+      clickSubMenu.call(a, ev);
+    } else {
+      var action = ($(a).data('action') ||
+		    $(a).parents("ul").data('action'));
 
-    if ( action ) {
-      ev.preventDefault();
-      action.call(a);
+      clickNotSubMenu.call(a, ev);
+
+      if ( action ) {
+	ev.preventDefault();
+	action.call(a, ev);
+      } else if ( $(a).hasClass("trigger") ) {
+	clickSubMenu.call(a, ev);
+      }
+
+      return false;
     }
-
-    return false;
   }
+
+  /**
+   * Bootstrap 3 extension to provide submenus.  Inspired by
+   * http://jsfiddle.net/chirayu45/YXkUT/16/
+   * Triggers an `update` event to the submenu's <ul> just
+   * before opening it.
+   */
+  function clickSubMenu(ev) {
+    var current = $(this).next();		 /* the submenu <ul> */
+    var grandparent = $(this).parent().parent(); /* the main menu <ul> */
+
+    if ( $(this).hasClass('left-caret') ||
+	 $(this).hasClass('right-caret') )
+      $(this).toggleClass('right-caret left-caret');
+
+    grandparent.find('.left-caret')
+	       .not(this)
+	       .toggleClass('right-caret left-caret');
+    grandparent.find(".sub-menu:visible")
+	       .not(current).hide();
+
+    current.trigger("update");
+    current.toggle();
+    ev.stopPropagation();
+  }
+
+  function clickNotSubMenu(ev) {
+    var root = $(this).closest('.dropdown');
+
+    root.find('.left-caret').toggleClass('right-caret left-caret');
+    root.find('.sub-menu:visible').hide();
+  }
+
+/* invoke is merged in general menu callback above
+  $(function() {
+    $(".dropdown-menu > li > a.trigger").on("click", clickSubMenu);
+    $(".dropdown-menu > li > a:not(.trigger)").on("click", clickNotSubMenu);
+  });
+*/
 
   /**
    * navbar jQuery plugin populates the application navigation bar using

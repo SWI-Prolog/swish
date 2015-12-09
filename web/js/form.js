@@ -9,7 +9,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "laconic", "tagmanager" ], function($) {
+define([ "jquery", "config", "laconic", "tagmanager" ],
+       function($, config) {
   var form = {
     /**
      * Serialize a form as an object. The following normalizations are
@@ -46,6 +47,8 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 	      else
 		obj[name] = [value];
 	    }
+	  } else if ( type == "number" ) {
+	    obj[name] = parseInt(value);
 	  } else if ( type == "checkbox" ) {
 	    obj[name] = (value == "on" ? true : false);
 	  } else {
@@ -79,10 +82,11 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
     },
 
     fields: {
-      fileName: function(name, public, disabled) {
+      fileName: function(name, public, example, disabled) {
+	var labeltext = config.swish.community_examples ? "Public | Example | name" : "Public | name"
 	var elem =
 	$.el.div({class:"form-group"},
-		 label("name", "Public | name"),
+		 label("name", labeltext),
 		 $.el.div({class:"col-xs-10"},
 			  $.el.div({class:"input-group"},
 				   $.el.span({class:"input-group-addon",
@@ -91,6 +95,13 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 					     checkbox("public",
 						      { checked: public
 						      })),
+				   config.swish.community_examples ?
+				   $.el.span({class:"input-group-addon",
+				              title:"If checked, add to examples menu"
+				             },
+					     checkbox("example",
+						      { checked: example
+						      })) : undefined,
 				   textInput("name",
 					     {placeholder:"Name (leave empty for generated random name)",
 					      title:"Public name of your program",
@@ -164,16 +175,111 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 	return elem;
       },
 
+      projection: function(projection) {
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("projection", "Projection"),
+		 $.el.div({class:"col-xs-10"},
+			  textInput("projection",
+				    {placeholder:"Columns", value:projection})));
+	return elem;
+      },
+
+      csvFormat: function(list, format) {
+	var elem;
+
+	list = list||["prolog"];
+	format = format||list[0];
+
+	if ( list.length == 1 ) {
+	  elem = $.el.input({type:"hidden", name:"format", value:list[0]});
+	} else {
+	  elem = $.el.div({class:"form-group"},
+			  label("format", "Format"),
+			  $.el.div({class:"col-xs-10"},
+				   select("format",
+					  list,
+					  {value:format})));
+	}
+
+	return elem;
+      },
+
+      /**
+       * Ask for limit and distinct to modify the solution set.
+       * @param {Number} [limit] is the max number of solutions to
+       * return
+       * @param {Boolean} [distinct] requests only to return distinct
+       * solutions.
+       */
+      limit: function(limit, distinct) {
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("name", "Distinct | limit"),
+		 $.el.div({class:"col-xs-10"},
+			  $.el.div({class:"input-group"},
+				   $.el.span({class:"input-group-addon",
+				              title:"If checked only return distinct results"
+				             },
+					     checkbox("distinct",
+						      { checked: distinct
+						      })),
+				   textInput("limit",
+					     {placeholder:"Maximum result count (blank for unlimited)",
+					      title:"Limit results",
+					      value:limit}))));
+	return elem;
+      },
+
+      /**
+       * @param {Object} options
+       * @param {String} options.label
+       * @param {Boolean} options.value
+       */
+      checkboxes: function(boxes) {
+	var boxel;
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("options", "Options", 3),
+		 boxel = $.el.div({class:"col-xs-9"}));
+	for(var k=0; k<boxes.length; k++) {
+	  var box = boxes[k];
+	  var opts = {type: "checkbox", name:box.name, autocomplete:"false"};
+	  if ( box.value )
+	    opts.checked = "checked";
+	  $(boxel).append($.el.label({class:"checkbox-inline"},
+				     $.el.input(opts), box.label));
+	}
+
+	return elem;
+      },
+
+      chunk: function(value) {
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("count", "Initial solutions", 3),
+		 $.el.div({class:"col-xs-9"},
+			  $.el.div({class:"input-group"},
+				   textInput("chunk",
+					     { title:"Initial number of solutions",
+					       type:"number",
+					       value:value}))));
+	return elem;
+      },
+
       /**
        * @param {Object} options
        * @param {String} options.label is the label used for the
        * primary button.
        * @param {Function} options.action is called with two arguments,
        * the _event_ and the serialized data from the embedded form
+       * @param {Number} options.offset determinis the begin column in
+       * the grid (default 2)
        */
       buttons: function(options) {
 	options    = options||{};
 	var label  = options.label||"Save program";
+	var offset = options.offset||2;
 	var button = $.el.button({ name:"save",
 				   class:"btn btn-primary"
 				 },
@@ -191,13 +297,37 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
 
 	var elem =
 	$.el.div({class:"form-group"},
-		 $.el.div({class:"col-xs-offset-2 col-xs-10"},
+		 $.el.div({class:"col-xs-offset-"+offset+" col-xs-"+(12-offset)},
 			  button,
 			  $.el.button({name:"cancel",
 				       class:"btn btn-danger",
 				       'data-dismiss':"modal"},
 				      "Cancel")));
 	return elem;
+      },
+
+      /**
+       * Bootstrap radio button.  To get the value, use
+       * `$("label.active > input[name=Name]").val();
+       * @param {String} name is the name of the radio button
+       * @param {Array(Object)} buttons is an array of objects with
+       * .active, .label and .value
+       */
+      radio: function(name, buttons) {
+	var elem = $.el.div({class:"btn-group", "data-toggle":"buttons"});
+
+	for(var i=0; i<buttons.length; i++) {
+	  var cls = "btn btn-primary btn-xs";
+	  if ( buttons[i].active )
+	    cls += " active";
+	  $(elem).append($.el.label({class:cls},
+				    $.el.input({type:"radio", name:name,
+				                autocomplete:"off",
+						value:buttons[i].value}),
+				    buttons[i].label));
+	}
+
+        return elem;
       }
     },
 
@@ -216,8 +346,9 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
     }
   };
 
-  function label(elemName, text) {
-    return $.el.label({class:"control-label col-xs-2", for:elemName}, text);
+  function label(elemName, text, width) {
+    width = width || 2;
+    return $.el.label({class:"control-label col-xs-"+width+"", for:elemName}, text);
   }
 
   function checkbox(name, options) {
@@ -235,6 +366,7 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
     if ( options.title )       attrs.title       = options.title;
     if ( options.value )       attrs.value       = options.value;
     if ( options.disabled )    attrs.disabled    = options.disabled;
+    if ( options.type )        attrs.type        = options.type;
     return $.el.input(attrs);
   }
 
@@ -261,6 +393,43 @@ define([ "jquery", "laconic", "tagmanager" ], function($) {
     if ( options.placeholder ) attrs.placeholder = options.placeholder;
 
     return $.el.textarea(attrs, options.value||"");
+  }
+
+  /**
+   * Create a bootstrap <select> element from a list of options
+   * @param {String} name is the name of the select element
+   * @param {Array} from is an array of options. Each options is a
+   * string or an object with keys `value` and `label`.
+   * @param {Object} [options]
+   * @param {Object} [options.value] If provided, the corresponding
+   * option is selected
+   */
+
+  function select(name, from, options) {
+    var select = $($.el.select({class:"form-control", name:name}));
+
+    options=options||{};
+
+    function addSelect(e) {
+      if ( typeof(e) == "string" ) {
+	if ( e == options.value ) {
+	  select.append($.el.option({selected:"selected"}, e));
+	} else {
+	  select.append($.el.option(e));
+	}
+      } else {
+	var opts = {value:e.value};
+	if ( e.value == options.value )
+	  opts.selected = "selected";
+
+	select.append($.el.option(opts, e.label));
+      }
+    }
+
+    for(var i=0; i<from.length; i++)
+      addSelect(from[i]);
+
+    return select[0];
   }
 
   return form;

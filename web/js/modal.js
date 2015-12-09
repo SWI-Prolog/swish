@@ -39,6 +39,12 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 	elem.on("error", function(ev, data) { /* still needed? */
 	  elem.swishModal('show', data);
 	});
+	elem.on("ajaxError", function(ev, jqXHR) {
+	  elem.swishModal('showAjaxError', jqXHR);
+	});
+	elem.on("feedback", function(ev, options) {
+	  elem.swishModal('feedback', options);
+	});
       });
     },
 
@@ -101,7 +107,9 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
      */
     showPlDoc: function(options) {
       function docURL(options) {
-	var term = options.name+"/"+options.arity;
+	var term = "("+options.name+")/"+options.arity;
+	if ( options.module )			/* FIXME: must be valid Prolog term */
+	  term = options.module+":"+term;
 	return   config.http.locations.pldoc_doc_for
 	       + "?header=false&object="
 	       + encodeURIComponent(term);
@@ -170,6 +178,47 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 		});
 
       return this
+    },
+
+    /**
+     * Display information about an ajax error
+     */
+    showAjaxError: function(jqXHR) {
+      var dom = $.el.div();
+
+      $(dom).html(jqXHR.responseText);
+      var h1 = $(dom).find("h1");
+      var title = h1.text() || "Server error";
+      h1.remove();
+
+      var data = { title: title,
+		   body: dom
+		 };
+
+      this.swishModal('show', data);
+    },
+
+    /**
+     * Display briefly a feedback message
+     * @param {Object} options
+     * @param {String} options.html defines the HTML content that is
+     * rendered.
+     * @param {Number} [options.duration=1500] number of milliseconds
+     * that the message is visible.
+     * @param {Object} [options.owner=$("body")] is the DOM element to
+     * which the feedback window is added.
+     */
+    feedback: function(options) {
+      var win = $.el.div({class:"feedback"});
+      $(win).html(options.html);
+
+      $(options.owner||"body").append(win);
+      setTimeout(function() {
+	$(win).hide(400, function() {
+	  $(win).remove();
+	});
+      }, options.duration||1500);
+      return this;
     }
   }; // methods
 
@@ -257,5 +306,14 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
     }
   };
 }(jQuery));
+
+  return {
+    ajaxError: function(jqXHR) {
+      $(".swish-event-receiver").trigger("ajaxError", jqXHR);
+    },
+    feedback: function(options) {
+      $(".swish-event-receiver").trigger("feedback", options);
+    }
+  };
 });
 

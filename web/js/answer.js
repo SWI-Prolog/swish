@@ -66,9 +66,9 @@ define([ "jquery", "laconic" ],
 	if ( answerHasOutput(answer) ) {
 	  if ( elem.is("table") ) {
 	    var row = $.el.tr();
+	    elem.append(row);
 	    row.innerHTML = renderTabledAnswer(answer, elem);
 	    evalScripts($(row));
-	    elem.append(row);
 	    $(row).find(".render-multi").renderMulti();
 	  } else {
 	    elem[0].innerHTML = renderAnswer(answer);
@@ -256,16 +256,20 @@ define([ "jquery", "laconic" ],
 	  var how = $(this).css("display");
 
 	  display.push(how);
-	  if ( i++ == 0 )
+	  if ( i++ == 0 ) {
 	    elem.css("display", how);
-	  else
+	    $(this).attr('draggable', false);
+	  } else {
 	    $(this).hide();
+	  }
 	});
 	data.display = display;
 	elem.append(selector);
 
 	$(selector).hover(function(ev) { elem.renderMulti('showSelect', ev); },
 			  function(ev) { elem.renderMulti('hideSelect', ev); });
+	elem.attr('draggable', true)
+            .bind('dragstart', dragStart);
 
 	elem.data(pluginName, data);	/* store with element */
       });
@@ -341,9 +345,21 @@ define([ "jquery", "laconic" ],
       $(child[data.current]).hide(400);
       $(child[i]).show(400, function() { $(this).css("display", how); });
       this.css("display", how);
+      if ( $(child[i]).is("span.render-as-prolog") ) {
+	this.attr("draggable", false);
+      } else {
+	this.attr("draggable", true);
+      }
 
       data.current = i;
       closeSelectMenu();
+    },
+
+    /**
+     * @return {String} native Prolog text for a multi-rendered block
+     */
+    prologText: function() {
+      return this.find("span.render-as-prolog").text();
     }
   }; // methods
 
@@ -391,6 +407,12 @@ define([ "jquery", "laconic" ],
   function resetHover() {
     hovering = false;
     startMenuTimeout();
+  }
+
+  function dragStart(ev) {
+    var dt = ev.originalEvent.dataTransfer;
+    dt.setData("Text", $(ev.target).renderMulti('prologText'));
+    return true;
   }
 
   /**

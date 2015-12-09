@@ -9,11 +9,17 @@
  * @requires editor
  */
 
-define([ "jquery", "laconic", "editor" ],
-       function() {
+define([ "jquery", "config", "preferences", "cm/lib/codemirror",
+	 "laconic", "editor"
+       ],
+       function($, config, preferences, CodeMirror) {
 
 (function($) {
   var pluginName = 'queryEditor';
+
+  var defaults = {
+    maxHistoryLength: 50
+  };
 
   /** @lends $.fn.queryEditor */
   var methods = {
@@ -29,9 +35,9 @@ define([ "jquery", "laconic", "editor" ],
     _init: function(options) {
       return this.each(function() {
 	var elem   = $(this);
-	var data   = $.extend({maxHistoryLength: 50}, options);
+	var data   = $.extend({}, defaults, options);
 	var qediv  = $.el.div({class:"query",style:"height:100%"});
-	var tabled = tableCheckbox(options);
+	var tabled = tableCheckbox(data);
 
         var content =
 	  $.el.table({class:"prolog-query"},
@@ -42,12 +48,12 @@ define([ "jquery", "laconic", "editor" ],
 			     $.el.td()),
 		     $.el.tr($.el.td(),
 			     $.el.td({class:"buttons-left"},
-				     examplesButton(options),
-				     historyButton(options),
-				     clearButton(options)),
+				     examplesButton(data),
+				     historyButton(data),
+				     aggregateButton(data)),
 			     $.el.td({class:"buttons-right"},
 				     tabled,
-				     runButton(options))));
+				     runButton(data))));
 
 	elem.addClass("prolog-query-editor swish-event-receiver");
 	elem.append(content);
@@ -58,29 +64,79 @@ define([ "jquery", "laconic", "editor" ],
 
 	$(qediv).append(elem.children("textarea"))
 	        .prologEditor({ role: "query",
-				sourceID: options.sourceID,
-		                placeholder: "Your query goes here ...",
-				lineNumbers: false,
-				lineWrapping: true,
+				sourceID: function() {
+				  return data.sourceID();
+				},
 				prologQuery: function(q) {
 				  elem.queryEditor('run', q, tableSelected());
 				}
 		              });
 
-	if ( typeof(options.examples) == "object" &&
-	     options.examples[0] &&
-	     !$(qediv).prologEditor('getSource') )
-	  $(qediv).prologEditor('setSource', options.examples[0]);
+	if ( typeof(data.examples) == "object" &&
+	     data.examples[0] &&
+	     !$(qediv).prologEditor('getSource', "query") )
+	  $(qediv).prologEditor('setSource', data.examples[0]);
 
-	elem.on("source", function(src) {
-	  if ( typeof(data.examples) == "function" ) {
-	    exl = data.examples();
-	    elem.queryEditor('setQuery', (exl && exl[0]) ? exl[0] : "");
+	elem.on("current-program", function(ev, editor) {
+	  elem[pluginName]('setProgramEditor', $(editor));
+	});
+	elem.on("program-loaded", function(ev, editor) {
+	  if ( $(data.editor).data('prologEditor') == $(editor).data('prologEditor') ) {
+	    var exl = data.examples();
+	    elem.queryEditor('setQuery', exl && exl[0] ? exl[0] : "");
 	  }
 	});
 
 	elem.data(pluginName, data);
       });
+    },
+
+    /**
+     * @param {jQuery} editor has become the new current program
+     * editor.  Update the examples and re-run the query highlighting.
+     */
+    setProgramEditor: function(editor) {
+      var data = this.data(pluginName);
+
+      data.editor = editor[0];
+      if ( data.editor ) {
+	data.examples = function() {
+	  var exl    = editor.prologEditor('getExamples')||[];
+	  var global = editor.parents(".swish").swish('examples', true)||[];
+
+	  if ( $.isArray(global) )
+	  exl.concat(global);
+
+	  return exl;
+	};
+	if ( editor.prologEditor('isPengineSource') ) {
+	  data.source = function() {
+	    var src = editor.prologEditor('getSource', "source");
+	    var bg  = $(".background.prolog.source").text();
+
+	    if ( bg )
+	      src += '\n\n' + bg;
+
+	    return src;
+	  };
+	  data.codeType = editor.prologEditor('getCodeType', "source");
+	} else {
+	  data.source = "";
+	  data.codeType = "undef";
+	}
+	data.sourceID = function() {
+	  return editor.prologEditor('getSourceID');
+	};
+
+	var exl = data.examples();
+	if ( exl && exl[0] ) {
+	  this.queryEditor('setQuery', exl[0]);
+	} else {
+	  editor.prologEditor('refreshHighlight');
+	}
+      } else
+      { data.examples = "";
+      }
     },
 
     /**
@@ -165,7 +221,68 @@ define([ "jquery", "laconic", "editor" ],
      * @returns {String} the current query as Prolog text
      */
     getQuery: function() {
-      return this.find(".query").prologEditor('getSource');
+      return this.find(".query").prologEditor('getSource', "query");
+    },
+
+    /**
+     * @param {String} [query] query to get the variables from
+     * @return {List.string} is a list of Prolog variables without
+     * duplicates
+     */
+
+    variables: function(query) {
+      var qspan = $.el.span({class:"query cm-s-prolog"});
+      var vars = [];
+
+      CodeMirror.runMode(query, "prolog", qspan);
+      $(qspan).find("span.cm-var").each(function() {
+	var name = $(this).text();
+	if ( vars.indexOf(name) < 0 )
+	  vars.push(name);
+      });
+
+      return vars;
+    },
+
+    /**
+     * Wrap current query in a solution modifier.
+     * TBD: If there is a selection, only wrap the selection
+     *
+     * @param {String} wrapper defines the type of wrapper to use.
+     */
+    wrapSolution: function(wrapper) {
+      var query = this.queryEditor('getQuery').replace(/\.\s*$/m, "");
+      var that = this;
+      var vars = this.queryEditor('variables', query);
+
+      function wrapQuery(pre, post) {
+	that.queryEditor('setQuery', pre + "("+query+")" + post + ".");
+	return that;
+      }
+
+      function order(l) {
+	var order = [];
+	for(var i=0; i<vars.length; i++)
+	  order.push("asc("+vars[i]+")");
+	return order.join(",");
+      }
+
+      switch ( wrapper ) {
+        case "Aggregate (count all)":
+	  return wrapQuery("aggregate_all(count, ", ", Count)");
+        case "Order by":
+	  return wrapQuery("order_by(["+order(vars)+"], ", ")");
+        case "Distinct":
+	  return wrapQuery("distinct(["+vars.join(",")+"], ", ")");
+        case "Limit":
+	  return wrapQuery("limit(10, ", ")");
+        case "Time":
+	  return wrapQuery("time(", ")");
+        case "Debug (trace)":
+	  return wrapQuery("trace, ", "");
+	default:
+	  alert("Unknown wrapper: \""+wrapper+"\"");
+      }
     },
 
     /**
@@ -189,14 +306,16 @@ define([ "jquery", "laconic", "editor" ],
       }
       $(".swish-event-receiver").trigger("clearMessages");
 
-      var query = { query:q };
+      var query = { query:q, editor: data.editor };
       if ( typeof(data.source) == "function" )
 	query.source = data.source(q);
       else if ( typeof(data.source) == "string" )
-	query.source = source;
+	query.source = data.source;
       if ( tabled )
 	query.tabled = true;
 
+      query.codeType=data.codeType;
+      
       this.queryEditor('addHistory', q);
       data.runner.prologRunners('run', query);
 
@@ -265,17 +384,43 @@ define([ "jquery", "laconic", "editor" ],
     return dropup("history", "History", options);
   }
 
-  function clearButton(options) {
-    var button =
-      $.el.button(
-	{class:"clear-btn-query btn btn-default btn-xs"},
-	"Clear");
+  function aggregateButton(options) {
+    var cls = "aggregate";
+    var list = options.aggregates ||
+      [ "Aggregate (count all)",
+	"--",
+	"Order by",
+	"Distinct",
+	"Limit",
+	"--",
+	"Time",
+	"Debug (trace)"
+      ];
+    var ul;
 
-    $(button).on("click", function() {
-      Q(this).queryEditor('setQuery', "");
+    var dropup = $.el.div(
+      {class:"btn-group dropup"},
+      $.el.button(
+	{class:"btn btn-default btn-xs dropdown-toggle "+cls,
+	 "data-toggle":"dropdown"},
+	"Solutions",
+	$.el.span({class:"caret"})),
+      ul=$.el.ul({class:"dropdown-menu "+cls}));
+
+    for(var i = 0; i<list.length; i++) {
+      var wrap = list[i];
+
+      if ( wrap == "--" )
+	$(ul).append($.el.li({class:"divider"}));
+      else
+	$(ul).append($.el.li($.el.a(wrap)));
+    }
+
+    $(dropup).on("click", "a", function() {
+      Q(this).queryEditor('wrapSolution', $(this).text());
     });
 
-    return button;
+    return dropup;
   }
 
   function runButton(options) {
@@ -298,10 +443,22 @@ define([ "jquery", "laconic", "editor" ],
   }
 
   function tableCheckbox(options) {
-    var checkbox =
-      $.el.span({class:"run-chk-table"},
-		$.el.input({type:"checkbox", name:"table"}),
-		" table results");
+    var checked = preferences.getVal("tabled_results");
+    var attr    = {type:"checkbox", name:"table"};
+
+    if ( checked === undefined ) {
+      checked = config.swish.tabled_results;
+    }
+    if ( checked )
+      attr.checked = "checked";
+
+    var input = $.el.input(attr);
+    var checkbox = $.el.span({class:"run-chk-table"},
+			     input, " table results");
+    $(input).on("change", function(ev) {
+      preferences.setVal("tabled_results",
+			 $(ev.target).prop("checked"));
+    });
 
     return checkbox;
   }

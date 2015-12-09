@@ -27,7 +27,10 @@
     the GNU General Public License.
 */
 
-:- module(web_storage, []).
+:- module(web_storage,
+	  [ storage_file/1,			% ?File
+	    storage_file/3			% +File, -Data, -Meta
+	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
@@ -39,10 +42,12 @@
 :- use_module(library(apply)).
 :- use_module(library(option)).
 :- use_module(library(debug)).
+:- use_module(library(solution_sequences)).
 
 :- use_module(page).
 :- use_module(gitty).
 :- use_module(config).
+:- use_module(search).
 
 /** <module> Store files on behalve of web clients
 
@@ -54,7 +59,18 @@ their own version.
 
 :- setting(directory, atom, storage, 'The directory for storing files.').
 
-:- http_handler(swish(p), web_storage, [ id(web_storage), prefix ]).
+:- http_handler(swish('p/'), web_storage, [ id(web_storage), prefix ]).
+
+:- initialization open_gittystore.
+
+open_gittystore :-
+	setting(directory, Dir),
+	(   exists_directory(Dir)
+	->  true
+	;   make_directory(Dir)
+	),
+	gitty_open(Dir, []).
+
 
 %%	web_storage(+Request) is det.
 %
@@ -150,8 +166,7 @@ storage(delete, Request) :-
 	reply_json_dict(true).
 
 request_file(Request, Dir, File) :-
-	option(path_info(PathInfo), Request),
-	atom_concat(/, File, PathInfo),
+	option(path_info(File), Request),
 	(   gitty_file(Dir, File, _Hash)
 	->  true
 	;   http_404([], Request)
@@ -197,6 +212,7 @@ filter_pairs([_|T0], T) :-
 	filter_pairs(T0, T).
 
 meta_allowed(public,	     boolean).
+meta_allowed(example,	     boolean).
 meta_allowed(author,	     string).
 meta_allowed(email,	     string).
 meta_allowed(title,	     string).
@@ -231,7 +247,8 @@ storage_get(Request, Format) :-
 
 storage_get(swish, Dir, _, FileOrHash, Request) :-
 	gitty_data(Dir, FileOrHash, Code, Meta),
-	swish_reply([code(Code),file(FileOrHash),meta(Meta)], Request).
+	swish_reply([code(Code),file(FileOrHash),st_type(gitty),meta(Meta)],
+		    Request).
 storage_get(raw, Dir, _, FileOrHash, _Request) :-
 	gitty_data(Dir, FileOrHash, Code, Meta),
 	file_mime_type(Meta.name, MIME),
@@ -251,8 +268,7 @@ storage_get(diff(RelTo), Dir, _, File, _Request) :-
 	reply_json_dict(Diff).
 
 request_file_or_hash(Request, Dir, FileOrHash, Type) :-
-	option(path_info(PathInfo), Request),
-	atom_concat(/, FileOrHash, PathInfo),
+	option(path_info(FileOrHash), Request),
 	(   gitty_file(Dir, FileOrHash, _Hash)
 	->  Type = file
 	;   is_sha1(FileOrHash)
@@ -313,20 +329,44 @@ random_char(Char) :-
 
 
 		 /*******************************
+		 *	    INTERFACE		*
+		 *******************************/
+
+%%	storage_file(?File) is semidet.
+%%	storage_file(?File, -Data, -Meta) is semidet.
+%
+%	True if File is known in the store.
+
+storage_file(File) :-
+	setting(directory, Dir),
+	gitty_file(Dir, File, _Head).
+
+storage_file(File, Data, Meta) :-
+	setting(directory, Dir),
+	gitty_data(Dir, File, Data, Meta).
+
+
+		 /*******************************
 		 *	 SEARCH SUPPORT		*
 		 *******************************/
 
 :- multifile
-	swish_search:typeahead/3.	% +Set, +Query, -Match
+	swish_search:typeahead/4.	% +Set, +Query, -Match, +Options
 
 %%	swish_search:typeahead(+Set, +Query, -Match) is nondet.
 %
-%	Find files using typeahead from the SWISH search box.
+%	Find files using typeahead  from  the   SWISH  search  box. This
+%	version defines the following sets:
+%
+%	  - file: Search the store for matching file names, matching tag
+%	    or title.
+%	  - store_content: Search the content of the store for matching
+%	    lines.
 %
 %	@tbd caching?
 %	@tbd We should only demand public on public servers.
 
-swish_search:typeahead(file, Query, FileInfo) :-
+swish_search:typeahead(file, Query, FileInfo, _Options) :-
 	setting(directory, Dir),
 	gitty_file(Dir, File, Head),
 	gitty_commit(Dir, Head, Meta),
@@ -352,3 +392,21 @@ meta_match_query(Query, Meta) :-
 	    sub_atom(Title, Before, 1, _, C),
 	    \+ char_type(C, csym)
 	).
+
+swish_search:typeahead(store_content, Query, FileInfo, Options) :-
+	limit(25, search_store_content(Query, FileInfo, Options)).
+
+search_store_content(Query, FileInfo, Options) :-
+	setting(directory, Dir),
+	gitty_file(Dir, File, Head),
+	gitty_data(Dir, Head, Data, Meta),
+	Meta.get(public) == true,
+	limit(5, search_file(File, Meta, Data, Query, FileInfo, Options)).
+
+search_file(File, Meta, Data, Query, FileInfo, Options) :-
+	split_string(Data, "\n", "\r", Lines),
+	nth1(LineNo, Lines, Line),
+	match(Line, Query, Options),
+	FileInfo = Meta.put(_{type:"store", file:File,
+			      line:LineNo, text:Line, query:Query
+			     }).

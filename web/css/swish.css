@@ -1,5 +1,6 @@
 @import url("navbar.css");
 @import url("pane.css");
+@import url("tabbed.css");
 @import url("editor.css");
 @import url("query.css");
 @import url("runner.css");
@@ -10,7 +11,12 @@
 @import url("../bower_components/jquery.splitter/css/jquery.splitter.css");
 @import url("../bower_components/bootstrap/dist/css/bootstrap.css");
 @import url("../bower_components/tagmanager/tagmanager.css");
+@import url("../bower_components/c3/c3.css");
 @import url("typeaheadjs.css");
+@import url("diffview.css");
+@import url("notebook.css");
+@import url("types.css");
+@import url("modal.css");
 
 /* Logos */
 
@@ -34,6 +40,9 @@ a.pengine-logo {
     border: 2px outset #ccc;
 }
 
+.splitter_panel .vsplitter { width: 3px; }
+.splitter_panel .hsplitter { height: 3px; }
+
 .splitter_panel .vsplitter, .splitter_panel .left_panel, .splitter_panel .right_panel,
 .splitter_panel .hsplitter, .splitter_panel .top_panel, .splitter_panel .bottom_panel {
     overflow: visible;
@@ -46,6 +55,11 @@ body .modal-dialog {
   max-width: 800px;
   margin-left:auto;
   margin-right:auto;
+}
+
+body .modal-dialog.modal-wide {
+  width: 90%;
+  max-width: none;
 }
 
 body .modal-dialog.swish-embedded-manual {
