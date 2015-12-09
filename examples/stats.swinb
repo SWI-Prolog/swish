@@ -61,9 +61,9 @@ chart(Period, Keys, Chart) :-
 
 period_format(minute, '%M:%S').
 period_format(hour,   '%H:%M').
-period_format(day,    '%d %H').
-period_format(week,   '%Y-%#m-%d').
-period_format(year,   '%Y-%#m-%d').
+period_format(day,    '%m-%d %H:00').
+period_format(week,   '%Y-%m-%d').
+period_format(year,   '%Y-%m-%d').
 
 add_heap_mb(Stat0, Stat) :-
     Heap is (Stat0.get(rss) - Stat0.get(stack))/(1024^2), !,
