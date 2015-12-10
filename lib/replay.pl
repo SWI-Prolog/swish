@@ -105,31 +105,37 @@ replay(Pengine) :-
 %	Replay pengine with id Pengine on server ServerURL.
 
 replay(Pengine, URL) :-
+	pengine_interaction(Pengine, CreateOptions, Messages),
+	pengine_create([ server(URL),
+			 id(Id)
+		       | CreateOptions
+		       ]),
+	get_time(Now),
+	setting(background, BgTime),
+	run(Messages, Now, Id, [background(BgTime)]).
+
+pengine_interaction(Pengine, CreateOptions, Messages) :-
 	once(pengine(StartTime, create(Pengine, swish, Options0))),
-	maplist(fix_option, Options0, Options),
+	maplist(fix_option, Options0, CreateOptions),
 	findall(Time-Message,
 		(   pengine(Time0, send(Pengine, Message)),
 		    Time is Time0-StartTime
 		),
 		Messages),
-	option(src_text(Source), Options, ""),
-	(   debugging(playback(source))
-	->  format(user_error, '~N==~n~s~N==~n', [Source])
-	;   true
-	),
-	pengine_create([ server(URL),
-			 id(Id)
-		       | Options
-		       ]),
-	get_time(Now),
-	setting(background, BgTime),
-	run(Messages, Now, Id, [backround(BgTime)]).
+	show_source(CreateOptions).
 
 fix_option(src_text(_Hash-Text), src_text(Text)) :- !.
 fix_option(src_text(Hash), src_text(Text)) :- !,
 	pengine(_Time, create(_, swish, Options)),
 	memberchk(src_text(Hash-Text), Options), !.
 fix_option(Option, Option).
+
+show_source(Options) :-
+	option(src_text(Source), Options, ""),
+	(   debugging(playback(source))
+	->  format(user_error, '~N==~n~s~N==~n', [Source])
+	;   true
+	).
 
 run([], _, _, _) :- !.
 run(Messages, StartTime, Id, Options) :-
@@ -142,7 +148,7 @@ run_event(_, Event, Id, StartTime, Messages, Options) :-
 	run(Messages1, StartTime, Id, Options).
 
 read_event(Messages, StartTime, Id, Event, Bg, Options) :-
-	option(backround(BgTime), Options, 0),
+	option(background(BgTime), Options, 0),
 	BgTime > 0, !,
 	pengine_event(Event, [listen(Id), timeout(BgTime)]),
 	(   Event == timeout
@@ -181,7 +187,7 @@ sync_time(_, _).
 
 background(Messages, StartTime, Id) :-
 	debug(background, 'Backgrounding ~q', [Id]),
-	thread_create(run(Messages, StartTime, Id, [backround(0)]),
+	thread_create(run(Messages, StartTime, Id, [background(0)]),
 		      _, [detached(true)]).
 
 pengine_send(ask(Question,Options0), Id) :-
