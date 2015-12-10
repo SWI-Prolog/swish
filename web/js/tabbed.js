@@ -48,19 +48,13 @@ var tabbed = {
 	data.tabTypes = options.tabTypes || tabbed.tabTypes;
 	elem.data(pluginName, data);	/* store with element */
 
-console.log(data.tabTypes);
-
 	elem.addClass("tabbed");
 	elem.tabbed('makeTabbed');
 	// Current tab could not handle source, create a new one
 	elem.on("source", function(ev, src) {
-	  console.log("init tabbed source");
-	  console.log(src);
 	  elem.tabbed('tabFromSource', src);
 	});
 	elem.on("trace-location", function(ev, prompt) {
-	  console.log("init tabbed trace-location");
-	  console.log(prompt);
 	  elem.tabbed('showTracePort', prompt);
 	});
       });
@@ -70,13 +64,12 @@ console.log(data.tabTypes);
      * Turn the pane into a tabbed pane
      */
     makeTabbed: function() {
-     console.log("maketabbed");
       var children = this.children();
       var ul = $.el.ul({ class:"nav nav-tabs",
 			 role:"tablist"
 		       });
       var contents = $.el.div({class:"tab-content"});
-      console.log(contents);
+
       this.prepend(contents);
       this.prepend(ul);
 
@@ -158,7 +151,6 @@ console.log(data.tabTypes);
      * Add a new tab from the provided source
      */
     tabFromSource: function(src) {
-      console.log("tabfromsource tabbed");
       var tab = this.tabbed('newTab', $("<span></span>"));
       if ( typeof(src) == "object" )
 	delete src.newTab;
@@ -179,8 +171,7 @@ console.log(data.tabTypes);
       { var name = (src.meta && src.meta.name) ? src.meta.name : src.url;
 	var tabType = tabbed.type(name);
 	var content = $.el.div();
-console.log("setsource tabbed");
-console.log(src);
+
 	tab.html("");
 	tab.tabbed('title', tabType.label, tabType.dataType);
 	tab.append(content);
@@ -207,9 +198,7 @@ console.log(src);
      *	   store.
      */
     showTracePort: function(prompt) {
-    console.log("showTracePort");
       if ( prompt && prompt.source && prompt.source.file ) {
-      console.log("in");
 	var file = prompt.source.file;
 	var pengineID, store;
 	var editors;

@@ -123,11 +123,10 @@ define([ "cm/lib/codemirror",
 	var elem = $(this);
 	var storage = {};		/* storage meta-data */
 	var data = {};			/* our data */
-	var ta=elem.children("textarea")[0];				/* textarea */
-console.log("init editor");
-console.log(opts);
-console.log(elem);
-
+	var ta;				/* textarea */
+	ta=elem.children("textarea")[0];
+	
+	
 	var ext  = $(ta).data("url");
 	if (ext) {
 	  ext = ext.split('.').pop();
@@ -136,19 +135,13 @@ console.log(elem);
 	  opts.codeType = ext;
 	}
 
-
 	opts      = opts||{};
 	opts.mode = opts.mode||"prolog";
-	
+
 	var options = $.extend({}, modeDefaults[opts.mode]);
-	console.log(options);
-	if ( opts.role && roleDefaults[opts.role] ) {
-	  console.log("opt.role");
-	  console.log(opts.role);
+	if ( opts.role && roleDefaults[opts.role] )
 	  options = $.extend(options, roleDefaults[opts.role]);
-	}
 	options = $.extend(options, opts);
-	console.log(options);
 
 	if ( preferences.getVal("emacs-keybinding") )
 	  options.keyMap = "emacs";
@@ -171,9 +164,7 @@ console.log(elem);
 	    options.continueComments = "Enter";
 	    options.gutters = ["Prolog-breakpoints"]
 	  }
-	}
-	
-	if ( options.mode == "lpad" ) {
+	} else if ( options.mode == "lpad" ) {
 	  options.placeholder = "Your LPAD rules and facts go here ..."
 	  data.role = options.role;
 
@@ -215,8 +206,6 @@ console.log(elem);
 	  data.cm = CodeMirror(elem[0], options);
 	}
 
-	console.log("storage init editor");
-        console.log(storage);
 	elem.data(pluginName, data);
 	elem.prologEditor('loadMode', options.mode);
 
@@ -225,15 +214,11 @@ console.log(elem);
 	elem.on("preference", function(ev, pref) {
 	  elem.prologEditor('preference', pref);
 	});
-	
-	console.log("options.save");
+
 	if ( options.save ) {
-	  console.log("in");
-	  console.log(options);
-	  console.log(data.cm.options);
 	  //storage.typeName = options.typeName||"program";
 	  if (!storage.typeName)
-	    storage.typeName = data.cm.options.codeType;
+	    storage.typeName = options.typeName || data.cm.options.codeType;
 	  elem.prologEditor('setupStorage', storage);
 	}
 
@@ -484,8 +469,6 @@ console.log(elem);
      * message is never delegated to the storage
      */
     setSource: function(source, direct) {
-      console.log("setsource");
-      console.log(source);
       if ( typeof(source) == "string" )
 	source = {data:source};
 
@@ -908,7 +891,7 @@ console.log(elem);
     setupStorage: function(storage) {
       var data = this.data(pluginName);
       var elem = this;
-	console.log("setupstorage setsource");
+
       storage.setValue = function(source) {
 	elem.prologEditor('setSource', source, true);
       };
@@ -925,10 +908,6 @@ console.log(elem);
       storage.cleanGeneration = data.cm.changeGeneration();
       storage.cleanData       = data.cm.getValue();
       storage.cleanCheckpoint = "load";
-      
-      console.log("setupstorage editor");
-      console.log(data.cm.options);
-      //storage.typeName = data.cm.options.codeType;
 
       this.storage(storage);
       return this;
