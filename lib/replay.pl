@@ -128,26 +128,35 @@ fix_option(Option, Option).
 
 run([], _, _, _) :- !.
 run(Messages, StartTime, Id, Options) :-
-	(   option(backround(BgTime), Options, 0),
-	    BgTime > 0
-	->  pengine_event(Event, [listen(Id), timeout(BgTime)]),
-	    (	Event == timeout
-	    ->	background(Messages, StartTime, Id),
-		Bg = true
-	    ;	true
-	    )
-	;   pengine_event(Event, [listen(Id)])
-	),
-	(   Bg == true
-	->  true
-	;   reply(Event, Id, StartTime, Messages, Messages1),
-	    run(Messages1, StartTime, Id, Options)
+	read_event(Messages, StartTime, Id, Event, Bg, Options),
+	run_event(Bg, Event, Id, StartTime, Messages, Options).
+
+run_event(true, _, _, _, _, _) :- !.
+run_event(_, Event, Id, StartTime, Messages, Options) :-
+	reply(Event, Id, StartTime, Messages, Messages1),
+	run(Messages1, StartTime, Id, Options).
+
+read_event(Messages, StartTime, Id, Event, Bg, Options) :-
+	option(backround(BgTime), Options, 0),
+	BgTime > 0, !,
+	pengine_event(Event, [listen(Id), timeout(BgTime)]),
+	(   Event == timeout
+	->  background(Messages, StartTime, Id),
+	    Bg = true
+	;   Bg = false
 	).
+read_event(_, _, Id, Event, false, _) :-
+	pengine_event(Event, [listen(Id)]).
 
 reply(output(_Id, Prompt), Pengine, StartTime, [Time-pull_response|T], T) :- !,
 	debug(playback(event), 'Output ~p (pull_response)', [Prompt]),
 	sync_time(StartTime, Time),
 	pengine_pull_response(Pengine, []).
+reply(error(_Id, error(time_limit_exceeded,_)), Pengine, _, Msgs, []) :- !,
+	(   Msgs == []
+	->  true
+	;   print_message(error, replay(Pengine, timeout(Msgs)))
+	).
 reply(Event, Pengine, StartTime, [Time-H|T], T) :-
 	debug(playback(event), 'Received ~p, reply: ~p', [Event, H]),
 	sync_time(StartTime, Time),
@@ -188,6 +197,8 @@ pengine_send(output(_Prompt), Id) :-
 	pengine_pull_response(Id, []).
 pengine_send(destroy, Id) :-
 	pengine_destroy(Id).
+pengine_send(pull_response, Id) :-
+	pengine_pull_response(Id, []).
 
 %%	pengine_in_log(-Id, -StartTime, -Src)
 %
@@ -234,3 +245,17 @@ assert_event(request(_Id, Time, Request)) :-
 	memberchk(id=Pengine, Fields), !,
 	assertz(pengine(Time, send(Pengine, pull_response))).
 assert_event(_).
+
+
+		 /*******************************
+		 *	      MESSAGES		*
+		 *******************************/
+
+:- multifile
+	prolog:message//1.
+
+prolog:message(replay(Pengine, timeout(Msgs))) -->
+	{ length(Msgs, Len) },
+	[ 'Terminated ~q on timeout (~D messages left)'-[ Pengine, Len ] ].
+prolog:message(replay(Pengine, failed(H))) -->
+	[ 'Replay on ~q for ~q failed'-[Pengine, H] ].
