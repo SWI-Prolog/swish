@@ -123,15 +123,32 @@ define([ "cm/lib/codemirror",
 	var elem = $(this);
 	var storage = {};		/* storage meta-data */
 	var data = {};			/* our data */
-	var ta;				/* textarea */
+	var ta=elem.children("textarea")[0];				/* textarea */
+console.log("init editor");
+console.log(opts);
+console.log(elem);
+
+	var ext  = $(ta).data("url");
+	if (ext) {
+	  ext = ext.split('.').pop();
+	  if (ext == "cpl" || ext == "lpad") ext = "lpad";
+	  else if (ext == "pl") ext = "prolog";
+	  opts.codeType = ext;
+	}
+
 
 	opts      = opts||{};
 	opts.mode = opts.mode||"prolog";
-
+	
 	var options = $.extend({}, modeDefaults[opts.mode]);
-	if ( opts.role && roleDefaults[opts.role] )
+	console.log(options);
+	if ( opts.role && roleDefaults[opts.role] ) {
+	  console.log("opt.role");
+	  console.log(opts.role);
 	  options = $.extend(options, roleDefaults[opts.role]);
+	}
 	options = $.extend(options, opts);
+	console.log(options);
 
 	if ( preferences.getVal("emacs-keybinding") )
 	  options.keyMap = "emacs";
@@ -155,8 +172,29 @@ define([ "cm/lib/codemirror",
 	    options.gutters = ["Prolog-breakpoints"]
 	  }
 	}
+	
+	if ( options.mode == "lpad" ) {
+	  options.placeholder = "Your LPAD rules and facts go here ..."
+	  data.role = options.role;
 
-	if ( (ta=elem.children("textarea")[0]) ) {
+	  if ( config.http.locations.cm_highlight ) {
+	    options.prologHighlightServer =
+	    { url:  config.http.locations.cm_highlight,
+	      role: options.role,
+	      enabled: false
+	    };
+	    if ( options.sourceID )
+	      options.prologHighlightServer.sourceID = options.sourceID;
+	    options.extraKeys["Ctrl-R"] = "refreshHighlight";
+	  }
+
+	  if ( options.role == "source" ) {
+	    options.continueComments = "Enter";
+	    options.gutters = ["Prolog-breakpoints"]
+	  }
+	}
+
+	if ( ta ) {
 	  function copyData(name) {
 	    var value = $(ta).data(name);
 	    if ( value ) {
@@ -177,6 +215,8 @@ define([ "cm/lib/codemirror",
 	  data.cm = CodeMirror(elem[0], options);
 	}
 
+	console.log("storage init editor");
+        console.log(storage);
 	elem.data(pluginName, data);
 	elem.prologEditor('loadMode', options.mode);
 
@@ -185,9 +225,15 @@ define([ "cm/lib/codemirror",
 	elem.on("preference", function(ev, pref) {
 	  elem.prologEditor('preference', pref);
 	});
-
+	
+	console.log("options.save");
 	if ( options.save ) {
-	  storage.typeName = options.typeName||"program";
+	  console.log("in");
+	  console.log(options);
+	  console.log(data.cm.options);
+	  //storage.typeName = options.typeName||"program";
+	  if (!storage.typeName)
+	    storage.typeName = data.cm.options.codeType;
 	  elem.prologEditor('setupStorage', storage);
 	}
 
@@ -438,6 +484,8 @@ define([ "cm/lib/codemirror",
      * message is never delegated to the storage
      */
     setSource: function(source, direct) {
+      console.log("setsource");
+      console.log(source);
       if ( typeof(source) == "string" )
 	source = {data:source};
 
@@ -860,7 +908,7 @@ define([ "cm/lib/codemirror",
     setupStorage: function(storage) {
       var data = this.data(pluginName);
       var elem = this;
-
+	console.log("setupstorage setsource");
       storage.setValue = function(source) {
 	elem.prologEditor('setSource', source, true);
       };
@@ -877,6 +925,10 @@ define([ "cm/lib/codemirror",
       storage.cleanGeneration = data.cm.changeGeneration();
       storage.cleanData       = data.cm.getValue();
       storage.cleanCheckpoint = "load";
+      
+      console.log("setupstorage editor");
+      console.log(data.cm.options);
+      //storage.typeName = data.cm.options.codeType;
 
       this.storage(storage);
       return this;
@@ -898,7 +950,7 @@ define([ "cm/lib/codemirror",
   };
   
   tabbed.tabTypes.lpad = {
-    dataType: "pl",
+    dataType: "cpl",
     typeName: "lpad",
     label: "LPAD",
     contentType: "text/x-prolog",

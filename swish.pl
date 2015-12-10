@@ -117,7 +117,7 @@ http:location(swish, root(.), [priority(-100)]).
 term_expansion(swish_config:config(Config, _Value), []) :-
 	clause(swish_config:config(Config, _), _).
 
-swish_config:config(show_beware,        true).
+swish_config:config(show_beware,        false).
 swish_config:config(tabled_results,     false).
 swish_config:config(application,        swish).
 swish_config:config(csv_formats,        [prolog]).

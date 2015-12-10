@@ -236,7 +236,8 @@ preferences.setDefault("emacs-keybinding", false);
 			     "newTab", "noHistory",
 			     "prompt"
 			   ]);
-
+console.log("playfile jswish");
+console.log(reply);
 		 menuBroadcast("source", reply);
 	       },
 	       error: function(jqXHR) {
@@ -295,7 +296,8 @@ preferences.setDefault("emacs-keybinding", false);
 			     "newTab", "noHistory",
 			     "prompt"
 			   ]);
-
+console.log("playurl jswish");
+console.log(msg);
 		 menuBroadcast("source", msg);
 	       },
 	       error: function(jqXHR) {
