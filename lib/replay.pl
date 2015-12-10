@@ -37,6 +37,8 @@
 :- use_module(library(pengines)).
 :- use_module(library(settings)).
 :- use_module(library(option)).
+:- use_module(library(apply)).
+:- use_module(library(lists)).
 
 /** <module> Replay SWISH sessions from a log file
 
@@ -179,7 +181,8 @@ background(Messages, StartTime, Id) :-
 	thread_create(run(Messages, StartTime, Id, [backround(0)]),
 		      _, [detached(true)]).
 
-pengine_send(ask(Question,Options), Id) :-
+pengine_send(ask(Question,Options0), Id) :-
+	maplist(fix_ask_option(Id), Options0, Options),
 	debug(playback(query), 'ask ~p', [Question]),
 	pengine_ask(Id, Question, Options).
 pengine_send(next, Id) :-
@@ -199,6 +202,28 @@ pengine_send(destroy, Id) :-
 	pengine_destroy(Id).
 pengine_send(pull_response, Id) :-
 	pengine_pull_response(Id, []).
+
+%%	fix_ask_option(+Pengine, +AskOption, -NewAskOption) is det.
+%
+%	Fixed breakpoint options to refer to the new pengine.
+
+fix_ask_option(Id, breakpoints(List0), breakpoints(List)) :- !,
+	maplist(fix_breakpoint(Id), List0, List).
+fix_ask_option(_, Option, Option).
+
+fix_breakpoint(Id, BP0, BP) :-
+	fix_file(BP0.file, Id, NewFile),
+	BP = BP0.put(file, NewFile).
+
+fix_file(OldFile, Pengine, NewFile) :-
+	split_string(OldFile, "/", "", Parts),
+	select(OldPengine, Parts, Pengine, NewParts),
+	is_uuid_string(OldPengine), !,
+	atomics_to_string(NewParts, "/", NewFile).
+
+is_uuid_string(String) :-
+	split_string(String, "-", "", Parts),
+	maplist(string_length, Parts, [8,4,4,4,12]).
 
 %%	pengine_in_log(-Id, -StartTime, -Src)
 %
