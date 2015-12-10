@@ -63,9 +63,13 @@ log, perform the following steps:
 :- debug(playback(source)).
 :- debug(playback(query)).
 :- debug(playback(background)).
+%:- debug(playback(timing)).		% Do real timing
 
 :- setting(background, number, 10,
 	   "Background if it takes longer that seconds to reply").
+
+:- dynamic
+	pengine/2.
 
 %%	replay is nondet.
 %
@@ -140,21 +144,26 @@ run(Messages, StartTime, Id, Options) :-
 	    run(Messages1, StartTime, Id, Options)
 	).
 
-reply(output(_Id, Prompt), Pengine, _, Msgs, Msgs) :- !,
+reply(output(_Id, Prompt), Pengine, StartTime, [Time-pull_response|T], T) :- !,
 	debug(playback(event), 'Output ~p (pull_response)', [Prompt]),
+	sync_time(StartTime, Time),
 	pengine_pull_response(Pengine, []).
 reply(Event, Pengine, StartTime, [Time-H|T], T) :-
-	get_time(Now),
-	Sleep is (StartTime+Time) - Now,
-	debug(playback(event), 'Received ~p, reply: ~p (sleep: ~3f)',
-	      [Event, H, Sleep]),
-%	sleep(Sleep),
-	debug(playback(reply), 'Reply: ~p', [H]),
+	debug(playback(event), 'Received ~p, reply: ~p', [Event, H]),
+	sync_time(StartTime, Time),
 	(   catch(pengine_send(H, Pengine), E,
 		  print_message(error, E))
 	->  true
 	;   print_message(error, replay(Pengine, failed(H)))
 	).
+
+sync_time(StartTime, Time) :-
+	debugging(playback(timing)), !,
+	get_time(Now),
+	Sleep is (StartTime+Time) - Now,
+	debug(playback(event), '  sleep: ~3f ...', [Sleep]),
+	sleep(Sleep).
+sync_time(_, _).
 
 background(Messages, StartTime, Id) :-
 	debug(background, 'Backgrounding ~q', [Id]),
@@ -196,15 +205,32 @@ pengine_in_log(Pengine, StartTime, Src) :-
 %	Load a log file.
 
 load_log(Log) :-
+	retractall(pengine(_,_)),
 	absolute_file_name(Log, Path,
 			   [ access(read),
 			     extensions(['', log])
 			   ]),
 	setup_call_cleanup(
-	    ( style_check(-discontiguous),
-	      style_check(-singleton)
-	    ),
-	    consult(Path),
-	    ( style_check(+discontiguous),
-	      style_check(+singleton)
-	    )).
+	    open(Path, read, In, [encoding(utf8)]),
+	    read_log(In),
+	    close(In)).
+
+read_log(In) :-
+	read_term(In, Term,
+		  [ syntax_errors(dec10)
+		  ]),
+	read_log(Term, In).
+
+read_log(end_of_file, _) :- !.
+read_log(Term, In) :-
+	assert_event(Term),
+	read_log(In).
+
+assert_event(pengine(Time, Action)) :- !,
+	assertz(pengine(Time, Action)).
+assert_event(request(_Id, Time, Request)) :-
+	memberchk(path('/pengine/pull_response'), Request),
+	memberchk(search(Fields), Request),
+	memberchk(id=Pengine, Fields), !,
+	assertz(pengine(Time, send(Pengine, pull_response))).
+assert_event(_).
