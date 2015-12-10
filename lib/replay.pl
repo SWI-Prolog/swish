@@ -28,10 +28,11 @@
 */
 
 :- module(replay,
-	  [ load_log/1,				% +File
+	  [ load_log/1,			% +File
 	    replay/0,
-	    replay/1,				% +Pengine
-	    replay/2				% +Pengine, +ServerURL
+	    replay/1,			% +Pengine
+	    replay/2,			% +Pengine, +ServerURL
+	    skip_pengine/1		% +Pengine
 	  ]).
 :- use_module(library(debug)).
 :- use_module(library(pengines)).
@@ -71,7 +72,8 @@ log, perform the following steps:
 	   "Background if it takes longer that seconds to reply").
 
 :- dynamic
-	pengine/2.
+	pengine/2,
+	skip_pengine_store/1.
 
 %%	replay is nondet.
 %
@@ -85,6 +87,7 @@ log, perform the following steps:
 
 replay :-
 	pengine_in_log(Pengine, StartTime, Src),
+	\+ skip_pengine_store(Pengine),
 	Src \== (-),
 	format_time(string(D), '%+', StartTime),
 	format(user_error, '*** ~q at ~s ***~n', [Pengine, D]),
@@ -271,6 +274,8 @@ assert_event(request(_Id, Time, Request)) :-
 	assertz(pengine(Time, send(Pengine, pull_response))).
 assert_event(_).
 
+skip_pengine(Pengine) :-
+	assertz(skip_pengine_store(Pengine)).
 
 		 /*******************************
 		 *	      MESSAGES		*
