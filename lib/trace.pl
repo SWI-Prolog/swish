@@ -220,24 +220,20 @@ no_lco.
 %	when formulating the answer  from   the  projection variables as
 %	done in library(pengines_io).
 %
-%	This    relies    on     the      SWI-Prolog     7.3.14     hook
-%	prolog:residual_goal/1. As this hook is  defined multifile here,
-%	no harm is done if this  version   of  SWISH  is used with older
-%	versions of Prolog.
+%	This relies on the SWI-Prolog 7.3.14 residual goal extension.
 
-:- multifile prolog:residual_goal/1.
-
+:- if(current_predicate(prolog:residual_goals//0)).
 residuals(TypeIn, Goals) :-
-	findall(Goal, unqualified_residual(TypeIn, Goal), Goals).
-
-unqualified_residual(TypeIn, Goal) :-
-	prolog:residual_goal(Residual),
-	unqualify_residual(TypeIn, Residual, Goal).
+	phrase(prolog:residual_goals, Goals0),
+	maplist(unqualify_residual(TypeIn), Goals0, Goals).
 
 unqualify_residual(M, M:G, G) :- !.
 unqualify_residual(T, M:G, G) :-
 	predicate_property(T:G, imported_from(M)), !.
 unqualify_residual(_, G, G).
+:- else.
+residuals(_, []).
+:- endif.
 
 
 		 /*******************************
