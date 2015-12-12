@@ -152,6 +152,9 @@ swish_config:config(public_access,      false).
 pengines:prepare_module(Module, swish, _Options) :-
 	pengines_io:pengine_bind_io_to_html(Module).
 
+% Additional sandboxing rules.
+:- use_module(lib/flags).
+
 % Libraries that are nice to have in SWISH, but cannot be loaded
 % because they use directives that are considered unsafe.  We load
 % them here, so they only need to be imported, which is just fine.
