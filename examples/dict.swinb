@@ -1,0 +1,133 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Using dicts
+
+SWI-Prolog version 7 introduces the _dict_ data type as a principle type that is supported by a dedicated syntax and low level operations.  This notebook illustrates some of the properties of the dict type.
+
+A dict consists of a _tag_ and set of _key_ - _value_ associations.  Here is an example.
+</div>
+
+<div class="nb-cell query">
+A = tag{name:'Bob', age:31}.
+</div>
+
+<div class="nb-cell markdown">
+## Unifying dicts
+
+The _tag_ and the values of a dict may be unbound, but the keys must be bound to atoms or small integers.  Dicts unify if the tag unifies, they have the same set of keys and each value associated with a key unifies with the corresponding value of the other dict.  After unification, both dicts are equal (==/2).
+</div>
+
+<div class="nb-cell query">
+tag{name:'Bob', age:Age} = Tag{age:31, name:Name}.
+</div>
+
+<div class="nb-cell markdown">
+Dicts define two operators for _partial_ unification: :&lt;/2 and &gt;:&lt;/2.  The first (`A :&lt; B`) demands that the tags unify and for each key in `A` there is a key in `B` whose value unifies.  This construct is typically used to select a clause based on information in a
+dict.  Consider this program:
+</div>
+
+<div class="nb-cell program">
+process(Dict) :-
+    person{name:Name, age:Age} :&lt; Dict, !,
+    format('~w is ~w years old~n', [Name, Age]).
+</div>
+
+<div class="nb-cell query">
+process(person{name:'Bob', age:31}).
+</div>
+
+<div class="nb-cell markdown">
+The `A &gt;:&lt; B` operator says that the two dicts do not contradict.  This implies their tags unify and all values from the _intersection_ of their key-sets unify.  This can be used to combine two dicts if they do not contradict:
+</div>
+
+<div class="nb-cell program">
+join_dicts(D1, D2, D3) :-
+    D1 &gt;:&lt; D2,
+    put_dict(D1, D2, D3).
+</div>
+
+<div class="nb-cell query">
+join_dicts(person{name:'Bob', age:31}, _{gender:male}, D).
+</div>
+
+<div class="nb-cell markdown">
+but
+</div>
+
+<div class="nb-cell query">
+join_dicts(person{name:'Bob', age:31}, _{age:32, gender:male}, D).
+</div>
+
+<div class="nb-cell markdown">
+## Getting values from a dict
+
+SWI-Prolog version 7 offers a limited form of _functional notation_, which allows fetching information from a dict without using an explicit goal and without inventing a new variable.  If we wish to know in what year Bob was born, we can write the code below.
+Note that the date/time API does not yet support dicts.
+</div>
+
+<div class="nb-cell program">
+born(Person, Year) :-
+    get_time(Now),
+    stamp_date_time(Now, DateTime, local),
+    date_time_value(year, DateTime, YearNow),
+    Year is YearNow - Person.age.
+</div>
+
+<div class="nb-cell query">
+born(person{name:'Bob', age:31}, Year).
+</div>
+
+<div class="nb-cell markdown">
+Unlike the :&lt;/2 and &gt;:&lt;/2, the functional notation raises an error if the requested key is not present, which can ge avoided by using the `get` function.  Consider the two queries below.
+</div>
+
+<div class="nb-cell query">
+writeln(person{name:'Bob', age:31}.gender).
+</div>
+
+<div class="nb-cell query">
+writeln(person{name:'Bob', age:31}.get(gender)).
+</div>
+
+<div class="nb-cell markdown">
+## Setting values in a dict
+
+Prolog dicts are _not_ destructive objects.  They must be compared with compound terms such as `person('Bob', 31)`.  This also implies you cannot modify the value associated with a key, add new keys or delete keys without creating a new dict.  As demonstrated above, there are predicates that create a modified dict, such as put_dict/3.  In addition, one can use the functional notation using the built in functions put(Key,Value) and put(Dict).  The two queries below are the same.
+</div>
+
+<div class="nb-cell query">
+A = person{name:'Bob', age:31}.put(gender, male).
+</div>
+
+<div class="nb-cell query">
+A = person{name:'Bob', age:31}.put(_{gender:male}).
+</div>
+
+<div class="nb-cell markdown">
+## Sorting dicts
+
+The predicate sort/4 can be used to sort dicts on a key.  We illustrate this using a simple database.
+</div>
+
+<div class="nb-cell program">
+person(1, person{name:'Bob', age:31}).
+person(2, person{name:'Jane', age:30, gender:female}).
+person(3, person{name:'Mary', age:25}).
+</div>
+
+<div class="nb-cell query">
+findall(Person, person(_Id, Person), Persons),
+sort(age, =&lt;, Persons, ByAge).
+</div>
+
+<div class="nb-cell markdown">
+# Concluding
+
+The dict type provides a natural mechanism to deal with key-value associations for which the set of keys is not a-priory known.  Dicts are easily created, compactly stored and comfortably as well as efficiently queried for a single key or multiple keys with a single statement.
+
+Dicts however cannot be modified and allow only for creating a derived copy.  Consider
+doing a word frequency count on a text.  We could implement that by reading the words one-by-one, and updating a dict accordingly.  This would be slow because a new dict must be created for every word encountered (either adding a key or incrementing the value of a key). In this case one should sort the list and create the frequency count in a single cheap pass.  In cases where incremental update to a large name-value set is required it is more efficient to use library(assoc) or library(rbtrees).  If the (stable) result is used for further processing, it might be translated into a dict to profit from the more concise representation, faster (low-level) lookup and functional notation based access.
+</div>
+
+</div>

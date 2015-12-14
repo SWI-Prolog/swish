@@ -1,0 +1,55 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Accessing the SWISH interface
+
+The jquery/3 predicate can be used to access arbitrary JavaScript functionality on the SWISH interface from Prolog.  This notebook gives some examples for using this functionality.
+
+## Status
+
+This API is *speculative*.  Please consider the possibilities and make suggestions how to turn this into something generally useful for customizing SWISH and/or define new types of applications using it.
+
+## Get access to the tabs
+
+The jQuery interface was added to provide access to the tabs in the SWISH interface.  Our first example asks for for the available tabs.  It returns an list holding a _dict_ for each
+tab.
+</div>
+
+<div class="nb-cell query">
+jquery(swish(), swish(tabData), Reply).
+</div>
+
+<div class="nb-cell markdown">
+The =|swish#tabData|= jQuery plugin method accepts an `options`
+dict with the following values:
+
+  - active:Boolean
+  Restrict the result to the active tab
+  - type:String
+  Restrict the result to tabs with objects of this type
+  - data:Boolean|String
+  If `true`, include the content of the reported tabs.  If
+  `"if_modified"`, only include the data if the tab was modified.
+  
+The example below fetches the data from the active tab.
+</div>
+
+<div class="nb-cell query">
+jquery(swish(), 
+       swish(tabData, _{active:true, data:true}),
+       Reply).
+</div>
+
+<div class="nb-cell markdown">
+## The potential
+
+Except for querying UI properties, the general jQuery API can be used to add new element to the interface.  The `this` root selector refers to the jQuery plugin `prologRunner`, which runs a single query.  The query below inserts some HTML into the runner DOM.
+
+This level of interaction with the interface is probably not desirable.  Restricted to a documented set of jQuery selectors and methods however, it can be used to generalise the user interaction.
+</div>
+
+<div class="nb-cell query">
+jquery(this(".runner-results"), append("&lt;b&gt;Hello world&lt;/b&gt;"), R).
+</div>
+
+</div>

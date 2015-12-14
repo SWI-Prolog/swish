@@ -1,0 +1,55 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# The codes render plugin
+
+#### Synopsis
+
+    :- use_renderer(codes).
+    :- use_renderer(codes, Options).
+
+#### Options supported
+
+  - min_length(+Integer)
+    Codes must be a list of at least Integer length. Default is	`3`.
+  - ellipsis(+Integer)
+    Write list as `bla bla ... bla` if longer than Integer.
+    Default is 30.
+  - partial(+Boolean)
+    It `true` (default), allow a partial list (ending in a
+    variable).
+  - charset(+Charset)
+    Set of characters to accept.  Currently allows for
+  - ascii
+    Allow 32..126
+  - iso_latin_1
+    Allow 32..126 and 160..255
+
+#### Reconised terms
+
+A list (or partial) list of likely character codes is rendered as a string.
+</div>
+
+<div class="nb-cell markdown">
+## Examples
+
+List of character codes are by default rendered as a Prolog list of integers, which is rather hard to interpret:
+</div>
+
+<div class="nb-cell query">
+A = `hello world`.
+</div>
+
+<div class="nb-cell markdown">
+Using the `codes` renderer, Prolog heuristically decides that the integers list is likely to be a string and renders it accordingly.
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(codes).
+</div>
+
+<div class="nb-cell query">
+A = `hello world`.
+</div>
+
+</div>

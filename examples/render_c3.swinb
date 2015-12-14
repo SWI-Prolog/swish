@@ -1,0 +1,172 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Displaying results as charts
+
+Numerical results are often easier to understand when rendered as a chart than a list of numbers.  The SWISH web interface for SWI-Prolog allows rendering data through [C3.js](http://c3js.org).  C3 is a JavaScript library that used [D3.js](http://d3js.org) for the actual rendering.  However, C3.js can create many useful charts just from data, while D3.js typically requires writing JavaScript and CSS.
+
+## How it works
+
+Creating a C3 chart requires including the directive  `:- use_rendering(c3).` and binding a Prolog variable to a _dict_ with the _tag_ `c3` and the data needed by C3.  The `c3` renderer interferes in two ways with the data:
+
+  - If no size is specified, the width is set to 85% of the available width
+    and the height to `width/2+50`.  The chart is resized if the available
+    space changes.
+  - The renderer performs some basic sanity checks on the data and may
+    report an error.
+  
+## Our first chart
+
+As a first example, we will create a chart for the _sine_ function in the range `0..360` degrees.  The predicate sin/2 defines the sine relation for 37 datapoints on 10 degrees intervals.  We use findall/3 to create the required data rows.
+
+Now, we instantiate the C3 data structure, specifying the row names and the X-axis.
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(c3).
+
+sin(X,Y) :-
+    between(0,36,I),
+    X is I*10,
+    Y is sin(X*pi/180).
+
+chart(Chart) :-
+    findall([X,Y], sin(X,Y), Data),
+    Chart = c3{data:_{x:x, rows:[[x,sine]|Data]}}.
+</div>
+
+<div class="nb-cell query">
+chart(Sine).
+</div>
+
+<div class="nb-cell markdown">
+## Alternatives for the the data
+
+By nature, Prolog is a relational language and the set of solutions naturally form a table, where each solution is a row.  C3 wants to see a JSON array-of-arrays, where each sub-array is a row and the first row defines the column names, much as you are used to in a spreadsheet.  The above creates the data as follows:
+
+```
+rows: [ [x, sine],
+        [0, 0.0],
+        [10, 0.173...],
+        ...
+      ]
+```
+
+The c3 rendering library allows the rows to be compound terms.  If we have
+a simple X-Y chart we can thus represent the same data as Prolog _pairs_,
+a representation that is more common in the Prolog world.
+
+```
+rows: [ x - sine,
+        0 - 0.0,
+        10 - 0.173...,
+        ...
+      ]
+```
+
+Finally, we can use _dicts_.  If we do so, we can omit the first row that 
+defines the column names as the dict _keys_ are used for that.  So, the data can be represented as:
+
+```
+rows: [ r{x:0, sin:0.0},
+        r{x:10, sin:0.173}
+        ...
+      ]
+```
+
+Predicates from library(dicts) can be used to combine series.  For example, dicts_join/4 can be used to combine two series on a common key.  The example below illustrates this.
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(c3).
+
+sin(X,Y) :-
+    between(0,36,I),
+    X is I*10,
+    Y is sin(X*pi/180).
+
+cos(X,Y) :-
+    between(0,36,I),
+    X is I*10,
+    Y is cos(X*pi/180).
+
+chart(Chart) :-
+    findall(r{x:X,sin:Y}, sin(X,Y), SinData),	% create sin-series
+    findall(r{x:X,cos:Y}, cos(X,Y), CosData),	% create cos-series
+    dicts_join(x, SinData, CosData, Data),		% join on common 'x' key
+    Chart = c3{data:_{x:x, rows:Data}}.
+</div>
+
+<div class="nb-cell query">
+chart(Chart).
+</div>
+
+<div class="nb-cell markdown">
+## Creating pie and bar charts
+
+In this example we compute some simple statistics on HTML pages.  First, we create a program that created a sorted list of `[Tag,Count]` pairs for each element that appears on a page.  Note that the pairs are typically represented as `Tag-Count`, but this representation does not fit C3 well.  In this example we stay with the C3 representation.
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(c3).
+:- use_module(library(sgml)).
+:- use_module(library(xpath)).
+
+popular_elements(Popular) :-
+    popular_elements('http://www.swi-prolog.org', Popular).
+
+popular_elements(URL, Popular) :-
+    findall(Elem, elem_in(URL, Elem), Elems),
+    frequency_count(Elems, Popular).
+
+frequency_count(Elems, Popular) :-
+    sort(0, =&lt;, Elems, Sorted),
+    count_same(Sorted, Counted),
+    sort(2, &gt;=, Counted, Popular).
+
+count_same([], []).
+count_same([H|T0], [H-C|T]) :-
+    count_same(H, T0, 1, C, T1),
+    count_same(T1, T).
+
+count_same(E, [E|T0], C0, C, T) :- !,
+    C1 is C0+1,
+    count_same(E, T0, C1, C, T).
+count_same(_, T, C, C, T).
+
+elem_in(URL, Elem) :-
+    load_html(URL, DOM, []),
+    xpath(DOM, //'*'(self), element(Elem,_,_)).
+</div>
+
+<div class="nb-cell markdown">
+Below, we run this program in three different queries.
+
+  1. Traditional Prolog.
+  2. Rendered as a C3 pie chart.
+  3. Rendered as a bar chart.  The latter requires us to name the rows, define the
+     x-axis and specify that the x-axis must be rendered as text.
+</div>
+
+<div class="nb-cell query">
+popular_elements(Pairs).
+</div>
+
+<div class="nb-cell query">
+popular_elements(_Pairs),
+Chart = c3{data:_{columns:_Pairs, type:pie}}.
+</div>
+
+<div class="nb-cell query">
+popular_elements(_Pairs),
+Chart = c3{data:_{x:elem, rows:[elem-count|_Pairs], type:bar},
+   	       axis:_{x:_{type:category}}}.
+</div>
+
+<div class="nb-cell markdown">
+## Further reading
+
+C3 defines most standard charts and many options to make the resulting charts look nice by providing labels for the axis, adding a legenda, choosing color schemes, etc. Please visit the [C3 examples](http://c3js.org/examples.html) for details.
+</div>
+
+</div>

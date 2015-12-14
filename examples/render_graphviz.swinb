@@ -1,0 +1,194 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# The GraphViz renderer
+
+[GraphViz](http://www.graphviz.org) is a popular rendering program for graphs.  It takes the specification for a graph in the _dot_ language and produces a variety of output formats.  We are particularly interested in its ability to output SVG, Scalable Vector Graphics, which we can embed in the SWISH output window.
+
+The `graphviz` renderer needs to obtain a dot specification and it needs to know the layout algorithm to use.  It takes two terms:
+
+  - Using Layout(DotString), it simply renders a dot specification using the
+    layout engine Layout.  Provided layout engines are =dot= (most commonly
+    used), =neato=, =fdp=, =sfdp=, =twopi= and =circo=.  Please visit the
+    [GraphViz](http://www.graphviz.org) site for details.
+  - Using Layout(Graph), where `Graph` is a Prolog term representing the
+    dot AST (Abstract Syntax Tree).  The AST is translated into concrete
+    dot syntax using a DCG grammar.
+    
+Before we go into details, we do the _Hello World_ demo.  First, load the `graphviz` renderer:
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(graphviz).
+</div>
+
+<div class="nb-cell markdown">
+First, we use the _Hello World_ example from the GrahViz demo pages using a dot string as specification:
+</div>
+
+<div class="nb-cell query">
+X = dot("digraph G { Hello-&gt;World }").
+</div>
+
+<div class="nb-cell markdown">
+Using a dot string as specification is of course not desirable because it makes
+it hard to generate a graph from computed data.  We introduce the *Prolog representation* for dot with the same example.  The only noticible difference is that the _render selection corner_ becomes visible because the graph is given 
+the attribute `bgcolor=transparent` if no background is given, while the graphviz
+default is `white`.
+</div>
+
+<div class="nb-cell query">
+X = dot(digraph(['Hello'-&gt;'World'])).
+</div>
+
+<div class="nb-cell markdown">
+The default `dot` program may be omitted.  This example also shows that you can use arbitrary terms as node identifiers and that you can add graph attributes.
+</div>
+
+<div class="nb-cell query">
+X = digraph([rankdir='LR', t(Y)-&gt;t(y)]).
+</div>
+
+<div class="nb-cell markdown">
+## A more complex example
+
+The following example is taken from the [Graphviz gallery](http://www.graphviz.org/Gallery.php),
+where the first query uses the dot syntax and the second represents the same graph as a Prolog
+term.
+</div>
+
+<div class="nb-cell query">
+X = dot("digraph G {
+
+	subgraph cluster_0 {
+		style=filled;
+		color=lightgrey;
+		node [style=filled,color=white];
+		a0 -&gt; a1 -&gt; a2 -&gt; a3;
+		label = \"process #1\";
+	}
+
+	subgraph cluster_1 {
+		node [style=filled];
+		b0 -&gt; b1 -&gt; b2 -&gt; b3;
+		label = \"process #2\";
+		color=blue
+	}
+	start -&gt; a0;
+	start -&gt; b0;
+	a1 -&gt; b3;
+	b2 -&gt; a3;
+	a3 -&gt; a0;
+	a3 -&gt; end;
+	b3 -&gt; end;
+
+	start [shape=Mdiamond];
+	end [shape=Msquare];
+}").
+</div>
+
+<div class="nb-cell query">
+X = dot(digraph([
+
+	subgraph(cluster_0,
+             [ style=filled,
+               color=lightgrey,
+               node([style=filled,color=white]),
+               a0 -&gt; a1 -&gt; a2 -&gt; a3,
+               label = "process #1"
+             ]),
+
+	subgraph(cluster_1,
+             [ node([style=filled]),
+               b0 -&gt; b1 -&gt; b2 -&gt; b3,
+               label = "process #2",
+               color=blue
+             ]),
+	start -&gt; a0,
+	start -&gt; b0,
+	a1 -&gt; b3,
+	b2 -&gt; a3,
+	a3 -&gt; a0,
+	a3 -&gt; end,
+	b3 -&gt; end,
+
+	node(start, [shape='Mdiamond']),
+	node(end, [shape='Msquare'])
+])).
+</div>
+
+<div class="nb-cell markdown">
+## Representing dot as Prolog
+
+The full dot language is represented as a Prolog term.  The shape of this term closely follows the
+[dot language ](http://www.graphviz.org/content/dot-language) and is informally defined by the
+grammar below:
+
+  ```
+  Graph      := graph(Statements)
+              | graph(Options, Statements)
+	      | digraph(Statements)
+	      | digraph(Options, Statements)
+  Options    := ID | [ID] | [strict, ID]
+  Statements := List of statements
+  Statement  := NodeStm | EdgeStm | AttrStm | Name = Value | SubGraph
+  NodeStm    := NodeID | node(NodeID, AttrList)
+  NodeID     := ID | ID:Port | ID:Port:CompassPT
+  CompassPT  := n | ne | e | se | s | sw | w | nw | c | _
+  EdgeStm    := (NodeID|SubGraph) (EdgeOp (NodeID|SubGraph))+
+  EdgeStm     | edge(NodeID|SubGraph) (EdgeOp (NodeID|SubGraph))+), AttrList)
+  EdgeOp     := - | -&gt;
+  AttrStm    := graph(AttrList)
+	      | node(AttrList)
+	      | edge(AttrList)
+  AttrList   := List of attributes
+  Attribute  := Name = Value
+	      | Name(Value)
+  SubGraph   := subgraph(ID, Statements)
+  ```
+</div>
+
+<div class="nb-cell markdown">
+## Generating Graphs from data
+
+Generating a graph from static data is of course not very interesting.  This section provides some examples for generating graphs from Prolog data.  This is where the Prolog representation of a _dot_ program comes in: it takes away the burden of generating the concrete dot syntax, avoiding issues such as proper escaping of labels.  In the example below we render an arbitrary (acyclic) Prolog term as a tree.  We do this by walking down the term, generating a node-id and a label for each node representing a compound term as well as each leaf.  Note that we cannot use the label as node id beause the same label may appear in multiple locations.  Thus, we generate dot statements like this:
+
+  - node(Id, [label=Label])
+  - `ChildID -&gt; ParentId`
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(graphviz).
+
+tree(Compound, Root, Options0, Options) --&gt;
+    { compound(Compound), !,
+      atom_concat(n, Options0.id, Root),
+      compound_name_arguments(Compound, Name, Arguments),
+      format(string(Label), '~q', [Name]),
+      ID1 is Options0.id+1
+    },
+    [node(Root, [label=Label])],
+    children(Arguments, Root, Options0.put(id, ID1), Options).
+tree(Any, Leaf, Options0, Options) --&gt;
+    { atom_concat(n, Options0.id, Leaf),
+      format(string(Label), '~p', [Any]),
+      ID1 is Options0.id+1,
+      Options = Options0.put(id, ID1)
+    },
+    [ node(Leaf, [label=Label]) ].
+
+children([], _, Options, Options) --&gt; [].
+children([H|T], Parent, Options0, Options) --&gt;
+    [ Child -&gt; Parent ],
+    tree(H, Child, Options0, Options1),
+    children(T, Parent, Options1, Options).
+
+gvtree(Term, digraph([rankdir='BT',size=5|Statements])) :-
+    phrase(tree(Term, _, _{id:1}, _), Statements).
+</div>
+
+<div class="nb-cell query">
+A = f(1, a, `XY`, "XY", X), gvtree(A, T).
+</div>
+
+</div>

@@ -1,0 +1,46 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Welcome to SWISH
+
+You are reading a SWISH _notebook_.  A notebook is a mixture of _text_, _programs_ and _queries_.  This notebook gives an overview of example programs shipped with SWISH.
+
+  - *First steps*
+    - [Knowledge bases](example/kb.pl) provides a really simple
+      knowledge base with example queries.
+    - [Lists](example/lists.pl) defines a couple of really simple
+      list operations and illustrates timing _naive reverse_.
+  - *Classics*
+    - [Movie database](example/movies.pl) provides a couple of
+      thousands of facts about movies for you to query.
+    - [Expert system](example/expert_system.pl) illustrates simple
+      meta-interpretation of rules and asking for missing knowledge.
+    - [Eliza](example/eliza.pl) implements the classical shrink.
+    - [English grammar](example/grammar.pl) DCG rules for parsing
+      some simple English sentences and show the result as an SVG
+      tree.
+  - *Puzzles*
+    - [Einstein's Riddle](example/houses_puzzle.pl) A famous puzzle
+      attributed to Einstein.
+    - [N-Queens (traditional)](example/queens.pl) solves the N-queens
+      problem using traditional Prolog and illustrates domain-specific
+      (graphics) output.
+    - [N-Queens (clp(fd))](example/clpfd_queens.pl) as above,
+      illustrating the value of constraint programming.
+    - [Sudoku (clp(fd))](example/clpfd_sudoku.pl) solves the sudoku
+      puzzle using constraint programming, redering the result as a
+      table.
+    - [Knights and Knaves (clp(b))](example/knights_and_knaves.pl)
+      solves boolean problems.
+  - *Side effects and I/O*
+    - [Read and write](example/io.pl) demonstrates that you can read from
+      and write to the web interface.
+    - [Assert and retract](example/database.pl) demonstrates using the
+      dynamic database.
+  - *International character support*
+    - [Japanese source](example/japanese.pl) gives example source from
+      the Japanese Wikipedia site on Prolog, illustrating multi-lingual
+      capabilities of SWI-Prolog and SWISH.
+</div>
+
+</div>
