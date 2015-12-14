@@ -211,7 +211,7 @@ preferences.setDefault("emacs-keybinding", false);
       if ( typeof(options) == "string" )
 	options = {file:options};
 
-      var existing = this.find(".storage").storage('match', options);
+      /*var existing = this.find(".storage").storage('match', options);
       if ( existing && existing.storage('expose', "Already open") )
 	return this;				/* FIXME: go to line */
 
@@ -221,7 +221,7 @@ preferences.setDefault("emacs-keybinding", false);
 	       data: {format: "json"},
 	       success: function(reply) {
 		 reply.url = url;
-		 reply.type = "gitty";
+		 reply.st_type = "gitty";
 
 		 function copyAttrs(names) {
 		   for(var i=0; i<names.length; i++) {
@@ -381,10 +381,9 @@ preferences.setDefault("emacs-keybinding", false);
     prologSource: function() {
       var list = [];
       var src;
-
       if ( (src=$(".prolog-editor").prologEditor('getSource', "source")) )
 	list.push(src);
-      if ( (src=$(".background.prolog.source").text()) )
+      if ( (src=$(".background.prolog.source").text()) ) 
 	list.push(src);
 
       return list.join("\n\n");

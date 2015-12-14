@@ -559,22 +559,13 @@ var cellTypes = {
 
     type: function(type, code) {
       var data = this.data(pluginName);
-        console.log(data);
-        console.log(type);
-      
+        
         if ( data.type != type ) {
-          console.log("in");
-          console.log(data);
-          console.log(this);
-          console.log(type);
           if (type == "program"){
-            console.log("primo");
-	    methods.type[type].apply(this, [{codeType : code}]); //fix it!!!! ci siamo quasi
+            methods.type[type].apply(this, [{codeType : code}]); //fix it!!!! ci siamo quasi
 	  } else {
-	    console.log("2");
 	    methods.type[type].apply(this);
 	  }
-	  console.log("out");
 	  data.type = type;
 	  this.addClass(type);
         }
@@ -718,8 +709,6 @@ var cellTypes = {
 
     programs: function() {
       var cells = this.nbCell('program_cells');
-      console.log("progerams");
-      console.log(cells);
       return cells.find(".editor");
     },
 
@@ -772,21 +761,16 @@ var cellTypes = {
 
   methods.type.program = function(options) {	/* program */
     var editor, bg;
-    console.log("options ");
-    console.log(options);
-    console.log(options);
-    console.log(options[0]);
     /*if (options && options.codeType == undefined)
     	options = {};*/
     options = options||{};
     if (options.codeType)
     	if(options.codeType == "lpad")
     	  options.placeholder = "Your LPAD rules and facts go here ...";
-     console.log(options);
+     
     options.autoCurrent = false;
     
 
-    console.log(options);
     
     this.html("");
 
@@ -804,9 +788,8 @@ var cellTypes = {
     if ( options.singleline )
     { this.nbCell('singleline');
     }
-    console.log(options);
     $(editor).prologEditor(options);
-    console.log($(editor));
+    
   }
   
 
@@ -977,8 +960,6 @@ var cellTypes = {
 		  title:  false,
 		  codeType: programs.prologEditor('getCodeType')
                 };
-    console.log("query run");
-    console.log(query);
     if ( programs[0] )
       query.editor = programs[0];
 

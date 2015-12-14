@@ -56,7 +56,7 @@ two sources:
 % make example(File) find the example data
 user:file_search_path(example, swish(examples)).
 % make SWISH serve /example/File as example(File).
-swish_config:source_alias(example, [access(read), search('*.{pl,swinb}')]).
+swish_config:source_alias(example, [access(read), search('*.{pl,cpl,swinb}')]).
 
 :- http_handler(swish(list_examples),
 		list_examples, [id(swish_examples)]).
@@ -102,6 +102,10 @@ index_json(HREF, Dir, JSON) :-
 	maplist(add_href(HREF), JSON0, JSON).
 index_json(HREF, Dir, JSON) :-
 	string_concat(Dir, "/*.pl", Pattern),
+	expand_file_name(Pattern, Files),
+	maplist(ex_file_json(HREF), Files, JSON).
+index_json(HREF, Dir, JSON) :-
+	string_concat(Dir, "/*.cpl", Pattern),
 	expand_file_name(Pattern, Files),
 	maplist(ex_file_json(HREF), Files, JSON).
 
