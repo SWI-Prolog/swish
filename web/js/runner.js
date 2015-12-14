@@ -299,13 +299,22 @@ define([ "jquery", "config", "preferences",
 	if ( query.title != false ) {
 	  var qspan = $.el.span({class:"query cm-s-prolog"});
 	  CodeMirror.runMode(query.query, "prolog", qspan);
-	  elem.append($.el.div(
-	    {class:"runner-title ui-widget-header"},
-	    closeButton(),
-	    iconizeButton(),
-	    csvButton(),
-	    stateButton(),
-	    qspan));
+	  if (query.codeType != "lpad") {
+	    elem.append($.el.div(
+	      {class:"runner-title ui-widget-header"},
+	      closeButton(),
+	      iconizeButton(),
+	      csvButton(),
+	      stateButton(),
+	      qspan));
+	  } else {
+	    elem.append($.el.div(
+	      {class:"runner-title ui-widget-header"},
+	      closeButton(),
+	      iconizeButton(),
+	      stateButton(),
+	      qspan));
+	  }
 	} else {
 	  var close = glyphButton("remove-circle", "Close");
 	  elem.append(close);
