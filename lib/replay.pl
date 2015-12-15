@@ -163,7 +163,8 @@ reply(output(_Id, Prompt), Pengine, StartTime, [Time-pull_response|T], T) :- !,
 	debug(playback(event), 'Output ~p (pull_response)', [Prompt]),
 	sync_time(StartTime, Time),
 	pengine_pull_response(Pengine, []).
-reply(error(_Id, error(time_limit_exceeded,_)), Pengine, _, Msgs, []) :- !,
+reply(error(Id, error(time_limit_exceeded,_)), Pengine, _, Msgs, []) :- !,
+	catch(pengine_destroy(Id), _, true),
 	(   Msgs == []
 	->  true
 	;   print_message(error, replay(Pengine, timeout(Msgs)))
