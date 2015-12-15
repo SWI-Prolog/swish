@@ -32,14 +32,15 @@
 	    replay/0,
 	    replay/1,			% +Pengine
 	    replay/2,			% +Pengine, +ServerURL
+	    concurrent_replay/1,	% +Count
 	    skip_pengine/1		% +Pengine
 	  ]).
 :- use_module(library(debug)).
 :- use_module(library(pengines)).
-:- use_module(library(settings)).
 :- use_module(library(option)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
+:- use_module(library(thread)).
 
 /** <module> Replay SWISH sessions from a log file
 
@@ -63,9 +64,11 @@ log, perform the following steps:
 */
 
 :- debug(playback(event)).
+:- debug(playback(create)).
 :- debug(playback(source)).
 :- debug(playback(query)).
 :- debug(playback(background)).
+:- debug(playback(concurrent)).
 %:- debug(playback(timing)).		% Do real timing
 
 :- dynamic
@@ -83,12 +86,27 @@ log, perform the following steps:
 %	  ==
 
 replay :-
-	pengine_in_log(Pengine, StartTime, Src),
+	pengine_in_log(Pengine, _StartTime, Src),
 	\+ skip_pengine_store(Pengine),
 	Src \== (-),
-	format_time(string(D), '%+', StartTime),
-	format(user_error, '*** ~q at ~s ***~n', [Pengine, D]),
 	replay(Pengine).
+
+%%	concurrent_replay(+Count) is det.
+%
+%	Perform a concurrent replay over Count threads.
+
+concurrent_replay(Count) :-
+	findall(Pengine, pengine_in_log(Pengine, _StartTime, _Src), Pengines),
+	length(Pengines, Len),
+	debug(playback(concurrent), 'Replaying ~D pengines', Len),
+	maplist([P, replay1(P)]>>true, Pengines, Goals),
+	concurrent(Count, Goals, []).
+
+replay1(P) :-
+	catch(replay(P), E, print_message(warning, E)), !.
+replay1(P) :-
+	print_message(error, replay(P, failed)).
+
 
 %%	replay(+Pengine) is det.
 %
@@ -102,23 +120,26 @@ replay(Pengine) :-
 %	Replay pengine with id Pengine on server ServerURL.
 
 replay(Pengine, URL) :-
-	pengine_interaction(Pengine, CreateOptions, Messages),
+	pengine_interaction(Pengine, StartTime, CreateOptions, Messages),
 	pengine_create([ server(URL),
 			 id(Id)
 		       | CreateOptions
 		       ]),
+	format_time(string(D), '%+', StartTime),
+	debug(playback(create), '*** ~q at ~s', [Pengine, D]),
+	debug(playback(create), '*** ~q', [Id]),
+	show_source(CreateOptions),
 	get_time(Now),
 	run(Messages, Now, Id, []).
 
-pengine_interaction(Pengine, CreateOptions, Messages) :-
+pengine_interaction(Pengine, StartTime, CreateOptions, Messages) :-
 	once(pengine(StartTime, create(Pengine, swish, Options0))),
 	maplist(fix_option, Options0, CreateOptions),
 	findall(Time-Message,
 		(   pengine(Time0, send(Pengine, Message)),
 		    Time is Time0-StartTime
 		),
-		Messages),
-	show_source(CreateOptions).
+		Messages).
 
 fix_option(src_text(_Hash-Text), src_text(Text)) :- !.
 fix_option(src_text(Hash), src_text(Text)) :- !,
@@ -271,3 +292,5 @@ prolog:message(replay(Pengine, timeout(Msgs))) -->
 	[ 'Terminated ~q on timeout (~D messages left)'-[ Pengine, Len ] ].
 prolog:message(replay(Pengine, failed(H))) -->
 	[ 'Replay on ~q for ~q failed'-[Pengine, H] ].
+prolog:message(replay(Pengine, failed)) -->
+	[ 'Replay of ~q failed'-[Pengine] ].
