@@ -68,9 +68,6 @@ log, perform the following steps:
 :- debug(playback(background)).
 %:- debug(playback(timing)).		% Do real timing
 
-:- setting(background, number, 10,
-	   "Background if it takes longer that seconds to reply").
-
 :- dynamic
 	pengine/2,
 	skip_pengine_store/1.
@@ -111,8 +108,7 @@ replay(Pengine, URL) :-
 		       | CreateOptions
 		       ]),
 	get_time(Now),
-	setting(background, BgTime),
-	run(Messages, Now, Id, [background(BgTime)]).
+	run(Messages, Now, Id, []).
 
 pengine_interaction(Pengine, CreateOptions, Messages) :-
 	once(pengine(StartTime, create(Pengine, swish, Options0))),
@@ -139,25 +135,9 @@ show_source(Options) :-
 
 run([], _, _, _) :- !.
 run(Messages, StartTime, Id, Options) :-
-	read_event(Messages, StartTime, Id, Event, Bg, Options),
-	run_event(Bg, Event, Id, StartTime, Messages, Options).
-
-run_event(true, _, _, _, _, _) :- !.
-run_event(_, Event, Id, StartTime, Messages, Options) :-
+	pengine_event(Event, [listen(Id)]),
 	reply(Event, Id, StartTime, Messages, Messages1),
 	run(Messages1, StartTime, Id, Options).
-
-read_event(Messages, StartTime, Id, Event, Bg, Options) :-
-	option(background(BgTime), Options, 0),
-	BgTime > 0, !,
-	pengine_event(Event, [listen(Id), timeout(BgTime)]),
-	(   Event == timeout
-	->  background(Messages, StartTime, Id),
-	    Bg = true
-	;   Bg = false
-	).
-read_event(_, _, Id, Event, false, _) :-
-	pengine_event(Event, [listen(Id)]).
 
 reply(output(_Id, Prompt), Pengine, StartTime, [Time-pull_response|T], T) :- !,
 	debug(playback(event), 'Output ~p (pull_response)', [Prompt]),
@@ -185,11 +165,6 @@ sync_time(StartTime, Time) :-
 	debug(playback(event), '  sleep: ~3f ...', [Sleep]),
 	sleep(Sleep).
 sync_time(_, _).
-
-background(Messages, StartTime, Id) :-
-	debug(background, 'Backgrounding ~q', [Id]),
-	thread_create(run(Messages, StartTime, Id, [background(0)]),
-		      _, [detached(true)]).
 
 pengine_send(ask(Question,Options0), Id) :-
 	maplist(fix_ask_option(Id), Options0, Options),
