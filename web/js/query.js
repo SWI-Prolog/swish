@@ -79,16 +79,33 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 
 	elem.on("current-program", function(ev, editor) {
 	  elem[pluginName]('setProgramEditor', $(editor));
+	  elem[pluginName]('setAggregates', $(editor));
 	});
 	elem.on("program-loaded", function(ev, editor) {
 	  if ( $(data.editor).data('prologEditor') == $(editor).data('prologEditor') ) {
 	    var exl = data.examples();
-	    elem.queryEditor('setQuery', exl && exl[0] ? exl[0] : "");
+	    elem.queryEditor('setQuery', exl && exl[0] ? exl[0] : ""); 
 	  }
 	});
 
 	elem.data(pluginName, data);
       });
+    },
+        
+    setAggregates: function(editor) {
+      var codeType = editor.prologEditor('getCodeType', "source");
+      var but = this.find("button.aggregate");
+      
+      if (codeType == "lpad")
+        but.prop('disabled', true);
+      else
+        but.prop('disabled', false);
+        
+      /*if (codeType == "lpad")
+        but.css("visibility", "hidden");
+      else
+        but.css("visibility", "visible");*/
+      
     },
 
     /**
@@ -100,7 +117,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 
       data.editor = editor[0];
       if ( data.editor ) {
-	data.examples = function() {
+        data.examples = function() {
 	  var exl    = editor.prologEditor('getExamples')||[];
 	  var global = editor.parents(".swish").swish('examples', true)||[];
 
@@ -124,6 +141,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	  data.source = "";
 	  data.codeType = "undef";
 	}
+	
 	data.sourceID = function() {
 	  return editor.prologEditor('getSourceID');
 	};
@@ -134,9 +152,13 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	} else {
 	  editor.prologEditor('refreshHighlight');
 	}
+		
       } else
-      { data.examples = "";
+      { 
+            data.examples = "";
       }
+      
+      
     },
 
     /**
@@ -174,6 +196,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	ul.append($.el.li($.el.a(list[i])));
       }
       ul.data('examples', list.slice(0));
+
 
       return this;
     },
@@ -355,7 +378,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
   function examplesButton(options) {
     var el = dropup("examples", "Examples", options);
     var ul = $(el).find("ul");
-
+    
     function updateExamples(options) {
       var list = options.examples();
 
@@ -399,7 +422,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
     var ul;
 
     var dropup = $.el.div(
-      {class:"btn-group dropup"},
+      {class:"btn-group dropup aggregate"},
       $.el.button(
 	{class:"btn btn-default btn-xs dropdown-toggle "+cls,
 	 "data-toggle":"dropdown"},
