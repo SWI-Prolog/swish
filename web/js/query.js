@@ -34,7 +34,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
      */
     _init: function(options) {
       return this.each(function() {
-	var elem   = $(this);
+        var elem   = $(this);
 	var data   = $.extend({}, defaults, options);
 	var qediv  = $.el.div({class:"query",style:"height:100%"});
 	var tabled = tableCheckbox(data);
