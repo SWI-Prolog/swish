@@ -38,8 +38,12 @@
 :- use_module(library(lists)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
+:- use_module(library(aggregate)).
 :- use_module(procps).
 :- use_module(highlight).
+:- if(exists_source(library(mallocinfo))).
+:- use_module(library(mallocinfo)).
+:- endif.
 
 %%	pengine_stale_module(-M) is nondet.
 %
@@ -210,6 +214,7 @@ reply_stats_request(Client-get_stats(Period), SlidingStat) :-
 
 swish_stats(stats{ cpu:CPU,
 		   rss:RSS,
+		   fordblks:Fordblks,
 		   stack:Stack,
 		   pengines:Pengines,
 		   pengines_created:PenginesCreated,
@@ -221,11 +226,19 @@ swish_stats(stats{ cpu:CPU,
 	statistics(cputime, MyCPU),
 	CPU is PCPU-MyCPU,
 	statistics(stack, Stack),
+	fordblks(Fordblks),
 	catch(procps_stat(Stat), _,
 	      Stat = stat{rss:0}),
 	RSS = Stat.rss,
 	swish_statistics(pengines(Pengines)),
 	swish_statistics(pengines_created(PenginesCreated)).
+
+:- if(current_predicate(mallinfo/1)).
+fordblks(Fordblks) :-
+	mallinfo(MallInfo),
+	Fordblks = MallInfo.fordblks.
+:- endif.
+
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Maintain sliding statistics. The statistics are maintained in a ring. If

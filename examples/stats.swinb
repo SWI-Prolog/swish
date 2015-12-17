@@ -8,7 +8,7 @@ This page examines the performance and health of the SWISH server.  Most of the 
 The first step is easy, showing the overall statistics of the server.
 </div>
 
-<div class="nb-cell query" data-tabled="false">
+<div class="nb-cell query">
 statistics.
 </div>
 
@@ -48,8 +48,9 @@ chart(Period, Keys, Chart) :-
     swish_stats(Period, Dicts0),
     maplist(add_heap_mb, Dicts0, Dicts1),
     maplist(rss_mb, Dicts1, Dicts2),
-    maplist(stack_mb, Dicts2, Dicts3),
-    maplist(fix_date, Dicts3, Dicts),
+    maplist(free_mb, Dicts2, Dicts3),
+    maplist(stack_mb, Dicts3, Dicts4),
+    maplist(fix_date, Dicts4, Dicts),
     dicts_slice([time|Keys], Dicts, LastFirstRows),
     reverse(LastFirstRows, Rows),
     period_format(Period, DateFormat),
@@ -75,6 +76,11 @@ rss_mb(Stat0, Stat) :-
     put_dict(rss_mb, Stat0, Gb, Stat).
 rss_mb(Stat, Stat).
 
+free_mb(Stat0, Stat) :-
+    Gb is Stat0.get(fordblks)/(1024**2), !,
+    put_dict(free_mb, Stat0, Gb, Stat).
+free_mb(Stat, Stat).
+
 stack_mb(Stat0, Stat) :-
     Gb is Stat0.get(stack)/(1024**2), !,
     put_dict(stack_mb, Stat0, Gb, Stat).
@@ -91,7 +97,7 @@ fix_date(Stat0, Stat) :-
 The number of Pegines denotes the number of actively executing queries.  These queries may be sleeping while waiting for input, a debugger command or the user asking for more answers. Note that the number of Pengines is sampled and short-lived Pengines does not appear in this chart.
 </div>
 
-<div class="nb-cell query" data-tabled="false">
+<div class="nb-cell query">
 chart(hour, [pengines,d_cpu], Chart).
 </div>
 
@@ -99,11 +105,11 @@ chart(hour, [pengines,d_cpu], Chart).
 ### Memory usage over the past hour
 
 *rss* is the total (_resident_) memory usage as reported by Linux.  *stack* is the memory occupied by all Prolog stacks.
-*heap* is an approximation of the memory used for the Prolog program space, computed as _rss_ - _stack_.  This is incorrect for two reasons.  It ignores the C-stacks and the not-yet-committed memory of the Prolog stacks is not part of *rss*.
+*heap* is an approximation of the memory used for the Prolog program space, computed as _rss_ - _stack_.  This is incorrect for two reasons.  It ignores the C-stacks and the not-yet-committed memory of the Prolog stacks is not part of *rss*.  *free* is memory that is freed but not yet reused as reported by GNU =|malinfo()|=.
 </div>
 
-<div class="nb-cell query" data-tabled="false">
-chart(hour, [rss_mb,heap_mb,stack_mb], Chart).
+<div class="nb-cell query">
+chart(hour, [rss_mb,heap_mb,stack_mb,free_mb], Chart).
 </div>
 
 <div class="nb-cell markdown">
@@ -122,7 +128,7 @@ stats([stale_modules-Stale|Pairs]) :-
             Pairs).
 </div>
 
-<div class="nb-cell query" data-tabled="false">
+<div class="nb-cell query">
 stats(Stats).
 </div>
 
