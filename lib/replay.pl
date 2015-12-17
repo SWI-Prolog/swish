@@ -240,7 +240,12 @@ pengine_in_log(Pengine, StartTime, Src) :-
 	(   maplist(fix_option, Options0, Options)
 	->  option(src_text(Src), Options)
 	;   Src = (-)
-	).
+	),
+	\+ for_source_only(Pengine, Options0).
+
+for_source_only(Pengine, Options) :-
+	option(src_text(_Hash-_Text), Options),
+	\+ pengine(_, send(Pengine, _)).
 
 %%	load_log(+Log)
 %
