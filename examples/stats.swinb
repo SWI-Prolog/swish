@@ -67,7 +67,10 @@ period_format(week,   '%Y-%m-%d').
 period_format(year,   '%Y-%m-%d').
 
 add_heap_mb(Stat0, Stat) :-
-    Heap is (Stat0.get(rss) - Stat0.get(stack))/(1024^2), !,
+    Heap is ( Stat0.get(rss) - 
+              Stat0.get(stack) -
+              Stat0.get(fordblks)
+            ) / (1024^2), !,
     put_dict(heap_mb, Stat0, Heap, Stat).
 add_heap_mb(Stat, Stat).
 
@@ -105,7 +108,7 @@ chart(hour, [pengines,d_cpu], Chart).
 ### Memory usage over the past hour
 
 *rss* is the total (_resident_) memory usage as reported by Linux.  *stack* is the memory occupied by all Prolog stacks.
-*heap* is an approximation of the memory used for the Prolog program space, computed as _rss_ - _stack_.  This is incorrect for two reasons.  It ignores the C-stacks and the not-yet-committed memory of the Prolog stacks is not part of *rss*.  *free* is memory that is freed but not yet reused as reported by GNU =|malinfo()|=.
+*heap* is an approximation of the memory used for the Prolog program space, computed as _rss_ - _stack_ - _free_.  This is incorrect for two reasons.  It ignores the C-stacks and the not-yet-committed memory of the Prolog stacks is not part of *rss*.  *free* is memory that is freed but not yet reused as reported by GNU =|malinfo()|= as `fordblks`.
 </div>
 
 <div class="nb-cell query">
