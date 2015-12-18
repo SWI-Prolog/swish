@@ -28,7 +28,8 @@
 */
 
 :- module(swish_debug,
-	  [ pengine_stale_module/1,	% -Module
+	  [ pengine_stale_module/1,	% -Module, -State
+	    pengine_stale_module/2,	% -Module, -State
 	    swish_statistics/1,		% -Statistics
 	    start_swish_stat_collector/0,
 	    swish_stats/2		% ?Period, ?Dicts
@@ -45,10 +46,11 @@
 :- use_module(library(mallocinfo)).
 :- endif.
 
-%%	pengine_stale_module(-M) is nondet.
+%%	pengine_stale_module(-M, -State) is nondet.
 %
 %	True if M seems to  be  a   pengine  module  with  no associated
-%	pengine.
+%	pengine. State is a dict that describes   what we know about the
+%	module.
 
 pengine_stale_module(M) :-
 	current_module(M),
@@ -56,10 +58,37 @@ pengine_stale_module(M) :-
 	\+ live_module(M),
 	\+ current_highlight_state(M, _).
 
+pengine_stale_module(M, State) :-
+	pengine_stale_module(M),
+	stale_module_state(M, State).
+
 live_module(M) :-
 	pengine_property(Pengine, module(M)),
 	pengine_property(Pengine, thread(Thread)),
 	catch(thread_property(Thread, status(running)), _, fail).
+
+stale_module_state(M, State) :-
+	findall(N-V, stale_module_property(M, N, V), Properties),
+	dict_create(State, stale, Properties).
+
+stale_module_property(M, pengine, Pengine) :-
+	pengine_property(Pengine, module(M)).
+stale_module_property(M, pengine_queue, Queue) :-
+	pengine_property(Pengine, module(M)),
+	pengines:pengine_queue(Pengine, Queue, _TimeOut, _Time).
+stale_module_property(M, pengine_pending_queue, Queue) :-
+	pengine_property(Pengine, module(M)),
+	pengines:output_queue(Pengine, Queue, _Time).
+stale_module_property(M, thread, Thread) :-
+	pengine_property(Pengine, module(M)),
+	pengine_property(Pengine, thread(Thread)).
+stale_module_property(M, thread_status, Status) :-
+	pengine_property(Pengine, module(M)),
+	pengine_property(Pengine, thread(Thread)),
+	catch(thread_property(Thread, status(Status)), _, fail).
+stale_module_property(M, program_space, Space) :-
+	module_property(M, program_space(Space)).
+
 
 %%	swish_statistics(?State)
 %
@@ -321,7 +350,6 @@ avg_key(Dicts, Len, Key, Key-Avg) :-
 	sandbox:safe_primitive/1.
 
 sandbox:safe_primitive(swish_debug:pengine_stale_module(_)).
+sandbox:safe_primitive(swish_debug:pengine_stale_module(_,_)).
 sandbox:safe_primitive(swish_debug:swish_statistics(_)).
 sandbox:safe_primitive(swish_debug:swish_stats(_, _)).
-
-
