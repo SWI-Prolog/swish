@@ -1,0 +1,138 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Display SWISH server statistics
+
+This page examines the performance and health of the SWISH server.  Most of the statistics are gathered by `lib/swish_debug`, which is by default loaded into http://swish.swi-prolog.org but must be explicitly loaded into your own SWISH server.  Part of the statistics are based on reading the Linux =|/proc|= file system and thus only function on Linux.
+
+The first step is easy, showing the overall statistics of the server.
+</div>
+
+<div class="nb-cell query">
+statistics.
+</div>
+
+<div class="nb-cell markdown">
+## Historical performance statistics
+
+The charts below render historical performance characteristics of the server.  Please open the
+program below for a description of chart/3.
+</div>
+
+<div class="nb-cell program" data-singleline="true">
+:- use_rendering(c3).
+
+%%	chart(+Period, +Keys, -Chart) is det.
+%
+%	Compute a Chart for the given period combining graphs for the given Keys.
+%	Defined values for Period are:
+%	  - `minute`: the last 60 1 second measurements
+%	  - `hour`: the last 60 1 minute averages
+%	  - `day`: the last 24 1 hour averages
+%	  - `week`: the last 7 1 day averages
+%	  - `year`: the last 52 1 week averages
+%	Defines keys are:
+%	  - `cpu`: Total process CPU time in seconds
+%	  - `d_cpu`: Differential CPU time (% CPU)
+%	  - `pengines`: Total number of living Pengines
+%	  - `d_pengines`: Differential Pengines per second
+%	  - `rss`: Resident set size in bytes
+%	  - `stack`: Total amount of memory allocated for Prolog stacks in bytes
+%	  - `heap`: `rss - stack`.  This is a rough estimate of the memory used
+%	    for the program, which should stay bounded if the server is free of
+%	    leaks.  Note that it can still grow significantly and can be temporarily
+%	    high if user applications use the dynamic database.
+%	  - `rss_mb`, `stack_mb`, `heap_mb` are the above divided by 1024^2.
+
+chart(Period, Keys, Chart) :-
+    swish_stats(Period, Dicts0),
+    maplist(add_heap_mb, Dicts0, Dicts1),
+    maplist(rss_mb, Dicts1, Dicts2),
+    maplist(free_mb, Dicts2, Dicts3),
+    maplist(stack_mb, Dicts3, Dicts4),
+    maplist(fix_date, Dicts4, Dicts),
+    dicts_slice([time|Keys], Dicts, LastFirstRows),
+    reverse(LastFirstRows, Rows),
+    period_format(Period, DateFormat),
+    Chart = c3{data:_{x:time, xFormat:null, rows:Rows},
+               axis:_{x:_{type: timeseries,
+                          tick: _{format: DateFormat,
+                                  rotate: 90,
+                                  multiline: false}}}}.
+
+period_format(minute, '%M:%S').
+period_format(hour,   '%H:%M').
+period_format(day,    '%m-%d %H:00').
+period_format(week,   '%Y-%m-%d').
+period_format(year,   '%Y-%m-%d').
+
+add_heap_mb(Stat0, Stat) :-
+    Heap is ( Stat0.get(rss) - 
+              Stat0.get(stack) -
+              Stat0.get(fordblks)
+            ) / (1024^2), !,
+    put_dict(heap_mb, Stat0, Heap, Stat).
+add_heap_mb(Stat, Stat).
+
+rss_mb(Stat0, Stat) :-
+    Gb is Stat0.get(rss)/(1024**2), !,
+    put_dict(rss_mb, Stat0, Gb, Stat).
+rss_mb(Stat, Stat).
+
+free_mb(Stat0, Stat) :-
+    Gb is Stat0.get(fordblks)/(1024**2), !,
+    put_dict(free_mb, Stat0, Gb, Stat).
+free_mb(Stat, Stat).
+
+stack_mb(Stat0, Stat) :-
+    Gb is Stat0.get(stack)/(1024**2), !,
+    put_dict(stack_mb, Stat0, Gb, Stat).
+stack_mb(Stat, Stat).
+
+fix_date(Stat0, Stat) :-
+	Time is Stat0.time * 1000,
+    put_dict(time, Stat0, Time, Stat).
+</div>
+
+<div class="nb-cell markdown">
+### Number of Pengines and CPU load over the past hour
+
+The number of Pegines denotes the number of actively executing queries.  These queries may be sleeping while waiting for input, a debugger command or the user asking for more answers. Note that the number of Pengines is sampled and short-lived Pengines does not appear in this chart.
+</div>
+
+<div class="nb-cell query">
+chart(hour, [pengines,d_cpu], Chart).
+</div>
+
+<div class="nb-cell markdown">
+### Memory usage over the past hour
+
+*rss* is the total (_resident_) memory usage as reported by Linux.  *stack* is the memory occupied by all Prolog stacks.
+*heap* is an approximation of the memory used for the Prolog program space, computed as _rss_ - _stack_ - _free_.  This is incorrect for two reasons.  It ignores the C-stacks and the not-yet-committed memory of the Prolog stacks is not part of *rss*.  *free* is memory that is freed but not yet reused as reported by GNU =|malinfo()|= as `fordblks`.
+</div>
+
+<div class="nb-cell query">
+chart(hour, [rss_mb,heap_mb,stack_mb,free_mb], Chart).
+</div>
+
+<div class="nb-cell markdown">
+## Healt statistics
+
+The statistics below assesses the number of *Pengines* (actively executing queries from users) and the *highlight states*, the number of server-side mirrors we have from client's source code used to compute the semantically enriched tokens.   If such states are not explicitly invalidated by the client, they are removed after having not been accessed for one hour.  The *stale modules* count refers to temporary modules that are not associated to a Pengine, nor to a highlight state and probably indicate a leak.
+</div>
+
+<div class="nb-cell program" data-singleline="true">
+:- use_rendering(table).
+
+stats([stale_modules-Stale|Pairs]) :-
+    aggregate_all(count, pengine_stale_module(_), Stale),
+    findall(Key-Value,
+            (swish_statistics(Stat), Stat =.. [Key,Value]),
+            Pairs).
+</div>
+
+<div class="nb-cell query">
+stats(Stats).
+</div>
+
+</div>
