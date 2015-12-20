@@ -1,7 +1,7 @@
 // list of examples, represented as a JSON list
 
 [
-{ "file":"cplint_examples.swinb", "title":"LPAD example programs"},
+{ "file":"cplint_examples.swinb", "title":"cplint example programs"},
 { "file":"examples.swinb",	  "title":"Prolog Example programs" },
 "--",
 { "file":"dict.swinb",		  "title":"Dict tutorial" },
