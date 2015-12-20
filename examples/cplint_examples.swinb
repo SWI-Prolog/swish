@@ -6,7 +6,7 @@
 You are reading a cplint on SWISH _notebook_.  A notebook is a mixture of _text_, _programs_ and _queries_.  This notebook gives an overview of example programs shipped with clpint on SWISH.
 
 - *Examples*
-  - [Coin](example/coin.cpl) Throwing a coin with uncertainty on its fairness, from J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctions_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004.
+  - Coin ([Coin/CPL](example/coin.cpl), [Coin/Prolog](example/coin.pl)) Throwing a coin with uncertainty on its fairness, from J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctions_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004.
   - [Dice](example/dice.cpl) A six-sided die is repeatedly thrown until the outcome is six. From J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004.
   - [Epidemic](example/epidemic.cpl) Model of the development of an epidemic or a pandemic. From E. Bellodi and F. Riguzzi. _Expectation Maximization over binary decision diagrams for probabilistic logic programs_. Intelligent Data Analysis, 17(2):343-363, 2013.
   - [Earthquake](example/earthquake.cpl) This program models the occurrence of an earthquake depending on its possible causes. From F. Riguzzi and N. Di Mauro. _Applying the information bottleneck to statistical relational learning_. Machine Learning, 86(1):89-114, 2012.
