@@ -15,20 +15,20 @@ body {
 
 <h4>Table of Contents</h4>
   <ul>
-    <li>Basic operation</li>
-    <li>Embedding examples in the program text</li>
-    <li>Save or share your program</li>
-    <li>Preload SWISH with data</li>
-    <li>LPAD and CP-logic syntax</li>
-    <li><a href="http://ds.ing.unife.it/~friguzzi/software/cplint/manual.html" target="_blank">cplint manual</a></li>
+    <li><a href="#help-basics">Basic operation</a></li>
+    <li><a href="#help-examples">Embedding examples in the program text</a></li>
+    <li><a href="#help-share">Save or share your program</a></li>
+    <li><a href="#help-include">Include other programs</a></li>
+    <li><a href="#help-preload">Preload SWISH with data</a></li>
+    <li><a href="#help-LPAD">LPAD and CP-logic syntax</a></li>
+    <li><a href="http://ds.ing.unife.it/~friguzzi/software/cplint-swi/manual.html" target="_blank">cplint manual</a></li>
   </ul>
-
-<h4 id="help-basics">Basic operation</h4>
+<h2 id="help-basics">Basic operation</h2>
 <p>
 cplint is about running a <i>query</i> against a <i>program</i>. 
-The program is a Logic Program with Annotated Disjunction (LPAD) or a CP-logic theory.
+The program is a Logic Program with Annotated Disjunction (LPAD) or a CP-logic program.
 The
-<i>query</i> goes into the bottom-left editor and the <i>program</i>
+<i>query</i> goes into the bottom-right editor and the <i>program</i>
 into the left editor.  
 <p>
 A query can be executed by hitting <code>RETURN</code> if the query
@@ -56,11 +56,70 @@ or by using the <b>Run!</b> button.  At this moment, the following happens:
 Note that <b>you do not have to save your program to execute it</b>.  If
 your are not satisfied with the answer to a query, you can simply
 edit the program and use the <b>Run!</b> again.  The new query is
-executed in a completely new environment. 
-<p> The answer to the query contains the variable 'Prob' that gives the 
-probability of the query instantiated with the values for the other variables
-that are returned. At the moment it is not possible to ask for alternative 
-solutions to a non ground-query, only the first will be returned.
+executed in a completely new environment.  In particular, data that
+you asserted in a previous query is not available in the next.
+
+<h2 id="help-examples">Embedding examples in the program text</h2>
+<p>
+If you include example goals inside comments as shown below,
+they will be used to populate the example menu and make the
+first goal show in the Goal input field.
+</p>
+<pre style="font-size:80%">
+/** &lt;examples&gt;
+
+?- loves(X, mia).
+?- jealous(X, Y).
+
+*/</pre>
+
+<h2 id="help-share">Save or share your program</h2>
+<p>
+The menu <b>File/Save ...</b> can be used to save your program.  There
+are several options:
+
+  <ul>
+    <li>By default, the program is saved to a randomly generated name
+        and may be searched by all users.  The <b>Public | Name</b> fields
+	can be used to hide the file and/or give it a name.
+    <li>The title is displayed in the search results and can help others
+        to guess what the file is about.
+    <li>You can fill in the author.  Future versions are likely to use
+        login for that.
+    <li>If an updated version of the file is changed, <b>Changes</b> may
+        be used to summarise the changes.
+    <li>Tags may be added to help people finding your code.  Type a comma
+        (,) to start a new tag.
+  </ul>
+
+<p>
+The <b>Info &amp; History ...</b> menu can be used to examine and use
+old versions of the program.
+
+<h2 id="help-include">Include other programs</h2>
+<p>
+If you know the name of a saved program (see above), you can reuse this
+program using Prolog's <b>include/1</b> predicate as illustrated below.
+
+<pre style="font-size:80%">
+:- include(clever).
+</pre>
+
+You can also include a <em>specific version</em> of a program by including
+its <em>hash</em>.  You can find the hash of a specific version using
+<b>Info &amp; History ...</b>, selecting the desired version and opening
+it using the <em>play</em> button.  This will display the hash in the
+browser's address field.  Now, include this version using e.g.,
+
+<pre style="font-size:80%">
+:- include('23dacada6952ec6701da2dc9d4ebcf5c7b860380').
+</pre>
+
+<p>
+Using <b>File/Collaborate ...</b>, you create a
+<a target="_blank" href="https://togetherjs.com/">TogetherJS</a> session
+that provides shared editing, chat and voice communication.
+
 
 <h4 id="help-examples">Embedding examples in the program text</h4>
 <p>
@@ -89,6 +148,7 @@ one wins.  In the future, we will add versioning.
 Using <b>File/Collaborate ...</b>, you create a
 <a target="_blank" href="https://togetherjs.com/">TogetherJS</a> session
 that provides shared editing, chat and voice communication.
+
 
 <h4 id="help-preload">Preload SWISH with data</h4>
 <p>
@@ -120,17 +180,17 @@ providing the parameters below.  The URL accepts both `GET` and `POST` requests.
 <pre>
 http://cplint.lamping.unife.it/?code=https://github.com/friguzzi/swish/raw/master/examples/alarm.cpl&amp;q=alarm(t).</pre>
 
- <h4 id="help-LPAD">LPAD and CP-logic syntax</h4>
-<p>LPAD and CP-logic programs consist of a set of annotated disjunctive clauses.
+ <h2 id="help-LPAD">LPAD and CP-logic syntax</h2>
+<p>
+LPAD and CP-logic programs consist of a set of annotated disjunctive clauses.
 Disjunction in the head is represented with a semicolon and atoms in the head are
 separated from probabilities by a colon. For the rest, the usual syntax of Prolog is
-used. For example, a general CP-logic clause could be
+used. A general CP-logic clause has the form
 
  <pre style="font-size:80%">
 h1:p1 ; ... ; hn:pn :- b1,...,bm,\+ c1,....,\+ cl.
 </pre>
-<!--l. 78--><p> No parentheses are necessary. The <span 
-class="cmtt-10">pi </span>are numeric expressions. It is up to the user to
+<!--l. 78--><p> No parentheses are necessary. The <code>pi</code> are numeric expressions. It is up to the user to
 ensure that the numeric expressions are legal, i.e. that they sum up to less or equal to
 one.
 <!--l. 81--><p>   If the clause has an empty body, it can be represented like this
@@ -141,7 +201,7 @@ h1:p1 ; ... ; hn:pn.
 the clause takes the form of a normal Prolog clause, i.e.
 
  <pre style="font-size:80%">
-h1:- b1,...,bm,\+ c1,...,\+ cl.
+h1 :- b1,...,bm,\+ c1,...,\+ cl.
 </pre>
 <!--l. 88--><p> stands for
 
@@ -174,7 +234,7 @@ is/2, &#x003E;/2, &#x003C;/2, &#x003E;=/2, =&#x003C;/2,
 
  <pre style="font-size:80%">
 member/2, max_list/2, min_list/2  
-nth0/3, nth/3
+nth0/3, nth/3, dif/2, select/3
 </pre>
 <!--l. 119--><p > plus the predicate
 
@@ -182,7 +242,35 @@ nth0/3, nth/3
 average/2
 </pre>
 <!--l. 123--><p > that, given a list of numbers, computes its arithmetic mean.
-See the <a href="http://ds.ing.unife.it/~friguzzi/software/cplint/manual.html" target="_blank">cplint manual</a> for more information.
+
+<p> 
+<span style="color:maroon">cplint on </span>
+<span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> allows two types of programs: LPAD and Prolog. In the first, you can simply insert LPAD/CP-logic code and ask queries by writing the atom of which you want to compute the probability. In the coin example, the probability of <code>heads(coin)</code> can be obtained with the query <code>heads(coin)</code>. In Prolog programs, you have to load the <code>pita</code> library, wrap LPAD/CP-logic code with the compiler directives <code>:- cplint</code> and <code>:- end_cplint.</code> and ask the probability of an atom using the predicate <code>prob/2</code>.
+</p>
+<p>  
+The coin example above in Prolog is
+ <pre style="font-size:80%">
+:- use_module(library(pita)).
+:- style_check(-discontiguous).
+:- cplint.
+heads(Coin):1/2 ; tails(Coin):1/2:-  
+     toss(Coin),\+biased(Coin).  
+heads(Coin):0.6 ; tails(Coin):0.4:-  
+     toss(Coin),biased(Coin).  
+fair(Coin):0.9 ; biased(Coin):0.1.  
+toss(coin).
+:- end_cplint.
+</pre>
+The command <code>:- style_check(-discontiguous).</code> avoids warnings about discontinuous definitions of predicates.
+These warnings are due to the translation process and are not a sign of coding errors, so they can be suppressed.
+</p> 
+To query the probability of <code>heads(coin)</code> you have to ask
+ <pre style="font-size:80%">
+prob(heads(coin),P).
+</pre>
+
+
+See the <a href="http://ds.ing.unife.it/~friguzzi/software/cplint-swi/manual.html" target="_blank">cplint manual</a> for more information.
 </body>
 </html>
 

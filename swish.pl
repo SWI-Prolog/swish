@@ -169,4 +169,5 @@ pengines:prepare_module(Module, swish, _Options) :-
 :- use_module(swish(lib/render/graphviz), []).
 :- use_module(swish(lib/render/c3),	  []).
 
-:- use_module(lib/pita).
+%:- use_module(lib/pita).
+:- use_module(library(pita)).
