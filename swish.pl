@@ -171,3 +171,4 @@ pengines:prepare_module(Module, swish, _Options) :-
 
 %:- use_module(lib/pita).
 :- use_module(library(pita)).
+:- use_module(library(slipcover)).
