@@ -12,6 +12,7 @@ From
 Chitta Baral, Michael Gelfond, and Nelson Rushton. "Probabilistic reasoning with answer sets." Theory and Practice of Logic Programming 9.01 (2009): 57-144.
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 % prize(A): the prize is behind door A, with A in {1,2,3}

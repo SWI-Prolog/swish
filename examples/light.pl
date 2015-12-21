@@ -5,6 +5,7 @@ of causal probabilistic events and its relation to logic programming.
 Theory Pract. Log. Program., 9(3):245-308, 2009.
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 push.

@@ -7,6 +7,7 @@ its application in link discovery. In International Joint Conference on
 Artificial Intelligence, pages 2462-2467, 2007.
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 % path(X,Y) is true if there is a path between nodes X and Y

@@ -7,6 +7,7 @@ disjunctions. In International Conference on Logic Programming,
 volume 3131 of LNCS, pages 195-209. Springer, 2004.
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 % on(T,F) means that the dice landed on face F at time T

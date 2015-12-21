@@ -14,6 +14,7 @@ The transitive clauses for samebib have been removed to avoid loops.
 
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 samebib(B,C):0.3 :-
         author(B,D),author(C,E),sameauthor(D,E).

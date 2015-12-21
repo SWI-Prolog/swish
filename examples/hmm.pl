@@ -9,6 +9,7 @@ vol. 5649. Springer, 55-69.
 
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 % hmm(O): O is the output sequence 

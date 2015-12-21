@@ -11,6 +11,7 @@ From
 Peter D. Grunwald and Joseph Y. Halpern. "Updating Probabilities." Journal of Artificial Intelligence Research 19 (2003): 243-278.
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 % safe(A): prisoner A is not going to be executed, with A in {a,b,c}

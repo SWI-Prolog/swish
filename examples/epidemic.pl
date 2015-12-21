@@ -6,6 +6,7 @@ diagrams for probabilistic logic programs. Intelligent Data Analysis,
 17(2):343-363, 2013.
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 epidemic : 0.6; pandemic : 0.3 :- flu(_), cold.

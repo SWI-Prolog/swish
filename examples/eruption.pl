@@ -12,6 +12,7 @@ programs by searching the clause space. Theory and Practice of Logic
 Programming, FirstView Articles, 2014
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 eruption : 0.6 ; earthquake : 0.3 :- 

@@ -4,6 +4,7 @@ From
 F. Riguzzi and T. Swift. The PITA system: Tabling and answer subsumption for reasoning under uncertainty. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, 11(4-5):433-449, 2011.
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 strong_sneezing(X) : 0.3 ; moderate_sneezing(X) : 0.5 :- flu(X).

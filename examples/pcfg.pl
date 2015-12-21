@@ -9,6 +9,7 @@ From
 Theory and Practice of Logic Programming,  doi:10.1017/S1471068413000677. 
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 % pcfg(LT): LT is string of terminals accepted by the grammar

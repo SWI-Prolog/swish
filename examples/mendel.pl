@@ -9,6 +9,7 @@ An exercise.
 In Inductive Logic Programming (ILP 2004), Work in Progress Track, 2004.
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 mother(m,s).

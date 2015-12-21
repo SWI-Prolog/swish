@@ -7,6 +7,7 @@ Reference:
 Wannes Meert, Jan Struyf, Hendrik Blockeel: CP-Logic Theory Inference with Contextual Variable Elimination and Comparison to BDD Based Inference Methods. ILP 2009:96-109
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 course(c1).

@@ -11,6 +11,7 @@ contextual variable elimination and comparison to BDD based inference methods."
 Inductive Logic Programming. Springer Berlin Heidelberg, 2010. 96-109.
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 % mchrom(Person,C) means that the chromosome of Person inherited from his mother

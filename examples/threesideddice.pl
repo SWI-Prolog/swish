@@ -8,6 +8,7 @@ reasoning under uncertainty. Theory and Practice of Logic Programming,
 Lexington, Kentucky 6-10 July 2011, 11(4-5):433-449, 2011
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 % on(T,F) means that the dice landed on face F at time T

@@ -5,6 +5,7 @@ disjunctions. In International Conference on Logic Programming,
 volume 3131 of LNCS, pages 195.209. Springer, 2004.
 */
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 
 burg(t):0.1; burg(f):0.9.
