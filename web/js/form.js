@@ -320,10 +320,15 @@ define([ "jquery", "config", "laconic", "tagmanager" ],
 	  var cls = "btn btn-primary btn-xs";
 	  if ( buttons[i].active )
 	    cls += " active";
+
+	  var opts = { type:"radio", name:name,
+	               autocomplete:"off",
+		       value:buttons[i].value
+		     };
+	  if ( buttons[i].title )
+	    opts.title = buttons[i].title;
 	  $(elem).append($.el.label({class:cls},
-				    $.el.input({type:"radio", name:name,
-				                autocomplete:"off",
-						value:buttons[i].value}),
+				    $.el.input(opts),
 				    buttons[i].label));
 	}
 
