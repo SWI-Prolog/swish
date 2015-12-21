@@ -147,6 +147,7 @@ swish_config:config(public_access,      true).
 :- use_module(swish:lib/render).
 :- use_module(swish:lib/trace).
 :- use_module(swish:lib/jquery).
+:- use_module(swish:lib/swish_debug).
 :- use_module(swish:library(pengines_io)).
 pengines:prepare_module(Module, swish, _Options) :-
 	pengines_io:pengine_bind_io_to_html(Module).
