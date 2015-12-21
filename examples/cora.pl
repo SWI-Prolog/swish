@@ -16,6 +16,7 @@ The transitive clauses for samebib have been removed to avoid loops.
 :- use_module(library(pita)).
 :- style_check(-discontiguous).
 :- cplint.
+
 samebib(B,C):0.3 :-
         author(B,D),author(C,E),sameauthor(D,E).
 % citation B refers to same paper as C with probability 0.3 if their authors 
