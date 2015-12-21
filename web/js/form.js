@@ -325,9 +325,10 @@ define([ "jquery", "config", "laconic", "tagmanager" ],
 	               autocomplete:"off",
 		       value:buttons[i].value
 		     };
+	  var lblopts = {class:cls};
 	  if ( buttons[i].title )
-	    opts.title = buttons[i].title;
-	  $(elem).append($.el.label({class:cls},
+	    lblopts.title = buttons[i].title;
+	  $(elem).append($.el.label(lblopts,
 				    $.el.input(opts),
 				    buttons[i].label));
 	}
