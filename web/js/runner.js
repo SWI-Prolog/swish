@@ -356,7 +356,7 @@ define([ "jquery", "config", "preferences",
 		function() {
 	  var runnersrc = "";
 	  if (query.codeType == "lpad")
-	    runnersrc = " :- use_module(library(pengines)). :- use_module(swish(lib/pita)). :-style_check(-discontiguous). :-cplint.  " + query.source + " :- end_cplint.";
+	    runnersrc = " :- use_module(library(pengines)). :- use_module(library(pita)). :-cplint.  " + query.source + " :- end_cplint.";
 	  else 
 	    runnersrc = query.source;
 	
