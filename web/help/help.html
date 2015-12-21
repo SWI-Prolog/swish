@@ -243,9 +243,11 @@ average/2
 </pre>
 <!--l. 123--><p > that, given a list of numbers, computes its arithmetic mean.
 
+<p> 
 <span style="color:maroon">cplint on </span>
 <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> allows two types of programs: LPAD and Prolog. In the first, you can simply insert LPAD/CP-logic code and ask queries by writing the atom of which you want to compute the probability. In the coin example, the probability of <code>heads(coin)</code> can be obtained with the query <code>heads(coin)</code>. In Prolog programs, you have to load the <code>pita</code> library, wrap LPAD/CP-logic code with the compiler directives <code>:- cplint</code> and <code>:- end_cplint.</code> and ask the probability of an atom using the predicate <code>prob/2</code>.
-
+</p>
+<p>  
 The coin example above in Prolog is
  <pre style="font-size:80%">
 :- use_module(library(pita)).
@@ -258,6 +260,7 @@ fair(Coin):0.9 ; biased(Coin):0.1.
 toss(coin).
 :- end_cplint.
 </pre>
+</p> 
 To query the probability of <code>heads(coin)</code> you have to ask
  <pre style="font-size:80%">
 prob(heads(coin),P).
