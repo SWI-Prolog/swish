@@ -8,8 +8,9 @@
  * @requires jquery
  */
 
-define([ "jquery", "form", "laconic", "search" ],
-       function($, form) {
+define([ "jquery", "form", "config", "preferences", "modal",
+	 "laconic", "search" ],
+       function($, form, config, preferences, modal) {
 var tabbed = {
   tabTypes: {},
   type: function(from) {
@@ -140,7 +141,9 @@ var tabbed = {
 	  dom = data.newTab();
 	} else {
 	  dom = this.tabbed('tabSelect');
-	  $(dom).append(this.tabbed('searchForm'));
+	  $(dom).append(this.tabbed('profileForm'),
+			$.el.hr(),
+			this.tabbed('searchForm'));
 	}
       }
 
@@ -376,9 +379,10 @@ var tabbed = {
       var data = this.data(pluginName);
       var dom = $.el.div({class:"tabbed-select"},
 			 $.el.div({class: "tabbed-create"},
-				  $.el.label("Create a new "),
+				  $.el.label({class: "tabbed-left"},
+					     "Create a "),
 				  g=$.el.div({class:"btn-group",role:"group"}),
-				  $.el.label("here.")));
+				  $.el.label({class: "tabbed-right"}, "here")));
       var types = [];
 
       for(var k in data.tabTypes) {
@@ -395,7 +399,8 @@ var tabbed = {
 
 	$(g).append($.el.button({ type:"button",
 				  class:"btn btn-default",
-				  "data-type":type.typeName
+				  "data-type":type.typeName,
+				  "data-ext":type.dataType
 				},
 				type.label));
       }
@@ -405,11 +410,21 @@ var tabbed = {
 	var tab     = $(ev.target).closest(".tab-pane");
 	var content = $.el.div();
 	var options = tabbed.tabTypes[type];
+	var profile = tab.find("label.active > input[name=profile]").val();
+	var options = {};
+
+	if ( profile ) {
+	  options.profile = profile;
+	  options.value   = tab.tabbed('profileValue', profile,
+				       tabbed.tabTypes[type].dataType);
+	  if ( options.value != undefined )
+	    preferences.setVal("default-profile", profile);
+	}
 
 	tab.html("");
 	tab.tabbed('title', options.label, options.dataType);
 	tab.append(content);
-	tabbed.tabTypes[type].create(content);
+	tabbed.tabTypes[type].create(content, options);
       });
       $(g).addClass("swish-event-receiver");
       $(g).on("source", function(ev, src) {
@@ -418,6 +433,12 @@ var tabbed = {
 	     tab.closest(".tabbed").tabbed('setSource', tab, src) ) {
 	  ev.stopPropagation();
 	}
+      });
+      $(g).on("profile-selected", function(ev, profile) {
+	$(ev.target).find("button").each(function() {
+	  $(this).prop('disabled',
+		       profile.type.indexOf($(this).data('ext')) < 0);
+	});
       });
 
       return dom;
@@ -445,6 +466,55 @@ var tabbed = {
       $(sform).find("input.search").search();
 
       return sform;
+    },
+
+    profileForm: function() {
+      if ( config.swish.profiles && config.swish.profiles.length > 0 ) {
+	var def;
+
+	for(var i=0; i<config.swish.profiles.length; i++) {
+	  delete config.swish.profiles[i].active;
+	}
+
+	if ( (def=preferences.getVal("default-profile")) ) {
+	  for(var i=0; i<config.swish.profiles.length; i++) {
+	    if ( config.swish.profiles[i].value == def )
+	      config.swish.profiles[i].active = true
+	  }
+	} else {
+	  config.swish.profiles[0].active = true;
+	}
+
+	var pform =
+	$.el.div(
+	  {class:"tabbed-profile"},
+	  $.el.label({class: "tabbed-left"}, "based on"),
+	  $.el.div({class: "input-group select-profile"},
+		   form.fields.radio("profile", config.swish.profiles)),
+	  $.el.label({class: "tabbed-right"}, "profile"));
+
+	$(pform).on("click", function(ev) {
+	  var select = $(ev.target).find("input").val();
+	  var profile = profileObject(select);
+	  $(ev.target).closest(".tab-pane")
+		      .find(".tabbed-create .btn-group")
+		      .trigger("profile-selected", profile);
+	});
+
+	return pform;
+      }
+    },
+
+    profileValue: function(name, ext) {
+      var url = config.http.locations.swish + "profile/" + name + "." + ext;
+      return $.ajax({ url: url,
+		      type: "GET",
+		      data: {format: "raw"},
+		      async: false,
+		      error: function(jqXHR) {
+			modal.ajaxError(jqXHR);
+		      }
+      }).responseText;
     },
 
     /**
@@ -490,6 +560,14 @@ var tabbed = {
   { return "tabbed-tab-"+tabid++;
   }
 
+  function profileObject(name) {
+    if ( config.swish.profiles ) {
+      for(var i=0; i<config.swish.profiles.length; i++) {
+	if ( config.swish.profiles[i].value == name )
+	  return config.swish.profiles[i];
+      }
+    }
+  }
 
   /**
    * <Class description>

@@ -39,9 +39,24 @@ a.tab-new.compact > span {
   text-align: center;
 }
 
-.tabbed-create label {
-  margin-left: 1em;
-  margin-right: 1em;
+label.tabbed-left {
+  text-align: right;
+  margin-right: 0.6em;
+  white-space: nowrap;
+  width: 5em;
+}
+
+label.tabbed-right {
+  text-align: left;
+  margin-left: 0.6em;
+  white-space: nowrap;
+  width: 5em;
+}
+
+.tabbed-profile > label {
+  font-style: italic;
+  font-weight: normal;
+  color: #888;
 }
 
 .tab-icon {
@@ -53,6 +68,15 @@ a.tab-new.compact > span {
   vertical-align: middle;
   height: 30px;
   width: 30px;
+}
+
+.tabbed-profile {
+  width: 100%;
+  text-align: center;
+}
+
+.tabbed-profile .select-profile {
+  display: inline-block;
 }
 
 form.search-sources {

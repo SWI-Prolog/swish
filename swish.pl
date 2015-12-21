@@ -42,6 +42,7 @@
 :- use_module(lib/include).
 :- use_module(lib/csv).
 :- use_module(lib/examples).
+:- use_module(lib/profiles).
 :- use_module(lib/highlight).
 :- use_module(lib/markdown).
 :- use_module(lib/template_hint, []).
