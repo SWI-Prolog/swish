@@ -83,6 +83,10 @@
 { height: 2em;
 }
 
+.nb-cell.singleline .CodeMirror-hscrollbar
+{ height: 0px;
+}
+
 .nb-cell .CodeMirror
 { border-radius: 5px;
 }
