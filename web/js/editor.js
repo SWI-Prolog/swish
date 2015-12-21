@@ -854,9 +854,9 @@ define([ "cm/lib/codemirror",
     label: "Program",
     contentType: "text/x-prolog",
     order: 100,
-    create: function(dom) {
+    create: function(dom, options) {
       $(dom).addClass("prolog-editor")
-            .prologEditor({save:true})
+            .prologEditor($.extend({save:true}, options))
 	    .prologEditor('makeCurrent');
     }
   };

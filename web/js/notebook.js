@@ -29,8 +29,11 @@ var cellTypes = {
   var methods = {
     /**
      * Initialize a Prolog Notebook.
+     * @param {Object} options
+     * @param {String} [options.value] provides the initial content
      */
     _init: function(options) {
+      options = options||{};
       return this.each(function() {
 	var elem = $(this);
 	var storage = {};		/* storage info */
@@ -109,7 +112,9 @@ var cellTypes = {
 
 					/* restore content */
 	var content = elem.find(".notebook-data");
-	if ( content.length > 0 ) {
+	if ( options.value ) {
+	  elem.notebook('value', options.value);
+	} else if ( content.length > 0 ) {
 	  function copyData(name) {
 	    var value = content.data(name);
 	    if ( value ) {
@@ -322,15 +327,20 @@ var cellTypes = {
 
     /**
      * Set or get the state of this notebook as a string.
+     * @param {Object} options
+     * @param {Boolean} [options.skipEmpty=false] if `true`, do not save
+     *		        empty cells.
      * @param [String] val is an HTML string that represents
      * the notebook state.
      */
-    value: function(val) {
+    value: function(val, options) {
+      options = options||{};
+
       if ( val == undefined ) {
 	var dom = $.el.div({class:"notebook"});
 	this.find(".nb-cell").each(function() {
 	  cell = $(this);
-	  if ( !cell.nbCell('isEmpty') )
+	  if ( !(options.skipEmpty && cell.nbCell('isEmpty')) )
 	    $(dom).append(cell.nbCell('saveDOM'));
 	});
 
@@ -437,8 +447,8 @@ var cellTypes = {
     label: "Notebook",
     contentType: "text/x-prolog-notebook",
     order: 200,
-    create: function(dom) {
-      $(dom).notebook();
+    create: function(dom, options) {
+      $(dom).notebook(options);
     }
   };
 
