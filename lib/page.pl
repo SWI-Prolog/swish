@@ -139,7 +139,7 @@ swish_reply2(_, Options) :-
 		     href('/icons/favicon.ico')
 		   ]),
 	      link([ rel('apple-touch-icon'),
-		     href('/icons/swish-touch-icon.png')
+		     href('/icons/cplint-touch-icon.png')
 		   ]),  
               meta([name('msvalidate.01'), 
                 content('A9C78799EC9EDC7CE041CB7CD8E2D76E')])
