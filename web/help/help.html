@@ -251,6 +251,7 @@ average/2
 The coin example above in Prolog is
  <pre style="font-size:80%">
 :- use_module(library(pita)).
+:- style_check(-discontiguous).
 :- cplint.
 heads(Coin):1/2 ; tails(Coin):1/2:-  
      toss(Coin),\+biased(Coin).  
@@ -260,6 +261,8 @@ fair(Coin):0.9 ; biased(Coin):0.1.
 toss(coin).
 :- end_cplint.
 </pre>
+The command <code>:- style_check(-discontiguous).</code> avoids warnings about discontinuous definitions of predicates.
+These warnings are due to the translation process and are not a sign of coding errors, so they can be suppressed.
 </p> 
 To query the probability of <code>heads(coin)</code> you have to ask
  <pre style="font-size:80%">
