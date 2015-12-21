@@ -398,7 +398,7 @@ var tabbed = {
 	var type = data.tabTypes[types[i]];
 
 	$(g).append($.el.button({ type:"button",
-				  class:"btn btn-default",
+				  class:"btn btn-primary",
 				  "data-type":type.typeName,
 				  "data-ext":type.dataType
 				},

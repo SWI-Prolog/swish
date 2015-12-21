@@ -317,7 +317,7 @@ define([ "jquery", "config", "laconic", "tagmanager" ],
 	var elem = $.el.div({class:"btn-group", "data-toggle":"buttons"});
 
 	for(var i=0; i<buttons.length; i++) {
-	  var cls = "btn btn-primary btn-xs";
+	  var cls = "btn btn-default btn-xs";
 	  if ( buttons[i].active )
 	    cls += " active";
 
