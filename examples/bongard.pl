@@ -1,6 +1,37 @@
 :-use_module(library(slipcover)).
 
-:- set(megaex_bottom,20).
+/** <examples>
+?- induce_par([all]).
+?- induce([all]).
+*/
+
+:- dynamic modeh/2,modeh/4,fixed_rule/3,banned/2,lookahead/2,
+  lookahead_cons/2,lookahead_cons_var/2,prob/2,input/1,input_cw/1,
+  ref_clause/1,ref/1.
+
+:- set_sc(megaex_bottom,20).
+:- set_sc(max_iter,2).
+:- set_sc(max_iter_structure,5).
+
+bg([]).
+
+in([
+(
+ pos:0.197575 :-
+ 	circle(A),
+ 	in(B,A)
+),
+( 
+ pos:0.000303421 :-
+ 	circle(A),
+ 	triangle(B)
+), 
+( pos:0.000448807 :-
+ 	triangle(A),
+ 	circle(B)
+)]).
+
+:-sc.
 fold(all,[2,
 3,
 5,
