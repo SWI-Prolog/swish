@@ -2,10 +2,11 @@
 
 /** <examples>
 ?- induce([train],[test],CLL,AUCROC,ROC,AUCPR,PR).
-?- induce_par([all]).
-?- induce([all]).
+?- induce_par([all],P).
+?- induce([all],P).
 */
 :- use_rendering(c3).
+:- use_rendering(lpad).
 :- dynamic modeh/2,modeh/4,fixed_rule/3,banned/2,lookahead/2,
   lookahead_cons/2,lookahead_cons_var/2,prob/2,input/1,input_cw/1,
   ref_clause/1,ref/1.
@@ -15,7 +16,7 @@
 :- set_sc(megaex_bottom,20).
 :- set_sc(max_iter,2).
 :- set_sc(max_iter_structure,5).
-
+:- set_sc(verbosity,2).
 bg([]).
 
 in([
