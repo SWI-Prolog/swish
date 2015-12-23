@@ -1,7 +1,7 @@
 :-use_module(library(slipcover)).
 
 /** <examples>
-?- induce([train],[test],CLL,AUCROC,ROC,AUCPR,PR).
+?- induce([train],[test],P,CLL,AUCROC,ROC,AUCPR,PR).
 ?- induce_par([all],P).
 ?- induce([all],P).
 */
@@ -16,7 +16,7 @@
 :- set_sc(megaex_bottom,20).
 :- set_sc(max_iter,2).
 :- set_sc(max_iter_structure,5).
-:- set_sc(verbosity,2).
+:- set_sc(verbosity,1).
 bg([]).
 
 in([
