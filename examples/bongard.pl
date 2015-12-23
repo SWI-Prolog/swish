@@ -10,7 +10,7 @@
 :- dynamic modeh/2,modeh/4,fixed_rule/3,banned/2,lookahead/2,
   lookahead_cons/2,lookahead_cons_var/2,prob/2,input/1,input_cw/1,
   ref_clause/1,ref/1.
-
+:- style_check(-discontiguous).
 :-sc.
 
 :- set_sc(megaex_bottom,20).
