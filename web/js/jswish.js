@@ -93,7 +93,7 @@ preferences.setDefault("emacs-keybinding", false);
       { "About ...": function() {
 	  menuBroadcast("help", {file:"about.html"});
 	},
-      { "Credits ...": function() {
+        "Credits ...": function() {
 	  menuBroadcast("help", {file:"credits.html"});
 	},
 	"Topics": "--",
