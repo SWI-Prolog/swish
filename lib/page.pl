@@ -304,6 +304,8 @@ swish_navbar(Options) -->
         &(nbsp), &(nbsp),
         a([href('/help/help.html'),target('_blank')],['Help']),
         &(nbsp), &(nbsp),
+        a([href('/help/credits.html'),target('_blank')],['Credits']),
+        &(nbsp), &(nbsp),
         a([id('dismisslink'),href('')],['Dismiss'])
         ])
         ),
