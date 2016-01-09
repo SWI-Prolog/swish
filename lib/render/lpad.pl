@@ -65,7 +65,7 @@ clauses([]) --> [].
 clauses([HC|T]) -->
 	{
 	 numbervars(HC,0,_),
-         HC=(H:-B),
+         HC=(H:-B),!,
 	 list2or(HL,H),
 	 list2and(BL,B)
 	},
@@ -76,18 +76,28 @@ disj_clause(H,B)-->
   {format(atom(I),' :-~n',[])},
   head(H,B,I).
 
-
+head([H:1.0|_Rest],[],_I)-->
+  {format(atom(A),"~p.~n~n",[H])},!,
+  [A].
+ 
 head([H:1.0|_Rest],B,I)-->
-  {format(atom(A),"~p:1.0",[H])},!,
+  {format(atom(A),"~p",[H])},!,
   [A,I],
   body(B).
-  
+
+head([H:P,'':_P],[],_I)-->
+  {format(atom(A),"~p:~g.~n~n",[H,P])},!,
+  [A].
 
 head([H:P,'':_P],B,I)-->
   {format(atom(A),"~p:~g",[H,P])},!,
   [A,I],
   body(B).
 
+
+head([H:P],true,_I)-->
+  {format(atom(A),"~p:~g.~n~n",[H,P])},!,
+  [A].
 
 head([H:P],B,I)-->
   {format(atom(A),"~p:~g",[H,P])},!,
