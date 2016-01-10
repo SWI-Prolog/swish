@@ -31,5 +31,7 @@ alarm(t):0.1 ; alarm(f):0.9:-burg(f),earthq(f).
 
 ?- prob(alarm(t),Prob).  % what is the probability that the alarm goes off?
 ?- prob(alarm(f),Prob).  % what is the probability that the alarm doesn't go off?
+?- prob_bar(alarm(t),Prob).
+?- prob_bar(alarm(f),Prob).
 
 */
