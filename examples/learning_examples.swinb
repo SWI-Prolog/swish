@@ -20,12 +20,10 @@ In Proceedings of the 19th International
 Joint Conference on Artificial Intelligence, 2005.
 The data has been generated from the target program by sampling. The task is to perform parameter learning and observe how close to the
 original are the learned parameters. Note that the target parameters are those given in the input program but before learning they are randomized.
-  - Mutagenesis ([muta.pl](example/muta.pl)) The famous Mutagenesis problem where the task is to predict whether a molecule is an active mutagenic agent. From  Srinivasan A, Muggleton S, Sternberg MJE, King RD 
-_Theories for mutagenicity: A study in first-order and feature-based induction_. 
+  - Mutagenesis ([muta.pl](example/muta.pl)) The famous Mutagenesis problem where the task is to predict whether a molecule is an active mutagenic agent. From  Srinivasan A, Muggleton S, Sternberg MJE, King RD _Theories for mutagenicity: A study in first-order and feature-based induction_. 
 Artificial Intelligence 85(1-2):277-299, 1996. Both parameters and structure can be learned.
 The input theory for parameter learning has been manually crafted.
-  - University ([university.pl](example/university.pl)) Toy dataset describing a university domain. The task is to predict the rating of courses. From
-Schulte, Oliver, and Hassan Khosravi. _Learning graphical models for relational data via lattice search_. Machine Learning 88.3, 331-368, 2012.
+  - University ([university.pl](example/university.pl)) Toy dataset describing a university domain. The task is to predict the rating of courses. From Schulte, Oliver, and Hassan Khosravi. _Learning graphical models for relational data via lattice search_. Machine Learning 88.3, 331-368, 2012.
 Both parameters and structure can be learned. 
 The input theory for parameter learning has been manually crafted.
 </div>
