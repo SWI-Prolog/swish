@@ -4,10 +4,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
-  <title>cplint on SWISH Manual – </title>
+  <title>cplint on SWISH Manual</title>
   <style type="text/css">code{white-space: pre;}</style>
 </head>
 <body>
+<div id="header">
+<h1 class="title"><code>cplint</code> on SWISH Manual</h1>
+</div>
 <div id="TOC">
 <ul>
 <li><a href="#syn">Syntax</a></li>
@@ -73,9 +76,14 @@ toss(coin).
 <p><code>cplint</code> on SWISH allows two types of programs: LPAD and Prolog. In the first, you create a new LPAD in the editor, in the latter a Prolog program.</p>
 <p>In LPADs, you write in the editor the program without the library import and the <code>:- cplint</code> and <code>:- end_cplint.</code> compiler directives.</p>
 <p>You ask queries by writing the atom of which you want to compute the probability. In the coin example, the probability of <code>heads(coin)</code> can be obtained with the</p>
-<pre><code>?- heads(coin)</code></pre>
+<pre><code>?- heads(coin).</code></pre>
 <p>In Prolog programs, you have to enter the program above (<code>coin.pl</code>) and ask the probability of an atom using the predicate <code>prob/2</code> as in</p>
 <pre><code>?- prob(heads(coin),P).</code></pre>
+<p>You can also see the probability of the query being true and being false as a bar chart with</p>
+<pre><code>?- prob_bar(heads(coin),P).</code></pre>
+<p>if you include</p>
+<pre><code>:- use_rendering(c3).</code></pre>
+<p>before <code>:- cplint.</code></p>
 <h2 id="parameters">Parameters</h2>
 <p>The module makes use of a number of parameters in order to control its behavior. They can be set with the directive</p>
 <pre><code>:- set_pita(&lt;parameter&gt;,&lt;value&gt;).</code></pre>
@@ -122,7 +130,7 @@ toss(coin).
 :- set_sc(max_iter,2).
 :- set_sc(max_iter_structure,5).
 :- set_sc(verbosity,1).</code></pre>
-<p>We will see later the list of available parameters. This ends the preamble.</p>
+<p>We will see later the list of available parameters. A particularly important parameter is <code>verbosity</code>: if set to 1, nothing is printed and learning is fastest, if set to 3 much information is printed and learning is slowest, 2 is in between. This ends the preamble.</p>
 <h3 id="backgroung-and-initial-lpadcpl-program">Backgroung and Initial LPAD/CPL-program</h3>
 <p>Now you can specify the background knowledge with a fact of the form</p>
 <pre><code>bg(&lt;list of terms representing clauses&gt;).</code></pre>
