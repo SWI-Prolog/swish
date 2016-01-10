@@ -6,12 +6,12 @@
 This notebook gives an overview of example programs for learning.
 
 - *Examples*
-  - Bongard ([bongard.pl](example/bongard.pl), [bongardkeys.pl](example/bongardkeys.pl)) The task is to classify pictures containing geometrical objects. From L. De Raedt and W. Van Laer. _Inductive constraint logic_. In Proceedings of the Sixth International Workshop on Algorithmic Learning Theory, 1995. Both parameters and structure can be learned. The input theory for parameter learning has been manually crafted. =bongard.pl= contains the examples in the models format while =bongardkeys.pl= in the keys format.
+  - Bongard ([bongard.pl](example/bongard.pl), [bongardkeys.pl](example/bongardkeys.pl)) The task is to classify pictures containing geometrical objects. From L. De Raedt and W. Van Laer. _Inductive constraint logic_. In Proceedings of the Sixth International Workshop on Algorithmic Learning Theory, 1995. Both parameters and structure can be learned. The input theory for parameter learning has been manually crafted. =bongard.pl= contains the examples in the models format while =bongardkeys.pl= in the keys format. Structure learning takes about 2 seconds with =verbosity= = =1=.
   - Shop ([shop.pl](example/shop.pl)) The task is to predict the shopping behavior of people.  It is a toy problem from 
   Meert, W., Struyf, J., and Blockeel, H. 
 _Learning ground CP-Logic theories by leveraging Bayesian network learning
 techniques_. Fundamenta Informaticae 89, 131-160, 2008. The data has been generated from the target program (which is also the input program) by sampling. The task is to perform parameter learning and observe how close to the
-original are the learned parameters. Note that the target parameters are those given in the input program but before learning they are randomized.
+original are the learned parameters. Note that the target parameters are those given in the input program but before learning they are randomized. Parameter learning takes less than 1 second with =verbosity= = =1=.
   - HMM ([hmmlearn.pl](example/hmmlearn.pl)) 
   Hidden Markov Model dataset genereted from a HMM with 2 states and 2 output symbol. The task is to recover the correct parameters.
 From
@@ -19,13 +19,16 @@ Sato T, Kameya Y, Zhou NF _Generative modeling with failure in prism_.
 In Proceedings of the 19th International 
 Joint Conference on Artificial Intelligence, 2005.
 The data has been generated from the target program by sampling. The task is to perform parameter learning and observe how close to the
-original are the learned parameters. Note that the target parameters are those given in the input program but before learning they are randomized.
-  - Mutagenesis ([muta.pl](example/muta.pl)) The famous Mutagenesis problem where the task is to predict whether a molecule is an active mutagenic agent. From  Srinivasan A, Muggleton S, Sternberg MJE, King RD _Theories for mutagenicity: A study in first-order and feature-based induction_.   Artificial Intelligence 85(1-2):277-299, 1996. Both parameters and structure can be learned. The input theory for parameter learning has been manually crafted.
+original are the learned parameters. Note that the target parameters are those given in the input program but before learning they are randomized. Parameter learning takes less than 1 second with =verbosity= = =1=.
+  - Mutagenesis ([muta.pl](example/muta.pl)) The famous Mutagenesis problem where the task is to predict whether a molecule is an active mutagenic agent. From  Srinivasan A, Muggleton S, Sternberg MJE, King RD _Theories for mutagenicity: A study in first-order and feature-based induction_.   Artificial Intelligence 85(1-2):277-299, 1996. Both parameters and structure can be learned. The input theory for parameter learning has been manually crafted. Structure learning takes about 100 seconds with =verbosity= = =1=.
   - University ([university.pl](example/university.pl)) Toy dataset describing a university domain. The task is to predict the rating of courses. From Schulte, Oliver, and Hassan Khosravi. _Learning graphical models for relational data via lattice search_. Machine Learning 88.3, 331-368, 2012. 
-  Both parameters and structure can be learned. The input theory for parameter learning has been manually crafted.
+  Both parameters and structure can be learned. The input theory for parameter learning has been manually crafted. Structure learning takes about 120 seconds with =verbosity= = =1=.
   
-More examples are included in the standalone version of cplint at https://github.com/friguzzi/cplint  
-They have not been included here due to their computational cost.
+More examples are included in the standalone version of =cplint= at https://github.com/friguzzi/cplint The stanalone version of =cplint= can be installed as
+a SWI-Prolog pack http://www.swi-prolog.org/pack/list
+The other datasets include Carcinogenesis, Cora, Hepatitis, HIV, IMDB,
+Mondial, UWCSE and WebKB. 
+They have not been included here because of their computational cost.
 </div>
 
 </div>
