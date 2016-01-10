@@ -2,34 +2,29 @@
 
 <html>
   <head>
-  <title>cplint on SWISH</title>
-<link rel="stylesheet" href="/css/swish.css">
-<style>
-body {
- overflow: scroll;
-  margin: 10px;
- }
-</style>
-</head>
+  <title>SWISH: SWI-Prolog for SHaring</title>
+  </head>
 <body>
-
 <h4>Table of Contents</h4>
   <ul>
     <li><a href="#help-basics">Basic operation</a></li>
     <li><a href="#help-examples">Embedding examples in the program text</a></li>
     <li><a href="#help-share">Save or share your program</a></li>
     <li><a href="#help-include">Include other programs</a></li>
+    <li><a href="#help-csv">Download query results as CVS</a></li>
     <li><a href="#help-preload">Preload SWISH with data</a></li>
-    <li><a href="#help-LPAD">LPAD and CP-logic syntax</a></li>
-    <li><a href="http://ds.ing.unife.it/~friguzzi/software/cplint-swi/manual.html" target="_blank">cplint manual</a></li>
   </ul>
+
 <h2 id="help-basics">Basic operation</h2>
 <p>
-cplint is about running a <i>query</i> against a <i>program</i>. 
-The program is a Logic Program with Annotated Disjunction (LPAD) or a CP-logic program.
-The
+Prolog is about running a <i>query</i> against a <i>program</i>. The
 <i>query</i> goes into the bottom-right editor and the <i>program</i>
-into the left editor.  
+into the left editor.  The program can be empty, executing queries
+against the <i>built-in</i> predicates of Prolog.  For example:
+
+<pre style="font-size:80%">
+?- format("Hello world!~n").</pre>
+
 <p>
 A query can be executed by hitting <code>RETURN</code> if the query
 is complete and the caret is behind the '.' that terminates the query
@@ -120,41 +115,66 @@ Using <b>File/Collaborate ...</b>, you create a
 <a target="_blank" href="https://togetherjs.com/">TogetherJS</a> session
 that provides shared editing, chat and voice communication.
 
-
-<h4 id="help-examples">Embedding examples in the program text</h4>
+<h2 id="help-csv">Download query results as CSV</h2>
 <p>
-If you include example goals inside comments as shown below,
-they will be used to populate the example menu and make the
-first goal show in the Goal input field.
-</p>
+After running a query, the <strong>complete</strong> result set for the
+query can be downloaded as a CSV (Comma Separated Values) document by
+clicking the double down arrow at the <em>runner</em> window. This
+causes a dialogue to appear that allows for specifying the columns,
+optionally the detailed result format (if the server provides multiple
+result formats), whether only <em>distinct</em> results should be
+returned and the maximum number of results to return. The latter is by
+default set to 10&nbsp;000 to avoid sending huge documents by accident.
+The field can be cleared to return all results.
+
+<h3>Download query results through an API</h3>
+<p>
+The CSV results can also be downloaded programmatically by directly
+approaching the Pengine API. Example client code is <a
+href="https://github.com/SWI-Prolog/swish/tree/master/client"
+target="_blank">available</a>.  For example, the `swish-ask.sh` client
+can be used with `bash` to download the results for a query.  The call
+below downloads a CSV file for the <em>sin</em> function.
+
 <pre style="font-size:80%">
-/** &lt;examples&gt;
-
-?- loves(jay, mia).
-?- jealous(jay, mia).
-
-*/</pre>
-
-<h4 id="help-share">Save or share your program</h4>
-<p>
-If you use <b>File/Save</b>, the server will save your program in a file
-with a unique random name and add this name to the URL displayed in the
-browser's address bar. You can later come back to this source by going
-to this URL. You can also sent the URL to a friend and let him or her
-have a look at your program.  Anyone can save the program, but the last
-one wins.  In the future, we will add versioning.
+$ bash swish.ask.sh --server=http://swish.swi-prolog.org \
+		    X,Y \
+		    "between(0,90,X),Y is sin(X*pi/180)"
+</pre>
 
 <p>
-Using <b>File/Collaborate ...</b>, you create a
-<a target="_blank" href="https://togetherjs.com/">TogetherJS</a> session
-that provides shared editing, chat and voice communication.
+The script can ask queries against stored Prolog scripts by specifying
+the script on the commandline.  For example:
 
+<pre style="font-size:80%">
+$ bash swish.ask.sh --server=http://swish.swi-prolog.org \
+		    sin_table.pl X,Y "sin_table(X,Y)"
+</pre>
 
-<h4 id="help-preload">Preload SWISH with data</h4>
 <p>
-You can make <span style="color:maroon">cplint on </span>
-<span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
-start with a loaded program using the URL <code>http://cplint.lamping.unife.it/</code> and
+Prolog can exploit the Pengine API directly.  For example, the above can
+be called as:
+
+<pre style="font-size:80%">
+?- [library(pengines)].
+?- pengine_rpc('http://swish.swi-prolog.org',
+	       sin_table(X,Y),
+	       [ src_text(':- include(sin_table).'),
+		 application(swish)
+	       ]).
+X = 0,
+Y = 0.0 ;
+X = 1,
+Y = 0.01745240643728351 ;
+X = 2
+...
+</pre>
+
+
+<h2 id="help-preload">Preload SWISH with data</h2>
+<p>
+You can make <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
+start with a loaded program using the URL <code>http://swish.swi-prolog.org/</code> and
 providing the parameters below.  The URL accepts both `GET` and `POST` requests.
 
   <dl>
@@ -174,110 +194,10 @@ providing the parameters below.  The URL accepts both `GET` and `POST` requests.
   </dd>
   </dl>
 
-<p>The URL below opens <span style="color:maroon">cplint on </span>
-<span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> on a file from GitHub with a default query.
+<p>The URL below opens <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> on a file from GitHub with a default query.
 
 <pre>
-http://cplint.lamping.unife.it/?code=https://github.com/friguzzi/swish/raw/master/examples/alarm.cpl&amp;q=alarm(t).</pre>
+http://swish.swi-prolog.org/?code=https://github.com/SWI-Prolog/swipl-devel/raw/master/demo/likes.pl&amp;q=likes(sam,Food).</pre>
 
- <h2 id="help-LPAD">LPAD and CP-logic syntax</h2>
-<p>
-LPAD and CP-logic programs consist of a set of annotated disjunctive clauses.
-Disjunction in the head is represented with a semicolon and atoms in the head are
-separated from probabilities by a colon. For the rest, the usual syntax of Prolog is
-used. A general CP-logic clause has the form
-
- <pre style="font-size:80%">
-h1:p1 ; ... ; hn:pn :- b1,...,bm,\+ c1,....,\+ cl.
-</pre>
-<!--l. 78--><p> No parentheses are necessary. The <code>pi</code> are numeric expressions. It is up to the user to
-ensure that the numeric expressions are legal, i.e. that they sum up to less or equal to
-one.
-<!--l. 81--><p>   If the clause has an empty body, it can be represented like this
- <pre style="font-size:80%">
-h1:p1 ; ... ; hn:pn.
-</pre>
-<!--l. 84--><p> If the clause has a single head with probability 1, the annotation can be omitted and
-the clause takes the form of a normal Prolog clause, i.e.
-
- <pre style="font-size:80%">
-h1 :- b1,...,bm,\+ c1,...,\+ cl.
-</pre>
-<!--l. 88--><p> stands for
-
-  <pre style="font-size:80%">
-h1:1 :- b1,...,bm,\+ c1,...,\+ cl.
-</pre>
-<!--l. 94--><p>  Consider the coin example 
-
- <pre style="font-size:80%">
-heads(Coin):1/2 ; tails(Coin):1/2:-  
-     toss(Coin),\+biased(Coin).  
-heads(Coin):0.6 ; tails(Coin):0.4:-  
-     toss(Coin),biased(Coin).  
-fair(Coin):0.9 ; biased(Coin):0.1.  
-toss(coin).
-</pre>
-<!--l. 105--><p> The first clause states that if we toss a coin that is not biased it has equal
-probability of landing heads and tails. The second states that if the coin is biased it
-has a slightly higher probability of landing heads. The third states that the coin is
-fair with probability 0.9 and biased with probability 0.1 and the last clause states
-that we toss a coin for certain.
-<!--l. 108--><p>   Moreover, the bodies of rules can contain the built-in predicates:
-
- <pre style="font-size:80%">
-is/2, &#x003E;/2, &#x003C;/2, &#x003E;=/2, =&#x003C;/2,
-=:=/2, =\=/2, true/0, false/0,
-=/2, ==/2, \=/2, \==/2, length/2
-</pre>
-<!--l. 113--><p> The bodies can also contain the following library predicates:
-
- <pre style="font-size:80%">
-member/2, max_list/2, min_list/2  
-nth0/3, nth/3, dif/2, select/3
-</pre>
-<!--l. 119--><p > plus the predicate
-
- <pre style="font-size:80%">
-average/2
-</pre>
-<!--l. 123--><p > that, given a list of numbers, computes its arithmetic mean.
-
-<p> 
-<span style="color:maroon">cplint on </span>
-<span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> allows two types of programs: LPAD and Prolog. In the first, you can simply insert LPAD/CP-logic code and ask queries by writing the atom of which you want to compute the probability. In the coin example, the probability of <code>heads(coin)</code> can be obtained with the query <code>heads(coin)</code>. In Prolog programs, you have to load the <code>pita</code> library, wrap LPAD/CP-logic code with the compiler directives <code>:- cplint</code> and <code>:- end_cplint.</code> and ask the probability of an atom using the predicate <code>prob/2</code>.
-</p>
-<p>  
-The coin example above in Prolog is
- <pre style="font-size:80%">
-:- use_module(library(pita)).
-:- style_check(-discontiguous).
-:- cplint.
-heads(Coin):1/2 ; tails(Coin):1/2:-  
-     toss(Coin),\+biased(Coin).  
-heads(Coin):0.6 ; tails(Coin):0.4:-  
-     toss(Coin),biased(Coin).  
-fair(Coin):0.9 ; biased(Coin):0.1.  
-toss(coin).
-:- end_cplint.
-</pre>
-The command <code>:- style_check(-discontiguous).</code> avoids warnings about discontinuous definitions of predicates.
-These warnings are due to the translation process and are not a sign of coding errors, so they can be suppressed.
-</p> 
-To query the probability of <code>heads(coin)</code> you have to ask
- <pre style="font-size:80%">
-prob(heads(coin),P).
-</pre>
-
-
-See the <a href="http://ds.ing.unife.it/~friguzzi/software/cplint-swi/manual.html" target="_blank">cplint manual</a> for more information.
 </body>
 </html>
-
-
-
-
-
-
-
-
