@@ -302,7 +302,7 @@ swish_navbar(Options) -->
         &(nbsp), &(nbsp),
         a([href('/help/about.html'),target('_blank')],['About']),
         &(nbsp), &(nbsp),
-        a([href('/help/help.html'),target('_blank')],['Help']),
+        a([href('/help/help-cplint.html'),target('_blank')],['Help']),
         &(nbsp), &(nbsp),
         a([href('/help/credits.html'),target('_blank')],['Credits']),
         &(nbsp), &(nbsp),
