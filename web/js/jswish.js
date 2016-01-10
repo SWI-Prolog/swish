@@ -100,6 +100,9 @@ preferences.setDefault("emacs-keybinding", false);
 	"Help ...": function() {
 	  menuBroadcast("help", {file:"help.html"});
 	},
+	"Help on cplint...": function() {
+	  menuBroadcast("help", {file:"help-cplint.html"});
+	},
 	"Runner ...": function() {
 	  menuBroadcast("help", {file:"runner.html"});
 	},
