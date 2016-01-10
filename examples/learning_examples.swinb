@@ -23,6 +23,9 @@ original are the learned parameters. Note that the target parameters are those g
   - Mutagenesis ([muta.pl](example/muta.pl)) The famous Mutagenesis problem where the task is to predict whether a molecule is an active mutagenic agent. From  Srinivasan A, Muggleton S, Sternberg MJE, King RD _Theories for mutagenicity: A study in first-order and feature-based induction_.   Artificial Intelligence 85(1-2):277-299, 1996. Both parameters and structure can be learned. The input theory for parameter learning has been manually crafted.
   - University ([university.pl](example/university.pl)) Toy dataset describing a university domain. The task is to predict the rating of courses. From Schulte, Oliver, and Hassan Khosravi. _Learning graphical models for relational data via lattice search_. Machine Learning 88.3, 331-368, 2012. 
   Both parameters and structure can be learned. The input theory for parameter learning has been manually crafted.
+  
+More examples are included in the standalone version of cplint at https://github.com/friguzzi/cplint  
+They have not been included here due to their computational cost.
 </div>
 
 </div>
