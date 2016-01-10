@@ -6,6 +6,10 @@ volume 3131 of LNCS, pages 195.209. Springer, 2004.
 */
 :- use_module(library(pita)).
 
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 burg(t):0.1; burg(f):0.9.
