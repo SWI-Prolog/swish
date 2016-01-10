@@ -10,8 +10,8 @@ This notebook gives an overview of example programs for learning.
   - Shop ([shop.pl](example/shop.pl)) The task is to predict the shopping behavior of people.  It is a toy problem from 
   Meert, W., Struyf, J., and Blockeel, H. 
 _Learning ground CP-Logic theories by leveraging Bayesian network learning
-techniques_. Fundamenta Informaticae 89, 131-160, 2008. The data has been generated from the target program (which is also the input program) by sampling. The task is to perform parameter learning and observe how close to the
-original are the learned parameters. Note that the target parameters are those given in the input program but before learning they are randomized. Parameter learning takes less than 1 second with =verbosity= = =1=.
+techniques_. Fundamenta Informaticae 89, 131-160, 2008. The training data includes all possible worlds of the target program (which is also the input program),  for each worlds its probability is indicated and is interpreted as a multiplicity. The testing data has been generated from the target program by sampling. The task is to perform parameter learning and observe how close to the
+original are the learned parameters or test on the testing data. Note that the target parameters are those given in the input program but before learning they are randomized. Parameter learning takes less than 1 second with =verbosity= = =1=.
   - HMM ([hmmlearn.pl](example/hmmlearn.pl)) 
   Hidden Markov Model dataset genereted from a HMM with 2 states and 2 output symbol. The task is to recover the correct parameters.
 From
