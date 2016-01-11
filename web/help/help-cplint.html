@@ -117,12 +117,6 @@ toss(coin).
 <h3 id="preamble">Preamble</h3>
 <p>In the preamble, the SLIPCOVER library is loaded with</p>
 <pre><code>:- use_module(library(slipcover)).</code></pre>
-<p>Then, if you are using your file in cplint on SWISH, you could add</p>
-<pre><code>:- if(current_predicate(use_rendering/1)).
-:- use_rendering(c3).
-:- use_rendering(lpad).
-:- endif.</code></pre>
-<p>if you want a nice representation of the output (in particular, if you want graphs of the ROC and PR curves).</p>
 <p>Now you can initialize SLIPCOVER with</p>
 <pre><code>:- sc.</code></pre>
 <p>At this point you can start setting parameters for SLIPCOVER such as for example</p>
