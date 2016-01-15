@@ -1,3 +1,3 @@
 :- use_module(server).
 
-:- initialization server(3070).
+:- initialization server(3050).
