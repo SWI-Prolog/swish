@@ -37,7 +37,51 @@ Theory and Practice of Logic Programming, 15(2):169-212, 2015
 bg([]).
 
 
-in([]).
+in([
+(active:0.5 :-
+  lumo(A),
+  bond(B,C,2),
+  atm(C,n,32,D)
+),
+(active:0.5 :-
+  lumo(A),
+  atm(B,o,40,C),
+  atm(D,n,32,C)
+),
+(active:0.5 :-
+  atm(A,o,40,B),
+  atm(C,n,32,B)
+),
+(active:0.5 :-
+  atm(A,c,28,B)
+),
+(active:0.5 :-
+  lumo(A),
+  bond(B,C,2),
+  bond(C,D,1)
+),
+(active:0.5 :-
+  lumo(A),
+  bond(B,C,2),
+  bond(D,C,1)
+),
+(active:0.5 :-
+  benzene(A),
+  ring_size_5(B)
+),
+(active:0.5 :-
+  atm(A,c,29,B)
+),
+(active:0.5 :-
+  lumo(A),
+  bond(B,C,2),
+  ring_size_5(D)
+),
+(active:0.5 :-
+  lumo(A),
+  atm(B,h,3,C),
+  ring_size_5(D)
+)]).
 
 fold(1,[d18,d26,d28,d51,d63,d67,d107,d127,d137,d151,d174,d178,d85,d92,
   d38,d84,d100,d116,d160]).
@@ -62,22 +106,22 @@ fold(10,[d48,d60,d112,d148,d157,d35,d81,d91,d103,d118,d162,
 
 output(active/0).
 
-input(lumo/1).
-input(logp/2).
-input(bond/3).
-input(atm/4).
-input(benzene/1).
-input(carbon_5_aromatic_ring/1).
-input(carbon_6_ring/1).
-input(hetero_aromatic_6_ring/1).
-input(hetero_aromatic_5_ring/1).
-input(ring_size_6/1).
-input(ring_size_5/1).
-input(nitro/1).
-input(methyl/1).
-input(anthracene/1).
-input(phenanthrene/1).
-input(ball3/1).
+input_cw(lumo/1).
+input_cw(logp/2).
+input_cw(bond/3).
+input_cw(atm/4).
+input_cw(benzene/1).
+input_cw(carbon_5_aromatic_ring/1).
+input_cw(carbon_6_ring/1).
+input_cw(hetero_aromatic_6_ring/1).
+input_cw(hetero_aromatic_5_ring/1).
+input_cw(ring_size_6/1).
+input_cw(ring_size_5/1).
+input_cw(nitro/1).
+input_cw(methyl/1).
+input_cw(anthracene/1).
+input_cw(phenanthrene/1).
+input_cw(ball3/1).
 
 
 modeh(1,active).
