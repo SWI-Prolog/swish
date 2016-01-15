@@ -30,8 +30,11 @@ var cellTypes = {
   var methods = {
     /**
      * Initialize a Prolog Notebook.
+     * @param {Object} options
+     * @param {String} [options.value] provides the initial content
      */
     _init: function(options) {
+      options = options||{};
       return this.each(function() {
 	var elem = $(this);
 	var storage = {};		/* storage info */
@@ -110,7 +113,9 @@ var cellTypes = {
 
 					/* restore content */
 	var content = elem.find(".notebook-data");
-	if ( content.length > 0 ) {
+	if ( options.value ) {
+	  elem.notebook('value', options.value);
+	} else if ( content.length > 0 ) {
 	  function copyData(name) {
 	    var value = content.data(name);
 	    if ( value ) {
@@ -323,15 +328,20 @@ var cellTypes = {
 
     /**
      * Set or get the state of this notebook as a string.
+     * @param {Object} options
+     * @param {Boolean} [options.skipEmpty=false] if `true`, do not save
+     *		        empty cells.
      * @param [String] val is an HTML string that represents
      * the notebook state.
      */
-    value: function(val) {
+    value: function(val, options) {
+      options = options||{};
+
       if ( val == undefined ) {
 	var dom = $.el.div({class:"notebook"});
 	this.find(".nb-cell").each(function() {
 	  cell = $(this);
-	  if ( !cell.nbCell('isEmpty') )
+	  if ( !(options.skipEmpty && cell.nbCell('isEmpty')) )
 	    $(dom).append(cell.nbCell('saveDOM'));
 	});
 
@@ -438,8 +448,8 @@ var cellTypes = {
     label: "Notebook",
     contentType: "text/x-prolog-notebook",
     order: 200,
-    create: function(dom) {
-      $(dom).notebook();
+    create: function(dom, options) {
+      $(dom).notebook(options);
     }
   };
 
@@ -720,6 +730,7 @@ var cellTypes = {
     },
 
     saveDOM: function() {
+      console.log(this.data(pluginName))
       var type = this.data(pluginName).st_type;
       if (type == "lpad" || type == "prolog")
         return methods.saveDOM["program"].call(this);
@@ -730,20 +741,16 @@ var cellTypes = {
       var data = this.data(pluginName);
 
       function domCellType(dom) {
-        console.log(dom);
 	for(var k in cellTypes) {
 	  if ( cellTypes.hasOwnProperty(k) && dom.hasClass(k) )
 	    return k;
 	}
+	if (dom.hasClass("program"))
+	    return "prolog";
       }
 
-      console.log("a"); 
-      console.log(data);
       data.st_type = domCellType(dom);
-            console.log("b");
-            console.log(data);
-                  console.log("c");
-                  console.log(data.st_type);
+
       var type;
       if (data.st_type == "lpad" || data.st_type == "prolog")
         type = "program";
@@ -757,6 +764,7 @@ var cellTypes = {
      * Compute a state fingerprint for the current cell.
      */
     changeGen: function() {
+      console.log(this.data(pluginName));
       var type = this.data(pluginName).st_type;
       if (type == "lpad" || type == "prolog")
         return methods.changeGen["program"].call(this);
@@ -791,9 +799,7 @@ var cellTypes = {
     	  options.placeholder = "Your LPAD rules and facts go here ...";
          
     options.autoCurrent = false;
-    
-
-    
+   
     this.html("");
 
     var buttons = $.el.div(
@@ -812,10 +818,7 @@ var cellTypes = {
     }
 
     $(editor).prologEditor(options);
-    
   }
-  
-
 
   methods.type.query = function(options) {	/* query */
     var editor;
@@ -974,7 +977,7 @@ var cellTypes = {
   methods.run.query = function(options) {	/* query */
     var programs = this.nbCell('programs');
     var settings = this.nbCell('getSettings');
-    
+
     options = options||{};
     var query = { source: programs.prologEditor('getSource'),
                   query:  cellText(this),
@@ -1006,7 +1009,6 @@ var cellTypes = {
 
   methods.saveDOM.program = function() {	/* program */
     var cell = this;
-    console.log("savedom"); console.log(cell);
     var codetype = cellCode(cell);
     var dom = $.el.div({class:"nb-cell program " + codetype}, cellText(this));
 

@@ -42,6 +42,7 @@
 :- use_module(lib/include).
 :- use_module(lib/csv).
 :- use_module(lib/examples).
+:- use_module(lib/profiles).
 :- use_module(lib/highlight).
 :- use_module(lib/markdown).
 :- use_module(lib/template_hint, []).
@@ -117,6 +118,7 @@ http:location(swish, root(.), [priority(-100)]).
 term_expansion(swish_config:config(Config, _Value), []) :-
 	clause(swish_config:config(Config, _), _).
 
+
 swish_config:config(show_beware,        false).
 swish_config:config(tabled_results,     false).
 swish_config:config(application,        swish).
@@ -152,12 +154,16 @@ swish_config:config(public_access,      true).
 pengines:prepare_module(Module, swish, _Options) :-
 	pengines_io:pengine_bind_io_to_html(Module).
 
+% Additional sandboxing rules.
+:- use_module(lib/flags).
+
 % Libraries that are nice to have in SWISH, but cannot be loaded
 % because they use directives that are considered unsafe.  We load
 % them here, so they only need to be imported, which is just fine.
 
 :- use_module(library(clpfd), []).
 :- use_module(library(clpb), []).
+:- use_module(lib/swish_chr, []).
 
 % load rendering modules
 
@@ -174,3 +180,4 @@ pengines:prepare_module(Module, swish, _Options) :-
 :- use_module(library(pita)).
 :- use_module(library(slipcover)).
 :- use_module(library(auc)).
+

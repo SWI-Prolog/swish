@@ -34,7 +34,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
      */
     _init: function(options) {
       return this.each(function() {
-        var elem   = $(this);
+	var elem   = $(this);
 	var data   = $.extend({}, defaults, options);
 	var qediv  = $.el.div({class:"query",style:"height:100%"});
 	var tabled = tableCheckbox(data);
@@ -84,7 +84,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	elem.on("program-loaded", function(ev, editor) {
 	  if ( $(data.editor).data('prologEditor') == $(editor).data('prologEditor') ) {
 	    var exl = data.examples();
-	    elem.queryEditor('setQuery', exl && exl[0] ? exl[0] : ""); 
+	    elem.queryEditor('setQuery', exl && exl[0] ? exl[0] : "");
 	  }
 	});
 
@@ -108,6 +108,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
       
     },
 
+    
     /**
      * @param {jQuery} editor has become the new current program
      * editor.  Update the examples and re-run the query highlighting.
@@ -117,7 +118,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 
       data.editor = editor[0];
       if ( data.editor ) {
-        data.examples = function() {
+	data.examples = function() {
 	  var exl    = editor.prologEditor('getExamples')||[];
 	  var global = editor.parents(".swish").swish('examples', true)||[];
 
@@ -141,7 +142,6 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	  data.source = "";
 	  data.codeType = "undef";
 	}
-	
 	data.sourceID = function() {
 	  return editor.prologEditor('getSourceID');
 	};
@@ -152,13 +152,9 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	} else {
 	  editor.prologEditor('refreshHighlight');
 	}
-		
       } else
-      { 
-            data.examples = "";
+      { data.examples = "";
       }
-      
-      
     },
 
     /**
@@ -337,6 +333,9 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
       if ( tabled )
 	query.tabled = true;
 
+      console.log("query.run");
+      console.log(data);
+      console.log(query);
       query.codeType=data.codeType;
       
       this.queryEditor('addHistory', q);

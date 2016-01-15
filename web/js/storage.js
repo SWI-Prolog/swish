@@ -497,7 +497,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       var meta = data.meta||{};
       var editor = this;
       var title;
-      
+
       if ( data.st_type == "gitty" ) {
 	title = $().gitty('title', meta);
       } else if ( data.st_type == "filesys" ) {

@@ -1,0 +1,20 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+This notebook uses the student profile
+</div>
+
+<div class="nb-cell program">
+</div>
+
+<div class="nb-cell query">
+</div>
+
+<div class="nb-cell program" data-background="true" data-singleline="true">
+% Student exercise profile
+:- set_prolog_flag(occurs_check, error).		% disallow cyclic terms
+:- set_prolog_stack(global, limit(8 000 000)).  % limit term space (8Mb)
+:- set_prolog_stack(local,  limit(2 000 000)).  % limit environment space
+</div>
+
+</div>

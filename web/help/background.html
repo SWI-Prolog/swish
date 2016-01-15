@@ -5,71 +5,104 @@
   <title>SWISH: SWI-Prolog for SHaring</title>
   </head>
 <body>
-<h4>Table of Contents</h4>
+<h2>Table of Contents</h2>
   <ul>
     <li><a href="#motivation">Motivation</a></li>
-    <li><a href="#exampls">Examples</a></li>
-    <li><a href="#time_limit">Time limit</a></li>
     <li><a href="#browsers">Supported browsers</a></li>
     <li><a href="#swishapp">Adding SWISH to your application</a></li>
     <li><a href="#technology">Technology</a></li>
     <li><a href="#source_code">Source code</a></li>
   </ul>
 
-<h4 id="motivation">Motivation</h4>
-                <p>
-                    <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> is inspired by web-based tools such as <a target="_blank" href="http://jsfiddle.net/">JSFIDDLE</a> in that it allows you to develop a program and then share it with others on the Web. However, lacking both debugger and profiler, <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> is far from a full-fledged IDE for Prolog, and to avoid compromising the server it does not allow you to execute "dangerous" predicates such as predicates reading and writing files.  It does however allow you to use predicates such as <code>read/1</code> and <code>write/1</code> but they will only read from and write to your web browser.
-                </p>
-                <p>
-We intend to make <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
-useful in an educational setting.  For example, if you are a teacher, you may want to tell
-your students to share with you the solutions to exercises by sending you a link to
-<span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> loaded
-with their solutions ready to run.  There is still work to do before this is a good
-alternative to a local installation though.
-                </p>
-                <h4 id="time_limit">Time limit</h4>
-                <p>
-                    When you click the First button, your goal will be allowed to execute on the server for 300 seconds before aborting and returning with a message stating that the time limit has been exceeded.
-                </p>
-                <h4 id="browsers">Supported browsers</h4>
-                <p>
-<span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> works fine
-recent versions of in Safari, Firefox, Chrome and Internet Explorer (tested IE 11).
-                <p>
-                <h4 id="swishapp">Adding SWISH to your application</h4>
-		<p>
-<span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> can be added easily to any
-SWI-Prolog web application.  For example, it is available as an extension pack for
-<a target="_blank" href="http://cliopatria.swi-prolog.org/">ClioPatria</a>, the SWI-Prolog RDF
-framework.  It can be added to ClioPatria using the command below, providing an alternative
-for SPARQL for exploring the database (requires SWI-Prolog 7.1.23 or later).
-		</p>
-                <pre style="font-size:80%">
-?- pack_install(swish).</pre>
-                <h4 id="technology">Technology</h4>
-                <p>
-                    <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
-is implemented as a set of <a target="_blank" href="http://jquery.com/">jQuery</a> plugins,
-using <a target="_blank" href="http://getbootstrap.com/">Bootstrap</a> for menus, modal windows
-and various styling aspects and <a target="_blank" href="http://codemirror.net/">CodeMirror</a>
-for editing the Prolog source and query.  Queries are executed by sending both the source text
-(left editor) and query (bottom-right editor) to the server, which creates a <a target="_blank"
-href="http://www.swi-prolog.org/pldoc/man?section=pengines">Pengine</a> (<i>Prolog Engine</i>)
-to execute the query.
-		</p>
-		<p>
-Pengines have many other applications, such as supporting Prolog RPC (<i>Remote Procedure
-Calls</i>, which allows you to execute a query fully transparent, including backtracking,
-on a remote server.  An interesting aspect is that they provide a generic query language
-on top of an arbitrary Prolog program that can be used from JavaScript.  A
-<a target="_blank" href="http://pengines.swi-prolog.org/">demo is available</a>
-                </p>
+<h2 id="motivation">Motivation</h2>
+<p>
+<span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> is inspired by web-based tools such as <a
+target="_blank" href="http://jsfiddle.net/">JSFIDDLE</a> in that it
+allows you to develop a program and then share it with others on the
+Web. Besides sharing basic Prolog code fragments, we see several
+opportunities for deploying <span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span>:
 
-                <h4 id="source_code">Source code</h4>
-                <p>
-                    The source code for <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> is available on <a target="_blank" href="https://github.com/SWI-Prolog/swish">GitHub</a>.
-                </p>
+  <ul>
+  <li>
+<span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> can be <b>associated with a dataset</b>,
+either in pure Prolog, RDF (<a target="_blank"
+href="http://cliopatria.swi-prolog.org/">ClioPatria</a>) or a
+traditional relational database through ODBC and <a target="_blank"
+href="http://www.swi-prolog.org/pldoc/man?section=cql">CQL</a>. In this
+setting it can facilitate collaboratively management of increasingly
+complex queries against this dataset. Query results can be downloaded as
+CSV and queries can be executed through an HTTP API. See the
+<b>File/Help ...</b> for details.
+
+  <li>
+<span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> can be embedded in Prolog <b>course
+material</b>. See <a target="_blank" href="http://lpn.swi-prolog.org">Learn
+Prolog Now!</a> for a prototype. The menu <b>File/Help ...</b> explains
+how <span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> can be preloaded with source and example
+queries.
+
+  <li>
+<span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> can be used as a shared <b>management and
+development</b> interface for web services.  The <a target="_blank"
+href="http://cliopatria.swi-prolog.org/">ClioPatria</a> version allows
+for executing arbitrary management commands through the web interface,
+provided the user is logged in with <em>administrative</em> rights.
+  </ul>
+
+<h2 id="browsers">Supported browsers</h2>
+<p>
+<span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> works fine recent versions of in Safari,
+Firefox, Chrome and Internet Explorer (tested IE 11).
+
+<h2 id="swishapp">Adding SWISH to your application</h2>
+<p>
+<span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> can be added easily to any SWI-Prolog web
+application. For example, it is available as an extension pack for <a
+target="_blank" href="http://cliopatria.swi-prolog.org/">ClioPatria</a>,
+the SWI-Prolog RDF framework. It can be added to ClioPatria using the
+command below, providing an alternative for SPARQL for exploring the
+database (requires SWI-Prolog 7.1.32 or later).
+
+<pre style="font-size:80%">
+?- cpack_install(swish).</pre>
+<h2 id="technology">Technology</h2>
+
+<p>
+<span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> is implemented as a set of <a
+target="_blank" href="http://jquery.com/">jQuery</a> plugins, using <a
+target="_blank" href="http://getbootstrap.com/">Bootstrap</a> for menus,
+modal windows and various styling aspects. <span
+style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
+uses <a target="_blank" href="http://codemirror.net/">CodeMirror</a> for
+editing the Prolog source and query. Queries are executed by sending
+both the source text (left editor) and query (bottom-right editor) to
+the server, which creates a <a target="_blank"
+href="http://www.swi-prolog.org/pldoc/man?section=pengines">Pengine</a>
+(<i>Prolog Engine</i>) to execute the query.
+
+<p>
+Pengines have many other applications, such as supporting Prolog RPC
+(<i>Remote Procedure Calls</i>, which allows you to execute a query
+fully transparent, including backtracking, on a remote server. An
+interesting aspect is that they provide a generic query language on top
+of an arbitrary Prolog program that can be used from JavaScript. A <a
+target="_blank" href="http://pengines.swi-prolog.org/">demo is
+available</a>
+
+<h2 id="source_code">Source code</h2>
+<p>
+The source code for <span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> is available on <a target="_blank"
+href="https://github.com/SWI-Prolog/swish">GitHub</a>.
 </body>
 </html>
 

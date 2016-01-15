@@ -28,7 +28,11 @@
 */
 
 :- module(swish_trace,
+/**/
 	  [ '$swish wrapper'/1		% +Goal
+/*
+	  [ '$swish wrapper'/2		% +Goal, -Residuals
+*/
 	  ]).
 :- use_module(library(debug)).
 :- use_module(library(settings)).
@@ -54,7 +58,11 @@
 :- set_prolog_flag(generate_debug_info, false).
 
 :- meta_predicate
+/**/
 	'$swish wrapper'(0).
+/*
+	'$swish wrapper'(0, -).
+*/
 
 /** <module>
 
@@ -177,6 +185,10 @@ strip_stack(error(Error, context(prolog_stack(S), Msg)),
 	nonvar(S).
 strip_stack(Error, Error).
 
+/*
+%%	'$swish wrapper'(:Goal, -Residuals)
+*/
+
 %%	'$swish wrapper'(:Goal)
 %
 %	Wrap a SWISH goal in '$swish  wrapper'. This has two advantages:
@@ -186,9 +198,17 @@ strip_stack(Error, Error).
 
 :- meta_predicate swish_call(0).
 
+/**/
 '$swish wrapper'(Goal) :-
 	catch(swish_call(Goal), E, throw(E)),
 	deterministic(Det),
+/*
+'$swish wrapper'(Goal, '$residuals'(Residuals)) :-
+	catch(swish_call(Goal), E, throw(E)),
+	deterministic(Det),
+	Goal = M:_,
+	residuals(M, Residuals),
+*/
 	(   tracing,
 	    Det == false
 	->  (   notrace,
@@ -210,6 +230,32 @@ no_lco.
 :- '$hide'(no_lco/0).
 
 
+/*
+%%	residuals(+PengineModule, -Goals:list(callable)) is det.
+%
+%	Find residual goals  that  are  not   bound  to  the  projection
+%	variables. We must do so while  we   are  in  the Pengine as the
+%	goals typically live in global variables   that  are not visible
+%	when formulating the answer  from   the  projection variables as
+%	done in library(pengines_io).
+%
+%	This relies on the SWI-Prolog 7.3.14 residual goal extension.
+
+:- if(current_predicate(prolog:residual_goals//0)).
+residuals(TypeIn, Goals) :-
+	phrase(prolog:residual_goals, Goals0),
+	maplist(unqualify_residual(TypeIn), Goals0, Goals).
+
+unqualify_residual(M, M:G, G) :- !.
+unqualify_residual(T, M:G, G) :-
+	predicate_property(T:G, imported_from(M)), !.
+unqualify_residual(_, G, G).
+:- else.
+residuals(_, []).
+:- endif.
+
+
+*/
 		 /*******************************
 		 *	  SOURCE LOCATION	*
 		 *******************************/
@@ -596,6 +642,9 @@ sandbox:safe_primitive(system:notrace).
 sandbox:safe_primitive(system:tracing).
 sandbox:safe_primitive(edinburgh:debug).
 sandbox:safe_primitive(system:deterministic(_)).
+/*
+sandbox:safe_primitive(swish_trace:residuals(_,_)).
+*/
 
 
 		 /*******************************

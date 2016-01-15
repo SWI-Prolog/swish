@@ -387,6 +387,7 @@ preferences.setDefault("emacs-keybinding", false);
     prologSource: function() {
       var list = [];
       var src;
+
       if ( (src=$(".prolog-editor").prologEditor('getSource', "source")) )
 	list.push(src);
       if ( (src=$(".background.prolog.source").text()) ) 

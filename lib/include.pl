@@ -60,11 +60,13 @@ swish:term_expansion(:- include(FileIn), Expansion) :-
 		          'swish included'(File),
 		          (:- include(stream(Id, Stream, [close(true)])))
 			],
+	    '$push_input_context'(swish_include),
 	    setting(web_storage:directory, Store),
 	    add_extension(File, FileExt),
 	    catch(gitty_data(Store, FileExt, Data, _Meta), _, fail),
 	    atom_concat('swish://', FileExt, Id),
-	    open_string(Data, Stream)
+	    open_string(Data, Stream),
+	    '$pop_input_context'
 	).
 
 add_extension(File, FileExt) :-

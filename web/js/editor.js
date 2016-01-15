@@ -71,7 +71,7 @@ define([ "cm/lib/codemirror",
       completeSingle: false
       }
     },
-    
+
     markdown: {
       mode: "markdown",
       placeholder: "Your markdown block goes here ...",
@@ -591,6 +591,14 @@ define([ "cm/lib/codemirror",
 	}
       }
 
+      if ( pref.name == "emacs-keybinding") {
+	if (pref.value == true) {
+	  data.cm.setOption("keyMap", "emacs");
+	} else {
+	  data.cm.setOption("keyMap", "default");
+	}
+      }
+
       return this;
     },
 
@@ -631,6 +639,26 @@ define([ "cm/lib/codemirror",
 	$(elem).data("cm-widget", widget);
       }
 
+      return this;
+    },
+
+    /**
+     * Re-run the highlighting.  Used for query editors if the
+     * associated editor has changed.
+     */
+    refreshHighlight: function() {
+      var data = this.data(pluginName);
+      data.cm.serverAssistedHighlight(true);
+      return this;
+    },
+
+    /**
+     * Refresh the editor.  This is often needed if it is resized.
+     */
+    refresh: function() {
+      var data = this.data(pluginName);
+      if ( data )
+	data.cm.refresh();
       return this;
     },
 
@@ -925,9 +953,9 @@ define([ "cm/lib/codemirror",
     label: "Prolog",
     contentType: "text/x-prolog",
     order: 100,
-    create: function(dom) {
+    create: function(dom, options) {
       $(dom).addClass("prolog-editor")
-            .prologEditor({save:true})
+            .prologEditor($.extend({save:true}, options))
 	    .prologEditor('makeCurrent');
     }
   };
@@ -938,9 +966,9 @@ define([ "cm/lib/codemirror",
     label: "LPAD",
     contentType: "text/x-prolog",
     order: 100,
-    create: function(dom) {
+    create: function(dom, options) {
       $(dom).addClass("prolog-editor")
-            .prologEditor({placeholder: "Your LPAD rules and facts go here ...", save:true, codeType: "lpad"})
+            .prologEditor({placeholder: "Your LPAD rules and facts go here ...", save:true, codeType: "lpad"}, options)
 	    .prologEditor('makeCurrent');
     }
   };

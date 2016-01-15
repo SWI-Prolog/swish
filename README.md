@@ -1,5 +1,16 @@
 # SWISH: A web based SWI-Prolog environment
 
+## Online version
+
+SWISH can be used to access [SWI-Prolog](http://www.swi-prolog.org) at
+the address below. We try to keep this server continuously online. You
+can use this server for playing, courses or sharing and discussing
+ideas. We have not yet dealt with scalable hosting nor with really
+reliable and scalable storage for saved programs. We hope to keep all
+your programs online for at least multiple years.
+
+  - http://swish.swi-prolog.org/
+
 ## Installation
 
 ### Get JavaScript requirements
@@ -26,6 +37,7 @@ http://www.swi-prolog.org/download/swish/swish-bower-components.zip.
 Unpack the zip file, maintaining the directory structure, from the swish
 root directory to create the directory web/bower_components.
 
+Last updated: Jun 28, 2015: Added D3.js and C3.js
 
 ### Get the latest SWI-Prolog
 
@@ -37,8 +49,7 @@ you            need            the             [nightly            build
 system    from    the     current      git     development    repository
 [swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
 
-Nov 6, 2014: release 7.1.26 fully supports the current SWISH.
-
+Jul 5, 2015: SWI-Prolog 7.3.4 supports SWISH completely.
 
 ## Running SWISH
 

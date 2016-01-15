@@ -17,67 +17,29 @@
   - Allow moving panes around using drag/drop.  Allow organizing
     in tabs?
 
-## Editor
+## Query editor
 
-  - Template based completion					[OK]
+  - Quickly create a query from a predicate?
+    - Menu from source editor based on cursor position
+      - If in head, create goal from current predicate
+        - Can we do something with the arguments?
+      - If in goal, copy goal to query window
 
 ## Runners
 
-  - Allow to move them into toplevel browser windows?  Is that possible?
   - Get back to the associated source version (open new editor tab?).
-    Fork/re-run.
+  - Find source changes compared to current version (easy)
+
+## Debugger
+
+  - Show stack and choice-points?
+  - Display constraints.  How?
 
 ## Rendering framework
 
-  - Core from Prolog ok.
-  - Need data vizualizations.  What is a good framework?  There are some
-    overviews [1,2,3]. Some tools:
-
-    - d3.js
-      Very capable, but we need something that does not need configuration,
-      only data and selection of the vizualization type.
-    - c3.js
-      Might give pure data, but looks really limited.  Flot might be
-      more lightweight in that case.
-    - NVD3
-      Similar to c3.js.  Looks a bit more promising, but also seems
-      to require more input.
-    - flot
-      Nice and simple, but can only do simple graphs and piecharts.
-    - Flotr2
-      Might be better than flot.
-    - http://ushiroad.com/jsviz/
-      Graphviz alternative in pure JS.
-    - Dagre (https://github.com/cpettitt/dagre)
-      Provides directed graph layout.  Agnostic of shapes.  Can be used
-      together with JointJs.
-    - http://www.jointjs.com
-      General interactive diagramming and charting tool.  Provides layout
-      with Dagre plugin.  Seems weak on tree-like structures.
-    - jQuery Sparklines
-      Lightweight and simple, but only designed for small graphs using small
-      datasets.  Might be nice to show load/stack/CPU, etc.
-  - Special purpose needs:
-    - Something like gvterm?
-    - Parse trees
-    - Geo Maps: Leaflet (Carlo Capelli).
-
-[1] http://datavisualization.ch/tools/13-javascript-libraries-for-visualizations/
-[2] http://jster.net/category/visualization-libraries
-[3] http://blog.profitbricks.com/39-data-visualization-tools-for-big-data/
-
-### Some data vizualization literature:
-
- - "Reviewing data visualization: an analytical taxonomical study"
-   JF Rodrigues, AJM Traina et all, 2006.
- - "The eyes have it: A task by data type taxonomy of information
-   visualizations"
-   https://www.cs.umd.edu/users/ben/papers/Shneiderman1996eyes.pdf
- - "Information Visualization and Visual Data Mining", Daniel A. Keim
-
-## Export results
-
- - Provide save-as-CSV from a runner?
+  - User provided rendering?
+    - Allow for rewriting answer terms?
+    - Allow generating HTML?  How to deal with security?
 
 ## Sharing
 
@@ -104,12 +66,79 @@ _not_ see exactly the same UI for cooperation.  What about
 
 ## Login
 
-  - Deal with login-with-google (oauth2)
+  - Social login
+    - login-with-google (oauth2)
+    - etc ...
+  - Make it easy to add HTTPS certificate based login.
+    - not SWISH specific
 
 ## Search
 
-  - Implement typeahead search
-    - For lines of the source code					[OK]
-    - For predicates							[OK]
-    - For public files							[OK]
   - Implement string search with result page
+    - `Harmonica' with
+      - Found files (including full text search inside them)
+      - Found manual entries
+      - Found source locations
+
+## Tabbed editor
+
+  - Notebook
+    - Connect query to above source.				[OK]
+    - Multiple sources:
+      - Allow naming sources?
+      - Allow one source to include others in the same notebook?
+    - Avoid hyperlinks to destroy the page.
+      - show predicate links in a modal dialog
+        - /pldoc/man?predicate=member/2				[OK]
+	- other predicate links.
+      - Use `target=` for others.
+  - Source search: pass number of items being searched and
+    if there are too many hits, balance over files.
+  - Set tab-width per source?
+  - Debug (trace) through included files
+    - Works, except for following the source.
+  - Deal with files/line numbers over multiple files
+  - Jump to source for goals.
+  - Staging
+    Control-S (whatever) saves data to `staging area'.
+    - In addition to HEAD, introduce STAGE (gitty solution)?
+    - Save to browser store?
+      - Retrieve on reload?
+      - Make sure running includes the browser version.
+        - Send list of modified tabs
+
+## SWISH as Prolog frontend for local usage
+
+  - Deal with login
+    - Limit to localhost.  Proposed by Douglas Miles:
+      - Generate random initial URL
+      - Fire on this URL
+      - Esablish session cookie
+      - Demand this cookie and destroy the initial URL
+    - Shared/remote usage
+      - Describe how to setup HTTPS.
+  - Improve source search
+    - Full search
+    - Search file names
+    - Regex support
+    - Select search targets
+      - File names
+      - Content
+      - Gitty, filesys, examples
+  - Debugger:
+    - Set breakpoints in non-pengine sources
+      - For shared operation this requires limiting a breakpoint to
+        the pengine thread.
+    - Get a stack overview.
+  - Mark files as pengine_src, loaded, not_loaded
+    - Only send pengine_src with pengines.
+    - Detect pengine_src based on alias?
+
+### Bugs
+
+  - Colouring of /library/http/html_write.pl.  Broken sequences:
+    - DCG exports
+    - use_module/2
+    - ?- [file].
+    - :- op(1150, fx, [(mode), (public)]).
+

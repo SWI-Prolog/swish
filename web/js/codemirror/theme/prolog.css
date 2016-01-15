@@ -29,6 +29,7 @@
 .cm-s-prolog span.cm-head_hook         {color: blue; text-decoration: underline;}
 .cm-s-prolog span.cm-head_extern       {color: blue; font-weight: bold;}
 .cm-s-prolog span.cm-head_public       {color: #016300; font-weight: bold;}
+.cm-s-prolog span.cm-head_constraint   {color: #008b8b; font-weight: bold;}
 .cm-s-prolog span.cm-head	       {font-weight: bold;}
 .cm-s-prolog span.cm-goal_built_in     {color: blue;}
 .cm-s-prolog span.cm-goal_imported     {color: blue;}
@@ -36,6 +37,7 @@
 .cm-s-prolog span.cm-goal_undefined    {color: red;}
 .cm-s-prolog span.cm-goal_dynamic      {color: #f0f;} /*magenta*/
 .cm-s-prolog span.cm-goal_thread_local {color: #f0f; text-decoration: underline;}
+.cm-s-prolog span.cm-goal_constraint   {color: #008b8b;} /*dark-cyan*/
 .cm-s-prolog span.cm-goal_recursion    {text-decoration: underline;}
 .cm-s-prolog span.cm-meta	       {color: blue;}
 .cm-s-prolog span.cm-op_type	       {color: blue;}

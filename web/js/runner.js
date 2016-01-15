@@ -87,7 +87,7 @@ define([ "jquery", "config", "preferences",
      */
     run: function(query) {
       var data = this.data('prologRunners');
-	console.log("run " + query.codeType);
+	console.log("runner.run " + query.codeType);
       if ( query.iconifyLast )
 	this.prologRunners('iconifyLast');
 
@@ -351,12 +351,12 @@ define([ "jquery", "config", "preferences",
 	/* Load pengines.js incrementally because we wish to ask the
 	   one from the pengine server rather than a packaged one.
 	*/
-	console.log("init " + query.codeType);
+	console.log("runner.init " + query.codeType);
 	require([config.http.locations.pengines+"/pengines.js"],
 		function() {
 	  var runnersrc = "";
 	  if (query.codeType == "lpad")
-	    runnersrc = " :- use_module(library(pengines)). :- use_module(library(pita)). :-cplint.  " + query.source + " :- end_cplint.";
+	    runnersrc = ":- use_module(library(pengines)).\n:- use_module(library(pita)).\n:-cplint.\n" + query.source + "\n:- end_cplint.";
 	  else 
 	    runnersrc = query.source;
 	
@@ -913,15 +913,21 @@ define([ "jquery", "config", "preferences",
     if ( data.chunk )
       options.chunk = data.chunk;
 
+/**/
     var runnerquery = "";
     if (data.query.codeType == "lpad")
       runnerquery = "s(" + termNoFullStop(data.query.query) + ",Prob)";
     else 
       runnerquery = termNoFullStop(data.query.query);
-
+console.log(data);
     this.pengine.ask("'$swish wrapper'((" +
 		     runnerquery +
 		     "))", options);
+/*
+    this.pengine.ask("'$swish wrapper'((" +
+		     termNoFullStop(data.query.query) +
+		     "), Residuals)", options);
+*/
     elem.prologRunner('setState', "running");
   }
 

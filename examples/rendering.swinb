@@ -8,7 +8,7 @@ can be compared to the Prolog _hook_ portray/1, although it currently only appli
 for example:
 </div>
 
-<div class="nb-cell program">
+<div class="nb-cell program prolog">
 :- use_rendering(table).
 </div>
 

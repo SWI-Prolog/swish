@@ -28,15 +28,19 @@
 */
 
 :- module(replay,
-	  [ load_log/1,				% +File
+	  [ load_log/1,			% +File
 	    replay/0,
-	    replay/1,				% +Pengine
-	    replay/2				% +Pengine, +ServerURL
+	    replay/1,			% +Pengine
+	    replay/2,			% +Pengine, +ServerURL
+	    concurrent_replay/1,	% +Count
+	    skip_pengine/1		% +Pengine
 	  ]).
 :- use_module(library(debug)).
 :- use_module(library(pengines)).
-:- use_module(library(settings)).
 :- use_module(library(option)).
+:- use_module(library(apply)).
+:- use_module(library(lists)).
+:- use_module(library(thread)).
 
 /** <module> Replay SWISH sessions from a log file
 
@@ -60,12 +64,16 @@ log, perform the following steps:
 */
 
 :- debug(playback(event)).
+:- debug(playback(create)).
 :- debug(playback(source)).
 :- debug(playback(query)).
 :- debug(playback(background)).
+:- debug(playback(concurrent)).
+%:- debug(playback(timing)).		% Do real timing
 
-:- setting(background, number, 10,
-	   "Background if it takes longer that seconds to reply").
+:- dynamic
+	pengine/2,
+	skip_pengine_store/1.
 
 %%	replay is nondet.
 %
@@ -78,11 +86,27 @@ log, perform the following steps:
 %	  ==
 
 replay :-
-	pengine_in_log(Pengine, StartTime, Src),
+	pengine_in_log(Pengine, _StartTime, Src),
+	\+ skip_pengine_store(Pengine),
 	Src \== (-),
-	format_time(string(D), '%+', StartTime),
-	format(user_error, '*** ~q at ~s ***~n', [Pengine, D]),
 	replay(Pengine).
+
+%%	concurrent_replay(+Count) is det.
+%
+%	Perform a concurrent replay over Count threads.
+
+concurrent_replay(Count) :-
+	findall(Pengine, pengine_in_log(Pengine, _StartTime, _Src), Pengines),
+	length(Pengines, Len),
+	debug(playback(concurrent), 'Replaying ~D pengines', Len),
+	maplist([P, replay1(P)]>>true, Pengines, Goals),
+	concurrent(Count, Goals, []).
+
+replay1(P) :-
+	catch(replay(P), E, print_message(warning, E)), !.
+replay1(P) :-
+	print_message(error, replay(P, failed)).
+
 
 %%	replay(+Pengine) is det.
 %
@@ -96,25 +120,26 @@ replay(Pengine) :-
 %	Replay pengine with id Pengine on server ServerURL.
 
 replay(Pengine, URL) :-
+	pengine_interaction(Pengine, StartTime, CreateOptions, Messages),
+	pengine_create([ server(URL),
+			 id(Id)
+		       | CreateOptions
+		       ]),
+	format_time(string(D), '%+', StartTime),
+	debug(playback(create), '*** ~q at ~s', [Pengine, D]),
+	debug(playback(create), '*** ~q', [Id]),
+	show_source(CreateOptions),
+	get_time(Now),
+	run(Messages, Now, Id, []).
+
+pengine_interaction(Pengine, StartTime, CreateOptions, Messages) :-
 	once(pengine(StartTime, create(Pengine, swish, Options0))),
-	maplist(fix_option, Options0, Options),
+	maplist(fix_option, Options0, CreateOptions),
 	findall(Time-Message,
 		(   pengine(Time0, send(Pengine, Message)),
 		    Time is Time0-StartTime
 		),
-		Messages),
-	option(src_text(Source), Options, ""),
-	(   debugging(playback(source))
-	->  format(user_error, '~N==~n~s~N==~n', [Source])
-	;   true
-	),
-	pengine_create([ server(URL),
-			 id(Id)
-		       | Options
-		       ]),
-	get_time(Now),
-	setting(background, BgTime),
-	run(Messages, Now, Id, [backround(BgTime)]).
+		Messages).
 
 fix_option(src_text(_Hash-Text), src_text(Text)) :- !.
 fix_option(src_text(Hash), src_text(Text)) :- !,
@@ -122,45 +147,48 @@ fix_option(src_text(Hash), src_text(Text)) :- !,
 	memberchk(src_text(Hash-Text), Options), !.
 fix_option(Option, Option).
 
-run([], _, _, _) :- !.
-run(Messages, StartTime, Id, Options) :-
-	(   option(backround(BgTime), Options, 0),
-	    BgTime > 0
-	->  pengine_event(Event, [listen(Id), timeout(BgTime)]),
-	    (	Event == timeout
-	    ->	background(Messages, StartTime, Id),
-		Bg = true
-	    ;	true
-	    )
-	;   pengine_event(Event, [listen(Id)])
-	),
-	(   Bg == true
-	->  true
-	;   reply(Event, Id, StartTime, Messages, Messages1),
-	    run(Messages1, StartTime, Id, Options)
+show_source(Options) :-
+	option(src_text(Source), Options, ""),
+	(   debugging(playback(source))
+	->  format(user_error, '~N==~n~s~N==~n', [Source])
+	;   true
 	).
 
-reply(output(_Id, Prompt), Pengine, _, Msgs, Msgs) :- !,
+run([], _, _, _) :- !.
+run(Messages, StartTime, Id, Options) :-
+	pengine_event(Event, [listen(Id)]),
+	reply(Event, Id, StartTime, Messages, Messages1),
+	run(Messages1, StartTime, Id, Options).
+
+reply(output(_Id, Prompt), Pengine, StartTime, [Time-pull_response|T], T) :- !,
 	debug(playback(event), 'Output ~p (pull_response)', [Prompt]),
+	sync_time(StartTime, Time),
 	pengine_pull_response(Pengine, []).
+reply(error(Id, error(time_limit_exceeded,_)), Pengine, _, Msgs, []) :- !,
+	catch(pengine_destroy(Id), _, true),
+	(   Msgs == []
+	->  true
+	;   print_message(error, replay(Pengine, timeout(Msgs)))
+	).
 reply(Event, Pengine, StartTime, [Time-H|T], T) :-
-	get_time(Now),
-	Sleep is (StartTime+Time) - Now,
-	debug(playback(event), 'Received ~p, reply: ~p (sleep: ~3f)',
-	      [Event, H, Sleep]),
-%	sleep(Sleep),
-	debug(playback(reply), 'Reply: ~p', [H]),
-	(   pengine_send(H, Pengine)
+	debug(playback(event), 'Received ~p, reply: ~p', [Event, H]),
+	sync_time(StartTime, Time),
+	(   catch(pengine_send(H, Pengine), E,
+		  print_message(error, E))
 	->  true
 	;   print_message(error, replay(Pengine, failed(H)))
 	).
 
-background(Messages, StartTime, Id) :-
-	debug(background, 'Backgrounding ~q', [Id]),
-	thread_create(run(Messages, StartTime, Id, [backround(0)]),
-		      _, [detached(true)]).
+sync_time(StartTime, Time) :-
+	debugging(playback(timing)), !,
+	get_time(Now),
+	Sleep is (StartTime+Time) - Now,
+	debug(playback(event), '  sleep: ~3f ...', [Sleep]),
+	sleep(Sleep).
+sync_time(_, _).
 
-pengine_send(ask(Question,Options), Id) :-
+pengine_send(ask(Question,Options0), Id) :-
+	maplist(fix_ask_option(Id), Options0, Options),
 	debug(playback(query), 'ask ~p', [Question]),
 	pengine_ask(Id, Question, Options).
 pengine_send(next, Id) :-
@@ -178,6 +206,30 @@ pengine_send(output(_Prompt), Id) :-
 	pengine_pull_response(Id, []).
 pengine_send(destroy, Id) :-
 	pengine_destroy(Id).
+pengine_send(pull_response, Id) :-
+	pengine_pull_response(Id, []).
+
+%%	fix_ask_option(+Pengine, +AskOption, -NewAskOption) is det.
+%
+%	Fixed breakpoint options to refer to the new pengine.
+
+fix_ask_option(Id, breakpoints(List0), breakpoints(List)) :- !,
+	maplist(fix_breakpoint(Id), List0, List).
+fix_ask_option(_, Option, Option).
+
+fix_breakpoint(Id, BP0, BP) :-
+	fix_file(BP0.file, Id, NewFile),
+	BP = BP0.put(file, NewFile).
+
+fix_file(OldFile, Pengine, NewFile) :-
+	split_string(OldFile, "/", "", Parts),
+	select(OldPengine, Parts, Pengine, NewParts),
+	is_uuid_string(OldPengine), !,
+	atomics_to_string(NewParts, "/", NewFile).
+
+is_uuid_string(String) :-
+	split_string(String, "-", "", Parts),
+	maplist(string_length, Parts, [8,4,4,4,12]).
 
 %%	pengine_in_log(-Id, -StartTime, -Src)
 %
@@ -188,22 +240,62 @@ pengine_in_log(Pengine, StartTime, Src) :-
 	(   maplist(fix_option, Options0, Options)
 	->  option(src_text(Src), Options)
 	;   Src = (-)
-	).
+	),
+	\+ for_source_only(Pengine, Options0).
+
+for_source_only(Pengine, Options) :-
+	option(src_text(_Hash-_Text), Options),
+	\+ pengine(_, send(Pengine, _)).
 
 %%	load_log(+Log)
 %
 %	Load a log file.
 
 load_log(Log) :-
+	retractall(pengine(_,_)),
 	absolute_file_name(Log, Path,
 			   [ access(read),
 			     extensions(['', log])
 			   ]),
 	setup_call_cleanup(
-	    ( style_check(-discontiguous),
-	      style_check(-singleton)
-	    ),
-	    consult(Path),
-	    ( style_check(+discontiguous),
-	      style_check(+singleton)
-	    )).
+	    open(Path, read, In, [encoding(utf8)]),
+	    read_log(In),
+	    close(In)).
+
+read_log(In) :-
+	read_term(In, Term,
+		  [ syntax_errors(dec10)
+		  ]),
+	read_log(Term, In).
+
+read_log(end_of_file, _) :- !.
+read_log(Term, In) :-
+	assert_event(Term),
+	read_log(In).
+
+assert_event(pengine(Time, Action)) :- !,
+	assertz(pengine(Time, Action)).
+assert_event(request(_Id, Time, Request)) :-
+	memberchk(path('/pengine/pull_response'), Request),
+	memberchk(search(Fields), Request),
+	memberchk(id=Pengine, Fields), !,
+	assertz(pengine(Time, send(Pengine, pull_response))).
+assert_event(_).
+
+skip_pengine(Pengine) :-
+	assertz(skip_pengine_store(Pengine)).
+
+		 /*******************************
+		 *	      MESSAGES		*
+		 *******************************/
+
+:- multifile
+	prolog:message//1.
+
+prolog:message(replay(Pengine, timeout(Msgs))) -->
+	{ length(Msgs, Len) },
+	[ 'Terminated ~q on timeout (~D messages left)'-[ Pengine, Len ] ].
+prolog:message(replay(Pengine, failed(H))) -->
+	[ 'Replay on ~q for ~q failed'-[Pengine, H] ].
+prolog:message(replay(Pengine, failed)) -->
+	[ 'Replay of ~q failed'-[Pengine] ].

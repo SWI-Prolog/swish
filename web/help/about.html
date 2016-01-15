@@ -13,10 +13,23 @@
   div.github iframe {
     border: 0px;
   }
-body {
- overflow: scroll;
-  margin: 10px;
- }
+  body {
+    overflow: scroll;
+    margin: 10px;
+  }
+  div.acknowledgement { width: 90%;
+			margin-top: 2em; margin-left:auto; margin-right: auto;
+			border-top: 1px solid #bbb;
+			padding-top: 5px;
+		      }
+  div.acknowledgement > span { display: inline-block; width: 48%;
+			       vertical-align: top;
+			       color: #888;
+			     }
+  img.commit-logo { vertical-align: top;}
+  img.commit { width: 30% }
+  img.vu { width: 8% }
+  img.synerscope { width: 12% }
   </style>  </head>
   <body>
 <div itemscope itemtype="http://schema.org/SoftwareSourceCode">
@@ -31,7 +44,26 @@ with a Javascript-enabled web browser on <span itemprop="operatingSystem">any op
 <p><span style="color:darkblue">SWI</span><span
 style="color:maroon">SH</span> was originally written by Torbj&ouml;rn Lager
 as a homage to SWI-Prolog. Jan Wielemaker designed and implemented the
-present version.
+present version. The current <span
+style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
+application targets primarily at collaborative exploration of data. <span
+style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
+can be combined with e.g., <a
+href="http://www.swi-prolog.org/pldoc/package/cql">CQL</a> to explore
+relational (SQL) databases or <a
+href="http://www.swi-prolog.org/pack/list?p=sparkle">sparkle</a> to
+explore linked data. A <a
+href="http://cliopatria.swi-prolog.org/packs/swish>">ClioPatria
+plugin</a> adds Prolog based exploration of RDF data to ClioPatria.
+</p>
+
+<p>
+<span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> is a great tool for teaching Prolog.
+We provide a <a href="http://lpn.swi-prolog.org">prototype of
+Learn Prolog Now!</a> where <span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> is embedded to run examples and solve
+excercises from within your browser.
 </p>
 
 <p>
