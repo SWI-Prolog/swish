@@ -15,8 +15,9 @@ the target program.
 
 */
 /** <examples>
-?- induce_par([train],P).
-?- induce_par([train],[test],P,LL,AUCROC,ROC,AUCPR,PR).
+?- induce_par([train],P),test(P,[test],LL,AUCROC,ROC,AUCPR,PR).  % learn the parameteters and test the result
+?- induce_par([train],P).  % learn the parameteters 
+?- in(P),test(P,[test],LL,AUCROC,ROC,AUCPR,PR). % test the input theory
 */
 
 

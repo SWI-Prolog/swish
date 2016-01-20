@@ -16,7 +16,7 @@ program). When learning, the initial parameters are randomly set.
 */
 
 /** <examples>
-?- induce_par([train],P).
+?- induce_par([train],P).  % learn the parameteters
 */
 :- use_module(library(slipcover)).
 :- use_module(library(lists)).
