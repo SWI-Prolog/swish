@@ -5,7 +5,11 @@ disjunctions. In International Conference on Logic Programming,
 volume 3131 of LNCS, pages 195-209. Springer, 2004.
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 heads(Coin): 1/2; tails(Coin) : 1/2:-toss(Coin),\+biased(Coin).
@@ -25,6 +29,9 @@ toss(coin).
 
 ?- prob(heads(coin),Prob).  % what is the probability that coin lands heads?
 ?- prob(tails(coin),Prob).  % what is the probability that coin lands tails?
+?- prob_bar(heads(coin),Prob).  % what is the probability that coin lands heads?
+?- prob_bar(tails(coin),Prob).  % what is the probability that coin lands tails?
+
 
 
 */

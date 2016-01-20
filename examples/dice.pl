@@ -7,7 +7,11 @@ disjunctions. In International Conference on Logic Programming,
 volume 3131 of LNCS, pages 195-209. Springer, 2004.
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 % on(T,F) means that the dice landed on face F at time T
@@ -30,6 +34,9 @@ on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
 ?- prob(on(0,1),Prob). % what is the probability that the dice lands on face 1 at time 0?
 ?- prob(on(1,1),Prob). % what is the probability that the dice lands on face 1 at time 1?
 ?- prob(on(2,1),Prob). % what is the probability that the dice lands on face 1 at time 2?
+?- prob_bar(on(0,1),Prob). % what is the probability that the dice lands on face 1 at time 0?
+?- prob_bar(on(1,1),Prob). % what is the probability that the dice lands on face 1 at time 1?
+?- prob_bar(on(2,1),Prob). % what is the probability that the dice lands on face 1 at time 2?
 
 */
  

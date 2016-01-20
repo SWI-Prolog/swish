@@ -11,7 +11,11 @@ contextual variable elimination and comparison to BDD based inference methods."
 Inductive Logic Programming. Springer Berlin Heidelberg, 2010. 96-109.
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 % mchrom(Person,C) means that the chromosome of Person inherited from his mother
@@ -86,5 +90,9 @@ mother(p_m, p).
 ?- prob(bloodtype(p,b),Prob). % what is the probability that the p's bloodtype is b?
 ?- prob(bloodtype(p,ab),Prob). % what is the probability that the p's bloodtype is ab?
 ?- prob(bloodtype(p,null),Prob). % what is the probability that the p's bloodtype is 0?
+?- prob_bar(bloodtype(p,a),Prob). % what is the probability that the p's bloodtype is a?
+?- prob_bar(bloodtype(p,b),Prob). % what is the probability that the p's bloodtype is b?
+?- prob_bar(bloodtype(p,ab),Prob). % what is the probability that the p's bloodtype is ab?
+?- prob_bar(bloodtype(p,null),Prob). % what is the probability that the p's bloodtype is 0?
 */
  

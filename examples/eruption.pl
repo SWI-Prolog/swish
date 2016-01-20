@@ -12,7 +12,11 @@ programs by searching the clause space. Theory and Practice of Logic
 Programming, FirstView Articles, 2014
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 eruption : 0.6 ; earthquake : 0.3 :- 
@@ -35,5 +39,8 @@ fault_rupture(east_west).
 
 ?- prob(eruption,Prob). % what is the probability of an eruption?
 ?- prob(earthquake,Prob). % what is the probability of an earthquake?
+?- prob_bar(eruption,Prob). % what is the probability of an eruption?
+?- prob_bar(earthquake,Prob). % what is the probability of an earthquake?
+
 
 */

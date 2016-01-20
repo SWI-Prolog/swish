@@ -6,7 +6,11 @@ F. Riguzzi and N. Di Mauro. Applying the information bottleneck to statistical
 relational learning. Machine Learning, 86(1):89-114, 2012
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 earthquake(X, strong) : 0.3 ; earthquake(X, moderate) : 0.5 :-
@@ -45,5 +49,14 @@ volcanic_eruption(eyjafjallajkull).
 % earthquake at eyjafjallajkull?
 ?- prob(earthquake(eyjafjallajkull,moderate),Prob). % what is the probability of a moderate
 % earthquake at eyjafjallajkull?
+?- prob_bar(earthquake(stromboli,strong),Prob).  % what is the probability of a strong 
+% earthquake at stromboli?
+?- prob_bar(earthquake(stromboli,moderate),Prob).  % what is the probability of a moderate
+% earthquake at stromboli?
+?- prob_bar(earthquake(eyjafjallajkull,strong),Prob).  % what is the probability of a strong 
+% earthquake at eyjafjallajkull?
+?- prob_bar(earthquake(eyjafjallajkull,moderate),Prob). % what is the probability of a moderate
+% earthquake at eyjafjallajkull?
+
 
 */

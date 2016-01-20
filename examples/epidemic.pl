@@ -6,7 +6,11 @@ diagrams for probabilistic logic programs. Intelligent Data Analysis,
 17(2):343-363, 2013.
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 epidemic : 0.6; pandemic : 0.3 :- flu(_), cold.
@@ -27,5 +31,8 @@ flu(robert).
 
 ?- prob(epidemic,Prob).  % what is the probability that an epidemic arises?
 ?- prob(pandemic,Prob).  % what is the probability that a pandemic arises?
+?- prob_bar(epidemic,Prob).  % what is the probability that an epidemic arises?
+?- prob_bar(pandemic,Prob).  % what is the probability that a pandemic arises?
+
 
 */

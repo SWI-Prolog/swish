@@ -4,7 +4,11 @@ From
 F. Riguzzi and T. Swift. The PITA system: Tabling and answer subsumption for reasoning under uncertainty. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, 11(4-5):433-449, 2011.
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 strong_sneezing(X) : 0.3 ; moderate_sneezing(X) : 0.5 :- flu(X).
@@ -28,5 +32,9 @@ hay_fever(bob).
 ?- prob(strong_sneezing(bob),Prob). % what is the probability that bob has strong sneezing?
 ?- prob(moderate_sneezing(bob),Prob). % what is the probability that bob has 
 %  moderate sneezing?
+?- prob_bar(strong_sneezing(bob),Prob). % what is the probability that bob has strong sneezing?
+?- prob_bar(moderate_sneezing(bob),Prob). % what is the probability that bob has 
+%  moderate sneezing?
+
 
 */
