@@ -123,8 +123,8 @@ preferences.setDefault("emacs-keybinding", false);
       	  menuBroadcast("help", {file:"background.html"});
 	      },
       },
-      "Tutorial": function() {
-        
+      "Tutorial":  function() {
+         //menuBroadcast("source", {file:"help.html"});
           //menuBroadcast("tutorial", {file:"tutorial.html"});
         }
       

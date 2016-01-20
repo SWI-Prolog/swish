@@ -1,0 +1,34 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Coin
+
+This example shows the basic concepts of the Logic Programs with Annotated Disjunctions and how to use the tool cplint on SWISH to perform inference.
+Let us suppose that we have one coin that we are not sure if it is biased. Now, if we toss the coin, what is the probability that it will land on head?
+
+The LPAD is shown below. The first rule states that if the coin is fair and we toss it, it will land on heads with 50% probability. The second rule, instead, states that if the coin is biased it will land on heads with 60% probability. Moreover we supposed that the coin is biased with 10% probability and we will certanly toss the coin.
+</div>
+ 
+<div class="nb-cell program lpad" src="example/coin.pl">
+heads(Coin): 1/2; tails(Coin) : 1/2:-toss(Coin),\+biased(Coin).
+% if we toss a Coin that is not biased then it lands heads with probability 1/2
+% and tails with probability 1/2
+heads(Coin): 0.6 ; tails(Coin) : 0.4:-toss(Coin),biased(Coin).
+% if we toss a Coin that is biased then it lands heads with probability 0.6
+% % and tails with probability 0.4
+fair(Coin):0.9 ; biased(Coin):0.1.
+% a Coin is fair with probability 0.9 and biased with probability 0.1
+toss(coin).
+% coin is certainly tossed
+</div>
+
+<div class="nb-cell query">
+heads(coin).
+</div>
+
+<div class="nb-cell markdown">
+To try this example click on the icon next to the query. We will see that the coin will land on heads with 51% probability. In fact P(heads) = P(heads, fair) + P(heads, biased) = P(heads|fair)P(fair) + P(heads|biased)P(biased) = 0.5&sdot;0.9 + 0.6&sdot;0.1 = 0.51.
+</div>
+
+</div>
+

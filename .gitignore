@@ -2,3 +2,4 @@ bower_components
 storage
 log
 *~
+*.swp
