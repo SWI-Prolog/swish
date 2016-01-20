@@ -35,9 +35,22 @@
 :- use_module(library(debug)).
 :- use_module(library(crypt)).
 :- use_module(library(http/http_authenticate)).
+:- use_module(library(settings)).
 
 :- use_module(config).
 :- use_module(page).
+
+:- if(exists_source(library(http/http_digest))).
+:- use_module(library(http/http_digest)).
+:- setting(method, oneof([basic,digest]), digest,
+	   "HTTP authentication method used").
+:- else.
+:- setting(method, oneof([basic]), basic,
+	   "HTTP authentication method used").
+:- endif.
+
+:- setting(realm, atom, 'SWISH user',
+	   "HTTP authentication realm").
 
 :- multifile
 	swish_config:config/2,
@@ -70,6 +83,11 @@ password_file(File) :-
 	absolute_file_name(swish(passwd), File, [access(read)]),
 	asserta(password_file_cache(File)).
 
+logged_in(Request, User) :-
+	setting(method, digest), !,
+	setting(realm, Realm),
+	password_file(File),
+	http:authenticate(digest(File, Realm), Request, [user(User)|_Details]).
 logged_in(Request, User) :-
 	password_file(File),
 	http_authenticate(basic(File), Request, [User|_Fields]), !,
@@ -107,13 +125,21 @@ swish_config:authenticate(Request, User) :-
 %
 %	Add a new user to the SWISH password file.
 
+:- if(current_predicate(http_digest_password_hash/4)).
+swish_add_user(User, Passwd, Fields) :-
+	setting(method, digest), !,
+	setting(realm, Realm), !,
+	http_digest_password_hash(User, Realm, Passwd, Hash),
+	update_password(passwd(User, Hash, Fields)).
+:- endif.
 swish_add_user(User, Passwd, Fields) :-
 	phrase("$1$", E, _),		% use Unix MD5 hashes
 	crypt(Passwd, E),
 	string_codes(Hash, E),
+	update_password(passwd(User, Hash, Fields)).
 
-	Entry = passwd(User, Hash, Fields),
-
+update_password(Entry) :-
+	arg(1, Entry, User),
 	absolute_file_name(swish(passwd), File,
 			   [access(write)]),
 	(   exists_file(File)
