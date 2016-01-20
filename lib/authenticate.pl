@@ -81,6 +81,7 @@ password_file(File) :-
 	password_file_cache(File), !.
 password_file(File) :-
 	absolute_file_name(swish(passwd), File, [access(read)]),
+	update_auth_type(File),
 	asserta(password_file_cache(File)).
 
 logged_in(Request, User) :-
@@ -121,6 +122,35 @@ swish_config:authenticate(Request, User) :-
 	logged_in(Request, User).
 
 
+%%	update_auth_type(+File)
+%
+%	Update the authentication type to match the password hashes
+
+update_auth_type(File) :-
+	digest_password_file(File), !,
+	setting(method, Method),
+	(   Method == digest
+	->  true
+	;   print_message(warning, http_auth_type(Method, digest)),
+	    set_setting(method, digest)
+	).
+update_auth_type(_) :-
+	setting(method, Method),
+	(   Method == basic
+	->  true
+	;   print_message(warning, http_auth_type(Method, basic)),
+	    set_setting(method, basic)
+	).
+
+digest_password_file(File) :-
+	http_read_passwd_file(File, [passwd(_User, Hash, _Fields)|_]),
+	is_sha1(Hash).
+
+is_sha1(Hash) :-
+	atom_length(Hash, 32),
+	forall(sub_atom(Hash, _, 1, _, Char),
+	       char_type(Char, xdigit(_))).
+
 %%	swish_add_user(+User, +Passwd, +Fields) is det.
 %
 %	Add a new user to the SWISH password file.
@@ -140,8 +170,11 @@ swish_add_user(User, Passwd, Fields) :-
 
 update_password(Entry) :-
 	arg(1, Entry, User),
-	absolute_file_name(swish(passwd), File,
-			   [access(write)]),
+	(   catch(password_file(File), _, fail)
+	->  true
+	;   absolute_file_name(swish(passwd), File,
+			       [access(write)])
+	),
 	(   exists_file(File)
 	->  http_read_passwd_file(File, Data)
 	;   Data = []
@@ -152,3 +185,14 @@ update_password(Entry) :-
 	),
 	http_write_passwd_file(File, NewData).
 
+
+		 /*******************************
+		 *	     MESSAGES		*
+		 *******************************/
+
+:- multifile prolog:message//1.
+
+prolog:message(http_auth_type(ReqMethod, Method)) -->
+	[ 'Using HTTP authentication ~q instead of ~q due to password file format'
+	  -[Method, ReqMethod]
+	].
