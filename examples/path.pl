@@ -10,6 +10,7 @@ Artificial Intelligence, pages 2462-2467, 2007.
 
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
+:- use_rendering(graphviz).
 :- endif.
 
 :- cplint.
@@ -34,9 +35,16 @@ edge(a,e):0.1.
 
 :- end_cplint.
 
+graph(digraph(G)):-
+    findall(edge(A -> B,[label=P]),
+      clause(edge(_,A,B,_),(get_var_n(_,_,_,[P|_],_),_)),
+      G).
+
+
 /** <examples>
 
 ?- prob(path(a,e),Prob). % what is the probability that a and e are connected?
 ?- prob_bar(path(a,e),Prob). % what is the probability that a and e are connected?
+?- graph(G). % show the probabilistic graph
 
 */

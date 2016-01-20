@@ -5,7 +5,11 @@ of causal probabilistic events and its relation to logic programming.
 Theory Pract. Log. Program., 9(3):245-308, 2009.
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 push.
@@ -23,6 +27,9 @@ replace :- \+ light.
 
 ?- prob(replace,Prob). % what is the probability that we replace the bulb?
 ?- prob(light,Prob).   % what is the probability that the light is on?
+?- prob_bar(replace,Prob). % what is the probability that we replace the bulb?
+?- prob_bar(light,Prob).   % what is the probability that the light is on?
+
 
 */
  

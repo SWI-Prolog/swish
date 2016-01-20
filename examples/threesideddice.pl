@@ -8,7 +8,11 @@ reasoning under uncertainty. Theory and Practice of Logic Programming,
 Lexington, Kentucky 6-10 July 2011, 11(4-5):433-449, 2011
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 % on(T,F) means that the dice landed on face F at time T
@@ -30,6 +34,10 @@ on(X,1):1/3;on(X,2):1/3;on(X,3):1/3:-
 ?- prob(on(1,1),Prob). % what is the probability that the dice lands on face 1 at time 1?
 ?- prob(on(2,1),Prob). % what is the probability that the dice lands on face 1 at time 2?
 ?- prob(on(3,1),Prob). % what is the probability that the dice lands on face 1 at time 3?
+?- prob_bar(on(0,1),Prob). % what is the probability that the dice lands on face 1 at time 0?
+?- prob_bar(on(1,1),Prob). % what is the probability that the dice lands on face 1 at time 1?
+?- prob_bar(on(2,1),Prob). % what is the probability that the dice lands on face 1 at time 2?
+?- prob_bar(on(3,1),Prob). % what is the probability that the dice lands on face 1 at time 3?
 
 */
  

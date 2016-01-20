@@ -9,7 +9,11 @@ vol. 5649. Springer, 55-69.
 
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 % hmm(O): O is the output sequence 
@@ -53,7 +57,8 @@ letter(q2,a,S):0.25;letter(q2,c,S):0.25;letter(q2,g,S):0.25;letter(q2,t,S):0.25.
 
 /** <examples>
 
-?- prob(hmm([a,c,a,c,g,t]),Prob). % what is the probability that the model emits the sequence [a,c,a,c,g,tr])
+?- prob(hmm([a,c]),Prob). % what is the probability that the model emits the sequence [a,c])
+?- prob_bar(hmm([a,c]),Prob). % what is the probability that the model emits the sequence [a,c])
 
 */
  
