@@ -1,0 +1,34 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Tutorial
+
+- *Basic examples with inference*
+  - [Coin](tutorial/coin.swinb)
+  - [Dice](tutorial/dice.swinb)
+  - [Epidemic](tutorial/epidemic.swinb)
+  - [Earthquake](tutorial/earthquake.swinb)
+  - [Medical symptoms](tutorial/sneezing.swinb)
+  - [Eruption](tutorial/eruption.swinb)
+  - [Mendelian ineritance of human bloodtype](tutorial/bloodtype.swinb)
+  - [Path](tutorial/path.swinb)
+  - [Alarm Bayesian Network](tutorial/alarm.swinb)
+  - [Hidden Markov Model](tutorial/hmm.swinb)
+  - [Probabilistic Context Free Grammar](tutorial/pcfg.swinb)
+  - [UWCSE: link prediction](tutorial/uwcse.swinb)
+  - [Cora: entity resolution](tutorial/cora.swinb)
+  - [Monty Hall puzzle](tutorial/monty.swinb)
+  - [Three-prizoners puzzle](tutorial/jail.swinb)
+  - [Russian roulette with two guns](tutorial/trigger.swinb)
+  - [Negation](tutorial/light.swinb)
+  - [Coins](tutorial/coin2.swinb)
+  - [Three sided dice](tutorial/threesideddice.swinb)
+- *Examples with structure and parameter learning*
+  - [Bongard](tutorial/bongard.swinb)
+  - [Shop](tutorial/shop.swinb)
+  - [HMM](tutorial/hmmlearn.swinb)
+  - [Mutagenesis](tutorial/muta.swinb)
+  - [University](tutorial/university.swinb) 
+- *More Examples*
+  - ...
+</div>

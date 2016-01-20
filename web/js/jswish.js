@@ -91,38 +91,43 @@ preferences.setDefault("emacs-keybinding", false);
       },
       "Help":
       { "About ...": function() {
-	  menuBroadcast("help", {file:"about.html"});
-	},
+      	  menuBroadcast("help", {file:"about.html"});
+      	},
         "Credits ...": function() {
-	  menuBroadcast("help", {file:"credits.html"});
-	},
-	"Topics": "--",
-	"Help ...": function() {
-	  menuBroadcast("help", {file:"help.html"});
-	},
-	"Help on cplint...": function() {
-	  menuBroadcast("help", {file:"help-cplint.html"});
-	},
-	"Runner ...": function() {
-	  menuBroadcast("help", {file:"runner.html"});
-	},
-	"Debugging ...": function() {
-	  menuBroadcast("help", {file:"debug.html"});
-	},
-	"Notebook ...": function() {
-	  menuBroadcast("help", {file:"notebook.html"});
-	},
-	"Background": "--",
-	"Limitations ...": function() {
-	  menuBroadcast("help", {file:"beware.html"});
-	},
-	"Caveats ...": function() {
-	  menuBroadcast("help", {file:"caveats.html"});
-	},
-	"Background ...": function() {
-	  menuBroadcast("help", {file:"background.html"});
-	},
-      }
+      	  menuBroadcast("help", {file:"credits.html"});
+      	},
+      	"Topics": "--",
+      	"Help ...": function() {
+      	  menuBroadcast("help", {file:"help.html"});
+      	},
+      	"Help on cplint...": function() {
+      	  menuBroadcast("help", {file:"help-cplint.html"});
+      	},
+      	"Runner ...": function() {
+      	  menuBroadcast("help", {file:"runner.html"});
+      	},
+      	"Debugging ...": function() {
+      	  menuBroadcast("help", {file:"debug.html"});
+      	},
+      	"Notebook ...": function() {
+      	  menuBroadcast("help", {file:"notebook.html"});
+      	},
+      	"Background": "--",
+      	"Limitations ...": function() {
+      	  menuBroadcast("help", {file:"beware.html"});
+      	},
+      	"Caveats ...": function() {
+      	  menuBroadcast("help", {file:"caveats.html"});
+      	},
+      	"Background ...": function() {
+      	  menuBroadcast("help", {file:"background.html"});
+	      },
+      },
+      "Tutorial": function() {
+        
+          //menuBroadcast("tutorial", {file:"tutorial.html"});
+        }
+      
     }
   }; // defaults;
 

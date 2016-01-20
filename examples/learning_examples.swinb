@@ -25,7 +25,7 @@ original are the learned parameters. Note that the target parameters are those g
   Both parameters and structure can be learned. The input theory for parameter learning has been manually crafted. Structure learning takes about 120 seconds with =verbosity= = =1=.
   
 More examples are included in the standalone version of =cplint= at https://github.com/friguzzi/cplint 
-The stanalone version of =cplint= can be installed as a SWI-Prolog pack http://www.swi-prolog.org/pack/list
+The standalone version of =cplint= can be installed as a SWI-Prolog pack http://www.swi-prolog.org/pack/list
 The other datasets include Carcinogenesis, Cora, Hepatitis, HIV, IMDB,
 Mondial, UWCSE and WebKB. 
 They have not been included here because of their computational cost.
