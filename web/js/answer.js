@@ -428,7 +428,10 @@ define([ "jquery", "laconic" ],
 	  alert("Failed to export rendered result");
 	}
       } else if ( node.find("svg").length == 1 ) {
-	data = node.find("svg")[0].outerHTML
+	var svg = node.find("svg");
+	if ( !svg.attr("xmlns") )
+	  svg.attr("xmlns", "http://www.w3.org/2000/svg");
+	data = svg[0].outerHTML
 	ext  = "svg";
 	type = "image/svg+xml";
       } else {
