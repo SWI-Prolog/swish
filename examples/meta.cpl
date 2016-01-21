@@ -1,3 +1,6 @@
+/*
+Probabilities computation in the body of probabilistic clauses.
+*/
 
 a:0.2:-
   prob(b,P),

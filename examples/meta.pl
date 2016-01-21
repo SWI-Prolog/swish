@@ -1,5 +1,11 @@
-
+/*
+Probabilities computation in the body of probabilistic clauses.
+*/
 :- use_module(library(pita)).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
 
 :- cplint.
 
