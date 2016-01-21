@@ -284,6 +284,24 @@ define([ "jquery", "laconic" ],
       var select = ["<label>View as</label><br>"];
       var children = this.children();
 
+      function downloadButton(i, name) {
+	var title, glyph;
+
+	if ( name == "Prolog term" ) {
+	  title = "Copy";
+	  glyph = "copy";
+	} else {
+	  title = "Download";
+	  glyph = "download";
+	}
+
+	btn = '<a href="#" class="btn btn-style btn-sm" '+
+	      'data-nr="'+i+'" data-action="'+glyph+'" title="'+title+'">' +
+	      '<span class="glyphicon glyphicon-'+glyph+'"></span></a>';
+
+	return btn;
+      }
+
       var i = 0;
       for(var i=0; i<data.display.length; i++) {
 	var r = $(children[i]);
@@ -296,9 +314,11 @@ define([ "jquery", "laconic" ],
 	    name = "Alt rendered ["+(i+1)+"]";
 	}
 
-	select.push("<input type='radio' name='render' value='", i, "'");
+	select.push("<div class='render-item'>",
+		    downloadButton(i, name),
+		    "<input type='radio' name='render' value='", i, "'");
 	if ( i == data.current ) select.push(" checked");
-	select.push("> ", name, "<br>");
+	select.push("> ", name, "</div>");
       }
 
       select.push("</form");
@@ -339,20 +359,78 @@ define([ "jquery", "laconic" ],
      */
     select: function(i) {
       var data  = this.data(pluginName);
-      var child = this.children();
-      var how   = data.display[i];
 
-      $(child[data.current]).hide(400);
-      $(child[i]).show(400, function() { $(this).css("display", how); });
-      this.css("display", how);
-      if ( $(child[i]).is("span.render-as-prolog") ) {
-	this.attr("draggable", false);
-      } else {
-	this.attr("draggable", true);
+      if ( data.current != i ) {
+	var child = this.children();
+	var how   = data.display[i];
+
+	$(child[data.current]).hide(400);
+	$(child[i]).show(400, function() { $(this).css("display", how); });
+	this.css("display", how);
+	if ( $(child[i]).is("span.render-as-prolog") ) {
+	  this.attr("draggable", false);
+	} else {
+	  this.attr("draggable", true);
+	}
+
+	data.current = i;
       }
 
-      data.current = i;
       closeSelectMenu();
+    },
+
+    copy: function(i) {
+      var child = this.children();
+      var data  = this.data(pluginName);
+      var old   = data.current;
+
+      function selectElementText(el) {
+	var range = document.createRange();
+	range.selectNodeContents(el);
+	var selection = window.getSelection();
+	selection.removeAllRanges();
+	selection.addRange(range);
+      }
+
+      this.renderMulti('select', i);
+      selectElementText(child[i]);
+      try {
+	document.execCommand("copy");
+      } catch(e) {
+	alert("Sorry, cannot copy text with this browser");
+      }
+      this.renderMulti('select', old);
+
+      return this;
+    },
+
+    download: function(i) {
+      var child = this.children();
+      var node  = $(child[i]);
+      var ext   = "html";
+      var data;
+
+
+      if ( node.find("svg").length == 1 ) {
+	data = node.find("svg")[0].outerHTML
+	ext  = "svg";
+	type = "image/svg+xml";
+      } else {
+	data = node.html();
+	type = "text/html";
+      }
+
+      var href	= "data:"+type+";charset=UTF-8,"
+		+ encodeURIComponent(data);
+
+      var a = $.el.a({ href:href,
+		       download:"swish-rendered."+ext
+		     });
+      this.append(a);
+      a.click();
+      $(a).remove();
+
+      return this;
     },
 
     /**
@@ -372,6 +450,13 @@ define([ "jquery", "laconic" ],
                            style:"display:none"
 		         }));
 
+      menu.on("click", "a", function(ev) {
+	var a = $(ev.target).closest("a");
+	var i = a.data("nr");
+
+	menu.data("target").renderMulti(a.data("action"), i);
+	return false;
+      });
       menu.on("click", function() {
 	var r = $("input[name=render]:checked", $(this)).val();
 	menu.data("target").renderMulti('select', parseInt(r));
