@@ -82,7 +82,8 @@ term_rendering(C30, _Vars, _Options) -->
     div.on("export-dom", function(ev, r) {
       var svg = div.find("svg");
       svg.css("font", "10px sans-serif");
-      svg.find("path,line").css("fill", "none").css("stroke", "#000");
+      svg.find(".c3-path,.c3-line,.tick,.domain").css("fill", "none");
+      svg.find(".tick,.domain").css("stroke", "#000");
       r.element = svg[0];
       r.extension = "svg";
       r.contentType = "image/svg+xml";
