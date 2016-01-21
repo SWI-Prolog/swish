@@ -427,6 +427,13 @@ var tabbed = {
 	tabbed.tabTypes[type].create(content, options);
       });
       $(g).addClass("swish-event-receiver");
+      $(g).on("download", function(ev) {
+	var tab = $(ev.target).closest(".tab-pane");
+	if ( tab.is(":visible") ) {
+	  alert("Please activate the tab you wish to download");
+	  ev.stopPropagation();
+	}
+      });
       $(g).on("source", function(ev, src) {
 	var tab = $(ev.target).closest(".tab-pane");
 	if ( tab.is(":visible") &&
