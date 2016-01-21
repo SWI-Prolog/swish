@@ -404,14 +404,30 @@ define([ "jquery", "laconic" ],
       return this;
     },
 
+    /**
+     * Download a rendered object.  The renderer can interact with this
+     * code by setting a class `export-dom` and an event-handler for the
+     * event `export-dom`. This handler is passed a plain object, for
+     * which is must set the properties `element`, `extensions` and
+     * `contentType`
+     */
     download: function(i) {
       var child = this.children();
       var node  = $(child[i]);
       var ext   = "html";
       var data;
 
-
-      if ( node.find("svg").length == 1 ) {
+      if ( node.hasClass("export-dom") ) {
+	var r = {};
+	node = node.trigger("export-dom", r);
+	if ( r.element ) {
+	  data = r.element.outerHTML;
+	  ext  = r.extension||"html";
+	  type = r.contentType||"text/html";
+	} else {
+	  alert("Failed to export rendered result");
+	}
+      } else if ( node.find("svg").length == 1 ) {
 	data = node.find("svg")[0].outerHTML
 	ext  = "svg";
 	type = "image/svg+xml";
