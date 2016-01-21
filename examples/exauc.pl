@@ -8,7 +8,7 @@
 main(AUCROC, ROC, AUCPR, PR):-
   compute_areas_diagrams(
     [0.7-a,0.7-a,0.7 - \+(a),0.6-a,0.6- \+(a),0.5- a,0.4- \+(a)],
-    4, 3, AUCROC, ROC, AUCPR, PR).
+    AUCROC, ROC, AUCPR, PR).
 
 /** <examples>
 
