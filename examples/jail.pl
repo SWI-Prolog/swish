@@ -11,7 +11,11 @@ From
 Peter D. Grunwald and Joseph Y. Halpern. "Updating Probabilities." Journal of Artificial Intelligence Research 19 (2003): 243-278.
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 % safe(A): prisoner A is not going to be executed, with A in {a,b,c}
@@ -55,6 +59,14 @@ safe_after_tell:-
 ?- prob(safe(a),Prob). % what is the probability that a is not executed
 ?- prob(tell_executed(b),Prob). % what is the probability that the jailer says b is going to be executed?
 ?- prob(tell_executed(c),Prob). % what is the probability that the jailer says b is going to be executed?
+?- prob_bar(safe_after_tell,Prob). % what is the probability that a is not executed after the jailer has spoken
+% the result, 1/3, means that the jailer communication did not change the 
+% probability of a being safe
+?- prob_bar(tell,Prob). % what is the probability that the jailer speaks? 
+?- prob_bar(safe(a),Prob). % what is the probability that a is not executed
+?- prob_bar(tell_executed(b),Prob). % what is the probability that the jailer says b is going to be executed?
+?- prob_bar(tell_executed(c),Prob). % what is the probability that the jailer says b is going to be executed?
+
 
 */
 

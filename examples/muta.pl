@@ -17,10 +17,11 @@ Theory and Practice of Logic Programming, 15(2):169-212, 2015
 */
 
 /** <examples>
-?- induce([1,2,3,4,5,6,7,8,9],[10],P,LL,AUCROC,ROC,AUCPR,PR).
-?- induce_par([1,2,3,4,5,6,7,8,9],[10],P,LL,AUCROC,ROC,AUCPR,PR).
-?- induce([1,2,3,4,5,6,7,8,9,10],P).
-?- induce_par([1,2,3,4,5,6,7,8,9,10],P).
+?- induce_par([1,2,3,4,5,6,7,8,9],P),test(P,[10],LL,AUCROC,ROC,AUCPR,PR). % learn the parameteters and test the result
+?- induce([1,2,3,4,5,6,7,8,9],P),test(P,[10],LL,AUCROC,ROC,AUCPR,PR).  % learn the structure and the parameters and test the result
+?- in(P),test(P,[test],LL,AUCROC,ROC,AUCPR,PR). % test the input theory
+?- induce_par([1,2,3,4,5,6,7,8,9,10],P).  % learn the parameteters
+?- induce([1,2,3,4,5,6,7,8,9,10],P). % learn the structure and the parameters 
 */
 :- use_module(library(slipcover)).
 

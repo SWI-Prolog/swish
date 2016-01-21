@@ -9,7 +9,11 @@ An exercise.
 In Inductive Logic Programming (ILP 2004), Work in Progress Track, 2004.
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 mother(m,s).
@@ -56,5 +60,11 @@ color(X,white) :- cg(X,1,w), cg(X,2,w).
 ?- prob(cg(s,1,w),Prob). % what is the probability that the color allele on chromosme 1 of s is w?
 ?- prob(cg(s,2,p),Prob). % what is the probability that the color allele on chromosme 2 of s is p?
 ?- prob(cg(s,2,w),Prob). % what is the probability that the color allele on chromosme 2 of s is w?
+?- prob_bar(color(s,purple),Prob). % what is the probability that the color of s' flowers is purple?
+?- prob_bar(color(s,white),Prob). % what is the probability that the color of s' flowers is white?
+?- prob_bar(cg(s,1,p),Prob). % what is the probability that the color allele on chromosme 1 of s is p?
+?- prob_bar(cg(s,1,w),Prob). % what is the probability that the color allele on chromosme 1 of s is w?
+?- prob_bar(cg(s,2,p),Prob). % what is the probability that the color allele on chromosme 2 of s is p?
+?- prob_bar(cg(s,2,w),Prob). % what is the probability that the color allele on chromosme 2 of s is w?
 */
  

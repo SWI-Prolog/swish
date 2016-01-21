@@ -19,6 +19,7 @@ path(X,Y):-
 
 edge(a,b):0.2.
 % there is an edge between a and b with probability 0.2
+edge(b,e):0.5.
 edge(a,c):0.3.
 edge(c,d):0.4.
 edge(d,e):0.4.

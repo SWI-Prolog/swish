@@ -9,7 +9,11 @@ From
 Theory and Practice of Logic Programming,  doi:10.1017/S1471068413000677. 
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 % pcfg(LT): LT is string of terminals accepted by the grammar
@@ -43,6 +47,7 @@ rule('S',L,[a,'S']):0.2; rule('S',L,[b,'S']):0.2; rule('S',L,[a]):0.3; rule('S',
 /** <examples>
 
 ?- prob(pcfg([a,b,a,a]),Prob). % what is the probability that the string abaa belongs to the language?
+?- prob_bar(pcfg([a,b,a,a]),Prob). % what is the probability that the string abaa belongs to the language?
 
 
 */

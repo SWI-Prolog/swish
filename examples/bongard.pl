@@ -10,8 +10,9 @@ https://dtai.cs.kuleuven.be/static/ACE/doc/
 */
 
 /** <examples>
-?- induce([train],[test],P,LL,AUCROC,ROC,AUCPR,PR).
-?- induce_par([train],[test],P,LL,AUCROC,ROC,AUCPR,PR).
+?- induce_par([train],P),test(P,[test],LL,AUCROC,ROC,AUCPR,PR). % learn the parameteters and test the result
+?- induce([train],P),test(P,[test],LL,AUCROC,ROC,AUCPR,PR). % learn the structure and the parameters and test the result
+?- in(P),test(P,[test],LL,AUCROC,ROC,AUCPR,PR). % test the input theory
 ?- induce_par([all],P).
 ?- induce([all],P).
 */
@@ -25,19 +26,21 @@ https://dtai.cs.kuleuven.be/static/ACE/doc/
 :-sc.
 
 :- set_sc(megaex_bottom,20).
-:- set_sc(max_iter,2).
-:- set_sc(max_iter_structure,5).
+:- set_sc(max_iter,3).
+:- set_sc(max_iter_structure,10).
+:- set_sc(maxdepth_var,4).
 :- set_sc(verbosity,1).
+
 bg([]).
 
 in([
 (
- pos:0.197575 :-
+ pos:0.5 :-
  	circle(A),
  	in(B,A)
 ),
 ( 
- pos:0.000303421 :-
+ pos:0.5 :-
  	circle(A),
  	triangle(B)
 )]).

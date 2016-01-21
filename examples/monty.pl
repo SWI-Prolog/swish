@@ -12,7 +12,11 @@ From
 Chitta Baral, Michael Gelfond, and Nelson Rushton. "Probabilistic reasoning with answer sets." Theory and Practice of Logic Programming 9.01 (2009): 57-144.
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 % prize(A): the prize is behind door A, with A in {1,2,3}
@@ -71,5 +75,8 @@ win_switch:-
 ?- prob(win_keep,Prob). % what is the probability that the player wins if he keeps his choice?
 ?- prob(win_switch,Prob). % what is the probability that the player wins if he switches door?
 % the probability if the player switches grows from 1/3 to 1/2
-*/
+?- prob_bar(win_keep,Prob). % what is the probability that the player wins if he keeps his choice?
+?- prob_bar(win_switch,Prob). % what is the probability that the player wins if he switches door?
+% the probability if the player switches grows from 1/3 to 1/2
+**/
  

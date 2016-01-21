@@ -23,12 +23,15 @@ original are the learned parameters. Note that the target parameters are those g
   - Mutagenesis ([muta.pl](example/muta.pl)) The famous Mutagenesis problem where the task is to predict whether a molecule is an active mutagenic agent. From  Srinivasan A, Muggleton S, Sternberg MJE, King RD _Theories for mutagenicity: A study in first-order and feature-based induction_.   Artificial Intelligence 85(1-2):277-299, 1996. Both parameters and structure can be learned. The input theory for parameter learning has been manually crafted. Structure learning takes about 100 seconds with =verbosity= = =1=.
   - University ([university.pl](example/university.pl)) Toy dataset describing a university domain. The task is to predict the rating of courses. From Schulte, Oliver, and Hassan Khosravi. _Learning graphical models for relational data via lattice search_. Machine Learning 88.3, 331-368, 2012. 
   Both parameters and structure can be learned. The input theory for parameter learning has been manually crafted. Structure learning takes about 120 seconds with =verbosity= = =1=.
-  
+
 More examples are included in the standalone version of =cplint= at https://github.com/friguzzi/cplint 
 The standalone version of =cplint= can be installed as a SWI-Prolog pack http://www.swi-prolog.org/pack/list
 The other datasets include Carcinogenesis, Cora, Hepatitis, HIV, IMDB,
 Mondial, UWCSE and WebKB. 
 They have not been included here because of their computational cost.
+
+An example of just the computation of the areas under the ROC and PR curves is
+[exauc.pl](example/exauc.pl).
 </div>
 
 </div>

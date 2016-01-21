@@ -7,7 +7,12 @@ its application in link discovery. In International Joint Conference on
 Artificial Intelligence, pages 2462-2467, 2007.
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- use_rendering(graphviz).
+:- endif.
+
 :- cplint.
 
 % path(X,Y) is true if there is a path between nodes X and Y
@@ -23,6 +28,7 @@ path(X,Y):-
 
 edge(a,b):0.2.
 % there is an edge between a and b with probability 0.2
+edge(b,e):0.5.
 edge(a,c):0.3.
 edge(c,d):0.4.
 edge(d,e):0.4.
@@ -30,8 +36,16 @@ edge(a,e):0.1.
 
 :- end_cplint.
 
+graph(digraph(G)):-
+    findall(edge(A -> B,[label=P]),
+      clause(edge(_,A,B,_),(get_var_n(_,_,_,[P|_],_),_)),
+      G).
+
+
 /** <examples>
 
 ?- prob(path(a,e),Prob). % what is the probability that a and e are connected?
+?- prob_bar(path(a,e),Prob). % what is the probability that a and e are connected?
+?- graph(G). % show the probabilistic graph
 
 */

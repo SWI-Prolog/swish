@@ -6,7 +6,7 @@ http://www.cs.sfu.ca/~oschulte/jbn/dataset.html
 */
 
 /** <examples>
-?- induce([f1,f2,f3,f4],[f5],P,LL,AUCROC,ROC,AUCPR,PR).
+?- induce([f1,f2,f3,f4],P),test(P,[f5],LL,AUCROC,ROC,AUCPR,PR). % learn the structure and the parameters and test the result
 */
 
 :- use_module(library(slipcover)).

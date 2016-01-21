@@ -11,10 +11,17 @@ The transitive clauses for samebib have been removed to avoid loops.
 
 ?- prob(samebib(class_7,class_8),Prob). % what is the probability that citations class_7 
 % and class_8 refer to the same paper?
+?- prob_bar(samebib(class_7,class_8),Prob). % what is the probability that citations class_7 
+% and class_8 refer to the same paper?
+
 
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 samebib(B,C):0.3 :-

@@ -5,7 +5,11 @@ causal probabilistic events and its relation to logic programming.
 Theory Pract. Log. Program., 9(3):245-308, 2009.
 */
 :- use_module(library(pita)).
-:- style_check(-discontiguous).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
 :- cplint.
 
 % Russian roulette with two guns, left_gun and right_gun
@@ -26,5 +30,6 @@ pull_trigger(right_gun).
 /** <examples>
 
 ?- prob(death,Prob). % what is the probability that you are dead?
+?- prob_bar(death,Prob). % what is the probability that you are dead?
 */
  
