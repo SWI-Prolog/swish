@@ -40,6 +40,9 @@
   - User provided rendering?
     - Allow for rewriting answer terms?
     - Allow generating HTML?  How to deal with security?
+  - Allow copy of Prolog representation.  See
+    http://www.javascriptkit.com/javatutors/copytoclipboard.shtml
+  - Allow download of rendered (HTML/SVG) representation.
 
 ## Sharing
 
@@ -71,6 +74,7 @@ _not_ see exactly the same UI for cooperation.  What about
     - etc ...
   - Make it easy to add HTTPS certificate based login.
     - not SWISH specific
+  - Change to digest login as default.
 
 ## Search
 
