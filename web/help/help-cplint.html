@@ -215,7 +215,8 @@ publication/2,taughtby/3,ta/3,courselevel/2,yearsinprogram/2]).</code></pre>
 <p>Also here <code>&lt;list of literals&gt;</code> is copied with <code>copy_term/2</code> before matching, so variables in common between <code>&lt;literal&gt;</code> and <code>&lt;list of literals&gt;</code> may not be in common in the refined clause.</p>
 <p>Moreover, we can specify lookahead with</p>
 <pre><code>lookahead_cons_var(&lt;literal&gt;,&lt;list of literals&gt;).</code></pre>
-<p>In this case <code>&lt;literal&gt;</code> is added to the body of clause during refinement only together with literals matching <code>&lt;list of literals&gt;</code> and <code>&lt;list of literals&gt;</code> is not copied before matching, so variables in common between <code>&lt;literal&gt;</code> and <code>&lt;list of literals&gt;</code> are in common also in the refined clause. This is allowed only with <code>specialization</code> set to <code>bottom</code>.</p>
+<p>In this case <code>&lt;literal&gt;</code> is added to the body of clause during refinement only together with literals matching <code>&lt;list of literals&gt;</code> and <code>&lt;list of literals&gt;</code> is not copied before matching, so variables in common between <code>&lt;literal&gt;</code> and <code>&lt;list of literals&gt;</code> are in common also in the refined clause. This is allowed only with <code>specialization</code> set to <code>bottom</code>. An example of such declaration is</p>
+<pre><code>lookahead_cons_var(logp(B),[(B=_))]).</code></pre>
 <h3 id="example-interpretations">Example Interpretations</h3>
 <p>The last part of the file contains the data. You can specify data with two modalities: models and keys. In the models type, you specify an example model (or interpretation or megaexample) as a list of Prolog facts initiated by <code>begin(model(&lt;name&gt;)).</code> and terminated by <code>end(model(&lt;name&gt;)).</code> as in</p>
 <pre><code>begin(model(2)).
