@@ -128,7 +128,7 @@ toss(coin).
 <h3 id="backgroung-and-initial-lpadcpl-program">Backgroung and Initial LPAD/CPL-program</h3>
 <p>Now you can specify the background knowledge with a fact of the form</p>
 <pre><code>bg(&lt;list of terms representing clauses&gt;).</code></pre>
-<p>and an initial program with a fact of the form</p>
+<p>where the clauses must currently be deterministic. Moreover, you can specify an initial program with a fact of the form</p>
 <pre><code>in(&lt;list of terms representing clauses&gt;).</code></pre>
 <p>The initial program is used in parameter learning for providing the structure. The indicated parameters do not matter as they are first randomized. Remember to enclose each clause in parentheses because <code>:-</code> has the highest precedence.</p>
 <p>For example, <code>bongard.pl</code> has the initial program</p>
@@ -157,6 +157,7 @@ toss(coin).
 <p>specifies the atoms that can appear in the head of clauses, while</p>
 <pre><code>modeb(&lt;recall&gt;,&lt;predicate&gt;(&lt;arg1&gt;,...).</code></pre>
 <p>specifies the atoms that can appear in the body of clauses. <code>&lt;recall&gt;</code> can be an integer or <code>*</code>. <code>&lt;recall&gt;</code> indicates how many atoms for the predicate specification are retained in the bottom clause during a saturation step. <code>*</code> stands for all those that are found. Otherwise the indicated number is randomly chosen.</p>
+<p>Two specialization modes are available: <code>bottom</code> and <code>mode</code>. In the first, a bottom clause is built and the literals to be added during refinement are taken from it. In the latter, no bottom clause is built and the literals to be added during refinement are generated directly from the mode declarations.</p>
 <p>Arguments of the form</p>
 <pre><code>+&lt;type&gt;</code></pre>
 <p>specifies that the argument should be an input variable of type <code>&lt;type&gt;</code>, i.e., a variable replacing a <code>+&lt;type&gt;</code> argument in the head or a <code>-&lt;type&gt;</code> argument in a preceding literal in the current hypothesized clause.</p>
@@ -170,6 +171,7 @@ toss(coin).
 <p>for specifying an argument which should be replaced by a constant of type <code>&lt;type&gt;</code> in the bottom clause and that should be used for replacing input variables of the following literals when building the bottom clause.</p>
 <pre><code>&lt;constant&gt;</code></pre>
 <p>for specifying a constant.</p>
+<p>Note that arguments of the form <code>#&lt;type&gt;</code> <code>-#&lt;type&gt;</code> are not available in specialization mode <code>mode</code>, if you want constants to appear in the literals you have to indicate them one by one in the mode declarations.</p>
 <p>An example of language bias for the Bongard domain is</p>
 <pre><code>output(pos/0).
 
@@ -201,6 +203,20 @@ determination(pos/0,config/2).</code></pre>
 [advisedby(A,B),tempadvisedby(A,B)],
 [professor/1,student/1,hasposition/2,inphase/2,
 publication/2,taughtby/3,ta/3,courselevel/2,yearsinprogram/2]).</code></pre>
+<p>Lookahead can also be specified with facts of the form</p>
+<pre><code>lookahead(&lt;literal&gt;,&lt;list of literals&gt;).</code></pre>
+<p>In this case when a literal matching <code>&lt;literal&gt;</code> is added to the body of clause during refinement, then also the literals matching <code>&lt;list of literals&gt;</code> will be added. An example of such declaration (from <code>muta.pl</code>) is</p>
+<pre><code>lookahead(logp(_),[(_=_))]).</code></pre>
+<p>Note that <code>&lt;list of literals&gt;</code> is copied with <code>copy_term/2</code> before matching, so variables in common between <code>&lt;literal&gt;</code> and <code>&lt;list of literals&gt;</code> may not be in common in the refined clause.</p>
+<p>It is also possible to specify that a literal can only be added together with other literals with facts of the form</p>
+<pre><code>lookahead_cons(&lt;literal&gt;,&lt;list of literals&gt;).</code></pre>
+<p>In this case <code>&lt;literal&gt;</code> is added to the body of clause during refinement only together with literals matching <code>&lt;list of literals&gt;</code>. An example of such declaration is</p>
+<pre><code>lookahead_cons(logp(_),[(_=_))]).</code></pre>
+<p>Also here <code>&lt;list of literals&gt;</code> is copied with <code>copy_term/2</code> before matching, so variables in common between <code>&lt;literal&gt;</code> and <code>&lt;list of literals&gt;</code> may not be in common in the refined clause.</p>
+<p>Moreover, we can specify lookahead with</p>
+<pre><code>lookahead_cons_var(&lt;literal&gt;,&lt;list of literals&gt;).</code></pre>
+<p>In this case <code>&lt;literal&gt;</code> is added to the body of clause during refinement only together with literals matching <code>&lt;list of literals&gt;</code> and <code>&lt;list of literals&gt;</code> is not copied before matching, so variables in common between <code>&lt;literal&gt;</code> and <code>&lt;list of literals&gt;</code> are in common also in the refined clause. This is allowed only with <code>specialization</code> set to <code>bottom</code>. An example of such declaration is</p>
+<pre><code>lookahead_cons_var(logp(B),[(B=_))]).</code></pre>
 <h3 id="example-interpretations">Example Interpretations</h3>
 <p>The last part of the file contains the data. You can specify data with two modalities: models and keys. In the models type, you specify an example model (or interpretation or megaexample) as a list of Prolog facts initiated by <code>begin(model(&lt;name&gt;)).</code> and terminated by <code>end(model(&lt;name&gt;)).</code> as in</p>
 <pre><code>begin(model(2)).
@@ -247,36 +263,37 @@ symbond(Mod,A,B,T):- bond(Mod,B,A,T).</code></pre>
 fold(test,[490,491,...]).</code></pre>
 <h2 id="commands">Commands</h2>
 <h3 id="parameter-learning">Parameter Learning</h3>
-<p>To execute EMBLEM, prepare an input file in the editor panel as indicated above (see example <code>bongard.pl</code>) and call</p>
+<p>To execute EMBLEM, prepare an input file in the editor panel as indicated above and call</p>
+<pre><code>?- induce_par(&lt;list of folds&gt;,P).</code></pre>
+<p>where <code>&lt;list of folds&gt;</code> is a list of the folds for training and <code>P</code> will contain the input program with updated parameters.</p>
+<p>For example <code>bongard.pl</code>, you can perform parameter learning on the <code>train</code> fold with</p>
 <pre><code>?- induce_par([train],P).</code></pre>
-<p>to obtain in <code>P</code> the program in input with the updated parameters.</p>
-<p>The results can also be tested on a test set with</p>
-<pre><code>?- induce_par([train],[test],P,LL,AUCROC,ROC,AUCPR,PR).</code></pre>
-<p>This returns the log likelihood of the test examples in <code>LL</code>, the Area Under the ROC curve in <code>AUCROC</code>, a dictionary containing the list of points (in the form of Prolog pairs <code>x-y</code>) of the ROC curve in <code>ROC</code>, the Area Under the PR curve in <code>AUCPR</code>, a dictionary containing the list of points of the PR curve in <code>PR</code>.</p>
+<p>A program can also be tested on a test set with</p>
+<pre><code>?- test(&lt;program&gt;,&lt;list of folds&gt;,LL,AUCROC,ROC,AUCPR,PR).</code></pre>
+<p>where <code>&lt;program&gt;</code> is a list of terms representing clauses and <code>&lt;list of folds&gt;</code> is a list of folds. This returns the log likelihood of the test examples in <code>LL</code>, the Area Under the ROC curve in <code>AUCROC</code>, a dictionary containing the list of points (in the form of Prolog pairs <code>x-y</code>) of the ROC curve in <code>ROC</code>, the Area Under the PR curve in <code>AUCPR</code>, a dictionary containing the list of points of the PR curve in <code>PR</code>.</p>
+<p>For example, to test on fold <code>test</code> the program learned on fold <code>train</code> you can run the query</p>
+<pre><code>?- induce_par([train],P),
+   test(P,[test],LL,AUCROC,ROC,AUCPR,PR).</code></pre>
+<p>Or you can test the input program on the fold <code>test</code> with</p>
+<pre><code>?- in(P),
+   test(P,[test],LL,AUCROC,ROC,AUCPR,PR).</code></pre>
 <p>By including</p>
 <pre><code>:- use_rendering(c3).
 :- use_rendering(lpad).</code></pre>
 <p>in the code before <code>:- sc.</code> the curves will be shown as graphs and the output program will be pretty printed.</p>
-<p>The general form of the commands is</p>
-<pre><code>?- induce_par(&lt;list_of_train_folds&gt;,P).</code></pre>
-<pre><code>?- induce_par(&lt;list_of_train_folds&gt;,&lt;list_of_test_folds&gt;,
-P,LL,AUCROC,ROC,AUCPR,PR).</code></pre>
 <h3 id="structure-learning">Structure Learning</h3>
-<p>To execute SLIPCOVER, prepare an input file in the editor panel as indicated above (for example <code>bongard.pl</code>) and call</p>
+<p>To execute SLIPCOVER, prepare an input file in the editor panel as indicated above and call</p>
+<pre><code>?- induce(&lt;list of folds&gt;,P).</code></pre>
+<p>where <code>&lt;list of folds&gt;</code> is a list of the folds for training and <code>P</code> will contain the learned program.</p>
+<p>For example <code>bongard.pl</code>, you can perform structure learning on the <code>train</code> fold with</p>
 <pre><code>?- induce([train],P).</code></pre>
-<p>to obtain in <code>P</code> the learned program.</p>
-<p>The results can also be tested on a test set with</p>
-<pre><code>?- induce([train],[test],P,LL,AUCROC,ROC,AUCPR,PR).</code></pre>
-<p>returning the log likelihood of the test examples in <code>LL</code>, the Area Under the ROC curve in <code>AUCROC</code>, a dictionary containing the list of points (in the form of Prolog pairs <code>x-y</code>) of the ROC curve in <code>ROC</code>, the Area Under the PR curve in <code>AUCPR</code>, a dictionary containing the list of points of the PR curve in <code>PR</code>.</p>
-<p>By including</p>
-<pre><code>:- use_rendering(c3).
-:- use_rendering(lpad).</code></pre>
-<p>in the code before <code>:- sc.</code> the curves will be shown as graphs and the output program will be pretty printed.</p>
+<p>A program can also be tested on a test set with <code>test/7</code> as described above.</p>
 <h2 id="parameters-1">Parameters</h2>
 <p>Parameters are set with commands of the form</p>
 <pre><code>:- set_sc(&lt;parameter&gt;,&lt;value&gt;).</code></pre>
 <p>The available parameters are:</p>
 <ul>
+<li><p><code>specialization</code>: (values: <code>{bottom,mode}</code>, default value: <code>bottom</code>) specialization mode.</p></li>
 <li><p><code>depth_bound</code>: (values: <code>{true,false}</code>, default value: <code>true</code>) if <code>true</code>, the depth of the derivation of the goal is limited to the value of the <code>depth</code> parameter.</p></li>
 <li><p><code>depth</code> (values: integer, default value: 2): depth of derivations if <code>depth_bound</code> is set to <code>true</code></p></li>
 <li><p><code>single_var</code> (values: <code>{true,false}</code>, default value: <code>false</code>): if set to <code>true</code>, there is a random variable for each clause, instead of a different random variable for each grounding of each clause</p></li>
