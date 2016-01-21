@@ -4,28 +4,25 @@
 # Earthquake
 
 The program illustrated in this example models the occurrence of an earthquake depending on its possible causes. 
+
+The first rule states that if there is rupture of a geological we have a strong earthquake with 30% probability, a moderate earthquake with 50% probability and 20% probability to have no earthquake. In the second rule it is asserted that if an earthquake is caused only by a volcanic eruption, we have a strong earthquake with 20% probability, a moderate earthquake with 60% probability and no earthquake with 20% probability. Then as facts we have that there was a fault rupture and a volcanic eruption at Stromboli and a volcanic eruption at Eyjafjallajokull (can you pronounce it?).
 </div>
 
 <div class="nb-cell program lpad">
+% Rules
+% 1st rule
 earthquake(X, strong) : 0.3 ; earthquake(X, moderate) : 0.5 :-
   fault_rupture(X).
-% if an earthquake at a site X is caused only by the rupture of a 
-% geological fault, we have a strong earthquake with probability 0.3, 
-% a moderate earthquake with probability 0.5 and no earthquake with probability 
-% 0.2
-
+% 2nd rule
 earthquake(X, strong) : 0.2 ; earthquake(X, moderate) : 0.6 :-
   volcanic_eruption(X).
-% if an earthquake at a site X is caused only by a volcanic eruption, 
-% we have a strong earthquake with probability 0.2, 
-% a moderate earthquake with probability 0.6 and no earthquake with probability 
-% 0.2
+% Facts
+% non-probabilistic fact
 fault_rupture(stromboli).
-% there is a fault rupture at stromboli
+% non-probabilistic fact
 volcanic_eruption(stromboli).
-% there is a volcanic eruption at stromboli
+% non-probabilistic fact
 volcanic_eruption(eyjafjallajkull).
-% there is a volcanic eruption at eyjafjallajkull
 </div>
 
 <div class="nb-cell markdown">

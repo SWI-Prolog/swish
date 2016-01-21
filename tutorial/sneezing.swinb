@@ -1,0 +1,39 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Medical symptoms
+
+The program shown below model the effect of flu and hay fever on the sneezing symptom. 
+
+The rule states that if somebody has flu, there is a 30% probability that he has strong sneezing, a 50% probability that he has moderate sneezing and a 20% probability that he has no sneezing.
+The second rule affirms that if somebody has hay fever, there is a 20% probability that he has strong sneezing, a 60% probability that she has moderate sneezing and 20% probability that he has no sneezing at all.
+The next two facts are certain and they states that Bob has the flu and hay fever.
+</div>
+
+<div class="nb-cell program lpad">
+% Rules
+% 1st probabilistic rule
+strong_sneezing(X) : 0.3 ; moderate_sneezing(X) : 0.5 :- flu(X).
+% 2nd probabilistic rule
+strong_sneezing(X) : 0.2 ; moderate_sneezing(X) : 0.6 :- hay_fever(X).
+% Facts 
+% 1st fact
+flu(bob).
+% 2nd fact
+hay_fever(bob).
+</div>
+
+<div class="nb-cell markdown">
+What is the probability that Bob has strong sneezing?
+</div>
+
+<div class="nb-cell query">
+strong_sneezing(bob).
+</div>
+
+<div class="nb-cell markdown">
+Complete example: [sneezing.cpl](example/sneezing.cpl), [sneezing.pl](example/sneezing.pl)
+
+--
+- Based on: F. Riguzzi and T. Swift. _The PITA system: Tabling and answer subsumption for reasoning under uncertainty_. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, 11(4-5), pages 433-449, 2011.
+ </div>
