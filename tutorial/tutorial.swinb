@@ -10,13 +10,10 @@
   - [Earthquake](tutorial/earthquake.swinb)
   - [Medical symptoms](tutorial/sneezing.swinb)
   - [Eruption](tutorial/eruption.swinb)
-  - [Mendelian ineritance of human bloodtype](tutorial/bloodtype.swinb)
   - [Path](tutorial/path.swinb)
   - [Alarm Bayesian Network](tutorial/alarm.swinb)
   - [Hidden Markov Model](tutorial/hmm.swinb)
   - [Probabilistic Context Free Grammar](tutorial/pcfg.swinb)
-  - [UWCSE: link prediction](tutorial/uwcse.swinb)
-  - [Cora: entity resolution](tutorial/cora.swinb)
   - [Monty Hall puzzle](tutorial/monty.swinb)
   - [Three-prizoners puzzle](tutorial/jail.swinb)
   - [Russian roulette with two guns](tutorial/trigger.swinb)
@@ -24,11 +21,17 @@
   - [Coins](tutorial/coin2.swinb)
   - [Three sided dice](tutorial/threesideddice.swinb)
 - *Examples with structure and parameter learning*
-  - [Bongard](tutorial/bongard.swinb)
-  - [Shop](tutorial/shop.swinb)
-  - [HMM](tutorial/hmmlearn.swinb)
-  - [Mutagenesis](tutorial/muta.swinb)
-  - [University](tutorial/university.swinb) 
-- *More Examples*
   - ...
+- *More Examples with inference*
+  - Mendelian ineritance of human bloodtype ([bloodtype.cpl](example/bloodtype.cpl), [bloodtype.pl](example/bloodtype.pl))
+  - UWCSE: link prediction ([uwcse.cpl](example/uwcse.cpl), [uwcse.pl](example/uwcse.pl))
+  - Cora: entity resolution ([cora.cpl](example/cora.cpl), [cora.pl](example/cora.pl))
+  - Mendelian inheritance of the color of pea plant - larger family ([mendelc.cpl](example/mendelc.cpl), [mendelc.pl](example/mendelc.pl))
+- *More Examples with structure and parameter learning*
+  - Bongard ([bongard.pl](example/bongard.pl), [bongardkeys.pl](example/bongardkeys.pl))
+  - Shop ([shop.pl](example/shop.pl))
+  - HMM ([hmmlearn.pl](example/hmmlearn.pl))
+  - Mutagenesis ([muta.pl](example/muta.pl))
+  - University ([university.pl](example/university.pl))
+</div>
 </div>

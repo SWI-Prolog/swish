@@ -1,0 +1,48 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Dice
+
+In this section we illustrate as example a game with a six-sided dice. The dice is repeatedly thrown until the outcome is six. When the outcome is six, the game stops.
+
+Below we can see the LPAD. on(T,F) means that the dice landed on face F at time T. The first probabilistic fact states that at time 0 the dice land on one of its faces with a uniform probability distribution.
+The following rule states that at time T the dice lands on one of its faces with equal probability if at the previous time point it was thrown and it did not land on face 6.
+</div>
+
+<div class="nb-cell program lpad">
+on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;
+on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
+% at time 0 the dice lands on one of its faces with equal probability
+
+on(X,1):1/6;on(X,2):1/6;on(X,3):1/6;
+on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
+  X1 is X-1,X1>=0,on(X1,_),
+  \+ on(X1,6).
+% at time T the dice lands on one of its faces with equal probability if
+% at the previous time point it was thrown and it did not landed on face 6
+</div>
+
+<div class="nb-cell markdown">
+Now we ask for the probability that the dice will land on face 1 at time 0.
+</div>
+
+<div class="nb-cell query">
+on(0,1).
+</div>
+
+<div class="nb-cell markdown">
+At this point we ask for the probability that the dice will land on face 1 at time 2. If we submit this query, we can notice that the probability that the dice will land on one of its faces at time T (with T > 0) decreases. This is because it is the probability that the dice will land on one of its faces at time T and that at time T-1 it did not land on face 6.
+</div>
+
+<div class="nb-cell query"> 
+on(2,1).
+</div>
+
+<div class="nb-cell markdown">
+Complete example: [dice.cpl](example/dice.cpl), [dice.pl](example/dice.pl)
+
+--
+- Based on: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 
+</div>
+
+</div>

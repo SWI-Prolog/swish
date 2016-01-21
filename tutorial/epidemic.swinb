@@ -1,0 +1,38 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Epidemic
+
+In this section as example we have a program which models the fact that if somebody has the flu and the climate is cold, there is the possibility that an epidemic or a pandemic arises. We are uncertain about whether the climate is cold but we know for sure that David and Robert have the flu.
+
+The first rule states the probability that, if somebody has the flu and the climate is cold, epidemic arises with 60% probability, pandemic arises with 30% probability, whereas we have 10% probability that neither epidemic nor pandemic arises. The following probabilistic fact says that the weather is cold with 70% probability. The last (non-probabilistic)facts assert that David and Robert have the flu.
+</div>
+
+<div class="nb-cell program lpad">
+epidemic : 0.6; pandemic : 0.3 :- flu(_), cold.
+% if somebody has the flu and the climate is cold, there is the possibility 
+% that an epidemic arises with probability 0.6 and the possibility that a
+% pandemic arises with probability 0.3
+cold : 0.7.
+% it is cold with probability 0.7
+flu(david).
+flu(robert).
+% david and robert have the flu for sure
+</div>
+
+<div class="nb-cell markdown">
+What is the probability that an epidemic arises? To know it we just have to submit the following query.
+</div>
+
+<div class="nb-cell query">
+epidemic.
+</div>
+
+<div class="nb-cell markdown">
+Complete example: [epidemic.cpl](example/epidemic.cpl), [epidemic.pl](example/epidemic.pl) 
+
+--
+- Based on: E. Bellodi and F. Riguzzi. _Expectation Maximization over binary decision diagrams for probabilistic logic programs_. Intelligent Data Analysis, 17(2):343-363, 2013. 
+</div>
+
+</div>

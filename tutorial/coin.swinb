@@ -27,7 +27,15 @@ heads(coin).
 </div>
 
 <div class="nb-cell markdown">
-To try this example click on the icon next to the query. We will see that the coin will land on heads with 51% probability. In fact P(heads) = P(heads, fair) + P(heads, biased) = P(heads|fair)P(fair) + P(heads|biased)P(biased) = 0.5&sdot;0.9 + 0.6&sdot;0.1 = 0.51.
+To try this example click on the triangle <a class="btn btn-info btn-xs"><span class="glyphicon glyphicon-play"></span></a> icon next to the query. We will see that the coin will land on heads with 51% probability. In fact _|P(heads) = P(heads, fair) + P(heads, biased) = P(heads|fair)P(fair) + P(heads|biased)P(biased) = 0.5&sdot;0.9 + 0.6&sdot;0.1 = 0.51|_.
+</div>
+
+<div class="nb-cell markdown">
+
+Complete example: [coin.cpl](example/coin.cpl), [coin.pl](example/coin.pl)
+
+--
+- Based on: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 
 </div>
 
 </div>
