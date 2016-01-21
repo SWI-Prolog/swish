@@ -128,8 +128,7 @@ var cellTypes = {
 	  copyData("title");
 	  copyData("meta");
 	  copyData("st_type");
-
-	  elem.notebook('value', content.text());
+          elem.notebook('value', content.text());
 	  content.remove();
 	} else {
 	  elem.notebook('placeHolder');
@@ -501,7 +500,7 @@ var cellTypes = {
 	elem.attr("tabIndex", -1);
 	elem.attr("id", "nbc"+id++);
 
-	if ( dom instanceof jQuery ) {
+        if ( dom instanceof jQuery ) {
 	  elem.nbCell('restoreDOM', dom);
 	} else {
 	  elem.append($.el.div({class:"nb-type-select"},
@@ -568,11 +567,12 @@ var cellTypes = {
 
 
     type: function(type, code) {
+      console.log("nbCell type" + type + code);
       var data = this.data(pluginName);
         
         if ( data.st_type != type ) {
           if (type == "program"){
-            methods.type[type].apply(this, [{codeType : code}]); //fix it!!!! ci siamo quasi
+            methods.type[type].apply(this, [{codeType : code}]);
 	  } else {
 	    methods.type[type].apply(this);
 	  }
@@ -730,7 +730,7 @@ var cellTypes = {
     },
 
     saveDOM: function() {
-      console.log(this.data(pluginName))
+      //console.log(this.data(pluginName))
       var type = this.data(pluginName).st_type;
       if (type == "lpad" || type == "prolog")
         return methods.saveDOM["program"].call(this);
@@ -739,18 +739,22 @@ var cellTypes = {
 
     restoreDOM: function(dom) {
       var data = this.data(pluginName);
-
+      //console.log("restoreDOM nbCell");
       function domCellType(dom) {
 	for(var k in cellTypes) {
-	  if ( cellTypes.hasOwnProperty(k) && dom.hasClass(k) )
+	  if ( cellTypes.hasOwnProperty(k) && dom.hasClass(k) ){
 	    return k;
+	  }
 	}
-	if (dom.hasClass("program"))
-	    return "prolog";
+	if (dom.hasClass("program")) {
+	  if (dom.hasClass("lpad")) {
+	    return "lpad";
+	  }
+	  return "prolog";
+	}
       }
 
       data.st_type = domCellType(dom);
-
       var type;
       if (data.st_type == "lpad" || data.st_type == "prolog")
         type = "program";
@@ -764,7 +768,7 @@ var cellTypes = {
      * Compute a state fingerprint for the current cell.
      */
     changeGen: function() {
-      console.log(this.data(pluginName));
+      //console.log(this.data(pluginName));
       var type = this.data(pluginName).st_type;
       if (type == "lpad" || type == "prolog")
         return methods.changeGen["program"].call(this);
@@ -978,6 +982,7 @@ var cellTypes = {
     var programs = this.nbCell('programs');
     var settings = this.nbCell('getSettings');
 
+    //console.log("run query in notebook ");
     options = options||{};
     var query = { source: programs.prologEditor('getSource'),
                   query:  cellText(this),
@@ -1057,6 +1062,9 @@ var cellTypes = {
 
   methods.restoreDOM.program = function(dom) {	/* program */
     var opts = { value:dom.text().trim() };
+    if (dom.hasClass("lpad"))
+        opts.codeType = "lpad";
+        
 
     function getAttr(name) {
       var value;
@@ -1067,7 +1075,6 @@ var cellTypes = {
 
     getAttr("background");
     getAttr("singleline");
-
     methods.type.program.call(this, opts);
   };
 
