@@ -970,7 +970,9 @@ var cellTypes = {
 	       success: setHTML
 	     });
     } else
-    { setHTML("");
+    { setHTML("<div class='nb-placeholder'>"+
+	      "Empty markdown cell.  Double click to edit"+
+	      "</div>");
     }
   };
 
