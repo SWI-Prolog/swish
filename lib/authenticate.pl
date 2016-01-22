@@ -35,10 +35,11 @@
 :- use_module(library(debug)).
 :- use_module(library(crypt)).
 :- use_module(library(http/http_authenticate)).
+:- use_module(library(option)).
 :- use_module(library(settings)).
 
 :- use_module(config).
-:- use_module(page).
+:- use_module(page, []).
 
 :- if(exists_source(library(http/http_digest))).
 :- use_module(library(http/http_digest)).
@@ -54,6 +55,7 @@
 
 :- multifile
 	swish_config:config/2,
+	swish_config:config/3,
 	swish_config:authenticate/2,
 	swish_config:verify_write_access/3.
 
@@ -84,6 +86,13 @@ password_file(File) :-
 	update_auth_type(File),
 	asserta(password_file_cache(File)).
 
+%%	logged_in(+Request, -User) is det.
+%
+%	True when User is  logged  in.   Throws  an  HTTP  authorization
+%	exception if the user is not authenticated.
+%
+%	@throw http_reply(authorise(Authorise))
+
 logged_in(Request, User) :-
 	setting(method, digest), !,
 	setting(realm, Realm),
@@ -95,6 +104,13 @@ logged_in(Request, User) :-
 	debug(authenticate, 'Logged in as ~p', [User]).
 logged_in(_Request, _User) :-
 	throw(http_reply(authorise(basic('SWISH user')))).
+
+%%	swish_config:config(?Key, ?Value, +Options) is nondet.
+%
+%	Make the user available as config.swish.user.
+
+swish_config:config(user, user{user:User}, Options) :-
+	option(user(User), Options).
 
 %%	pengines:authentication_hook(+Request, +Application, -User)
 %
@@ -158,7 +174,7 @@ is_sha1(Hash) :-
 :- if(current_predicate(http_digest_password_hash/4)).
 swish_add_user(User, Passwd, Fields) :-
 	setting(method, digest), !,
-	setting(realm, Realm), !,
+	setting(realm, Realm),
 	http_digest_password_hash(User, Realm, Passwd, Hash),
 	update_password(passwd(User, Hash, Fields)).
 :- endif.

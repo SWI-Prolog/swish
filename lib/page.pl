@@ -96,18 +96,21 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 %	  - q(Query)
 %	  Use Query as the initial query.
 
-swish_reply(_Options, Request) :-
-	swish_config:authenticate(Request, _User), % must throw to deny access
-	fail.
 swish_reply(Options, Request) :-
+	swish_config:authenticate(Request, User), !, % must throw to deny access
+	swish_reply2([user(User)|Options], Request).
+swish_reply(Options, Request) :-
+	swish_reply2(Options, Request).
+
+swish_reply2(Options, Request) :-
 	option(method(Method), Request),
 	Method \== get, !,
 	swish_rest_reply(Method, Request, Options).
-swish_reply(_, Request) :-
+swish_reply2(_, Request) :-
 	serve_resource(Request), !.
-swish_reply(_, Request) :-
-	swish_reply_config(Request), !.
-swish_reply(SwishOptions, Request) :-
+swish_reply2(Options, Request) :-
+	swish_reply_config(Request, Options), !.
+swish_reply2(SwishOptions, Request) :-
 	Params = [ code(_,	 [optional(true)]),
 		   background(_, [optional(true)]),
 		   examples(_,   [optional(true)]),
@@ -119,19 +122,19 @@ swish_reply(SwishOptions, Request) :-
 	merge_options(Options0, SwishOptions, Options1),
 	source_option(Request, Options1, Options2),
 	option(format(Format), Options2),
-	swish_reply2(Format, Options2).
+	swish_reply3(Format, Options2).
 
-swish_reply2(raw, Options) :-
+swish_reply3(raw, Options) :-
 	option(code(Code), Options), !,
 	format('Content-type: text/x-prolog~n~n'),
 	format('~s', [Code]).
-swish_reply2(json, Options) :-
+swish_reply3(json, Options) :-
 	option(code(Code), Options), !,
 	option(meta(Meta), Options, _{}),
 	reply_json_dict(json{data:Code, meta:Meta}).
-swish_reply2(_, Options) :-
+swish_reply3(_, Options) :-
 	swish_config:reply_page(Options), !.
-swish_reply2(_, Options) :-
+swish_reply3(_, Options) :-
 	reply_html_page(
 	    swish(main),
 	    [ title('SWISH -- SWI-Prolog for SHaring'),
@@ -352,7 +355,7 @@ swish_content(Options) -->
 	{ document_type(Type, Options)
 	},
 	swish_resources,
-	swish_config_hash,
+	swish_config_hash(Options),
 	html(div([id(content), class([container, swish])],
 		 [ div([class([tile, horizontal]), 'data-split'('50%')],
 		       [ div([ class([editors, tabbed])
@@ -370,14 +373,14 @@ swish_content(Options) -->
 		 ])).
 
 
-%%	swish_config_hash//
+%%	swish_config_hash(+Options)//
 %
 %	Set `window.swish.config_hash` to a  hash   that  represents the
 %	current configuration. This is used by   config.js  to cache the
 %	configuration in the browser's local store.
 
-swish_config_hash -->
-	{ swish_config_hash(Hash) },
+swish_config_hash(Options) -->
+	{ swish_config_hash(Hash, Options) },
 	js_script({|javascript(Hash)||
 		   window.swish = window.swish||{};
 		   window.swish.config_hash = Hash;
