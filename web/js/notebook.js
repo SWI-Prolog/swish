@@ -503,6 +503,14 @@ var cellTypes = {
 	if ( dom instanceof jQuery ) {
 	  elem.nbCell('restoreDOM', dom);
 	} else {
+	  var close = glyphButton("remove-circle", "close", "Close",
+				  "default", "xs");
+	  elem.append(close);
+	  $(close).addClass("close-select");
+	  $(close).on("click", function() {
+	    elem.nbCell('close');
+	  });
+
 	  elem.append($.el.div({class:"nb-type-select"},
 			       $.el.label("Create a "),
 			       g=$.el.div({class:"btn-group",role:"group"}),
