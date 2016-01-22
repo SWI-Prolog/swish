@@ -21,31 +21,33 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
      */
     _init: function(options) {
       return this.each(function() {
-	var elem = $(this);
+	      var elem = $(this);
 
-	elem.addClass("swish-event-receiver");
-	elem.on("help", function(ev, data) {
-	  elem.swishModal('showHelp', data);
-	});
-	elem.on("pldoc", function(ev, data) {
-	  elem.swishModal('showPlDoc', data);
-	});
-	elem.on("form", function(ev, data) {
-	  elem.swishModal('showForm', data);
-	});
-	elem.on("dialog", function(ev, data) {
-	  elem.swishModal('show', data);
-	});
-	elem.on("error", function(ev, data) { /* still needed? */
-	  elem.swishModal('show', data);
-	});
-	elem.on("ajaxError", function(ev, jqXHR) {
-	  elem.swishModal('showAjaxError', jqXHR);
-	});
-	elem.on("feedback", function(ev, options) {
-	  elem.swishModal('feedback', options);
-	});
-      });
+	      elem.addClass("swish-event-receiver");
+      	elem.on("help", function(ev, data) {
+          console.log("swishModal help action");
+      	  elem.swishModal('showHelp', data);
+      	});
+      	elem.on("pldoc", function(ev, data) {
+      	  elem.swishModal('showPlDoc', data);
+      	});
+      	elem.on("form", function(ev, data) {
+      	  elem.swishModal('showForm', data);
+      	});
+      	elem.on("dialog", function(ev, data) {
+      	  elem.swishModal('show', data);
+      	});
+      	elem.on("error", function(ev, data) { /* still needed? */
+      	  elem.swishModal('show', data);
+      	});
+      	elem.on("ajaxError", function(ev, jqXHR) {
+      	  elem.swishModal('showAjaxError', jqXHR);
+      	});
+      	elem.on("feedback", function(ev, options) {
+      	  elem.swishModal('feedback', options);
+      	});
+      
+     });
     },
 
     /**

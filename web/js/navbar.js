@@ -40,8 +40,16 @@ define([ "jquery", "preferences", "laconic" ],
 
 	for(var p in actions) {
 	  if ( actions.hasOwnProperty(p) ) {
-	    elem.navbar('appendDropdown', p);
-	    elem.navbar('populateDropdown', p, actions[p]);
+      console.log("init navbar");
+      console.log(p);
+      if (actions[p].type == "active") {
+        console.log("sono io il tutorial!");
+        elem.navbar('appendActive',p, actions[p]);
+        // elem.navbar();
+      } else {
+	      elem.navbar('appendDropdown', p);
+	     elem.navbar('populateDropdown', p, actions[p]);
+      }
 	  }
 	}
 
@@ -51,6 +59,20 @@ define([ "jquery", "preferences", "laconic" ],
 	$(window).trigger('resize');
 	return false;});
       });
+    },
+
+    appendActive: function(label, option) {
+            console.log("appendActive");
+            var ul = this.children(".nav.navbar-nav");
+            var a = $.el.a(label);
+            $(a).data('action', option.action);
+            var li = $.el.li(
+              {class:"active"}, 
+              a
+              );
+            
+            ul.append(li);
+            return this;
     },
 
     /**
@@ -144,15 +166,15 @@ define([ "jquery", "preferences", "laconic" ],
       var a;
 
       if ( options.typeIcon ) {
-	a = $.el.a($.el.span({class:"dropdown-icon type-icon "+options.typeIcon}),
+	     a = $.el.a($.el.span({class:"dropdown-icon type-icon "+options.typeIcon}),
 		   label);
       } else {
-	a = $.el.a(label);
+	     a = $.el.a(label);
       }
-
+      console.log("navbar action: " + options);
       $(a).data('action', options);
       if ( options.name )
-	$(a).attr("id", options.name);
+	     $(a).attr("id", options.name);
 
       dropdown.append($.el.li(a));
     } else {						/* Checkbox item */

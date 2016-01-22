@@ -69,6 +69,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	}
 
 	elem.on("source", function(ev, src) {
+		console.log("storage source action");
 	  onStorage(ev, 'setSource', src);
 	});
 	elem.on("save", function(ev, data) {

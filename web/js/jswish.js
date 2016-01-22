@@ -65,29 +65,29 @@ preferences.setDefault("emacs-keybinding", false);
 	}
       },
       "Edit":
-      { "Clear messages": function() {
-	  menuBroadcast("clearMessages");
-	},
-	"Changes": "--",
-	"View changes": function() {
-	  menuBroadcast("diff");
-	},
-	"Revert changes": function() {
-	  menuBroadcast("revert");
-	},
-	"Options": "--",
-	"Semantic highlighting": {
-	  preference: "semantic-highlighting",
-	  type: "checkbox"
-	},
-	"Emacs Keybinding": {
-	  preference: "emacs-keybinding",
-	  type: "checkbox",
-	  value: "false"
-	}
+        { "Clear messages": function() {
+      	  menuBroadcast("clearMessages");
+      	},
+      	"Changes": "--",
+      	"View changes": function() {
+      	  menuBroadcast("diff");
+      	},
+      	"Revert changes": function() {
+      	  menuBroadcast("revert");
+      	},
+      	"Options": "--",
+      	"Semantic highlighting": {
+      	  preference: "semantic-highlighting",
+      	  type: "checkbox"
+      	},
+      	"Emacs Keybinding": {
+      	  preference: "emacs-keybinding",
+      	  type: "checkbox",
+      	  value: "false"
+      	}
       },
       "Examples": function(navbar, dropdown) {
-	$("body").swish('populateExamples', navbar, dropdown);
+	     $("body").swish('populateExamples', navbar, dropdown);
       },
       "Help":
       { "About ...": function() {
@@ -123,9 +123,21 @@ preferences.setDefault("emacs-keybinding", false);
       	  menuBroadcast("help", {file:"background.html"});
 	      },
       },
-      "Tutorial":  function() {
-         //menuBroadcast("source", {file:"help.html"});
-          //menuBroadcast("tutorial", {file:"tutorial.html"});
+      "Tutorial":  {
+          type: "active",
+          action: function() {
+            // menuBroadcast("help", {file:"background.html"});
+            // menuBroadcast("source", {file:"/tutorial/tutorial.swinb"});
+            console.log("click on tutorial");
+            // console.log(this);
+            // console.log($);
+            // // menuBroadcast("help", {file:"background.html"});
+            // menuBroadcast("source", {file:"/tutorial/tutorial.swinb"});
+            // console.log("ora eseguo questo");
+            // menuBroadcast("help", {file:"help.html"});
+            methods.playURL.call($("body"), {url:"/tutorial/tutorial.swinb"});
+          }
+
         }
       
     }
@@ -220,7 +232,7 @@ preferences.setDefault("emacs-keybinding", false);
      */
     playFile: function(options) {
       if ( typeof(options) == "string" )
-	options = {file:options};
+	     options = {file:options};
 
       /*var existing = this.find(".storage").storage('match', options);
       if ( existing && existing.storage('expose', "Already open") )
@@ -268,17 +280,18 @@ preferences.setDefault("emacs-keybinding", false);
      * @param {Regex}   [options.search] Text searched for.
      */
     playURL: function(options) {
+      console.log("280");
       var existing = this.find(".storage").storage('match', options);
-
+      console.log("282");
       if ( existing && existing.storage('expose', "Already open") )
 	return this;				/* FIXME: go to line */
-
+      console.log("285");
       $.ajax({ url: options.url,
 	       type: "GET",
 	       data: {format: "json"},
 	       success: function(source) {
 		 var msg;
-
+      console.log("291");
 		 if ( typeof(source) == "string" ) {
 		   msg = { data: source };
 		   msg.st_type = "external";
@@ -325,16 +338,23 @@ preferences.setDefault("emacs-keybinding", false);
      */
     openExampleFunction: function(ex) {
       var swish = this;
-
+      console.log("openExampleFunction");
+      console.log(ex);
       if ( ex.type == "divider" ) {
 	return "--";
       } else if ( ex.type == "store" ) {
 	return function() {
+    console.log("openExampleFunction methods");
+    console.log(methods);
+    console.log("faccio playFile");
 	  methods.playFile.call(swish, ex.file);
 	};
       } else {
 	return function() {
-	  methods.playURL.call(swish, {url:ex.href});
+    console.log("openExampleFunction methods");
+    console.log(methods);
+    console.log("faccio playURL");
+    methods.playURL.call(swish, {url:ex.href});
 	};
       }
     },
@@ -368,12 +388,17 @@ preferences.setDefault("emacs-keybinding", false);
 		     var name = ex.file || ex.href;
 		     title = ex.title;
 		     options = that.swish('openExampleFunction', ex);
+         console.log("populateExamples after openExampleFunction");
+         console.log(options);
 		     if ( name )
 		       options.typeIcon = name.split('.').pop();
 		   }
 
 		   $("#navbar").navbar('extendDropdown', dropdown,
 				       title, options);
+       console.log(dropdown);
+       console.log(title);
+       console.log(options);
 		 }
 	       }
 	     });
@@ -467,6 +492,11 @@ preferences.setDefault("emacs-keybinding", false);
    * interested.
    */
   function menuBroadcast(event, data) {
+    console.log("menuBroadcast");
+    console.log(event);
+    console.log(data);
+    console.log($(".swish-event-receiver"));
+    console.log(jQuery._data($(".swish-event-receiver"), "events"));
     $(".swish-event-receiver").trigger(event, data);
   }
 
