@@ -28,7 +28,8 @@
 */
 
 :- module(swish_authenticate,
-	  [ swish_add_user/3		% +User, +Passwd, +Fields
+	  [ swish_add_user/3,		% +User, +Passwd, +Fields
+	    swish_add_user/0
 	  ]).
 :- use_module(library(pengines), []).
 :- use_module(library(lists)).
@@ -65,15 +66,24 @@ This module provides basic login and  password management facilities for
 SWISH.  You can create an authenticated SWISH server by
 
   1. Loading this library
-  2. Add one or more users to the passwd file using swish_add_user/3
+  2. Add one or more users to the passwd file using swish_add_user/0
 
      ==
-     ?- swish_add_user("Bob", "Bob's secret", []).
+     ?- swish_add_user.
+     User name: Bob
+     Real name: Bob de Bouwer
+     Group:     user
+     E-mail:	bob@bouwer.com
+     Password:
+     (again):
+     true.
      ==
 
-As a result, trying to create the  first pengine (e.g., using _|Run!|_),
-the server will challenge the user.  The   logged  in  user is available
-through pengine_user/1.
+Authentication is by default based on  HTTP digest authentication, which
+uses a challenge-response to avoid  exchanging   the  plain password and
+uses  sequence  numbers  to  avoid  replaying  actions.  This  basically
+protects non-authorized users  from  entering   commands,  but  does not
+encrypt the communication.
 */
 
 :- dynamic
@@ -109,8 +119,14 @@ logged_in(_Request, _User) :-
 %
 %	Make the user available as config.swish.user.
 
-swish_config:config(user, user{user:User}, Options) :-
-	option(user(User), Options).
+swish_config:config(user, Dict, Options) :-
+	option(user(User), Options),
+	password_file(File),
+	(   http_current_user(File, User, [_Hash,Group,RealName,Email])
+	->  Dict = u{user:User, group:Group, realname:RealName, email:Email}
+	;   Dict = u{user:User}
+	).
+
 
 %%	pengines:authentication_hook(+Request, +Application, -User)
 %
@@ -169,7 +185,12 @@ is_sha1(Hash) :-
 
 %%	swish_add_user(+User, +Passwd, +Fields) is det.
 %
-%	Add a new user to the SWISH password file.
+%	Add a new user to the SWISH   password  file. Defined Fields are
+%	(in this order):
+%
+%	  - _Group_ identifies the user group (not used)
+%	  - _Real name_ is the common name of the user
+%	  - _EMail_ is the user's e-mail address (not used)
 
 :- if(current_predicate(http_digest_password_hash/4)).
 swish_add_user(User, Passwd, Fields) :-
@@ -201,6 +222,50 @@ update_password(Entry) :-
 	),
 	http_write_passwd_file(File, NewData).
 
+%%	swish_add_user
+%
+%	Interactively add a user to the SWISH password file.
+
+swish_add_user :-
+	read_string("User name: ", User),
+	read_string("Real name: ", RealName),
+	read_string("Group:     ", Group),
+	read_string("E-Mail:    ", Email),
+	between(1, 3, _),
+	read_passwd("Password:  ", Passwd1),
+	read_passwd("(again):   ", Passwd2),
+	(   Passwd1 == Passwd2
+	->  !, swish_add_user(User, Passwd1, [Group,RealName,Email])
+	;   print_message(warning, password_mismatch),
+	    fail
+	).
+
+read_string(Prompt, String) :-
+	format(user_error, '~w', [Prompt]),
+	read_line_to_string(user_input, String).
+read_passwd(Prompt, Passwd) :-
+	format(user_error, '~w', [Prompt]),
+	read_pwd([], Codes),
+	string_codes(Passwd, Codes).
+
+read_pwd(P0, P) :-
+	get_single_char(C),
+	read_pwd(C, P0, P).
+
+read_pwd(0'\r, P, P) :- !, nl(user_error).
+read_pwd(0'\n, P, P) :- !, nl(user_error).
+read_pwd(0'\b, P0, P) :-
+	(   append(P1, [_], P0)
+	->  true
+	;   P1 = []
+	),
+	read_pwd(P1, P).
+read_pwd(21, _, P) :-			% Control-U
+	read_pwd([], P).
+read_pwd(C, P0, P) :-
+	append(P0, [C], P1),
+	read_pwd(P1, P).
+
 
 		 /*******************************
 		 *	     MESSAGES		*
@@ -212,3 +277,5 @@ prolog:message(http_auth_type(ReqMethod, Method)) -->
 	[ 'Using HTTP authentication ~q instead of ~q due to password file format'
 	  -[Method, ReqMethod]
 	].
+prolog:message(password_mismatch) -->
+	[ 'Password mismatch'-[] ].
