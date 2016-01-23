@@ -10,10 +10,10 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  */
 
-define([ "jquery", "config", "tabbed", "form", "preferences",
+define([ "jquery", "config", "tabbed", "form", "preferences", "modal",
 	 "laconic", "runner", "storage", "sha1"
        ],
-       function($, config, tabbed, form, preferences) {
+       function($, config, tabbed, form, preferences, modal) {
 
 var cellTypes = {
   "program":  { label:"Program" },
@@ -179,10 +179,10 @@ var cellTypes = {
 	  });
 	  return this;
 	} else {
-	  alert("Not a SWISH notebook");
+	  modal.alert("Not a SWISH notebook");
 	}
       } else {
-	alert("Clipboard is empty");
+	modal.alert("Clipboard is empty");
       }
     },
 
@@ -936,7 +936,7 @@ var cellTypes = {
 	  file = href.slice(swishStore.length);
 	  $(ev.target).parents(".swish").swish('playFile', file);
 	} else {
-	  alert("File does not appear to come from gitty store?");
+	  modal.alert("File does not appear to come from gitty store?");
 	}
       } else if ( a.hasClass("file") ) {
 	done = true;
@@ -978,7 +978,7 @@ var cellTypes = {
   };
 
   methods.run.program = function() {		/* program */
-    alert("Please define a query to run this program");
+    modal.alert("Please define a query to run this program");
   };
 
   methods.run.query = function(options) {	/* query */
