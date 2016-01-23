@@ -205,7 +205,15 @@ var cellTypes = {
     },
 
     insertBelow: function() {
-      return this.notebook('insert', { where:"below" });
+      if ( this.notebook('insert', {where:"below", if_visible:true}) == false ) {
+	modal.alert("<p>New cell would appear outside the visible area of the " +
+		    "notebook." +
+		    "<p>Please select the cell below which you want the "+
+		    "new cell to appear or scroll to the bottom of the " +
+		    "notebook.");
+      }
+
+      return this;
     },
 
     run: function(cell) {
@@ -259,20 +267,44 @@ var cellTypes = {
      * inserted relative to the cell with the current focus.
      * @param {jQuery} [options.restore] If provided, it must contains
      * a save/restore node that will be used to fill the new cell.
+     * @param {Bool}   [options.if_visible]  If `true`, only insert is
+     * the insertion point is visible.
      */
     insert: function(options) {
       options   = options||{};
       var relto = currentCell(this);
       var cell  = options.cell || $.el.div({class:"nb-cell"});
+      var view  = this.find(".nb-view")
+      var viewrect = options.if_visible ? view[0].getBoundingClientRect()
+					: undefined;
 
       if ( relto ) {
 	if ( options.where == 'above' ) {
+	  if ( options.if_visible ) {
+	    var seltop = relto[0].getBoundingClientRect().top;
+	    if ( seltop < viewrect.top )
+	      return false;
+	  }
 	  $(cell).insertBefore(relto);
 	} else {
+	  if ( options.if_visible ) {
+	    var selbottom = relto[0].getBoundingClientRect().bottom;
+
+	    if ( selbottom > viewrect.bottom - 20 )
+	      return false;
+	  }
 	  $(cell).insertAfter(relto);
 	}
       } else {
-	this.find(".nb-content").append(cell);
+	var content = this.find(".nb-content");
+
+	if ( options.if_visible ) {
+	  var cbottom = content[0].getBoundingClientRect().bottom;
+
+	  if ( cbottom > viewrect.bottom - 20 )
+	    return false;
+	}
+	content.append(cell);
       }
 
       if ( !options.cell ) {
@@ -280,6 +312,8 @@ var cellTypes = {
       }
       this.notebook('updatePlaceHolder');
       this.notebook('active', $(cell));
+
+      return this;
     },
 
 		 /*******************************
