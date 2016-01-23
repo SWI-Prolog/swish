@@ -61,7 +61,7 @@ preferences.setDefault("emacs-keybinding", false);
 	},
 	"Print group": "--",
 	"Print ...": function() {
-	  $(".prolog-editor").prologEditor('print');
+	  menuBroadcast("print");
 	}
       },
       "Edit":

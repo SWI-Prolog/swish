@@ -184,6 +184,10 @@ define([ "cm/lib/codemirror",
 	elem.on("preference", function(ev, pref) {
 	  elem.prologEditor('preference', pref);
 	});
+	elem.on("print", function() {
+	  if ( data.role != "query" )
+	    elem.prologEditor('print');
+	});
 
 	if ( options.save ) {
 	  storage.typeName = options.typeName||"program";
@@ -481,14 +485,14 @@ define([ "cm/lib/codemirror",
 	iframe.contentWindow.print();
       }
 
-      $.ajax({ url: "/swish/js/codemirror/theme/prolog.css",
+      $.ajax({ url: config.http.locations.swish+"js/codemirror/theme/prolog.css",
 	       dataType: "text",
 	       success: function(data) {
 		 printWithIframe($.el.div($.el.style(data),
 					  pre));
 	       },
 	       error: function(jqXHDR) {
-		 modal.ajaxError(jqXHR);
+		 modal.ajaxError(jqXHDR);
 	       }
              });
 
