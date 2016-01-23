@@ -10,3 +10,8 @@ div.feedback {
   background-color: #cff;
   box-shadow: 3px 3px 5px #888;
 }
+
+.modal-header .glyphicon-warning-sign
+{ color: #fa0;
+  font-size: 150%;
+}
