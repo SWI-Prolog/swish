@@ -3,10 +3,12 @@
 <div class="nb-cell markdown">
 # Eruption 
 
-In this example the LPAD models the possibility that an eruption or an earthquake occurs at Stromboli.
+In this example the LPAD models the possibility that an eruption or an earthquake occurs at Stromboli. The first rule states that if there is a sudden energy release and a fault ruptur there is an eruption with a 60% probability or an earthquake of  
 </div>
 
 <div class="nb-cell program lpad">
+% Rules
+% 1st rule
 eruption : 0.6 ; earthquake : 0.3 :- 
   sudden_energy_release,
   fault_rupture(_).
@@ -14,9 +16,11 @@ eruption : 0.6 ; earthquake : 0.3 :-
 % rupture, then there can be an eruption of the volcano on the island with 
 % probability 0.6 or an earthquake in the area with probability 0.3
 
+% Facts
+% Probabilistic fact
 sudden_energy_release : 0.7.
 % The energy release occurs with probability 0.7 
-
+% Non-probabilistic facts
 fault_rupture(southwest_northeast).
 fault_rupture(east_west).
 % we are sure that ruptures occur in both faults

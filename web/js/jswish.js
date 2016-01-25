@@ -122,23 +122,15 @@ preferences.setDefault("emacs-keybinding", false);
       	"Background ...": function() {
       	  menuBroadcast("help", {file:"background.html"});
 	      },
-      },
+      }/*,
       "Tutorial":  {
           type: "active",
           action: function() {
-            // menuBroadcast("help", {file:"background.html"});
-            // menuBroadcast("source", {file:"/tutorial/tutorial.swinb"});
             console.log("click on tutorial");
-            // console.log(this);
-            // console.log($);
-            // // menuBroadcast("help", {file:"background.html"});
-            // menuBroadcast("source", {file:"/tutorial/tutorial.swinb"});
-            // console.log("ora eseguo questo");
-            // menuBroadcast("help", {file:"help.html"});
             methods.playURL.call($("body"), {url:"/tutorial/tutorial.swinb"});
           }
 
-        }
+        }*/
       
     }
   }; // defaults;
@@ -280,18 +272,17 @@ preferences.setDefault("emacs-keybinding", false);
      * @param {Regex}   [options.search] Text searched for.
      */
     playURL: function(options) {
-      console.log("280");
       var existing = this.find(".storage").storage('match', options);
-      console.log("282");
+
       if ( existing && existing.storage('expose', "Already open") )
 	return this;				/* FIXME: go to line */
-      console.log("285");
+
       $.ajax({ url: options.url,
 	       type: "GET",
 	       data: {format: "json"},
 	       success: function(source) {
 		 var msg;
-      console.log("291");
+
 		 if ( typeof(source) == "string" ) {
 		   msg = { data: source };
 		   msg.st_type = "external";
@@ -319,7 +310,9 @@ preferences.setDefault("emacs-keybinding", false);
 			     "newTab", "noHistory",
 			     "prompt"
 			   ]);
-
+     console.log("jswish playURL");
+     console.log("msg");
+     console.log(msg);
 		 menuBroadcast("source", msg);
 	       },
 	       error: function(jqXHR) {

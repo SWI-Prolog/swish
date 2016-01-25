@@ -3,27 +3,108 @@
 <div class="nb-cell markdown">
 # Coin
 
-This example shows the basic concepts of the Logic Programs with Annotated Disjunctions and how to use the tool cplint on SWISH to perform inference.
+This example shows the basic concepts of _Logic Programs with Annotated Disjunctions_ and how to use the tool *cplint on SWISH* to perform inference.
 Let us suppose that we have one coin that we are not sure if it is biased. Now, if we toss the coin, what is the probability that it will land on head?
 
-The LPAD is shown below. The first rule states that if the coin is fair and we toss it, it will land on heads with 50% probability. The second rule, instead, states that if the coin is biased it will land on heads with 60% probability. Moreover we supposed that the coin is biased with 10% probability and we will certanly toss the coin.
+### Preliminaries
+A Logic Program with Annotated Dijunction (LPAD) consists of a set of rules with the following form:
+==
+h_1 : a_1 ; ... ; h_n : a_n :- b_1, ..., b_m. 
+==
+where =h_i= are atoms, =b_i= are literals and =a_i= are real numbers between 0 and 1 such that the sum of all =a_i= is 1. The set of elements =|h_i : a_i|= compose the head of a rule, while the set =b_i= is the body. Disjunction in  the  head  is  represented  with  a  semicolon  and  atoms  in  the  head  are  separated  from probabilities by a colon.
+
+If the clause has an empty body, it can be represented like this:
+==
+h_1 : a_1 ; ... ; h_n : a_n. 
+==
+
+### Writing the program step by step
+In our example we want to write a rule which states that if the coin is fair (not biased) and we toss it, it will land on heads with 50% probability and on tail with 50% probability. We can write such a rule as below:
+</div>
+<div class="nb-cell program prolog">
+heads(Coin): 1/2; tails(Coin) : 1/2 :- toss(Coin),\+biased(Coin).
+</div>
+<div class="nb-cell markdown">
+we can notice that _1/2 + 1/2 = 1_.
+
+Now we want to write down a second rule which states that if the coin is biased it will land on heads with 60% probability and on tails with 40% probability.
+</div>
+<div class="nb-cell program prolog">
+heads(Coin): 0.6 ; tails(Coin) : 0.4 :- toss(Coin), biased(Coin).
+</div>
+
+<div class="nb-cell markdown">
+We are not sure if the coin is biased or not, we know that there is a 90% probability that the coin is fair and a 10% probability that the coin is biased. Therefore we can write the following probabilistic fact (an LPAD rule without body). 
+</div>
+
+<div class="nb-cell program prolog">
+fair(Coin):0.9 ; biased(Coin):0.1.
+</div>
+
+<div class="nb-cell markdown">
+Finally we state the fact that we will certainly toss the coin. *Note:* this fact is ground.
+</div>
+
+<div class="nb-cell program prolog">
+toss(coin): 1.
+</div>
+
+<div class="nb-cell markdown">
+If the head of a rule contains only one element =|h : 1|=, we can simpy write this element as =h=. Therefore we can write the previous fact (a fact can be seen as a rule without body) in this way:
+</div>
+
+<div class="nb-cell program prolog">
+toss(coin).
+</div>
+
+<div class="nb-cell markdown">
+The program is almost complete, what we need now is to load the library =pita= in order to perform inference. Therefore we import this library with the built-in predicate use_module/1. So we need to write
+</div>
+
+<div class="nb-cell program prolog">
+:- use_module(library(pita)).
+</div>
+
+<div class="nb-cell markdown">
+Moreover, after =|:- use_module(library(pita))|= we need to write =|:- cplint.|= and =|:- end_cplint.|= respectively at the begin and at the end of the program. These goals are mandatory to initialize the inference system. 
+</div>
+
+<div class="nb-cell markdown">
+### Full program
+The full LPAD of this example is shown below. 
 </div>
  
-<div class="nb-cell program lpad" src="example/coin.pl">
-heads(Coin): 1/2; tails(Coin) : 1/2:-toss(Coin),\+biased(Coin).
-% if we toss a Coin that is not biased then it lands heads with probability 1/2
-% and tails with probability 1/2
-heads(Coin): 0.6 ; tails(Coin) : 0.4:-toss(Coin),biased(Coin).
-% if we toss a Coin that is biased then it lands heads with probability 0.6
-% % and tails with probability 0.4
-fair(Coin):0.9 ; biased(Coin):0.1.
-% a Coin is fair with probability 0.9 and biased with probability 0.1
+<div class="nb-cell program prolog">
+% Imported library to perform inference
+:- use_module(library(pita)).
+
+:- cplint.
+% Rules
+heads(Coin): 1/2; tails(Coin) : 1/2 :- toss(Coin),\+biased(Coin).
+heads(Coin): 0.6 ; tails(Coin) : 0.4 :- toss(Coin),biased(Coin).
+% Facts
+fair(Coin): 0.9 ; biased(Coin): 0.1.
 toss(coin).
-% coin is certainly tossed
+:- end_cplint.
+</div>
+
+<div class="nb-cell markdown">
+Ok, we have our program, now what?!
+
+Now it's time to submit some queries!
+
+To query a program you must use the prob/2 predicate and must respect the following syntax
+==
+prob(:Atom, -P).
+==
+
+=Atom= is the query that we want to perform, while =P= is the variable that will contain the probabilistic result (a float value between 0 and 1).
+
+For instance let us ask for the probability that the tossed coin will land on head. We can do it with the following query
 </div>
 
 <div class="nb-cell query">
-heads(coin).
+prob(heads(coin),P).
 </div>
 
 <div class="nb-cell markdown">
@@ -32,7 +113,39 @@ To try this example click on the triangle <a class="btn btn-info btn-xs"><span c
 
 <div class="nb-cell markdown">
 
-Complete example: [coin.cpl](example/coin.cpl), [coin.pl](example/coin.pl)
+Complete example: [coin.pl](example/coin.pl)
+
+--
+### Alternative syntax
+
+In order to perform a query, we can use the alternative syntax for queries shown below. 
+
+==
+?- Atom(+Terms).
+==
+
+Before submitting a query with this syntax, we have to slightly modify our program. We shall not load the library =pita= and the program shall not be enclosed by the goals =|:- cplint.|= and =|:- end_cplint.|=. Therefore our program becomes
+</div>
+
+<div class="nb-cell program lpad">
+% Rules
+heads(Coin): 1/2; tails(Coin) : 1/2 :- toss(Coin),\+biased(Coin).
+heads(Coin): 0.6 ; tails(Coin) : 0.4 :- toss(Coin),biased(Coin).
+% Facts
+fair(Coin):0.9 ; biased(Coin):0.1.
+toss(coin).
+</div>
+
+<div class="nb-cell markdown">
+If we want to know the probability that the tossed coin will land on head, we have to write the following query
+</div>
+
+<div class="nb-cell query">
+heads(coin).
+</div>
+
+<div class="nb-cell markdown">
+Complete example: [coin.cpl](example/coin.cpl)
 
 --
 - Based on: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 

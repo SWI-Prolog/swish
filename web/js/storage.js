@@ -109,7 +109,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
     setSource: function(src) {
       var data = this.data(pluginName);
       var type = tabbed.tabTypes[data.typeName];
-
+      console.log("storage setSource");
+      console.log(src);
       if ( typeof(src) == "string" )
 	src = {data:src};
 
@@ -583,7 +584,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 			    id:	  data.meta.name	/* FIXME: add hash? */
 			  });
       }
-
+      console.log("storage unload");
+      console.log(data);
       if ( data.cleanData != data.getValue() ) {
 	if ( why == "beforeunload" ) {
 	  var message = "The source editor has unsaved changes.\n"+
