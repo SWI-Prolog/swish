@@ -56,6 +56,11 @@ nth0/3, nth/3, dif/2, select/3</code></pre>
 <p>plus the predicate</p>
 <pre><code>average/2</code></pre>
 <p>that, given a list of numbers, computes its arithmetic mean.</p>
+<p>The body of rules may also contain the predicate <code>prob/2</code> that computes the probability of an atom, thus allowing nested probability computations. For example</p>
+<pre><code>a:0.2:-
+  prob(b,P),
+  P&gt;0.2.</code></pre>
+<p>is a valid rule.</p>
 <h1 id="inf">Inference</h1>
 <p><code>cplint</code> answers queries using the module <code>pita</code>. It performs the program transformation technique of <span class="citation">[7]</span>. Differently from that work, techniques alternative to tabling and answer subsumption are used.</p>
 <p>For answering queries, you have to prepare a Prolog file where you first load <code>pita</code> and then enclose the probabilistic clauses in <code>:-cplint.</code> and <code>:-end_cplint.</code> For example, the coin program above can be stored in <code>coin.pl</code> as follows</p>

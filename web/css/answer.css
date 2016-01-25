@@ -15,7 +15,7 @@ div.render-multi {
 #render-select {
   position: absolute;
   background-color: #fff;
-  padding: 5px 20px;
+  padding: 5px 0px 5px 20px;
   border: 1px solid #000;
   border-radius: 5px;
   box-shadow: 5px 5px 5px #888;
@@ -33,6 +33,12 @@ div.render-multi {
   top: 0px;
   width: 20px; height: 20px;
 }
+
+div.render-item a {
+  float: right;
+  padding: 0px 10px 0px 10px;
+}
+
 
 		 /*******************************
 		 *	      ERRORS		*

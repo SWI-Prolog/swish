@@ -29,6 +29,7 @@ This notebook gives an overview of example programs for inference.
   - Three sided dice ([threesideddice.cpl](example/threesideddice.cpl), 
   [threesideddice.pl](example/threesideddice.pl)  A three-sided die is repeatedly thrown until the outcome is three. From F. Riguzzi and T. Swift. _The PITA system: Tabling and answer subsumption for reasoning under uncertainty_. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, 11(4-5), pages 433-449, 2011.
   - Mendelian inheritance of the color of pea plant - larger family ([mendelc.cpl](example/mendelc.cpl), [mendelc.pl](example/mendelc.pl)) From H. Blockeel. _Probabilistic logical models for mendel's experiments: An exercise_. In Inductive Logic Programming, Work in Progress Track, 2004.
+  - Meta probabilities ([meta.cpl](example/meta.cpl), [meta.pl](example/meta.pl)) Probabilities computation in the body of probabilistic clauses.
 </div>
 
 </div>

@@ -1,5 +1,8 @@
+node_modules
 bower_components
+passwd
 storage
 log
+*.log
 *~
 *.swp

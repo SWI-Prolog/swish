@@ -54,6 +54,10 @@ Render data as a chart.
 %	Renders Term as a C3.js chart. This renderer recognises C3, as a
 %	dict with tag `c3`.
 
+% This renderer hooks into SWISH using two event-handlers and associated
+% classes. The `reactive-size` is called  after   the  window or pane is
+% resized and the `export-dom` is called from the _download_ button.
+
 term_rendering(C30, _Vars, _Options) -->
 	{ is_dict(C30, Tag),
 	  Tag == c3,
@@ -62,7 +66,7 @@ term_rendering(C30, _Vars, _Options) -->
 	  atom_concat(#, Id, RefId),
 	  put_dict(bindto, C3, RefId, C3b)
 	},
-	html(div([ class(['render-C3', 'reactive-size']),
+	html(div([ class(['render-C3', 'reactive-size', 'export-dom']),
 		   'data-render'('As C3 chart')
 		 ],
 		 [ div(id(Id), []),
@@ -74,6 +78,17 @@ term_rendering(C30, _Vars, _Options) -->
     var chart;
     var sizing = {};
     var tmo;
+
+    div.on("export-dom", function(ev, r) {
+      var svg = div.find("svg");
+      svg.attr("xmlns", "http://www.w3.org/2000/svg");
+      svg.css("font", "10px sans-serif");
+      svg.find(".c3-path,.c3-line,.tick,.domain").css("fill", "none");
+      svg.find(".tick,.domain").css("stroke", "#000");
+      r.element = svg[0];
+      r.extension = "svg";
+      r.contentType = "image/svg+xml";
+    });
 
     div.on("reactive-resize", function() {
       if ( chart ) {
