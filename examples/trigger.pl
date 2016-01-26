@@ -30,6 +30,8 @@ pull_trigger(right_gun).
 /** <examples>
 
 ?- prob(death,Prob). % what is the probability that you are dead?
+% expected result 0.3055555555555556
 ?- prob_bar(death,Prob). % what is the probability that you are dead?
+% expected result 0.3055555555555556
 */
  

@@ -31,13 +31,21 @@ on(X,1):1/3;on(X,2):1/3;on(X,3):1/3:-
 /** <examples>
 
 ?- prob(on(0,1),Prob). % what is the probability that the dice lands on face 1 at time 0?
+% expected result 0.3333333333333333
 ?- prob(on(1,1),Prob). % what is the probability that the dice lands on face 1 at time 1?
+% expected result 0.2222222222222222
 ?- prob(on(2,1),Prob). % what is the probability that the dice lands on face 1 at time 2?
+% expected result 0.14814814814814814
 ?- prob(on(3,1),Prob). % what is the probability that the dice lands on face 1 at time 3?
+% expected result 0.09876543209876543
 ?- prob_bar(on(0,1),Prob). % what is the probability that the dice lands on face 1 at time 0?
+% expected result 0.3333333333333333
 ?- prob_bar(on(1,1),Prob). % what is the probability that the dice lands on face 1 at time 1?
+% expected result 0.2222222222222222
 ?- prob_bar(on(2,1),Prob). % what is the probability that the dice lands on face 1 at time 2?
+% expected result 0.14814814814814814
 ?- prob_bar(on(3,1),Prob). % what is the probability that the dice lands on face 1 at time 3?
+% expected result 0.09876543209876543
 
 */
  

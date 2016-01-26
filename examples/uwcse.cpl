@@ -212,6 +212,7 @@ years_in_program(A,year_1):0.032258064516129; years_in_program(A,year_2):0.06451
 /** <examples>
 
 ?- taught_by(c1,p1).  % what is the probability that course c1 is taught by professor p1?
+% expected result 0.09265809305111444
 
 
 */

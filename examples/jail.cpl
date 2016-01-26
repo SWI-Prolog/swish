@@ -22,9 +22,10 @@ tell_executed(b):1/2; tell_executed(c):1/2:-
 % the jailer says that b will be executed with probability 1/2 or c will be
 % executed with probability 1/2 if a is safe
 
-
 tell_executed(A):-
-  select(B, [b,c], [A]),
+  member(A,[b,c]),
+  member(B,[b,c]),
+  A\=B,
   safe(B).
 % the jailer says that A will be executed with certainty if there is a prisoner
 % B in {b,c} different from A that is safe
@@ -43,13 +44,16 @@ safe_after_tell:-
 /** <examples>
 
 ?- safe_after_tell. % what is the probability that a is not executed after the jailer has spoken
-% the result, 1/3, means that the jailer communication did not change the 
+% expcted result 1/3, means that the jailer communication did not change the 
 % probability of a being safe
 ?- tell. % what is the probability that the jailer speaks? 
+% expcted result 1.0
 ?- safe(a). % what is the probability that a is not executed
+% expcted result 0.3333333333333333
 ?- tell_executed(b). % what is the probability that the jailer says b is going to be executed?
+% expcted result 0.5
 ?- tell_executed(c). % what is the probability that the jailer says b is going to be executed?
-
+% expcted result 0.5
 */
 
 

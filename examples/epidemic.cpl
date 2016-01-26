@@ -22,6 +22,8 @@ flu(robert).
 /** <examples>
 
 ?- epidemic.  % what is the probability that an epidemic arises?
+% expected result 0.588
 ?- pandemic.  % what is the probability that a pandemic arises?
+% expected result 0.357
 
 */

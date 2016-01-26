@@ -23,6 +23,8 @@ c.
 /** <examples>
 
 ?- prob(a,Prob).
+% expected result 0.2
 ?- prob_bar(a,Prob).
+% expected result 0.2
 
 */

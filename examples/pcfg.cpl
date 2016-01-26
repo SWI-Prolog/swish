@@ -37,6 +37,7 @@ rule('S',L,[a,'S']):0.2; rule('S',L,[b,'S']):0.2; rule('S',L,[a]):0.3; rule('S',
 /** <examples>
 
 ?- pcfg([a,b,a,a]). % what is the probability that the string abaa belongs to the language?
+% expected result 0.0024
 
 
 */

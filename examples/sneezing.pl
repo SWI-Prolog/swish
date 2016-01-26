@@ -30,11 +30,15 @@ hay_fever(bob).
 /** <examples>
 
 ?- prob(strong_sneezing(bob),Prob). % what is the probability that bob has strong sneezing?
+% expected result 0.43999999999999995
 ?- prob(moderate_sneezing(bob),Prob). % what is the probability that bob has 
-%  moderate sneezing?
+% moderate sneezing?
+% expected result 0.7999999999999998
 ?- prob_bar(strong_sneezing(bob),Prob). % what is the probability that bob has strong sneezing?
+% expected result 0.43999999999999995
 ?- prob_bar(moderate_sneezing(bob),Prob). % what is the probability that bob has 
-%  moderate sneezing?
+% moderate sneezing?
+% expected result 0.7999999999999998
 
 
 */

@@ -45,7 +45,9 @@ graph(digraph(G)):-
 /** <examples>
 
 ?- prob(path(a,e),Prob). % what is the probability that a and e are connected?
+% expected result 0.22888
 ?- prob_bar(path(a,e),Prob). % what is the probability that a and e are connected?
-?- graph(G). % show the probabilistic graph
+% expected result 0.22888
+?- graph(G). % shows the probabilistic graph
 
 */

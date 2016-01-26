@@ -16,5 +16,5 @@ c.
 /** <examples>
 
 ?- a.
-
+% expected result 0.2
 */

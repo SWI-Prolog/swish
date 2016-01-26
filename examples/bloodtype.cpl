@@ -78,8 +78,12 @@ mother(p_m, p).
 /** <examples>
 
 ?- bloodtype(p,a). % what is the probability that the p's bloodtype is a?
+% expected result 0.1957737927437685
 ?- bloodtype(p,b). % what is the probability that the p's bloodtype is b?
+% expected result 0.22385005085999995
 ?- bloodtype(p,ab). % what is the probability that the p's bloodtype is ab?
+% expected result 0.193292577
 ?- bloodtype(p,null). % what is the probability that the p's bloodtype is 0?
+%  expected result 0.1375200361199999
 */
  

@@ -53,20 +53,27 @@ safe_after_tell:-
 /** <examples>
 
 ?- prob(safe_after_tell,Prob). % what is the probability that a is not executed after the jailer has spoken
-% the result, 1/3, means that the jailer communication did not change the 
+% expected result 1/3, means that the jailer communication did not change the 
 % probability of a being safe
 ?- prob(tell,Prob). % what is the probability that the jailer speaks? 
+% expcted result 1.0
 ?- prob(safe(a),Prob). % what is the probability that a is not executed
+% expcted result 0.3333333333333333
 ?- prob(tell_executed(b),Prob). % what is the probability that the jailer says b is going to be executed?
+% expcted result 0.5
 ?- prob(tell_executed(c),Prob). % what is the probability that the jailer says b is going to be executed?
+% expcted result 0.5
 ?- prob_bar(safe_after_tell,Prob). % what is the probability that a is not executed after the jailer has spoken
-% the result, 1/3, means that the jailer communication did not change the 
+% expected result 1/3, means that the jailer communication did not change the 
 % probability of a being safe
 ?- prob_bar(tell,Prob). % what is the probability that the jailer speaks? 
+% expcted result 1.0
 ?- prob_bar(safe(a),Prob). % what is the probability that a is not executed
+% expcted result 0.3333333333333333
 ?- prob_bar(tell_executed(b),Prob). % what is the probability that the jailer says b is going to be executed?
+% expcted result 0.5
 ?- prob_bar(tell_executed(c),Prob). % what is the probability that the jailer says b is going to be executed?
-
+% expcted result 0.5
 
 */
 
