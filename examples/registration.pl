@@ -32,7 +32,7 @@ http://dtai.cs.kuleuven.be/static/ACE/doc/
 :- set_sc(megaex_bottom,7).
 %:- set_sc(max_iter,2).
 %:- set_sc(max_iter_structure,5).
-:- set_sc(verbosity,3).
+:- set_sc(verbosity,1).
 
 :- bg.
 company_info(jvt,commercial).
