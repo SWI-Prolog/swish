@@ -43,8 +43,6 @@ course(erm,3,introductory).
 course(so2,4,introductory).
 course(srw,3,advanced).
 
-party(P):-
-        participant(_, _, P, _).
 
 
 job(J):-
@@ -127,8 +125,8 @@ modeb(*,course_type(+sub,-#ct)).
 neg(party(M,yes)):- party(M,no).
 neg(party(M,no)):- party(M,yes).
 
-%party(M,P):-
-%        participant(M,_, _, P, _).
+party(M,P):-
+  participant(M,_, _, P, _).
 
 
 begin(model(adams)).
