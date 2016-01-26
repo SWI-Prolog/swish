@@ -1,8 +1,15 @@
-/* Registration dataset from The ACE Data Mining System User's Manual
-https://dtai.cs.kuleuven.be/ACE/doc/ACEuser-1.2.16.pdf
+/* 
+Registration dataset, it contains information about participants in a recent 
+Seminar on Data Mining. 
+We would like to find out what type of people attend the parties at the seminar.
+From 
+L. De Raedt, H. Blockeel, L. Dehaspe, and W. Van Laer. Three companions for data mining in first order logic. In S. Dzeroski and N. Lavrac, editors, Relational Data Mining, pages 105-139.  Springer-Verlag, 2001.
+
+See also The ACE Data Mining System User's Manual
+http://dtai.cs.kuleuven.be/ACE/doc/ACEuser-1.2.16.pdf
 
 Downloaded from 
-https://dtai.cs.kuleuven.be/static/ACE/doc/
+http://dtai.cs.kuleuven.be/static/ACE/doc/
 */
 
 /** <examples>
