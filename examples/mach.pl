@@ -1,4 +1,6 @@
-/* Machines dataset from The ACE Data Mining System User's Manual
+/* 
+The task is to decide whether a machine should be fixed, sent back or is ok.
+Machines dataset from The ACE Data Mining System User's Manual
 https://dtai.cs.kuleuven.be/ACE/doc/ACEuser-1.2.16.pdf
 
 Downloaded from 
