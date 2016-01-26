@@ -28,9 +28,13 @@ toss(coin).
 /** <examples>
 
 ?- prob(heads(coin),Prob).  % what is the probability that coin lands heads?
+% expected result 0.51
 ?- prob(tails(coin),Prob).  % what is the probability that coin lands tails?
+% expected result 0.49
 ?- prob_bar(heads(coin),Prob).  % what is the probability that coin lands heads?
+% expected result 0.51
 ?- prob_bar(tails(coin),Prob).  % what is the probability that coin lands tails?
+% expected result 0.49
 
 
 
