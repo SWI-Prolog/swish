@@ -15,7 +15,7 @@ heads(Coin): 1/2; tails(Coin) : 1/2 :- toss(Coin),\+biased(Coin).
 </div>
 
 <div class="nb-cell markdown">
-we can notice that _1/2 + 1/2 = 1_.
+we can notice that _|1/2 + 1/2 = 1|_.
 
 Now we want to write down a second rule which states that if the coin is biased it will land on heads with 60% probability and on tails with 40% probability.
 </div>
@@ -25,7 +25,7 @@ heads(Coin): 0.6 ; tails(Coin) : 0.4 :- toss(Coin), biased(Coin).
 </div>
 
 <div class="nb-cell markdown">
-We are not sure if the coin is biased or not, we know that there is a 90% probability that the coin is fair and a 10% probability that the coin is biased. Therefore we can write the following probabilistic fact (an LPAD rule without body). 
+We are not sure if the coin is biased or not, we know that there is a 90% probability that the coin is fair and a 10% probability that the coin is biased. Therefore we can write the following probabilistic fact (an LPAD rule without body).
 </div>
 
 <div class="nb-cell program prolog">
@@ -65,12 +65,10 @@ The program is almost complete, what we need now is to load the library =pita= i
 
 <div class="nb-cell markdown">
 Moreover, after =|:- use_module(library(pita))|= we need to write =|:- cplint.|= and =|:- end_cplint.|= respectively at the begin and at the end of the program. These goals are mandatory to initialize the inference system. 
+
+The full LPAD of this example is shown below.
 </div>
 
-<div class="nb-cell markdown">
-The full LPAD of this example is shown below. 
-</div>
- 
 <div class="nb-cell program prolog">
 % load the 'pita' library to perform inference
 :- use_module(library(pita)).
@@ -108,16 +106,13 @@ prob(heads(coin),P).
 </div>
 
 <div class="nb-cell markdown">
-To try this example click on the triangle <a class="btn btn-info btn-xs"><span class="glyphicon glyphicon-play"></span></a> icon next to the query. We will see that the coin will land on heads with 51% probability. In fact _|P(heads) = P(heads, fair) + P(heads, biased) = P(heads|fair)P(fair) + P(heads|biased)P(biased) = 0.5&sdot;0.9 + 0.6&sdot;0.1 = 0.51|_.
-</div>
+To try this example click on the triangle icon next to the query. We will see that the coin will land on heads with 51% probability. In fact _|P(heads) = P(heads, fair) + P(heads, biased) = P(heads|fair)P(fair) + P(heads|biased)P(biased) = 0.5*0.9 + 0.6*0.1 = 0.51|_.
 
-<div class="nb-cell markdown">
 Complete example: [coin.pl](example/coin.pl)
 
 --
 ### Full program with the LPAD editor
-
-As mentioned before, if we use the LPAD editor, we our program will be slightly different. We shall not load the library =pita= and the program shall not be enclosed by the goals =|:- cplint.|= and =|:- end_cplint.|=. Therefore our program with the LPAD editor is
+As mentioned before, if we use the LPAD editor, our program will be slightly different. We shall not load the library =pita= and the program shall not be enclosed by the goals =|:- cplint.|= and =|:- end_cplint.|=. Therefore our program with the LPAD editor is
 </div>
 
 <div class="nb-cell program lpad">
@@ -131,7 +126,6 @@ toss(coin).
 
 <div class="nb-cell markdown">
 #### How to execute a query
-
 In order to perform a query with the "LPAD" editor, we must use an alternative syntax for queries shown below. 
 
 ==
@@ -149,7 +143,7 @@ heads(coin).
 Complete example with the LPAD editor: [coin.cpl](example/coin.cpl)
 
 --
-- Based on: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 
+- Based on: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctions_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 
 
 --
 [Back to Tutorial](tutorial/tutorial.swinb)

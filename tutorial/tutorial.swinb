@@ -10,6 +10,7 @@
   - [Epidemic](tutorial/epidemic.swinb). LPAD with implicit _null_ atom in the clauses.
   - [Earthquake](tutorial/earthquake.swinb)
   - [Medical symptoms](tutorial/sneezing.swinb)
+  - [test](tutorial/test.swinb)
 - *Examples with structure and parameter learning*
   - ...
 - *More Examples with inference*

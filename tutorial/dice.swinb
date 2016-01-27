@@ -25,6 +25,8 @@ on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
   X1 is X-1,X1>=0,on(X1,_),
   \+ on(X1,6).
 </div>
+
+<div class="nb-cell markdown">
 ### Full program with Prolog editor
 Below we can see the full LPAD of the example. 
 </div>
