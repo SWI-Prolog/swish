@@ -3,7 +3,7 @@
 <div class="nb-cell markdown">
 # Medical symptoms
 
-The program shown below model the effect of flu and hay fever on the sneezing symptom. 
+The program shown below models the effect of flu and hay fever on the sneezing symptom. 
 
 ### Full program with the Prolog editor
 The first rule states that if somebody has flu, there is 30% probability that he has strong sneezing, 50% probability that he has moderate sneezing and 20% probability that he has no sneezing.
@@ -51,6 +51,8 @@ prob_bar(strong_sneezing(bob), P).
 Complete example: [sneezing.pl](example/sneezing.pl)
 
 --
+This is again an example of a noisy or combining rule between the conclusions of two different clauses.
+
 Complete example with the LPAD editor: [sneezing.cpl](example/sneezing.cpl)
 
 --

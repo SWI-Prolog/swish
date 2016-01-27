@@ -3,10 +3,10 @@
 <div class="nb-cell markdown">
 # Epidemic
 
-In this section as example we have a program which models the fact that if somebody has the flu and the climate is cold, there is the possibility that an epidemic or a pandemic arises. We are uncertain about whether the climate is cold but we know for sure that David and Robert have the flu.
+In this section we consider a program which models the fact that if somebody has the flu and the climate is cold, there is the possibility that an epidemic or a pandemic arises. We are uncertain about whether the climate is cold but we know for sure that David and Robert have the flu.
 
 ### Writing the program step by step
-The rule that we want to write is the one which  states that, if somebody has the flu and the climate is cold, epidemic arises with 60% probability, pandemic arises with 30% probability, whereas we have 10% probability that neither epidemic nor pandemic arises. We can write
+The rule that we want to write is the one which  states that, if somebody has the flu and the climate is cold, an epidemic arises with 60% probability, a pandemic arises with 30% probability, whereas we have a 10% probability that neither an epidemic nor a pandemic arises. We can write
 </div>
 
 <div class="nb-cell program prolog">
@@ -14,7 +14,7 @@ epidemic : 0.6; pandemic : 0.3; null: 0.1 :- flu(_), cold.
 </div>
 
 <div class="nb-cell markdown">
-As we said on section [Logic Program with Annotated Disjunction](tutorial/lpad.swinb) the =|null|= atom can be implicit. 
+As we said in Section [Logic Program with Annotated Disjunction](tutorial/lpad.swinb), the =|null|= atom can be implicit. 
 Therefore the previous rule, without changing its meaning, can be written
 </div>
 
@@ -23,7 +23,7 @@ epidemic : 0.6; pandemic : 0.3 :- flu(_), cold.
 </div>
 
 <div class="nb-cell markdown">
-The following probabilistic fact says that the weather is cold with 70% probability. We can notice that the =|null|= atom is implicit here.
+The following probabilistic fact says that the weather is cold with a 70% probability. Note that the =|null|= atom is implicit here as well.
 </div>
 
 <div class="nb-cell program prolog">
@@ -80,6 +80,8 @@ prob_bar(epidemic, P).
 </div>
 
 <div class="nb-cell markdown">
+This example shows that conclusions from different groundings of a rule are combined with a noisy or rule: the probability of an epidemic is obtained by combining with noisy or the conclusions of the two grounding of the rule where the only variable is replaced by David or Robert. So the probability of an epidemic if =cold= is true is 0.6+0.6-0.6*0.6=84. Since =cold= is also uncertain, the overall probability is 0.84*0.7=0.588.
+
 Complete example: [epidemic.pl](example/epidemic.pl)
 
 --

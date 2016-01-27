@@ -3,10 +3,10 @@
 <div class="nb-cell markdown">
 # Earthquake
 
-The program illustrated in this example models the occurrence of an earthquake depending on its possible causes. 
+This program models the occurrence of an earthquake depending on its possible causes. 
 
 ### Full program with the Prolog editor
-The first rule states that if there is rupture of a geological we have a strong earthquake with 30% probability, a moderate earthquake with 50% probability and 20% probability to have no earthquake. In the second rule it is asserted that if an earthquake is caused only by a volcanic eruption, we have a strong earthquake with 20% probability, a moderate earthquake with 60% probability and no earthquake with 20% probability. Then as facts we have that there was a fault rupture and a volcanic eruption at Stromboli and a volcanic eruption at Eyjafjallajokull (can you pronounce it? :-) ).
+The first rule states that if there is rupture of a geological fault only, we have a strong earthquake with 30% probability, a moderate earthquake with 50% probability and 20% probability to have no earthquake. The second rule states that if there is a volcanic eruption only, we have a strong earthquake with 20% probability, a moderate earthquake with 60% probability and no earthquake with 20% probability. We also know for sure that we have a fault rupture and a volcanic eruption at Stromboli and a volcanic eruption at Eyjafjallajokull (can you pronounce it? :-) ).
 </div>
 
 <div class="nb-cell program prolog">
@@ -32,7 +32,7 @@ volcanic_eruption(eyjafjallajkull).
 </div>
 
 <div class="nb-cell markdown">
-We can ask for the probability of a moderate earthquake at stromboli by submitting the query:
+We can ask the probability of a moderate earthquake at stromboli by submitting the query:
 </div>
 
 <div class="nb-cell query">
@@ -48,6 +48,8 @@ prob_bar(earthquake(stromboli,moderate), P).
 </div>
 
 <div class="nb-cell markdown">
+This example shows that conclusions from different rules are combined with a noisy or rule: the probability of a moderate earthquke FR COMPLETA  is obtained by combining with noisy or the conclusions of the two grounding of the rule where the only variable is replaced by David or Robert. So the probability of an epidemic if =cold= is true is 0.6+0.6-0.6*0.6=84. Since =cold= is also uncertain, the overall probability is 0.84*0.7=0.588.
+
 Complete example: [earthquake.pl](example/earthquake.pl)
 
 --
