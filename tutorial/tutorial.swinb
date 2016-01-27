@@ -13,31 +13,9 @@
 - *Examples with structure and parameter learning*
   - ...
 - *More Examples with inference*
-  - Eruption ([eruption.cpl](example/eruption.cpl), [eruption.pl](example/eruption.pl))
-  - Mendelian inheritance of the color of pea plants ([mendel.cpl](example/mendel.cpl), [mendel.pl](example/mendel.pl))
-  - Mendelian ineritance of human bloodtype ([bloodtype.cpl](example/bloodtype.cpl), [bloodtype.pl](example/bloodtype.pl))
-  - Path ([path.cpl](example/path.cpl), [path.pl](example/path.pl))
-  - Alarm Bayesian network ([alarm.cpl](example/alarm.cpl), [alarm.pl](example/alarm.pl))
-  - Hidden Markov Model ([hmm.cpl](example/hmm.cpl), [hmm.pl](example/hmm.pl))
-  - Probabilistic Context Free Grammar ([pcfg.cpl](example/pcfg.cpl),
-  [pcfg.pl](example/pcfg.pl))
-  - UWCSE: link prediction ([uwcse.cpl](example/uwcse.cpl), [uwcse.pl](example/uwcse.pl))
-  - Cora: entity resolution ([cora.cpl](example/cora.cpl), [cora.pl](example/cora.pl))
-  - Monty Hall puzzle([monty.cpl](example/monty.cpl), [monty.pl](example/monty.pl))
-  - Three-prisoners puzzle ([jail.cpl](example/jail.cpl), [jail.pl](example/jail.pl))
-  - Russian roulette with two guns ([trigger.cpl](example/trigger.cpl), [trigger.pl](example/trigger.pl))
-  - Negation ([light.cpl](example/light.cpl), [light.pl](example/light.pl))
-  - Coins ([coin2.cpl](example/coin2.cpl), [coin2.pl](example/coin2.pl))
-  - Three sided dice ([threesideddice.cpl](example/threesideddice.cpl), 
-  [threesideddice.pl](example/threesideddice.pl)
-  - Mendelian inheritance of the color of pea plant - larger family ([mendelc.cpl](example/mendelc.cpl), [mendelc.pl](example/mendelc.pl))
-  - Meta probabilities ([meta.cpl](example/meta.cpl), [meta.pl](example/meta.pl))
+  - see [cplint inference example programs](example/inference_examples.swinb)
 - *More Examples with structure and parameter learning*
-  - Bongard ([bongard.pl](example/bongard.pl), [bongardkeys.pl](example/bongardkeys.pl))
-  - Shop ([shop.pl](example/shop.pl))
-  - HMM ([hmmlearn.pl](example/hmmlearn.pl))
-  - Mutagenesis ([muta.pl](example/muta.pl))
-  - University ([university.pl](example/university.pl))
+  - see [cplint learning example programs](example/learning_examples.swinb)
 </div>
 
 </div>
