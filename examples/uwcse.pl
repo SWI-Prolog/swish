@@ -221,7 +221,9 @@ years_in_program(A,year_1):0.032258064516129; years_in_program(A,year_2):0.06451
 /** <examples>
 
 ?- prob(taught_by(c1,p1),Prob).  % what is the probability that course c1 is taught by professor p1?
+% expected result 0.09265809305111444
 ?- prob_bar(taught_by(c1,p1),Prob).  % what is the probability that course c1 is taught by professor p1?
+% expected result 0.09265809305111444
 
 
 */

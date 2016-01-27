@@ -29,6 +29,8 @@ fault_rupture(east_west).
 /** <examples>
 
 ?- eruption. % what is the probability of an eruption?
+% expected result 0.588
 ?- earthquake. % what is the probability of an earthquake?
+% expected result 0.357
 
 */

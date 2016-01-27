@@ -38,9 +38,13 @@ fault_rupture(east_west).
 /** <examples>
 
 ?- prob(eruption,Prob). % what is the probability of an eruption?
+% expected result 0.588
 ?- prob(earthquake,Prob). % what is the probability of an earthquake?
+% expected result 0.357
 ?- prob_bar(eruption,Prob). % what is the probability of an eruption?
+% expected result 0.588
 ?- prob_bar(earthquake,Prob). % what is the probability of an earthquake?
+% expected result 0.357
 
 
 */

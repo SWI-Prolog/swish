@@ -48,6 +48,7 @@ letter(q2,a,S):0.25;letter(q2,c,S):0.25;letter(q2,g,S):0.25;letter(q2,t,S):0.25.
 /** <examples>
 
 ?- hmm([a,c,a,c,g,t]). % what is the probability that the model emits the sequence [a,c,a,c,g,tr])
+% expected result 0.01388888888888889
 
 
 */

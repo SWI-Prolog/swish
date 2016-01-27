@@ -57,11 +57,17 @@ color(X,white) :- cg(X,1,w), cg(X,2,w).
 /** <examples>
 
 ?- color(s,purple). % what is the probability that the color of s' flowers is purple?
+% expected result 0.8125
 ?- color(s,white). % what is the probability that the color of s' flowers is white?
+% expected result 0.1875
 ?- cg(s,1,p). % what is the probability that the color allele on chromosme 1 of s is p?
+% expected result 0.75
 ?- cg(s,1,w). % what is the probability that the color allele on chromosme 1 of s is w?
+% expected result 0.25
 ?- cg(s,2,p). % what is the probability that the color allele on chromosme 2 of s is p?
+% expected result 0.25
 ?- cg(s,2,w). % what is the probability that the color allele on chromosme 2 of s is w?
+% expected result 0.75
 
 */
  

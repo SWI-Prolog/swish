@@ -11,8 +11,10 @@ The transitive clauses for samebib have been removed to avoid loops.
 
 ?- prob(samebib(class_7,class_8),Prob). % what is the probability that citations class_7 
 % and class_8 refer to the same paper?
+% expected result 0.4616412208109999
 ?- prob_bar(samebib(class_7,class_8),Prob). % what is the probability that citations class_7 
 % and class_8 refer to the same paper?
+% expected result 0.4616412208109999
 
 
 */

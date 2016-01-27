@@ -30,9 +30,13 @@ flu(robert).
 /** <examples>
 
 ?- prob(epidemic,Prob).  % what is the probability that an epidemic arises?
+% expected result 0.588
 ?- prob(pandemic,Prob).  % what is the probability that a pandemic arises?
+% expected result 0.357
 ?- prob_bar(epidemic,Prob).  % what is the probability that an epidemic arises?
+% expected result 0.588
 ?- prob_bar(pandemic,Prob).  % what is the probability that a pandemic arises?
+% expected result 0.357
 
 
 */

@@ -21,7 +21,9 @@ hay_fever(bob).
 /** <examples>
 
 ?- strong_sneezing(bob). % what is the probability that bob has strong sneezing?
+% expected result 0.43999999999999995
 ?- moderate_sneezing(bob). % what is the probability that bob has 
-%  moderate sneezing?
+% moderate sneezing?
+% expected result 0.7999999999999998
 
 */

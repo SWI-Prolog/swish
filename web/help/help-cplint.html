@@ -22,6 +22,7 @@
 <li><a href="#commands">Commands</a></li>
 <li><a href="#parameters-1">Parameters</a></li>
 </ul></li>
+<li><a href="#manual-in-pdf">Manual in PDF</a></li>
 <li><a href="#bibliography">Bibliography</a></li>
 </ul>
 </div>
@@ -35,7 +36,7 @@
 <pre><code>h1 :- b1,...,bm,\+ c1,...,\+ cl.</code></pre>
 <p>stands for</p>
 <pre><code>h1:1 :- b1,...,bm,\+ c1,...,\+ cl.</code></pre>
-<p>The coin example of <span class="citation">[8]</span> is represented as (file <code>coin.cpl</code>)</p>
+<p>The coin example of <span class="citation">[8]</span> is represented as (file <a href="http://cplint.lamping.unife.it/example/coin.cpl"><code>coin.cpl</code></a>)</p>
 <pre><code>heads(Coin):1/2 ; tails(Coin):1/2 :- 
   toss(Coin),\+biased(Coin).
 
@@ -63,7 +64,7 @@ nth0/3, nth/3, dif/2, select/3</code></pre>
 <p>is a valid rule.</p>
 <h1 id="inf">Inference</h1>
 <p><code>cplint</code> answers queries using the module <code>pita</code>. It performs the program transformation technique of <span class="citation">[7]</span>. Differently from that work, techniques alternative to tabling and answer subsumption are used.</p>
-<p>For answering queries, you have to prepare a Prolog file where you first load <code>pita</code> and then enclose the probabilistic clauses in <code>:-cplint.</code> and <code>:-end_cplint.</code> For example, the coin program above can be stored in <code>coin.pl</code> as follows</p>
+<p>For answering queries, you have to prepare a Prolog file where you first load <code>pita</code> and then enclose the probabilistic clauses in <code>:-cplint.</code> and <code>:-end_cplint.</code> For example, the coin program above can be stored in <a href="http://cplint.lamping.unife.it/example/coin.pl"><code>coin.pl</code></a> as follows</p>
 <pre><code>:- use_module(library(pita)).
 :- cplint.
 
@@ -118,7 +119,7 @@ toss(coin).
 <li><p>example interpretations</p></li>
 </ul>
 <p>The preamble must come first, the order of the other parts can be changed.</p>
-<p>For example, consider the Bongard problems of <span class="citation">[6]</span>. The <code>pack/cplint/ prolog/examples/learning</code> folder in SWI-Prolog home contains some example learning files. For example, it contains <code>bongard.pl</code> and <code>bongardkeys.pl</code> that represent a Bongard problem. Let us consider <code>bongard.pl</code>.</p>
+<p>For example, consider the Bongard problems of <span class="citation">[6]</span>. <a href="http://cplint.lamping.unife.it/example/bongard.pl"><code>bongard.pl</code></a> and <a href="http://cplint.lamping.unife.it/example/bongardkeys.pl"><code>bongardkeys.pl</code></a> represent a Bongard problem. Let us consider <a href="http://cplint.lamping.unife.it/example/bongard.pl"><code>bongard.pl</code></a>.</p>
 <h3 id="preamble">Preamble</h3>
 <p>In the preamble, the SLIPCOVER library is loaded with</p>
 <pre><code>:- use_module(library(slipcover)).</code></pre>
@@ -133,10 +134,23 @@ toss(coin).
 <h3 id="backgroung-and-initial-lpadcpl-program">Backgroung and Initial LPAD/CPL-program</h3>
 <p>Now you can specify the background knowledge with a fact of the form</p>
 <pre><code>bg(&lt;list of terms representing clauses&gt;).</code></pre>
-<p>where the clauses must currently be deterministic. Moreover, you can specify an initial program with a fact of the form</p>
+<p>where the clauses must currently be deterministic. Alternatively, you can specify a set of clauses by including them in a section between <code>:- bg.</code> and <code>:- end_bg.</code> For example</p>
+<pre><code>:- bg.
+replaceable(gear).
+replaceable(wheel).
+replaceable(chain).
+not_replaceable(engine).
+not_replaceable(control_unit).
+component(C):-
+  replaceable(C).
+component(C):-
+  not_replaceable(C).
+:- end_bg.</code></pre>
+<p>from the <a href="http://cplint.lamping.unife.it/example/mach.pl"><code>mach.pl</code></a> example. If you specify both a <code>bg/1</code> fact and a section, the clauses of the two will be combined.</p>
+<p>Moreover, you can specify an initial program with a fact of the form</p>
 <pre><code>in(&lt;list of terms representing clauses&gt;).</code></pre>
 <p>The initial program is used in parameter learning for providing the structure. The indicated parameters do not matter as they are first randomized. Remember to enclose each clause in parentheses because <code>:-</code> has the highest precedence.</p>
-<p>For example, <code>bongard.pl</code> has the initial program</p>
+<p>For example, <a href="http://cplint.lamping.unife.it/example/bongard.pl"><code>bongard.pl</code></a> has the initial program</p>
 <pre><code>in([(pos:0.197575 :-
        circle(A),
        in(B,A)),
@@ -146,17 +160,29 @@ toss(coin).
     (pos:0.000448807 :-
        triangle(A),
        circle(B))]).</code></pre>
-<p>Both facts should be present. If there are no background/input clauses then write <code>bg([]).</code>/<code>in([]).</code></p>
+<p>Alternatively, you can specify an input program in a section between <code>:- in.</code> and <code>:- end_in.</code>, as for example</p>
+<pre><code>:- in.
+pos:0.197575 :-
+  circle(A),
+  in(B,A).
+pos:0.000303421 :-
+  circle(A),
+  triangle(B).
+pos:0.000448807 :-
+  triangle(A),
+  circle(B).
+:- end_in.</code></pre>
+<p>If you specify both a <code>in/1</code> fact and a section, the clauses of the two will be combined.</p>
 <h3 id="language-bias">Language Bias</h3>
 <p>The language bias part contains the declarations of the input and output predicates. Output predicates are declared as</p>
 <pre><code>output(&lt;predicate&gt;/&lt;arity&gt;).</code></pre>
-<p>and indicate the predicate whose atoms you want to predict. Derivations for the atoms for this predicates in the input data are built by the systems.</p>
+<p>and indicate the predicate whose atoms you want to predict. Derivations for the atoms for this predicates in the input data are built by the system. These are the predicates for which new clauses are generated.</p>
 <p>Input predicates are those whose atoms you are not interested in predicting. You can declare closed world input predicates with</p>
 <pre><code>input_cw(&lt;predicate&gt;/&lt;arity&gt;).</code></pre>
-<p>For these predicates, the only true atoms are those in the interpretations, the clauses in the input/hypothesized program are not used to derive atoms not present in the interpretations.</p>
+<p>For these predicates, the only true atoms are those in the interpretations and those derivable from them using the background knowledge, the clauses in the input/hypothesized program are not used to derive atoms for these predicates. Moreover, clauses of the background knowledge that define closed world input predicates and that call an output predicate in the body will not be used for deriving examples.</p>
 <p>Open world input predicates are declared with</p>
 <pre><code>input(&lt;predicate&gt;/&lt;arity&gt;).</code></pre>
-<p>In this case, if a subgoal for such a predicate is encountered when deriving a subgoal for the output predicates, both the facts in the interpretations and the clauses of the input program are used.</p>
+<p>In this case, if a subgoal for such a predicate is encountered when deriving a subgoal for the output predicates, both the facts in the interpretations, those derivable from them and the background knowledge, the background clauses and the clauses of the input program are used.</p>
 <p>Then, you have to specify the language bias by means of mode declarations in the style of <a href="http://www.doc.ic.ac.uk/\string ~shm/progol.html">Progol</a>.</p>
 <pre><code>modeh(&lt;recall&gt;,&lt;predicate&gt;(&lt;arg1&gt;,...).</code></pre>
 <p>specifies the atoms that can appear in the head of clauses, while</p>
@@ -202,15 +228,29 @@ determination(pos/0,config/2).</code></pre>
 <p>state that <code>triangle/1</code> can appear in the body of clauses for <code>pos/0</code>.</p>
 <p>SLIPCOVER also allows mode declarations of the form</p>
 <pre><code>modeh(&lt;r&gt;,[&lt;s1&gt;,...,&lt;sn&gt;],[&lt;a1&gt;,...,&lt;an&gt;],[&lt;P1/Ar1&gt;,...,&lt;Pk/Ark&gt;]). </code></pre>
-<p>These mode declarations are used to generate clauses with more than two head atoms. In them, <code>&lt;s1&gt;,...,&lt;sn&gt;</code> are schemas, <code>&lt;a1&gt;,...,&lt;an&gt;</code> are atoms such that <code>&lt;ai&gt;</code> is obtained from <span class="math inline">$\verb|&lt;si&gt;|$</span> by replacing placemarkers with variables, <code>&lt;Pi/Ari&gt;</code> are the predicates admitted in the body. <code>&lt;a1&gt;,...,&lt;an&gt;</code> are used to indicate which variables should be shared by the atoms in the head. An example of such a mode declaration (from <code>uwcselearn.pl</code>) is</p>
+<p>These mode declarations are used to generate clauses with more than two head atoms. In them, <code>&lt;s1&gt;,...,&lt;sn&gt;</code> are schemas, <code>&lt;a1&gt;,...,&lt;an&gt;</code> are atoms such that <code>&lt;ai&gt;</code> is obtained from <span class="math inline">$\verb|&lt;si&gt;|$</span> by replacing placemarkers with variables, <code>&lt;Pi/Ari&gt;</code> are the predicates admitted in the body. <code>&lt;a1&gt;,...,&lt;an&gt;</code> are used to indicate which variables should be shared by the atoms in the head. An example of such a mode declaration (from <a href="http://cplint.lamping.unife.it/example/uwcselearn.pl"><code>uwcselearn.pl</code></a>) is</p>
 <pre><code>modeh(*,
 [advisedby(+person,+person),tempadvisedby(+person,+person)],
 [advisedby(A,B),tempadvisedby(A,B)],
 [professor/1,student/1,hasposition/2,inphase/2,
 publication/2,taughtby/3,ta/3,courselevel/2,yearsinprogram/2]).</code></pre>
+<p>If you want to specify negative literals for addition in the body of clauses, you should define a new predicate in the background as in</p>
+<pre><code>not_worn(C):-
+  component(C),
+  \+ worn(C).
+one_worn:-
+  worn(_).
+none_worn:-
+  \+ one_worn.</code></pre>
+<p>from <a href="http://cplint.lamping.unife.it/example/mach.pl"><code>mach.pl</code></a> and add the new predicate in a <code>modeb/2</code> fact</p>
+<pre><code>modeb(*,not_worn(-comp)).
+modeb(*,none_worn).</code></pre>
+<p>Note that successful negative literals do not instantiate the variables, so if you want a variable appearing in a negative literal to be an output variable you must instantiate before calling the negative literals. The new predicates must also be declared as input</p>
+<pre><code>input_cw(not_worn/1).
+input_cw(none_worn/0).</code></pre>
 <p>Lookahead can also be specified with facts of the form</p>
 <pre><code>lookahead(&lt;literal&gt;,&lt;list of literals&gt;).</code></pre>
-<p>In this case when a literal matching <code>&lt;literal&gt;</code> is added to the body of clause during refinement, then also the literals matching <code>&lt;list of literals&gt;</code> will be added. An example of such declaration (from <code>muta.pl</code>) is</p>
+<p>In this case when a literal matching <code>&lt;literal&gt;</code> is added to the body of clause during refinement, then also the literals matching <code>&lt;list of literals&gt;</code> will be added. An example of such declaration (from <a href="http://cplint.lamping.unife.it/example/muta.pl"><code>muta.pl</code></a>) is</p>
 <pre><code>lookahead(logp(_),[(_=_))]).</code></pre>
 <p>Note that <code>&lt;list of literals&gt;</code> is copied with <code>copy_term/2</code> before matching, so variables in common between <code>&lt;literal&gt;</code> and <code>&lt;list of literals&gt;</code> may not be in common in the refined clause.</p>
 <p>It is also possible to specify that a literal can only be added together with other literals with facts of the form</p>
@@ -240,7 +280,7 @@ end(model(2)).</code></pre>
 <p>The interpretations may contain a fact of the form</p>
 <pre><code>prob(0.3).</code></pre>
 <p>assigning a probability (0.3 in this case) to the interpretations. If this is omitted, the probability of each interpretation is considered equal to <span class="math inline">1/<em>n</em></span> where <span class="math inline"><em>n</em></span> is the total number of interpretations. <code>prob/1</code> can be used to set a different multiplicity for the interpretations.</p>
-<p>The facts in the interpretation are loaded in SWI-Prolog database by adding an extra initial argument equal to the name of the model.</p>
+<p>The facts in the interpretation are loaded in SWI-Prolog database by adding an extra initial argument equal to the name of the model. After each interpretation is loaded, a fact of the form <code>int(&lt;id&gt;)</code> is asserted, where <code>id</code> is the name of the interpretation. This can be used in order to retrieve the list of interpretations.</p>
 <p>Alternatively, with the keys modality, you can directly write the facts and the first argument will be interpreted as a model identifier. The above interpretation in the keys modality is</p>
 <pre><code>pos(2).
 triangle(2,o5).
@@ -253,8 +293,8 @@ config(2,o2,up).
 in(2,o2,o3).
 triangle(2,o1).
 config(2,o1,up).</code></pre>
-<p>which is contained in the <code>bongardkeys.pl</code> This is also how model <code>2</code> above is stored in SWI-Prolog database. The two modalities, models and keys, can be mixed in the same file.</p>
-<p>Note that you can add background knowledge that is not probabilistic directly to the file writing the clauses taking into account the model argument. For example <code>carc.pl</code> contains</p>
+<p>which is contained in the <a href="http://cplint.lamping.unife.it/example/bongardkeys.pl"><code>bongardkeys.pl</code></a> This is also how model <code>2</code> above is stored in SWI-Prolog database. The two modalities, models and keys, can be mixed in the same file.</p>
+<p>Note that you can add background knowledge that is not probabilistic directly to the file writing the clauses taking into account the model argument. For example <a href="http://cplint.lamping.unife.it/example/carc.pl"><code>carc.pl</code></a> contains</p>
 <pre><code>connected(_M,Ring1,Ring2):-
   Ring1 \= Ring2,
   member(A,Ring1),
@@ -263,15 +303,30 @@ config(2,o1,up).</code></pre>
 symbond(Mod,A,B,T):- bond(Mod,A,B,T).
 symbond(Mod,A,B,T):- bond(Mod,B,A,T).</code></pre>
 <p>where the first argument of all the atoms is the model.</p>
+<p>Example <a href="http://cplint.lamping.unife.it/example/registration.pl"><code>registration.pl</code></a> contains for example</p>
+<pre><code>party(M,P):-
+  participant(M,_, _, P, _).</code></pre>
+<p>that defines intensionally the target predicate <code>party/1</code>. Here <code>M</code> is the model and <code>participant/4</code> is defined in the interpretations. You can also define intensionally the negative examples with</p>
+<pre><code>neg(party(M,yes)):- party(M,no).
+neg(party(M,no)):- party(M,yes).</code></pre>
 <p>Then you must indicate how the examples are divided in folds with facts of the form: <code>fold(&lt;fold_name&gt;,&lt;list of model identifiers&gt;)</code>, as for example</p>
 <pre><code>fold(train,[2,3,...]).
 fold(test,[490,491,...]).</code></pre>
+<p>As the input file is a Prolog program, you can define intensionally the folds as in</p>
+<pre><code>fold(all,F):-
+  findall(I,int(I),F).</code></pre>
+<p><code>fold/2</code> is dynamic so you can also write (<a href="http://cplint.lamping.unife.it/example/registration.pl"><code>registration.pl</code></a>)</p>
+<pre><code>:- fold(all,F),
+   sample(4,F,FTr,FTe),
+   assert(fold(rand_train,FTr)),
+   assert(fold(rand_test,FTe)).</code></pre>
+<p>which however must be inserted after the input interpretations otherwise the facts for <code>int/1</code> will not be available and the fold <code>all</code> would be empty. This command uses <code>sample(N,List,Sampled,Rest)</code> exported from <code>slipcover</code> that samples <code>N</code> elements from <code>List</code> and returns the sampled elements in <code>Sampled</code> and the rest in <code>Rest</code>. If <code>Lilst</code> has <code>N</code> elements or less, <code>Sampled</code> is equal to <code>List</code> and <code>Rest</code> is empty.</p>
 <h2 id="commands">Commands</h2>
 <h3 id="parameter-learning">Parameter Learning</h3>
 <p>To execute EMBLEM, prepare an input file in the editor panel as indicated above and call</p>
 <pre><code>?- induce_par(&lt;list of folds&gt;,P).</code></pre>
 <p>where <code>&lt;list of folds&gt;</code> is a list of the folds for training and <code>P</code> will contain the input program with updated parameters.</p>
-<p>For example <code>bongard.pl</code>, you can perform parameter learning on the <code>train</code> fold with</p>
+<p>For example <a href="http://cplint.lamping.unife.it/example/bongard.pl"><code>bongard.pl</code></a>, you can perform parameter learning on the <code>train</code> fold with</p>
 <pre><code>?- induce_par([train],P).</code></pre>
 <p>A program can also be tested on a test set with</p>
 <pre><code>?- test(&lt;program&gt;,&lt;list of folds&gt;,LL,AUCROC,ROC,AUCPR,PR).</code></pre>
@@ -290,7 +345,7 @@ fold(test,[490,491,...]).</code></pre>
 <p>To execute SLIPCOVER, prepare an input file in the editor panel as indicated above and call</p>
 <pre><code>?- induce(&lt;list of folds&gt;,P).</code></pre>
 <p>where <code>&lt;list of folds&gt;</code> is a list of the folds for training and <code>P</code> will contain the learned program.</p>
-<p>For example <code>bongard.pl</code>, you can perform structure learning on the <code>train</code> fold with</p>
+<p>For example <a href="http://cplint.lamping.unife.it/example/bongard.pl"><code>bongard.pl</code></a>, you can perform structure learning on the <code>train</code> fold with</p>
 <pre><code>?- induce([train],P).</code></pre>
 <p>A program can also be tested on a test set with <code>test/7</code> as described above.</p>
 <h2 id="parameters-1">Parameters</h2>
@@ -322,6 +377,8 @@ fold(test,[490,491,...]).</code></pre>
 <li><p><code>neg_ex</code> (values: <code>given</code>, <code>cw</code>, default value: <code>cw</code>): if set to <code>given</code>, the negative examples in testing are taken from the test folds interpretations, i.e., those examples <code>ex</code> stored as <code>neg(ex)</code>; if set to <code>cw</code>, the negative examples are generated according to the closed world assumption, i.e., all atoms for target predicates that are not positive examples. The set of all atoms is obtained by collecting the set of constants for each type of the arguments of the target predicate.</p></li>
 <li><p><code>verbosity</code> (values: integer in [1,3], default value: 1): level of verbosity of the algorithms</p></li>
 </ul>
+<h1 id="manual-in-pdf">Manual in PDF</h1>
+<p>A PDF version of the manual is available at <a href="https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf" class="uri">https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf</a>.</p>
 <h1 id="bibliography" class="unnumbered">Bibliography</h1>
 <div id="refs" class="references">
 <div id="ref-BelRig11-CILC11-NC">

@@ -26,9 +26,13 @@ replace :- \+ light.
 /** <examples>
 
 ?- prob(replace,Prob). % what is the probability that we replace the bulb?
+% expected result 0.6
 ?- prob(light,Prob).   % what is the probability that the light is on?
+% expected result 0.4
 ?- prob_bar(replace,Prob). % what is the probability that we replace the bulb?
+% expected result 0.6
 ?- prob_bar(light,Prob).   % what is the probability that the light is on?
+% expected result 0.4
 
 
 */

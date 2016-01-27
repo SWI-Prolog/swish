@@ -21,5 +21,6 @@ pull_trigger(right_gun).
 /** <examples>
 
 ?- death. % what is the probability that you are dead?
+% expected result 0.3055555555555556
 */
  
