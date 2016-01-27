@@ -89,16 +89,16 @@ fold(train,[blake, king, miller, turner]).
 
 output(party/1).
 
-input(job/1).
-input(not_company_type/1).
-input(company_type/1).
-input(subscription/1).
-input(course_len/2).
-input(course_type/2).
-input(company/1).
-input(company_info/2).
-input(participant/4).
-input(course/3)/
+input_cw(job/1).
+input_cw(not_company_type/1).
+input_cw(company_type/1).
+input_cw(subscription/1).
+input_cw(course_len/2).
+input_cw(course_type/2).
+input_cw(company/1).
+input_cw(company_info/2).
+input_cw(participant/4).
+input_cw(course/3)/
 
 determination(party/1,job/1).
 determination(party/1,not_company_type/1).
