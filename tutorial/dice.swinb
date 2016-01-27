@@ -7,7 +7,7 @@ In this section we illustrate as example a game with a six-sided dice. The dice 
 We will show how to perform a simple query and how to execute a query which results are graphically represented by a histogram.
 
 ### Writing the program step by step
-First of all we want to write a fact which states that at time 0 the dice land on one of its faces with a uniform probability distribution (1/6 for each face). We use the predicate =|on(T,F)|= which means that the dice landed on face F at time T.  
+First of all we want to write a fact which states that at time 0 the dice land on one of its faces with a uniform probability distribution (1/6 for each face). We use the predicate =|on(T,F)|= which means that the dice landed on face F at time T.
 </div>
 
 <div class="nb-cell program prolog">
@@ -17,18 +17,18 @@ on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
 
 <div class="nb-cell markdown">
 The following rule states that at time T the dice lands on one of its faces with equal probability if at the previous time point it was thrown and it did not land on face 6.
-</div>                       
+</div>
 
 <div class="nb-cell program prolog">
 on(X,1):1/6;on(X,2):1/6;on(X,3):1/6;
 on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
-  X1 is X-1,X1>=0,on(X1,_),
+  X1 is X-1,X1&gt;=0,on(X1,_),
   \+ on(X1,6).
 </div>
 
 <div class="nb-cell markdown">
 ### Full program with Prolog editor
-Below we can see the full LPAD of the example. 
+Below we can see the full LPAD of the example.
 </div>
 
 <div class="nb-cell program prolog">
@@ -39,10 +39,10 @@ Below we can see the full LPAD of the example.
 % T = 0
 on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;
 on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
-% T > 0
+% T &gt; 0
 on(X,1):1/6;on(X,2):1/6;on(X,3):1/6;
 on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
-  X1 is X-1,X1>=0,on(X1,_),
+  X1 is X-1,X1&gt;=0,on(X1,_),
   \+ on(X1,6).
 % to be written after the program
 :- end_cplint.
@@ -57,11 +57,11 @@ prob(on(0,1),P).
 </div>
 
 <div class="nb-cell markdown">
-At this point we ask for the probability that the dice will land on face 1 at time 2. If we submit this query, we can notice that the probability that the dice will land on one of its faces at time T (with T > 0) decreases. This is because it is the probability that the dice will land on one of its faces at time T and that at time T-1 it did not land on face 6.
+At this point we ask for the probability that the dice will land on face 1 at time 2. If we submit this query, we can notice that the probability that the dice will land on one of its faces at time T (with T &gt; 0) decreases. This is because it is the probability that the dice will land on one of its faces at time T and that at time T-1 it did not land on face 6.
 </div>
 
-<div class="nb-cell query"> 
-prob(on(2,1), P).
+<div class="nb-cell query">
+prob(on(2,1),P).
 </div>
 
 <div class="nb-cell markdown">
@@ -74,7 +74,7 @@ prob_bar(:Atom,-P).
 ==
 Where =Atom= is the query that we want to perform, while =P= is the variable that will contain the (plotted) probabilistic results.
 
-However, before submitting this kind of query, we need to add these 3 lines before the =|:- cplint.|= goal. 
+However, before submitting this kind of query, we need to add these 3 lines before the =|:- cplint.|= goal.
 </div>
 
 <div class="nb-cell program prolog">
@@ -103,7 +103,7 @@ on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
 
 on(X,1):1/6;on(X,2):1/6;on(X,3):1/6;
 on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
-  X1 is X-1,X1>=0,on(X1,_),
+  X1 is X-1,X1&gt;=0,on(X1,_),
   \+ on(X1,6).
 
 % to be written after the program
@@ -117,6 +117,7 @@ For istance let us ripropose the previous query, this time with a graphical resu
 <div class="nb-cell query">
 prob_bar(on(2,1), P).
 </div>
+
 <div class="nb-cell markdown">
 Complete example: [dice.pl](example/dice.pl)
 
