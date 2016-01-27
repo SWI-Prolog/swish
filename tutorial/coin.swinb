@@ -6,18 +6,6 @@
 This example shows the basic concepts of _Logic Programs with Annotated Disjunctions_ and how to use the tool *cplint on SWISH* to perform inference.
 Let us suppose that we have one coin that we are not sure if it is biased. Now, if we toss the coin, what is the probability that it will land on head?
 
-### Preliminaries
-A Logic Program with Annotated Dijunction (LPAD) consists of a set of rules with the following form:
-==
-h_1 : a_1 ; ... ; h_n : a_n :- b_1, ..., b_m. 
-==
-where =h_i= are atoms, =b_i= are literals and =a_i= are real numbers between 0 and 1 such that the sum of all =a_i= is 1. The set of elements =|h_i : a_i|= compose the head of a rule, while the set =b_i= is the body. Disjunction in  the  head  is  represented  with  a  semicolon  and  atoms  in  the  head  are  separated  from probabilities by a colon.
-
-If the clause has an empty body, it can be represented like this:
-==
-h_1 : a_1 ; ... ; h_n : a_n. 
-==
-
 ### Writing the program step by step
 In our example we want to write a rule which states that if the coin is fair (not biased) and we toss it, it will land on heads with 50% probability and on tail with 50% probability. We can write such a rule as below:
 </div>
@@ -149,6 +137,9 @@ Complete example: [coin.cpl](example/coin.cpl)
 
 --
 - Based on: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 
+
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
 </div>
 
 </div>

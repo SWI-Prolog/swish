@@ -2,7 +2,8 @@
 
 <div class="nb-cell markdown">
 # Tutorial
-
+- *Theoretical preliminaries*
+  - [Logic Program with Annotated Disjunctions (LPAD)](tutorial/lpad.swinb)
 - *Basic examples with inference*
   - [Coin](tutorial/coin.swinb). Simple inference.
   - [Dice](tutorial/dice.swinb). Inference with graphical results.
@@ -38,4 +39,5 @@
   - Mutagenesis ([muta.pl](example/muta.pl))
   - University ([university.pl](example/university.pl))
 </div>
+
 </div>

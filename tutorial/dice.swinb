@@ -3,23 +3,45 @@
 <div class="nb-cell markdown">
 # Dice
 
-In this section we illustrate as example a game with a six-sided dice. The dice is repeatedly thrown until the outcome is six. When the outcome is six, the game stops.
+In this section we illustrate as example a game with a six-sided dice. The dice is repeatedly thrown until the outcome is six. When the outcome is six, the game stops. 
+We will show how to perform a simple query and how to execute a query which results are graphically represented by a histogram.
 
-Below we can see the LPAD. on(T,F) means that the dice landed on face F at time T. The first probabilistic fact states that at time 0 the dice land on one of its faces with a uniform probability distribution.
-The following rule states that at time T the dice lands on one of its faces with equal probability if at the previous time point it was thrown and it did not land on face 6.
+### Writing the program step by step
+First of all we want to write a fact which states that at time 0 the dice land on one of its faces with a uniform probability distribution (1/6 for each face). We use the predicate =on(T,F)= which means that the dice landed on face F at time T.  
 </div>
 
-<div class="nb-cell program lpad">
+<div class="nb-cell program prolog">
 on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;
 on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
-% at time 0 the dice lands on one of its faces with equal probability
+</div>
 
+<div class="nb-cell markdown">
+The following rule states that at time T the dice lands on one of its faces with equal probability if at the previous time point it was thrown and it did not land on face 6.
+</div>                       
+
+<div class="nb-cell program prolog">
 on(X,1):1/6;on(X,2):1/6;on(X,3):1/6;
 on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
   X1 is X-1,X1>=0,on(X1,_),
   \+ on(X1,6).
-% at time T the dice lands on one of its faces with equal probability if
-% at the previous time point it was thrown and it did not landed on face 6
+</div>
+### Full program
+Below we can see the full LPAD of the example. 
+</div>
+
+<div class="nb-cell program prolog">
+% Imported library to perform inference
+:- use_module(library(pita)).
+
+:- cplint.
+% T = 0
+on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;
+on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
+% T > 0
+on(X,1):1/6;on(X,2):1/6;on(X,3):1/6;
+on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
+  X1 is X-1,X1>=0,on(X1,_),
+  \+ on(X1,6).
 </div>
 
 <div class="nb-cell markdown">
@@ -27,7 +49,7 @@ Now we ask for the probability that the dice will land on face 1 at time 0.
 </div>
 
 <div class="nb-cell query">
-on(0,1).
+prob(on(0,1),P).
 </div>
 
 <div class="nb-cell markdown">
@@ -35,14 +57,70 @@ At this point we ask for the probability that the dice will land on face 1 at ti
 </div>
 
 <div class="nb-cell query"> 
-on(2,1).
+prob(on(2,1), P).
 </div>
 
 <div class="nb-cell markdown">
-Complete example: [dice.cpl](example/dice.cpl), [dice.pl](example/dice.pl)
+*cplint on SWISH* permits to show the probabilistic results of a query as histograms. What we have to do is to use the predicate prob_bar/2 instead of prob/2. The syntax is the same as prob/2.
+==
+prob_bar(:Atom,-P).
+==
+Where =Atom= is the query that we want to perform, while =P= is the variable that will contain the (plotted) probabilistic results.
+
+However, before submitting this kind of query, we need to add these 3 lines before the =|:- cplint.|= goal. 
+</div>
+
+<div class="nb-cell program prolog">
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+</div>
+
+<div class="nb-cell markdown">
+Therefore our program becomes
+</div>
+
+<div class="nb-cell program prolog">
+% load the 'pita' library
+:- use_module(library(pita)).
+% allows to use graphical result
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+% to be written before the program
+:- cplint.
+
+% Program
+on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;
+on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
+
+on(X,1):1/6;on(X,2):1/6;on(X,3):1/6;
+on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
+  X1 is X-1,X1>=0,on(X1,_),
+  \+ on(X1,6).
+
+% to be written after the program
+:- end_cplint.
+</div>
+
+<div class="nb-cell markdown">
+For istance let us ripropose the previous query, this time with a graphical result.
+</div>
+
+<div class="nb-cell query">
+prob_bar(on(2,1), P).
+</div>
+<div class="nb-cell markdown">
+Complete example: [dice.pl](example/dice.pl)
+
+--
+Complete example with alternative syntax: [dice.cpl](example/dice.cpl)
 
 --
 - Based on: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 
+
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
 </div>
 
 </div>
