@@ -7,7 +7,7 @@ In this section we illustrate as example a game with a six-sided dice. The dice 
 We will show how to perform a simple query and how to execute a query which results are graphically represented by a histogram.
 
 ### Writing the program step by step
-First of all we want to write a fact which states that at time 0 the dice land on one of its faces with a uniform probability distribution (1/6 for each face). We use the predicate =on(T,F)= which means that the dice landed on face F at time T.  
+First of all we want to write a fact which states that at time 0 the dice land on one of its faces with a uniform probability distribution (1/6 for each face). We use the predicate =|on(T,F)|= which means that the dice landed on face F at time T.  
 </div>
 
 <div class="nb-cell program prolog">
@@ -30,9 +30,9 @@ Below we can see the full LPAD of the example.
 </div>
 
 <div class="nb-cell program prolog">
-% Imported library to perform inference
+% Load 'pita' library to perform inference
 :- use_module(library(pita)).
-
+% to be written before the program
 :- cplint.
 % T = 0
 on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;
@@ -42,6 +42,8 @@ on(X,1):1/6;on(X,2):1/6;on(X,3):1/6;
 on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
   X1 is X-1,X1>=0,on(X1,_),
   \+ on(X1,6).
+% to be written after the program
+:- end_cplint.
 </div>
 
 <div class="nb-cell markdown">
@@ -83,7 +85,7 @@ Therefore our program becomes
 <div class="nb-cell program prolog">
 % load the 'pita' library
 :- use_module(library(pita)).
-% allows to use graphical result
+% allows to create graphical results
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
 :- endif.

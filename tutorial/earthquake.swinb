@@ -5,24 +5,30 @@
 
 The program illustrated in this example models the occurrence of an earthquake depending on its possible causes. 
 
-The first rule states that if there is rupture of a geological we have a strong earthquake with 30% probability, a moderate earthquake with 50% probability and 20% probability to have no earthquake. In the second rule it is asserted that if an earthquake is caused only by a volcanic eruption, we have a strong earthquake with 20% probability, a moderate earthquake with 60% probability and no earthquake with 20% probability. Then as facts we have that there was a fault rupture and a volcanic eruption at Stromboli and a volcanic eruption at Eyjafjallajokull (can you pronounce it?).
+### Full program
+The first rule states that if there is rupture of a geological we have a strong earthquake with 30% probability, a moderate earthquake with 50% probability and 20% probability to have no earthquake. In the second rule it is asserted that if an earthquake is caused only by a volcanic eruption, we have a strong earthquake with 20% probability, a moderate earthquake with 60% probability and no earthquake with 20% probability. Then as facts we have that there was a fault rupture and a volcanic eruption at Stromboli and a volcanic eruption at Eyjafjallajokull (can you pronounce it? :-) ).
 </div>
 
-<div class="nb-cell program lpad">
+<div class="nb-cell program prolog">
+% load the 'pita' library to perform inference
+:- use_module(library(pita)).
+% allows to create graphical results
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+% to be written before the program
+:- cplint.
 % Rules
-% 1st rule
 earthquake(X, strong) : 0.3 ; earthquake(X, moderate) : 0.5 :-
   fault_rupture(X).
-% 2nd rule
 earthquake(X, strong) : 0.2 ; earthquake(X, moderate) : 0.6 :-
   volcanic_eruption(X).
 % Facts
-% non-probabilistic fact
 fault_rupture(stromboli).
-% non-probabilistic fact
 volcanic_eruption(stromboli).
-% non-probabilistic fact
 volcanic_eruption(eyjafjallajkull).
+% to be written after the program
+:- end_cplint.
 </div>
 
 <div class="nb-cell markdown">
@@ -30,14 +36,28 @@ We can ask for the probability of a moderate earthquake at stromboli by submitti
 </div>
 
 <div class="nb-cell query">
-earthquake(stromboli,moderate).
+prob(earthquake(stromboli,moderate), P).
 </div>
 
 <div class="nb-cell markdown">
-Complete example: [earthquake.cpl](example/earthquake.cpl), [earthquake.pl](example/earthquake.pl)
+Let us see the histogram of the previous query
+</div>
+
+<div class="nb-cell query">
+prob_bar(earthquake(stromboli,moderate), P).
+</div>
+
+<div class="nb-cell markdown">
+Complete example: [earthquake.pl](example/earthquake.pl)
+
+--
+Complete example with alternative syntax: [earthquake.cpl](example/earthquake.cpl)
 
 --
 - Basef on: F. Riguzzi and N. Di Mauro. _Applying the information bottleneck to statistical relational learning_. Machine Learning, 86(1):89-114, 2012.
+
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
 </div>
 
 </div>
