@@ -15,7 +15,7 @@ epidemic : 0.6; pandemic : 0.3; null: 0.1 :- flu(_), cold.
 
 <div class="nb-cell markdown">
 As we said on section [Logic Program with Annotated Disjunction](tutorial/lpad.swinb) the =|null|= atom can be implicit. 
-Therefore the previous rule, without changing its meaning, can be written  
+Therefore the previous rule, without changing its meaning, can be written
 </div>
 
 <div class="nb-cell program prolog">
@@ -28,7 +28,7 @@ The following probabilistic fact says that the weather is cold with 70% probabil
 
 <div class="nb-cell program prolog">
 cold : 0.7.
-</div> 
+</div>
 
 <div class="nb-cell markdown">
 Now we assert that David and Robert have the flu.
@@ -80,13 +80,13 @@ prob_bar(epidemic, P).
 </div>
 
 <div class="nb-cell markdown">
-Complete example: [epidemic.pl](example/epidemic.pl) 
+Complete example: [epidemic.pl](example/epidemic.pl)
 
 --
 Complete example with the LPAD editor: [epidemic.cpl](example/epidemic.cpl)
 
 --
-- Based on: E. Bellodi and F. Riguzzi. _Expectation Maximization over binary decision diagrams for probabilistic logic programs_. Intelligent Data Analysis, 17(2):343-363, 2013. 
+- Based on: E. Bellodi and F. Riguzzi. _Expectation Maximization over binary decision diagrams for probabilistic logic programs_. Intelligent Data Analysis, 17(2):343-363, 2013.
 
 --
 [Back to Tutorial](tutorial/tutorial.swinb)
