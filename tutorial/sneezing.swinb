@@ -5,7 +5,7 @@
 
 The program shown below model the effect of flu and hay fever on the sneezing symptom. 
 
-### Full program
+### Full program with the Prolog editor
 The first rule states that if somebody has flu, there is 30% probability that he has strong sneezing, 50% probability that he has moderate sneezing and 20% probability that he has no sneezing.
 The second rule affirms that if somebody has hay fever, there is 20% probability that he has strong sneezing, 60% probability that she has moderate sneezing and 20% probability that he has no sneezing at all.
 The next two facts are certain and they states that Bob has the flu and hay fever.
@@ -51,7 +51,7 @@ prob_bar(strong_sneezing(bob), P).
 Complete example: [sneezing.pl](example/sneezing.pl)
 
 --
-Complete example with alternative syntax: [sneezing.cpl](example/sneezing.cpl)
+Complete example with the LPAD editor: [sneezing.cpl](example/sneezing.cpl)
 
 --
 - Based on: F. Riguzzi and T. Swift. _The PITA system: Tabling and answer subsumption for reasoning under uncertainty_. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, 11(4-5), pages 433-449, 2011.

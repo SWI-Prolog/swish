@@ -7,7 +7,7 @@
 - *Basic examples with inference*
   - [Coin](tutorial/coin.swinb). Simple inference.
   - [Dice](tutorial/dice.swinb). Inference with graphical results.
-  - [Epidemic](tutorial/epidemic.swinb). LPAD with implicit _null_ atom
+  - [Epidemic](tutorial/epidemic.swinb). LPAD with implicit _null_ atom in the clauses.
   - [Earthquake](tutorial/earthquake.swinb)
   - [Medical symptoms](tutorial/sneezing.swinb)
 - *Examples with structure and parameter learning*

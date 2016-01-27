@@ -40,8 +40,9 @@ flu(robert).
 </div>
 
 <div class="nb-cell markdown">
-### Full program
-The first rule The following probabilistic fact says that the weather is cold with 70% probability. 
+### Full program with the Prolog editor
+
+The full program of the example is show below.
 </div>
 
 <div class="nb-cell program prolog">
@@ -82,7 +83,7 @@ prob_bar(epidemic, P).
 Complete example: [epidemic.pl](example/epidemic.pl) 
 
 --
-Complete example with alternative syntax: [epidemic.cpl](example/epidemic.cpl)
+Complete example with the LPAD editor: [epidemic.cpl](example/epidemic.cpl)
 
 --
 - Based on: E. Bellodi and F. Riguzzi. _Expectation Maximization over binary decision diagrams for probabilistic logic programs_. Intelligent Data Analysis, 17(2):343-363, 2013. 

@@ -25,7 +25,7 @@ on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
   X1 is X-1,X1>=0,on(X1,_),
   \+ on(X1,6).
 </div>
-### Full program
+### Full program with Prolog editor
 Below we can see the full LPAD of the example. 
 </div>
 
@@ -64,7 +64,9 @@ prob(on(2,1), P).
 
 <div class="nb-cell markdown">
 ### How to execute a query with graphical results
-*cplint on SWISH* permits to show the probabilistic results of a query as histograms. What we have to do is to use the predicate prob_bar/2 instead of prob/2. The syntax is the same as prob/2.
+*cplint on SWISH* permits to show the probabilistic results of a query as histograms. What we have to do is to use the predicate prob_bar/2 instead of prob/2. This feature, however, it is only supported if we are using the "Prolog" editor, it is *NOT* supported with the "LPAD" editor.
+
+The syntax is the same as prob/2.
 ==
 prob_bar(:Atom,-P).
 ==
@@ -117,7 +119,7 @@ prob_bar(on(2,1), P).
 Complete example: [dice.pl](example/dice.pl)
 
 --
-Complete example with alternative syntax: [dice.cpl](example/dice.cpl)
+Complete example with the LPAD editor: [dice.cpl](example/dice.cpl)
 
 --
 - Based on: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 
