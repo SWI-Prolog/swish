@@ -11,7 +11,7 @@ graphs, Theory and Practice of Logic Programming 14 (2014) 909-937.
 doi:10.1017/S1471068413000562.
 */
 
-:- use_module('../mcintyre').
+:- use_module(library(mcintyre)).
 
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).

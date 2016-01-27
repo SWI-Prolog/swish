@@ -8,7 +8,7 @@ From
  Taisuke Sato and Keiichi Kubota. Viterbi training in PRISM. 
 Theory and Practice of Logic Programming,  doi:10.1017/S1471068413000677. 
 */
-:- use_module('../mcintyre').
+:- use_module(library(mcintyre)).
 
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
