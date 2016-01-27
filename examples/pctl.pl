@@ -17,7 +17,7 @@ doi:10.1017/S1471068413000562.
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- mc.
 
 % State Formulae 
 models(S, prop(A)) :-
@@ -28,10 +28,10 @@ models(S, and(SF1, SF2)):-
   models(S, SF1),
   models(S, SF2).
 models(S, pr(PF, gt, B)) :-
-  prob(pmodels(S, PF), P),
+  mc_prob(pmodels(S, PF), P),
   P > B.
 models(S, pr(PF, geq, B)) :-
-  prob(pmodels(S, PF), P),
+  mc_prob(pmodels(S, PF), P),
   P >= B.
 % Path Formulae
 pmodels(S, PF) :-
@@ -62,28 +62,28 @@ trans(s0,S,s0):0.5; trans(s0,S,s1):0.3; trans(s0,S,s2):0.2.
 trans(s1,S,s1):0.4; trans(s1,S,s3):0.1; trans(s1,S,s4):0.5.
 
 trans(s4,_,s3).
-:- end_cplint.
+:- end_mc.
 
 
 
 /** <examples>
 
-?- prob(reach(s0,0,s0),P).
+?- mc_prob(reach(s0,0,s0),P).
 % expecte result ~ 1.
 
-?- prob(reach(s0,0,s1),P).
+?- mc_prob(reach(s0,0,s1),P).
 % expecte result ~ 0.5984054054054054.
 
-?- prob(reach(s0,0,s2),P).
+?- mc_prob(reach(s0,0,s2),P).
 % expecte result ~ 0.4025135135135135.
 
-?- prob(reach(s0,0,s3),P).
+?- mc_prob(reach(s0,0,s3),P).
 % expecte result ~ 0.5998378378378378.
 
-?- prob(reach(s0,0,s4),P).
+?- mc_prob(reach(s0,0,s4),P).
 % expecte result ~ 0.49948717948717947.
 
-?- prob(reach(s1,0,s0),P).
+?- mc_prob(reach(s1,0,s0),P).
 % expecte result ~ 0.
 
 */
