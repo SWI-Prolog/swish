@@ -63,6 +63,7 @@ prob(on(2,1), P).
 </div>
 
 <div class="nb-cell markdown">
+### How to execute a query with graphical results
 *cplint on SWISH* permits to show the probabilistic results of a query as histograms. What we have to do is to use the predicate prob_bar/2 instead of prob/2. The syntax is the same as prob/2.
 ==
 prob_bar(:Atom,-P).
@@ -83,7 +84,7 @@ Therefore our program becomes
 </div>
 
 <div class="nb-cell program prolog">
-% load the 'pita' library
+% load the 'pita' library to perform inference
 :- use_module(library(pita)).
 % allows to create graphical results
 :- if(current_predicate(use_rendering/1)).

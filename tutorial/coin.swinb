@@ -77,6 +77,7 @@ toss(coin).
 </div>
 
 <div class="nb-cell markdown">
+### How to execute a query
 Ok, we have our program, now what?!
 
 Now it's time to submit some queries!
