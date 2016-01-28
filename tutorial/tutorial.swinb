@@ -10,9 +10,11 @@
   - [Epidemic](tutorial/epidemic.swinb). LPAD with implicit _null_ atom in the clauses, noisy or between rule groundings.
   - [Earthquake](tutorial/earthquake.swinb) noisy or between different rules.
   - [Medical symptoms](tutorial/sneezing.swinb) noisy or between different rules.
-  - [test](tutorial/test.swinb)
 - *Examples with structure and parameter learning*
-  - ...
+  - [How to perform learning](tutorial/howtolearn.swinb)
+  - [Machines](tutorial/mach.swinb)
+  - [Registration](tutorial/registration.swinb)
+  - [Bongard](tutorial/bongard.swinb)
 - *More Examples with inference*
   - see [cplint inference example programs](example/inference_examples.swinb)
 - *More Examples with structure and parameter learning*
