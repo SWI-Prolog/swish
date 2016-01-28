@@ -210,11 +210,7 @@ swish_add_user(User, Passwd, Fields) :-
 
 update_password(Entry) :-
 	arg(1, Entry, User),
-	(   catch(password_file(File), _, fail)
-	->  true
-	;   absolute_file_name(swish(passwd), File,
-			       [access(write)])
-	),
+	writeable_passwd_file(File),
 	(   exists_file(File)
 	->  http_read_passwd_file(File, Data)
 	;   Data = []
@@ -225,11 +221,25 @@ update_password(Entry) :-
 	),
 	http_write_passwd_file(File, NewData).
 
+writeable_passwd_file(File) :-
+	(   catch(password_file(File), _, fail)
+	->  true
+	;   setting(password_file, Spec),
+	    absolute_file_name(Spec, File, [access(write)])
+	).
+
+
 %%	swish_add_user
 %
 %	Interactively add a user to the SWISH password file.
 
 swish_add_user :-
+	writeable_passwd_file(File),
+	(   exists_file(File)
+	->  Action = update
+	;   Action = create
+	),
+	print_message(informational, password_file(Action, File)),
 	read_string("User name: ", User),
 	read_string("Real name: ", RealName),
 	read_string("Group:     ", Group),
@@ -282,3 +292,5 @@ prolog:message(http_auth_type(ReqMethod, Method)) -->
 	].
 prolog:message(password_mismatch) -->
 	[ 'Password mismatch'-[] ].
+prolog:message(password_file(Action, File)) -->
+	[ 'Password file: ~w (~w)'-[File, Action] ].
