@@ -53,6 +53,8 @@
 
 :- setting(realm, atom, 'SWISH user',
 	   "HTTP authentication realm").
+:- setting(password_file, callable, passwd,
+	   "Location of the password file").
 
 :- multifile
 	swish_config:config/2,
@@ -92,7 +94,8 @@ encrypt the communication.
 password_file(File) :-
 	password_file_cache(File), !.
 password_file(File) :-
-	absolute_file_name(swish(passwd), File, [access(read)]),
+	setting(password_file, Spec),
+	absolute_file_name(Spec, File, [access(read)]),
 	update_auth_type(File),
 	asserta(password_file_cache(File)).
 
