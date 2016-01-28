@@ -1,0 +1,38 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# How to perform learning
+
+*cplint on SWISH* contains two learning algorithm:
+- EMBLEM (EM over Bdds for probabilistic Logic programs Efficient Mining): an implementation of EM for learning parameters that computes expectations directly on BDDs [1,2,3]
+- SLIPCOVER (Structure LearnIng of Probabilistic logic programs by searChing OVER the clause space): an algorithm for learning the structure of programs by searching the clause space and the theory space separately [4]
+
+*Note*: the learning algorithms are available only if you use the Prolog editor.
+
+## Input source
+To execute a learning algorithm the input source must be divided in five parts:
+- preamble,
+- background knowledge, i.e., knowledge valid for all interpretations
+- LPAD/CPL-program for you which you want to learn the parameters (optional)
+- language bias information
+- example interpretations
+
+### Preamble
+In order to perform either EMBLEM or SLIPCOVER you need to import the "slipcover" library
+</div>
+
+<div class="nb-cell markdown">
+--
+[1] Elena Bellodi and Fabrizio Riguzzi. EM over binary decision diagrams for probabilistic logic programs. In Proceedings of the 26th Italian Conference on Computational Logic (CILC2011), Pescara, Italy, 31 August 31-2 September, 2011.
+
+[2] Elena Bellodi and Fabrizio Riguzzi. EM over binary decision diagrams for probabilistic logic programs. Technical Report CS-2011-01, Dipartimento di Ingegneria, Università di Ferrara, Italy, 2011
+
+[3] Elena Bellodi and Fabrizio Riguzzi. Expectation Maximization over binary decision diagrams for probabilistic logic programs. Intel. Data Anal., 16(6), 2012.
+
+[4] Elena Bellodi and Fabrizio Riguzzi. Structure learning of probabilistic logic programs by searching the clause space. Theory and Practice of Logic Programming, 2013.
+
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
+</div>
+
+</div>

@@ -80,7 +80,7 @@ prob_bar(epidemic, P).
 </div>
 
 <div class="nb-cell markdown">
-This example shows that conclusions from different groundings of a rule are combined with a noisy or rule: the probability of an epidemic is obtained by combining with noisy or the conclusions of the two grounding of the rule where the only variable is replaced by David or Robert. So the probability of an epidemic if =cold= is true is 0.6+0.6-0.6*0.6=84. Since =cold= is also uncertain, the overall probability is 0.84*0.7=0.588.
+This example shows that conclusions from different groundings of a rule are combined with a noisy or rule: the probability of an epidemic is obtained by combining with noisy or the conclusions of the two groundings of the rule where the only variable is replaced by David or Robert. So the probability of an epidemic if =cold= is true is 0.6+0.6-0.6*0.6=84. Since =cold= is also uncertain, the overall probability is 0.84*0.7=0.588.
 
 Complete example: [epidemic.pl](example/epidemic.pl)
 
