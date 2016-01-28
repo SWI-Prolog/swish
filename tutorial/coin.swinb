@@ -51,9 +51,9 @@ toss(coin).
 <div class="nb-cell markdown">
 ### Choosing the editor 
 
-Before starting write our program, we need to choose an editor between "Prolog" or "LPAD". If we choose the "Prolog" editor we need to add some commands before and after our program (see subsection FR NON RIESCI A METTERE UN LINK?  *Full program with Prolog editor*). Moreover the syntax of the query is different between these two editors.
+Before starting write our program, we need to choose an editor between "Prolog" or "LPAD". If we choose the "Prolog" editor we need to add some commands before and after our program (see subsection *Full program with Prolog editor*). Moreover the syntax of the query is different between these two editors.
 
-In this section we will see both editors (subsections *Full program with Prolog editor* and *Full program with LPAD editor*). However in the next examples of the tutorial we will use only the "Prolog" editor. 
+In this section we will see both editors (subsections *Full program with Prolog editor* and *Full program with LPAD editor*). However in the next examples of the tutorial we will use only the "Prolog" editor. {tutorial/coin.swinb#prolog_editor}  {#prolog_editor}
 
 ### Full program with the Prolog editor {#prolog_editor}
 The program is almost complete, what we need now is to load the library =pita= in order to perform inference. Therefore we import this library with the built-in predicate use_module/1. So we need to write
@@ -111,7 +111,7 @@ To try this example click on the triangle icon next to the query. We will see th
 Complete example: [coin.pl](example/coin.pl)
 
 --
-### Full program with the LPAD editor
+### Full program with the LPAD editor {#lpad_editor}
 As mentioned before, if we use the LPAD editor, our program will be slightly different. We shall not load the library =pita= and the program shall not be enclosed by the goals =|:- cplint.|= and =|:- end_cplint.|=. Therefore our program with the LPAD editor is
 </div>
 

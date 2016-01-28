@@ -32,7 +32,7 @@ volcanic_eruption(eyjafjallajkull).
 </div>
 
 <div class="nb-cell markdown">
-We can ask the probability of a moderate earthquake at stromboli by submitting the query:
+We can ask the probability of a moderate earthquake at Stromboli by submitting the query:
 </div>
 
 <div class="nb-cell query">
@@ -48,7 +48,7 @@ prob_bar(earthquake(stromboli,moderate), P).
 </div>
 
 <div class="nb-cell markdown">
-This example shows that conclusions from different rules are combined with a noisy or rule: the probability of a moderate earthquke FR COMPLETA  is obtained by combining with noisy or the conclusions of the two grounding of the rule where the only variable is replaced by David or Robert. So the probability of an epidemic if =cold= is true is 0.6+0.6-0.6*0.6=84. Since =cold= is also uncertain, the overall probability is 0.84*0.7=0.588.
+This example shows that conclusions from different rules are combined with a noisy or rule: the probability of a moderate earthquake at Stromboli is obtained by combining with noisy or the grounding of the first rule and the grounding of the second one, where the only variable is replaced by Stromboli. So the probability of an earthquake at Stromboli is 1-(1-0.5)*(1-0.6)=0.8. *Note:* if you submit the query the result will be 0.7999999999999998, this is due to numerical approximations performed during the computation.
 
 Complete example: [earthquake.pl](example/earthquake.pl)
 
@@ -56,7 +56,7 @@ Complete example: [earthquake.pl](example/earthquake.pl)
 Complete example with the LPAD editor: [earthquake.cpl](example/earthquake.cpl)
 
 --
-- Basef on: F. Riguzzi and N. Di Mauro. _Applying the information bottleneck to statistical relational learning_. Machine Learning, 86(1):89-114, 2012.
+- Based on: F. Riguzzi and N. Di Mauro. _Applying the information bottleneck to statistical relational learning_. Machine Learning, 86(1):89-114, 2012.
 
 --
 [Back to Tutorial](tutorial/tutorial.swinb)
