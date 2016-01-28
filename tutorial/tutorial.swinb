@@ -11,10 +11,9 @@
   - [Earthquake](tutorial/earthquake.swinb) noisy or between different rules.
   - [Medical symptoms](tutorial/sneezing.swinb) noisy or between different rules.
 - *Examples with structure and parameter learning*
-  - [How to perform learning](tutorial/howtolearn.swinb)
-  - [Machines](tutorial/mach.swinb)
-  - [Registration](tutorial/registration.swinb)
-  - [Bongard](tutorial/bongard.swinb)
+  - [Machines](tutorial/mach.swinb). Parameter learning.
+  - [Registration](tutorial/registration.swinb). Structure learning.
+  - [Bongard](tutorial/bongard.swinb). Test the learned program.
 - *More Examples with inference*
   - see [cplint inference example programs](example/inference_examples.swinb)
 - *More Examples with structure and parameter learning*
