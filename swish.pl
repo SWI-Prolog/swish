@@ -180,6 +180,7 @@ pengines:prepare_module(Module, swish, _Options) :-
 
 %:- use_module(lib/pita).
 :- use_module(library(pita)).
+:- use_module(library(mcintyre)).
 :- use_module(library(slipcover)).
 :- use_module(library(auc)).
 

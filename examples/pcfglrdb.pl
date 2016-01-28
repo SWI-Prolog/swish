@@ -13,6 +13,9 @@ Theory and Practice of Logic Programming,  doi:10.1017/S1471068413000677.
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
 :- endif.
+:- pita_init.
+:- set_pita(depth_bound,true).
+:- set_pita(depth,5).
 
 :- cplint.
 
@@ -39,17 +42,32 @@ pcfg([A|R],Der0,Der,[A|L1],L2):-
 pcfg([],Der,Der,L,L).
 % there are no more symbols to expand
 
-rule('S',Der,[a,'S']):0.2; rule('S',Der,[b,'S']):0.2; rule('S',Der,[a]):0.3; rule('S',Der,[b]):0.3.
+rule('S',Der,['S','S']):0.4; rule('S',Der,[a]):0.3; 
+  rule('S',Der,[b]):0.3.
+
 % encodes the three rules of the grammar
 
 :- end_cplint.
 
-/** <examples>
 
-?- prob(pcfg([a,b,a,a]),Prob). % what is the probability that the string abaa belongs to the language?
-% expected result 0.0024
-?- prob_bar(pcfg([a,b,a,a]),Prob). % what is the probability that the string abaa belongs to the language?
-% expected result 0.0024
+/** <examples>
+?- mc_prob(pcfg([a]),Prob).
+% expected result ~ 0.2986666666666667.
+
+?- mc_prob(pcfg([b]),Prob).
+% expected result ~ 0.2976666666666667.
+
+?- mc_prob(pcfg([a,a]),Prob).
+% expected result ~ 0.035666666666666666.
+
+?- mc_prob(pcfg([b,b]),Prob).
+% expected result ~ 0.036833333333333336.
+
+?- mc_prob(pcfg([a,b]),Prob).
+% expected result ~ 0.035833333333333335.
+
+?- mc_prob(pcfg([a,b,a]),Prob).
+% expected result ~ 0.009.
 
 
 */
