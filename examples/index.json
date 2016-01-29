@@ -2,8 +2,8 @@
 
 [
 { "file":"inference_examples.swinb", "title":"cplint inference example programs"},
-{ "file":"learning_examples.swinb", "title":"cplint learning example programs"},
-{ "file":"exauc.pl", "title":"AUC calculator"},
+{ "file":"learning/learning_examples.swinb", "title":"cplint learning example programs"},
+{ "file":"learning/exauc.pl", "title":"AUC calculator"},
 { "file":"examples.swinb",	  "title":"Prolog Example programs" },
 "--",
 { "file":"dict.swinb",		  "title":"Dict tutorial" },
