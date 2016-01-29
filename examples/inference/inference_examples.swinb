@@ -80,7 +80,7 @@ This notebook gives an overview of example programs for inference.
   graphs_, Theory and Practice of Logic Programming 14 (2014) 909-937.
   doi:10.1017/S1471068413000562.
   - Querying a deterministic database ([testdb.pl](example/inference/testdb.pl))
-  Deterministic predicates can be defined outside =:-begin/end_lpad.= and 
+  Deterministic predicates can be defined outside =begin/end_lpad= and 
   queried in the body of probabilistic clauses.
 </div>
 
