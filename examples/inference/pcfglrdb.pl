@@ -13,11 +13,11 @@ Theory and Practice of Logic Programming,  doi:10.1017/S1471068413000677.
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
 :- endif.
-:- pita_init.
-:- set_pita(depth_bound,true).
-:- set_pita(depth,5).
 
 :- pita.
+
+:- set_pita(depth_bound,true).
+:- set_pita(depth,5).
 
 :- begin_lpad.
 
