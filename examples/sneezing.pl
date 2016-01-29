@@ -9,7 +9,9 @@ F. Riguzzi and T. Swift. The PITA system: Tabling and answer subsumption for rea
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 strong_sneezing(X) : 0.3 ; moderate_sneezing(X) : 0.5 :- flu(X).
 % if X has the flu, there is a probability of 0.3 that he has strong sneezing 
@@ -25,7 +27,7 @@ flu(bob).
 hay_fever(bob).
 % bob has certainly hay fever
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

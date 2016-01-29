@@ -12,7 +12,9 @@ volume 3131 of LNCS, pages 195-209. Springer, 2004.
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 % on(T,F) means that the dice landed on face F at time T
 
@@ -27,7 +29,7 @@ on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
 % at time T the dice lands on one of its faces with equal probability if
 % at the previous time point it was thrown and it did not landed on face 6
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

@@ -16,7 +16,9 @@ Inductive Logic Programming. Springer Berlin Heidelberg, 2010. 96-109.
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 % mchrom(Person,C) means that the chromosome of Person inherited from his mother
 % (or mother chromosome) has allele C. The alleles are a, b and null
@@ -82,7 +84,7 @@ pchrom(p_f,a):0.3 ; pchrom(p_f,b):0.3 ; pchrom(p_f,null):0.4.
 father(p_f, p).
 mother(p_m, p).			
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

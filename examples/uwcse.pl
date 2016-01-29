@@ -12,7 +12,9 @@ Wannes Meert, Jan Struyf, Hendrik Blockeel: CP-Logic Theory Inference with Conte
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 course(c1).
 
@@ -216,7 +218,7 @@ years_in_program(A,year_1):0.032258064516129; years_in_program(A,year_2):0.06451
     student(A),
     \+student_nb_publications(A,none).
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

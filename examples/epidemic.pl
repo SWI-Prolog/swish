@@ -11,7 +11,9 @@ diagrams for probabilistic logic programs. Intelligent Data Analysis,
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 epidemic : 0.6; pandemic : 0.3 :- flu(_), cold.
 % if somebody has the flu and the climate is cold, there is the possibility 
@@ -25,7 +27,7 @@ flu(david).
 flu(robert).
 % david and robert have the flu for sure
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

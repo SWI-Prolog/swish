@@ -10,7 +10,9 @@ Theory Pract. Log. Program., 9(3):245-308, 2009.
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 % Russian roulette with two guns, left_gun and right_gun
 
@@ -25,7 +27,7 @@ pull_trigger(left_gun).
 pull_trigger(right_gun).
 % you surely pull the trigger of the right gun
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

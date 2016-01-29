@@ -10,7 +10,9 @@ volume 3131 of LNCS, pages 195-209. Springer, 2004.
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 heads(Coin): 0.5; tails(Coin) : 0.5:-toss(Coin),fair(Coin).
 % if we toss a Coin that is not biased then it lands heads with probability 1/2
@@ -25,7 +27,7 @@ toss(coin1).
 toss(coin2).
 % coin2 is certainly tossed
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

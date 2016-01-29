@@ -16,7 +16,9 @@ Peter D. Grunwald and Joseph Y. Halpern. "Updating Probabilities." Journal of Ar
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 % safe(A): prisoner A is not going to be executed, with A in {a,b,c}
 % tell_executed(A): the jailer tells a that A is going to be executed
@@ -48,7 +50,7 @@ safe_after_tell:-
 % a is safe after the jailer has spoken if he is safe and the jailer has told
 % that someone is going to be executed
 
-:- end_cplint.
+:- end_lpad.
   
 /** <examples>
 

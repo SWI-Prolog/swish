@@ -12,7 +12,9 @@ De Raedt, Luc, and Angelika Kimmig. "Probabilistic (logic) programming concepts.
 
 :- use_module(library(pita)).
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 
 
@@ -38,7 +40,7 @@ d :-
 
 e :- 
   b, c.
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

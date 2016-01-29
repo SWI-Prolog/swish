@@ -17,7 +17,9 @@ Chitta Baral, Michael Gelfond, and Nelson Rushton. "Probabilistic reasoning with
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 % prize(A): the prize is behind door A, with A in {1,2,3}
 % selected(A): the player selects door A
@@ -68,7 +70,7 @@ win_switch:-
 % the player switches and wins if the prize is behind the door that he has 
 % not selected and that Monty did not open
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

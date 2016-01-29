@@ -17,7 +17,9 @@ Theory and Practice of Logic Programming,  doi:10.1017/S1471068413000677.
 :- set_pita(depth_bound,true).
 :- set_pita(depth,5).
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 % pcfg(LT): LT is string of terminals accepted by the grammar
 % pcfg(L,LT,LT0) L is a tring of terminals and not terminals that derives
@@ -47,7 +49,7 @@ rule('S',Der,['S','S']):0.4; rule('S',Der,[a]):0.3;
 
 % encodes the three rules of the grammar
 
-:- end_cplint.
+:- end_lpad.
 
 
 /** <examples>

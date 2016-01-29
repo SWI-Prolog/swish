@@ -13,7 +13,9 @@ Artificial Intelligence, pages 2462-2467, 2007.
 :- use_rendering(graphviz).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 % path(X,Y) is true if there is a path between nodes X and Y
 % edge(a,b) indicates that there is an edge between a nad b
@@ -34,7 +36,7 @@ edge(c,d):0.4.
 edge(d,e):0.4.
 edge(a,e):0.1.
 
-:- end_cplint.
+:- end_lpad.
 
 graph(digraph(G)):-
     findall(edge(A -> B,[label=P]),

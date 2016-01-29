@@ -13,7 +13,9 @@ volume 3131 of LNCS, pages 195-209. Springer, 2004.
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 male:M/P; female:F/P:-
   findall(Male,male(Male),LM),
@@ -22,7 +24,7 @@ male:M/P; female:F/P:-
   length(LF,F),
   P is F+M.
 
-:- end_cplint.
+:- end_lpad.
 
 male(john).
 male(david).

@@ -14,7 +14,9 @@ vol. 5649. Springer, 55-69.
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 % hmm(O): O is the output sequence 
 % hmm1(S,O): O is the output sequence and S is the sequence of states
@@ -53,7 +55,7 @@ letter(q1,a,S):0.25;letter(q1,c,S):0.25;letter(q1,g,S):0.25;letter(q1,t,S):0.25.
 letter(q2,a,S):0.25;letter(q2,c,S):0.25;letter(q2,g,S):0.25;letter(q2,t,S):0.25.
 % from state q1 the HMM emits one of the letters with equal probability
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

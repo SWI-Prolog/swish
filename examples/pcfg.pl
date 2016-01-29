@@ -14,7 +14,9 @@ Theory and Practice of Logic Programming,  doi:10.1017/S1471068413000677.
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 % pcfg(LT): LT is string of terminals accepted by the grammar
 % pcfg(L,LT,LT0) L is a tring of terminals and not terminals that derives
@@ -42,7 +44,7 @@ pcfg([],Der,Der,L,L).
 rule('S',Der,[a,'S']):0.2; rule('S',Der,[b,'S']):0.2; rule('S',Der,[a]):0.3; rule('S',Der,[b]):0.3.
 % encodes the three rules of the grammar
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

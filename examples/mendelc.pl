@@ -13,7 +13,9 @@ In Inductive Logic Programming (ILP 2004), Work in Progress Track, 2004.
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 mother(m,s).
 mother(mm,m).
@@ -60,7 +62,7 @@ color(X,white) :- cg(X,1,w), cg(X,2,w).
 % if an individual has two w alleles its color is white, i.e., white is
 % recessive
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

@@ -24,7 +24,9 @@ The transitive clauses for samebib have been removed to avoid loops.
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 samebib(B,C):0.3 :-
         author(B,D),author(C,E),sameauthor(D,E).
@@ -1738,4 +1740,4 @@ haswordtitle(title_weakly_learning_learning_dnf_characterizing_statistical_query
 haswordauthor(author_blum_a_,word_a).
 haswordauthor(author_blum_a_,word_blum).
 
-:- end_cplint.
+:- end_lpad.

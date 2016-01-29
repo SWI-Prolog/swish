@@ -11,7 +11,9 @@ relational learning. Machine Learning, 86(1):89-114, 2012
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 earthquake(X, strong) : 0.3 ; earthquake(X, moderate) : 0.5 :-
   fault_rupture(X).
@@ -37,7 +39,7 @@ volcanic_eruption(stromboli).
 volcanic_eruption(eyjafjallajkull).
 % there is a volcanic eruption at eyjafjallajkull
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

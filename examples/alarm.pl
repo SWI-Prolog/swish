@@ -10,7 +10,9 @@ volume 3131 of LNCS, pages 195.209. Springer, 2004.
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 burg(t):0.1; burg(f):0.9.
 % there is a burglary with probability 0.1
@@ -25,7 +27,7 @@ alarm(t):0.8 ; alarm(f):0.2:-burg(f),earthq(t).
 alarm(t):0.1 ; alarm(f):0.9:-burg(f),earthq(f).
 % it there is no burglary and no earthquake then the alarm goes off with probability 0.1
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

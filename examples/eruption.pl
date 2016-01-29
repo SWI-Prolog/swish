@@ -17,7 +17,9 @@ Programming, FirstView Articles, 2014
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 eruption : 0.6 ; earthquake : 0.3 :- 
   sudden_energy_release,
@@ -33,7 +35,7 @@ fault_rupture(southwest_northeast).
 fault_rupture(east_west).
 % we are sure that ruptures occur in both faults
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

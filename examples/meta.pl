@@ -7,7 +7,9 @@ Probabilities computation in the body of probabilistic clauses.
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 a:0.2:-
   prob(b,P),
@@ -18,7 +20,7 @@ b:0.5:-
 
 c.
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 

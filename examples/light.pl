@@ -10,7 +10,9 @@ Theory Pract. Log. Program., 9(3):245-308, 2009.
 :- use_rendering(c3).
 :- endif.
 
-:- cplint.
+:- pita.
+
+:- begin_lpad.
 
 push.
 % we surely push the switch
@@ -21,7 +23,7 @@ light : 0.4 :- push.
 replace :- \+ light.
 % if there is no light we must replace the bulb
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 
