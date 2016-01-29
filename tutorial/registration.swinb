@@ -2,7 +2,7 @@
 
 <div class="nb-cell markdown">
 # Registration
-In this tutorial section we will show how to perform structure learning. 
+In this tutorial section we will show how to perform structure learning. We take into account the Registration dataset [1].
 
 *Note*: the learning algorithms are available only if you use the Prolog editor.
 
@@ -14,7 +14,7 @@ To execute a learning algorithm the input source must be divided in five parts:
 - language bias information,
 - example interpretations.
 
-Here we will define a program step by step and then execute the algorithm SLIPCOVER [1] which learns the structure and the parameters given a background knowledge. 
+Here we will define a program step by step and then execute the algorithm SLIPCOVER [2] which learns the structure and the parameters given a background knowledge. 
 
 For more information of how to perform learning see the manual *Help*-&gt;*Help on cplint* ([PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)).
 
@@ -34,11 +34,11 @@ We load the library =slipcover=, initialize it and then set some parameters.
 
 <div class="nb-cell markdown">
 ### Backgroud knowledge
-Now we write the background knowledge enclosed by =|:- bg.|= and =|:- end_bg.|=.
+Now we write the background knowledge enclosed by =|:- begin_bg.|= and =|:- end_bg.|=.
 </div>
 
 <div class="nb-cell program prolog">
-:- bg.
+:- begin_bg.
 company_info(jvt,commercial).
 company_info(scuf,university).
 company_info(ucro,university).
@@ -70,11 +70,11 @@ course_type(C, T):-
 
 <div class="nb-cell markdown">
 ### Initial program
-Now we can define an inital LPAD program. The program is enclosed by =|:- in.|= and =|:- end_in.|=.
+Now we can define an inital LPAD program. The program is enclosed by =|:- begin_in.|= and =|:- end_in.|=.
 </div>
 
 <div class="nb-cell program prolog">
-:- in.
+:- begin_in.
 party(yes):0.5:-
   company_type(commercial).
 
@@ -202,8 +202,10 @@ Below there is the complete program
 %%%%%%%%%%%%
 % PREAMBLE %
 %%%%%%%%%%%%
-:-use_module(library(slipcover)).
-:-sc.
+:- use_module(library(slipcover)).
+% use the renderer 'lpad'. It not mandatory to use it, but it prints the learned clauses in a more readable way
+:- use_rendering(lpad).
+:- sc.
 
 :- set_sc(depth_bound,false).
 :- set_sc(neg_ex,given).
@@ -212,7 +214,7 @@ Below there is the complete program
 %%%%%%%%%%%%%%%%%%%%%%%%
 % BACKGROUND KNOWLEDGE %
 %%%%%%%%%%%%%%%%%%%%%%%%
-:- bg.
+:- begin_bg.
 company_info(jvt,commercial).
 company_info(scuf,university).
 company_info(ucro,university).
@@ -240,7 +242,7 @@ course_type(C, T):-	course(C, _, T).
 %%%%%%%%%%%%%%%%%%%
 % INITIAL PROGRAM %
 %%%%%%%%%%%%%%%%%%%
-:- in.
+:- begin_in.
 party(yes):0.5:-
   company_type(commercial).
 
@@ -358,15 +360,15 @@ induce([all],P).
 
 <div class="nb-cell markdown">
 --
-Complete example: [registration.pl](example/registration.pl)
+Complete example: [registration.pl](example/learning/registration.pl)
 
 --
-* Based on: L. De Raedt, H. Blockeel, L. Dehaspe, and W. Van Laer. Three companions for data mining in first order logic. In S. Dzeroski and N. Lavrac, editors, Relational Data Mining, pages 105-139.  Springer-Verlag, 2001.
+[1] Based on: L. De Raedt, H. Blockeel, L. Dehaspe, and W. Van Laer. Three companions for data mining in first order logic. In S. Dzeroski and N. Lavrac, editors, Relational Data Mining, pages 105-139.  Springer-Verlag, 2001.
 
 --
 For more information about how to perform learning and SLIPCOVER see the manual *Help*-&gt;*Help on cplint* (or [PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)) and the paper:
 
-[1] Elena Bellodi and Fabrizio Riguzzi. Structure learning of probabilistic logic programs by searching the clause space. Theory and Practice of Logic Programming, 2013.
+[2] Elena Bellodi and Fabrizio Riguzzi. Structure learning of probabilistic logic programs by searching the clause space. Theory and Practice of Logic Programming, 2013.
 
 --
 [Back to Tutorial](tutorial/tutorial.swinb)

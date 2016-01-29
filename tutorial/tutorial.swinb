@@ -13,7 +13,7 @@
 - *Examples with structure and parameter learning*
   - [Machines](tutorial/mach.swinb). Parameter learning.
   - [Registration](tutorial/registration.swinb). Structure learning.
-  - [Bongard](tutorial/bongard.swinb). Test the learned program.
+  - [Bongard](tutorial/bongard.swinb). Test the learned program with graphical results.
 - *More Examples with inference*
   - see [cplint inference example programs](example/inference_examples.swinb)
 - *More Examples with structure and parameter learning*
