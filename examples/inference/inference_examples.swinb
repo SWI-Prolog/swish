@@ -5,10 +5,23 @@
 
 This notebook gives an overview of example programs for inference.
 
-- *Examples*
-  - Coin ([coin.cpl](example/inference/coin.cpl), [coin.pl](example/inference/coin.pl)) Throwing a coin with uncertainty on its fairness, from J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctions_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004.
-  - Dice ([dice.cpl](example/inference/dice.cpl), [dice.pl](example/inference/dice.pl)) A six-sided die is repeatedly thrown until the outcome is six. From J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004.
-  - Epidemic ([epidemic.cpl](example/inference/epidemic.cpl), [epidemic.pl](example/inference/epidemic.pl)) Model of the development of an epidemic or a pandemic. From E. Bellodi and F. Riguzzi. _Expectation Maximization over binary decision diagrams for probabilistic logic programs_. Intelligent Data Analysis, 17(2):343-363, 2013.
+  - Coin ([coin.cpl](example/inference/coin.cpl),
+   [coin.pl](example/inference/coin.pl)) 
+   Throwing a coin with uncertainty on its fairness, 
+   from J. Vennekens, S. Verbaeten, and M. Bruynooghe. 
+   _Logic programs with annotated disjunctions_. 
+   In International Conference on Logic Programming, 
+   volume 3131 of LNCS, pages 195-209. Springer, 2004. 
+   [coinmc.pl](example/inference/coinmc.pl) is a version for inference with MCINTYRE (Monte Carlo sampling).
+  - Dice ([dice.cpl](example/inference/dice.cpl), 
+  [dice.pl](example/inference/dice.pl)) 
+  A six-sided die is repeatedly thrown until the outcome is six. 
+  From J. Vennekens, S. Verbaeten, and M. Bruynooghe. 
+  _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004.
+  - Epidemic ([epidemic.cpl](example/inference/epidemic.cpl), 
+  [epidemic.pl](example/inference/epidemic.pl)) 
+  Model of the development of an epidemic or a pandemic. 
+  From E. Bellodi and F. Riguzzi. _Expectation Maximization over binary decision diagrams for probabilistic logic programs_. Intelligent Data Analysis, 17(2):343-363, 2013.
   - Earthquake ([earthquake.cpl](example/inference/earthquake.cpl), [earthquake.pl](example/inference/earthquake.pl)) Occurrence of an earthquake depending on its possible causes. From F. Riguzzi and N. Di Mauro. _Applying the information bottleneck to statistical relational learning_. Machine Learning, 86(1):89-114, 2012.
   - Medical symptoms ([sneezing.cpl](example/inference/sneezing.cpl), [sneezing.pl](example/inference/sneezing.pl)) Effect of flu and hay fever on the sneezing symptom. From F. Riguzzi and T. Swift. _The PITA system: Tabling and answer subsumption for reasoning under uncertainty_. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, 11(4-5), pages 433-449, 2011.
   - Eruption ([eruption.cpl](example/inference/eruption.cpl), [eruption.pl](example/inference/eruption.pl)) Occurrence of an eruption or an earthquake at Stromboli. From Elena Bellodi and Fabrizio Riguzzi. _Structure learning of probabilistic logic programs by searching the clause space_. Theory and Practice of Logic Programming, FirstView Articles, 2014.
@@ -27,13 +40,48 @@ This notebook gives an overview of example programs for inference.
   - Negation ([light.cpl](example/inference/light.cpl), [light.pl](example/inference/light.pl)) Example showing the use of negation. From J. Vennekens, Marc Denecker, and Maurice Bruynooghe. _CP-logic: A language of causal probabilistic events and its relation to logic programming_. Theory and Practice of Logic Programming, 9(3), pages 245-308, 2009.
   - Coins ([coin2.cpl](example/inference/coin2.cpl), [coin2.pl](example/inference/coin2.pl)) Throwing two coins with uncertainty on their fairness. From J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctions_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 
   - Three sided dice ([threesideddice.cpl](example/inference/threesideddice.cpl), 
-  [threesideddice.pl](example/inference/threesideddice.pl)  A three-sided die is repeatedly thrown until the outcome is three. From F. Riguzzi and T. Swift. _The PITA system: Tabling and answer subsumption for reasoning under uncertainty_. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, 11(4-5), pages 433-449, 2011.
+  [threesideddice.pl](example/inference/threesideddice.pl))
+  A three-sided die is repeatedly thrown until the outcome is three. From F. Riguzzi and T. Swift. _The PITA system: Tabling and answer subsumption for reasoning under uncertainty_. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, 11(4-5), pages 433-449, 2011.
   - Mendelian inheritance of the color of pea plant - larger family ([mendelc.cpl](example/inference/mendelc.cpl), [mendelc.pl](example/inference/mendelc.pl)) From H. Blockeel. _Probabilistic logical models for mendel's experiments: An exercise_. In Inductive Logic Programming, Work in Progress Track, 2004.
   - Meta probabilities ([meta.cpl](example/inference/meta.cpl), [meta.pl](example/inference/meta.pl)) Probabilities computation in the body of probabilistic clauses (also called Nested probability computation).
   - Max combining rule ([metacomb.pl](example/inference/metacomb.pl)) Meta probabilities for implementing a max combining rule. From De Raedt, Luc, and Angelika Kimmig. _Probabilistic (logic) programming concepts_. Machine Learning (2015): 1-43.
   - Drawing balls from an urn ([flexprob.pl](example/inference/flexprob.pl)) Flexible probabilities (variable probabilistic annotations) that are instantiated at run time. From De Raedt, Luc, and Angelika Kimmig. _Probabilistic (logic) programming concepts_. Machine Learning (2015): 1-43.
   - Sampling persons ([persons.pl](example/inference/persons.pl)) The example models drawing a person at random from a population and computing the probability that it is a male or a female using flexible probabilities (variable probabilistic annotations). From J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctions_. In International Conference on Logic Programming,
   volume 3131 of LNCS, pages 195-209. Springer, 2004.
+  - Probabilistic Context Free Left Recursive Grammar. Since the grammar is 
+  left recursive, derivations may be infinite so the query may have an infinite
+  number of explanations and PITA may not terminate. 
+  To ensure termination, a bound on the depth of the derivations of PITA can 
+  be imposed ([pcfglrdb.pl](example/inference/pcfglrdb.pl)), at the price 
+  of getting only a lower bound on the probability. 
+  Alternatively, MCINTYRE can be used 
+  ([pcfglr.pl](example/inference/pcfglr.pl))
+  that performs approximate inference by sampling and termination is ensured 
+  because the infinite branches have probability 0. 
+  From Taisuke Sato and Keiichi Kubota. _Viterbi training in PRISM_. 
+  Theory and Practice of Logic Programming, doi:10.1017/S1471068413000677. 
+  - Model checking of a Markov chain. We want to know what is the likelihood
+  that on an execution of the chain from a start state _s_, a final state _t_
+  will be reached? The chains may be infinite so the query may have an infinite number of explanations and PITA may not terminate. To ensure termination, a bound on the depth of the derivations of PITA can be imposed 
+  ([markov_chaindb.pl](example/inference/markov_chaindb.pl)).
+  Alternatively, MCINTYRE can be used
+  ([markov_chain.pl](example/inference/markov_chain.pl)).
+  From
+  Gorlin, Andrey, C. R. Ramakrishnan, and Scott A. Smolka. _Model checking with probabilistic tabled logic programming._ Theory and Practice of Logic Programming 12.4-5 (2012).
+  - Prefix probability computation. ([prefix.pl](example/inference/prefix.pl))
+  Prefix parser for probabilistic context free grammars.
+  The program computes the probability that a string is
+  a prefix of a string genated by the grammar.
+  From
+  T. Sato, P. Mey, _Tabling for infinite probability computation_, in:
+  Intnational Confence on Logic Programming, Vol. 17 of LIPIcs, 2012,
+  pp.  348-358.
+  T. Sato, P. Mey, _Infinite probability computation by cyclic explanation
+  graphs_, Theory and Practice of Logic Programming 14 (2014) 909-937.
+  doi:10.1017/S1471068413000562.
+  - Querying a deterministic database ([testdb.pl](example/inference/testdb.pl))
+  Deterministic predicates can be defined outside =:-begin/end_lpad.= and 
+  queried in the body of probabilistic clauses.
 </div>
 
 </div>

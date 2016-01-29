@@ -4,13 +4,13 @@ J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated
 disjunctions. In International Conference on Logic Programming, 
 volume 3131 of LNCS, pages 195-209. Springer, 2004.
 */
-:- use_module('../mcintyre').
+:- use_module(library(mcintyre)).
 
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
 :- endif.
-
-:- cplint.
+:- mc.
+:- begin_lpad.
 
 heads(Coin): 1/2; tails(Coin) : 1/2:-toss(Coin),\+biased(Coin).
 % if we toss a Coin that is not biased then it lands heads with probability 1/2
@@ -23,17 +23,17 @@ fair(Coin):0.9 ; biased(Coin):0.1.
 toss(coin).
 % coin is certainly tossed
 
-:- end_cplint.
+:- end_lpad.
 
 /** <examples>
 
-?- prob(heads(coin),Prob).  % what is the probability that coin lands heads?
+?- mc_prob(heads(coin),Prob).  % what is the probability that coin lands heads?
 % expected result 0.51
-?- prob(tails(coin),Prob).  % what is the probability that coin lands tails?
+?- mc_prob(tails(coin),Prob).  % what is the probability that coin lands tails?
 % expected result 0.49
-?- prob_bar(heads(coin),Prob).  % what is the probability that coin lands heads?
+?- mc_prob_bar(heads(coin),Prob).  % what is the probability that coin lands heads?
 % expected result 0.51
-?- prob_bar(tails(coin),Prob).  % what is the probability that coin lands tails?
+?- mc_prob_bar(tails(coin),Prob).  % what is the probability that coin lands tails?
 % expected result 0.49
 
 

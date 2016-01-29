@@ -31,7 +31,7 @@ https://dtai.cs.kuleuven.be/static/ACE/doc/
 :- set_sc(verbosity,1).
 
 
-:- in.
+:- begin_in.
 class(sendback):0.5 :-
   worn(A),
   not_replaceable(A).
@@ -44,7 +44,7 @@ class(ok):0.5 :-
   not_worn(_A).
 :- end_in.  
 
-:- bg.
+:- begin_bg.
 component(C):-
   replaceable(C).
 component(C):-

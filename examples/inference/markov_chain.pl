@@ -1,5 +1,5 @@
 /*
-Model checking of a marokov chain: we want to know what is the likelihood 
+Model checking of a Markov chain: we want to know what is the likelihood 
 that on an execution of the chain from a start state s, a final state t 
 will be reached?
 From

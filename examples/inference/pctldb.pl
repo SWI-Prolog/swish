@@ -11,7 +11,7 @@ graphs, Theory and Practice of Logic Programming 14 (2014) 909-937.
 doi:10.1017/S1471068413000562.
 */
 
-:- use_module(library(mcintyre)).
+:- use_module(library(pita)).
 
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
@@ -74,22 +74,22 @@ trans(s4,_,s3).
 
 /** <examples>
 
-?- mc_prob(reach(s0,0,s0),P).
+?- prob(reach(s0,0,s0),P).
 % expecte result ~ 1.
 
-?- mc_prob(reach(s0,0,s1),P).
+?- prob(reach(s0,0,s1),P).
 % expecte result ~ 0.5984054054054054.
 
-?- mc_prob(reach(s0,0,s2),P).
+?- prob(reach(s0,0,s2),P).
 % expecte result ~ 0.4025135135135135.
 
-?- mc_prob(reach(s0,0,s3),P).
+?- prob(reach(s0,0,s3),P).
 % expecte result ~ 0.5998378378378378.
 
-?- mc_prob(reach(s0,0,s4),P).
+?- prob(reach(s0,0,s4),P).
 % expecte result ~ 0.49948717948717947.
 
-?- mc_prob(reach(s1,0,s0),P).
+?- prob(reach(s1,0,s0),P).
 % expecte result ~ 0.
 
 */

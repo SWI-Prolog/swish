@@ -19,6 +19,8 @@ doi:10.1017/S1471068413000562.
 
 :- mc.
 
+:- begin_lpad.
+
 % State Formulae 
 models(S, prop(A)) :-
   holds(S,A).
@@ -62,7 +64,7 @@ trans(s0,S,s0):0.5; trans(s0,S,s1):0.3; trans(s0,S,s2):0.2.
 trans(s1,S,s1):0.4; trans(s1,S,s3):0.1; trans(s1,S,s4):0.5.
 
 trans(s4,_,s3).
-:- end_mc.
+:- end_lpad.
 
 
 

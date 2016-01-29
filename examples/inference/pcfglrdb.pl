@@ -53,22 +53,22 @@ rule('S',Der,['S','S']):0.4; rule('S',Der,[a]):0.3;
 
 
 /** <examples>
-?- mc_prob(pcfg([a]),Prob).
+?- prob(pcfg([a]),Prob).
 % expected result ~ 0.2986666666666667.
 
-?- mc_prob(pcfg([b]),Prob).
+?- prob(pcfg([b]),Prob).
 % expected result ~ 0.2976666666666667.
 
-?- mc_prob(pcfg([a,a]),Prob).
+?- prob(pcfg([a,a]),Prob).
 % expected result ~ 0.035666666666666666.
 
-?- mc_prob(pcfg([b,b]),Prob).
+?- prob(pcfg([b,b]),Prob).
 % expected result ~ 0.036833333333333336.
 
-?- mc_prob(pcfg([a,b]),Prob).
+?- prob(pcfg([a,b]),Prob).
 % expected result ~ 0.035833333333333335.
 
-?- mc_prob(pcfg([a,b,a]),Prob).
+?- prob(pcfg([a,b,a]),Prob).
 % expected result ~ 0.009.
 
 

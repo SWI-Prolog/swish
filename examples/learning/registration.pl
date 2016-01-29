@@ -34,7 +34,7 @@ http://dtai.cs.kuleuven.be/static/ACE/doc/
 %:- set_sc(max_iter_structure,5).
 :- set_sc(verbosity,1).
 
-:- bg.
+:- begin_bg.
 company_info(jvt,commercial).
 company_info(scuf,university).
 company_info(ucro,university).
@@ -71,7 +71,7 @@ course_type(C, T):-
 
 :- end_bg.
 
-:- in.
+:- begin_in.
 party(yes):0.5:-
   company_type(commercial).
 
