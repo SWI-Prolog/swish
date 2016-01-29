@@ -36,7 +36,7 @@
 <pre><code>h1 :- b1,...,bm,\+ c1,...,\+ cl.</code></pre>
 <p>stands for</p>
 <pre><code>h1:1 :- b1,...,bm,\+ c1,...,\+ cl.</code></pre>
-<p>The coin example of <span class="citation">[8]</span> is represented as (file <a href="http://cplint.lamping.unife.it/example/coin.cpl"><code>coin.cpl</code></a>)</p>
+<p>The coin example of <span class="citation">[9]</span> is represented as (file <a href="http://cplint.lamping.unife.it/example/inference/coin.cpl"><code>coin.cpl</code></a>)</p>
 <pre><code>heads(Coin):1/2 ; tails(Coin):1/2 :- 
   toss(Coin),\+biased(Coin).
 
@@ -57,17 +57,24 @@ nth0/3, nth/3, dif/2, select/3</code></pre>
 <p>plus the predicate</p>
 <pre><code>average/2</code></pre>
 <p>that, given a list of numbers, computes its arithmetic mean.</p>
-<p>The body of rules may also contain the predicate <code>prob/2</code> that computes the probability of an atom, thus allowing nested probability computations. For example</p>
+<p>The body of rules may also contain the predicate <code>prob/2</code> that computes the probability of an atom, thus allowing nested probability computations. For example (<a href="http://cplint.lamping.unife.it/example/inference/meta.pl"><code>meta.pl</code></a>)</p>
 <pre><code>a:0.2:-
   prob(b,P),
   P&gt;0.2.</code></pre>
 <p>is a valid rule.</p>
-<h1 id="inf">Inference</h1>
-<p><code>cplint</code> answers queries using the module <code>pita</code>. It performs the program transformation technique of <span class="citation">[7]</span>. Differently from that work, techniques alternative to tabling and answer subsumption are used.</p>
-<p>For answering queries, you have to prepare a Prolog file where you first load <code>pita</code> and then enclose the probabilistic clauses in <code>:-cplint.</code> and <code>:-end_cplint.</code> For example, the coin program above can be stored in <a href="http://cplint.lamping.unife.it/example/coin.pl"><code>coin.pl</code></a> as follows</p>
-<pre><code>:- use_module(library(pita)).
-:- cplint.
+<p>Moreover, the probabilistic annotations can be variables, as in (<a href="http://cplint.lamping.unife.it/example/inference/flexprob.pl"><code>flexprob.pl</code></a>))</p>
+<pre><code>red(Prob):Prob.
 
+draw_red(R, G):-
+  Prob is R/(R + G),
+  red(Prob).</code></pre>
+<p>Variables in probabilistic annotations must be ground when resolution reaches the end of the body, otherwise an exception is raised.</p>
+<h1 id="inf">Inference</h1>
+<p><code>cplint</code> answers queries using the module <code>pita</code> or <code>mcintyre</code>. The first performs the program transformation technique of <span class="citation">[7]</span>. Differently from that work, techniques alternative to tabling and answer subsumption are used. The latter performs approximate inference by sampling using a different program transformation technique and is described in <span class="citation">[8]</span>.</p>
+<p>For answering queries, you have to prepare a Prolog file where you first load the inference module (for example <code>pita</code>), initialize it with a directive (for example <code>:- pita</code>) and then enclose the LPAD clauses in <code>:-begin_lpad.</code> and <code>:-end_lpad.</code> For example, the coin program above can be stored in <a href="http://cplint.lamping.unife.it/example/inference/coin.pl"><code>coin.pl</code></a> for performing inference with <code>pita</code> as follows</p>
+<pre><code>:- use_module(library(pita)).
+:- pita.
+:- begin_lpad.
 heads(Coin):1/2 ; tails(Coin):1/2:- 
 toss(Coin),\+biased(Coin).
 
@@ -77,32 +84,88 @@ toss(Coin),biased(Coin).
 fair(Coin):0.9 ; biased(Coin):0.1.
 
 toss(coin).
+:- end_lpad.</code></pre>
+<p>The same program for <code>mcintyre</code> is</p>
+<pre><code>:- use_module(library(mcintyre)).
+:- mc.
+:- begin_lpad.
+heads(Coin):1/2 ; tails(Coin):1/2:- 
+toss(Coin),\+biased(Coin).
 
-:- end_cplint.</code></pre>
+heads(Coin):0.6 ; tails(Coin):0.4:- 
+toss(Coin),biased(Coin).
+
+fair(Coin):0.9 ; biased(Coin):0.1.
+
+toss(coin).
+:- end_lpad.</code></pre>
+<p>You can have also (non-probabilistic) clauses outside <code>:-begin/end_lpad.</code> These are considered as database clauses. In <code>pita</code> subgoals in the body of probabilistic clauses can query them by enclosing the query in <code>db/1</code>. For example (<a href="http://cplint.lamping.unife.it/example/inference/testdb.pl"><code>testdb.pl</code></a>)</p>
+<pre><code>:- use_module(library(pita)).
+:- pita.
+:- begin_lpad.
+sampled_male(X):0.5:-
+  db(male(X)).
+:- end_lpad.
+male(john).
+male(david).</code></pre>
+<p>You can also use <code>findall/3</code> on subgoals defined by database clauses (<a href="http://cplint.lamping.unife.it/example/inference/persons.pl"><code>persons.pl</code></a>)</p>
+<pre><code>:- use_module(library(pita)).
+:- pita.
+:- begin_lpad.
+male:M/P; female:F/P:-
+  findall(Male,male(Male),LM),
+  findall(Female,female(Female),LF),
+  length(LM,M),
+  length(LF,F),
+  P is F+M.
+:- end_lpad.
+male(john).
+male(david).
+female(anna).
+female(elen).
+female(cathy).</code></pre>
+<p>Aggregate predicates on probabilistic subgoals are not implemented due to their high computational cost (if the aggregation is over <span class="math inline"><em>n</em></span> atoms, the possible values of the aggregation are potentially <span class="math inline">2<sup><em>n</em></sup></span>).</p>
+<p>In <code>mcintyre</code> you can query database clauses in the body of probabilistic clauses without any special syntax. You can also use <code>findall/3</code>.</p>
 <p><code>cplint</code> on SWISH allows two types of programs: LPAD and Prolog. In the first, you create a new LPAD in the editor, in the latter a Prolog program.</p>
-<p>In LPADs, you write in the editor the program without the library import and the <code>:- cplint</code> and <code>:- end_cplint.</code> compiler directives.</p>
+<p>In LPADs, you write in the editor the program without the library import and the <code>:- cplint</code> and <code>:- end_cplint.</code> compiler directives. <code>pita</code> is used for inference.</p>
 <p>You ask queries by writing the atom of which you want to compute the probability. In the coin example, the probability of <code>heads(coin)</code> can be obtained with the</p>
 <pre><code>?- heads(coin).</code></pre>
-<p>In Prolog programs, you have to enter the program above (<code>coin.pl</code>) and ask the probability of an atom using the predicate <code>prob/2</code> as in</p>
+<p>In Prolog programs, you have to enter the program above (<code>coin.pl</code>) and ask the probability of an atom using <code>pita</code> using the predicate <code>prob/2</code> as in</p>
 <pre><code>?- prob(heads(coin),P).</code></pre>
 <p>You can also see the probability of the query being true and being false as a bar chart with</p>
 <pre><code>?- prob_bar(heads(coin),P).</code></pre>
 <p>if you include</p>
 <pre><code>:- use_rendering(c3).</code></pre>
-<p>before <code>:- cplint.</code></p>
+<p>before <code>:- pita.</code></p>
+<p>When using <code>mcintyre</code>, the predicates for querying are <code>mc_prob/2</code> and <code>mc_prob_bar/2</code> as in</p>
+<pre><code>?- mc_prob(heads(coin),P).
+?- mc_prob_bar(heads(coin),P).</code></pre>
 <h2 id="parameters">Parameters</h2>
-<p>The module makes use of a number of parameters in order to control its behavior. They can be set with the directive</p>
+<p>The inference modules have a number of parameters in order to control their behavior. They can be set with the directive</p>
 <pre><code>:- set_pita(&lt;parameter&gt;,&lt;value&gt;).</code></pre>
-<p>inside the couple <code>:-cplint.</code> and <code>:-end_cplint.</code></p>
-<p>The current value can be read with</p>
+<p>or</p>
+<pre><code>:- set_mc(&lt;parameter&gt;,&lt;value&gt;).</code></pre>
+<p>after initialization (<code>:-pita.</code> or <code>:-mc.</code>) but outside <code>:-begin/end_lpad.</code> The current value can be read with</p>
 <pre><code>?- setting_pita(&lt;parameter&gt;,Value).</code></pre>
-<p>from the top-level. The available parameters are:</p>
+<p>or</p>
+<pre><code>?- setting_mc(&lt;parameter&gt;,Value).</code></pre>
+<p>from the top-level. The available parameters common to both <code>pita</code> and <code>mcintyre</code> are:</p>
 <ul>
 <li><p><code>epsilon_parsing</code>: if (1 - the sum of the probabilities of all the head atoms) is larger than <code>epsilon_parsing</code>, then <code>pita</code> adds the null event to the head. Default value <code>0.00001</code>.</p></li>
 <li><p><code>single_var</code>: determines how non ground clauses are treated: if <code>true</code>, a single random variable is assigned to the whole non ground clause, if <code>false</code>, a different random variable is assigned to every grounding of the clause. Default value <code>false</code>.</p></li>
-<li><p><code>depth_bound</code>: if <code>true</code>, the depth of the derivation of the goal is limited to the value of the <code>depth</code> parameter. Default value <code>false</code>.</p></li>
-<li><p><code>depth</code>: maximum depth of derivations when <code>depth_bound</code> is set to <code>true</code>. Default value <code>2</code>.</p></li>
 </ul>
+<p>Moreover, <code>pita</code> has the parameters</p>
+<ul>
+<li><p><code>depth_bound</code>: if <code>true</code>, the depth of the derivation of the goal is limited to the value of the <code>depth</code> parameter. Default value <code>false</code>.</p></li>
+<li><p><code>depth</code>: maximum depth of derivations when <code>depth_bound</code> is set to <code>true</code>. Default value <code>5</code>.</p></li>
+</ul>
+<p>If <code>depth_bound</code> is set to <code>true</code>, derivations are depth-bounded so you can query also programs containing infinite loops, for example programs where queries have an infinite number of explanations. However the probability that is returned is guaranteed only to be a lower bound, see for example <a href="http://cplint.lamping.unife.it/example/inference/markov_chaindb.pl"><code>markov_chaindb.pl</code></a></p>
+<p><code>mcintyre</code> has the parameters</p>
+<ul>
+<li><p><code>min_error</code>: minimal width of the binomial proportion confidence interval for the probability of the query. When the confidence interval for the probability of the query is below <code>min_error</code>, the computation stops. Default value <code>0.01</code>.</p></li>
+<li><p><code>k</code>: the number of samples to take before checking whether the the binomial proportion confidence interval is below <code>min_error</code>. Default value <code>1000</code>. <code>max_samples</code>: the maximum number of samples to take. This is used when the probability of the query is very close to 0 or 1. In fact <code>mcintyre</code> also checks for the validity of the the binomial proportion confidence interval: if less than 5 failures or successes are sampled, even if the width of the confidence interval is less than <code>min_error</code>, the computation continues. This would lead to non-termination in cases where the probability is 0 or 1. <code>max_samples</code> ensures termination. Default value <code>10e4</code>.</p></li>
+</ul>
+<p>The example <a href="http://cplint.lamping.unife.it/example/inference/markov_chain.pl"><code>markov_chain.pl</code></a> shows that <code>mcintyre</code> can perform inference in presence of an infinite number of explanations for the goal. Differently from <code>pita</code>, no depth bound is necessary, as the probability of selecting the infinite computation branch is 0.</p>
 <h1 id="learning">Learning</h1>
 <p>The following learning algorithms are available:</p>
 <ul>
@@ -119,7 +182,7 @@ toss(coin).
 <li><p>example interpretations</p></li>
 </ul>
 <p>The preamble must come first, the order of the other parts can be changed.</p>
-<p>For example, consider the Bongard problems of <span class="citation">[6]</span>. <a href="http://cplint.lamping.unife.it/example/bongard.pl"><code>bongard.pl</code></a> and <a href="http://cplint.lamping.unife.it/example/bongardkeys.pl"><code>bongardkeys.pl</code></a> represent a Bongard problem. Let us consider <a href="http://cplint.lamping.unife.it/example/bongard.pl"><code>bongard.pl</code></a>.</p>
+<p>For example, consider the Bongard problems of <span class="citation">[6]</span>. <a href="http://cplint.lamping.unife.it/example/learning/bongard.pl"><code>bongard.pl</code></a> and <a href="http://cplint.lamping.unife.it/example/learning/bongardkeys.pl"><code>bongardkeys.pl</code></a> represent a Bongard problem. Let us consider <a href="http://cplint.lamping.unife.it/example/learning/bongard.pl"><code>bongard.pl</code></a>.</p>
 <h3 id="preamble">Preamble</h3>
 <p>In the preamble, the SLIPCOVER library is loaded with</p>
 <pre><code>:- use_module(library(slipcover)).</code></pre>
@@ -131,11 +194,11 @@ toss(coin).
 :- set_sc(max_iter_structure,5).
 :- set_sc(verbosity,1).</code></pre>
 <p>We will see later the list of available parameters. A particularly important parameter is <code>verbosity</code>: if set to 1, nothing is printed and learning is fastest, if set to 3 much information is printed and learning is slowest, 2 is in between. This ends the preamble.</p>
-<h3 id="backgroung-and-initial-lpadcpl-program">Backgroung and Initial LPAD/CPL-program</h3>
+<h3 id="background-and-initial-lpadcpl-program">Background and Initial LPAD/CPL-program</h3>
 <p>Now you can specify the background knowledge with a fact of the form</p>
 <pre><code>bg(&lt;list of terms representing clauses&gt;).</code></pre>
-<p>where the clauses must currently be deterministic. Alternatively, you can specify a set of clauses by including them in a section between <code>:- bg.</code> and <code>:- end_bg.</code> For example</p>
-<pre><code>:- bg.
+<p>where the clauses must currently be deterministic. Alternatively, you can specify a set of clauses by including them in a section between <code>:- begin_bg.</code> and <code>:- end_bg.</code> For example</p>
+<pre><code>:- begin_bg.
 replaceable(gear).
 replaceable(wheel).
 replaceable(chain).
@@ -146,11 +209,11 @@ component(C):-
 component(C):-
   not_replaceable(C).
 :- end_bg.</code></pre>
-<p>from the <a href="http://cplint.lamping.unife.it/example/mach.pl"><code>mach.pl</code></a> example. If you specify both a <code>bg/1</code> fact and a section, the clauses of the two will be combined.</p>
+<p>from the <a href="http://cplint.lamping.unife.it/example/learning/mach.pl"><code>mach.pl</code></a> example. If you specify both a <code>bg/1</code> fact and a section, the clauses of the two will be combined.</p>
 <p>Moreover, you can specify an initial program with a fact of the form</p>
 <pre><code>in(&lt;list of terms representing clauses&gt;).</code></pre>
 <p>The initial program is used in parameter learning for providing the structure. The indicated parameters do not matter as they are first randomized. Remember to enclose each clause in parentheses because <code>:-</code> has the highest precedence.</p>
-<p>For example, <a href="http://cplint.lamping.unife.it/example/bongard.pl"><code>bongard.pl</code></a> has the initial program</p>
+<p>For example, <a href="http://cplint.lamping.unife.it/example/learning/bongard.pl"><code>bongard.pl</code></a> has the initial program</p>
 <pre><code>in([(pos:0.197575 :-
        circle(A),
        in(B,A)),
@@ -160,8 +223,8 @@ component(C):-
     (pos:0.000448807 :-
        triangle(A),
        circle(B))]).</code></pre>
-<p>Alternatively, you can specify an input program in a section between <code>:- in.</code> and <code>:- end_in.</code>, as for example</p>
-<pre><code>:- in.
+<p>Alternatively, you can specify an input program in a section between <code>:- begin_in.</code> and <code>:- end_in.</code>, as for example</p>
+<pre><code>:- begin_in.
 pos:0.197575 :-
   circle(A),
   in(B,A).
@@ -184,9 +247,9 @@ pos:0.000448807 :-
 <pre><code>input(&lt;predicate&gt;/&lt;arity&gt;).</code></pre>
 <p>In this case, if a subgoal for such a predicate is encountered when deriving a subgoal for the output predicates, both the facts in the interpretations, those derivable from them and the background knowledge, the background clauses and the clauses of the input program are used.</p>
 <p>Then, you have to specify the language bias by means of mode declarations in the style of <a href="http://www.doc.ic.ac.uk/\string ~shm/progol.html">Progol</a>.</p>
-<pre><code>modeh(&lt;recall&gt;,&lt;predicate&gt;(&lt;arg1&gt;,...).</code></pre>
+<pre><code>modeh(&lt;recall&gt;,&lt;predicate&gt;(&lt;arg1&gt;,...)).</code></pre>
 <p>specifies the atoms that can appear in the head of clauses, while</p>
-<pre><code>modeb(&lt;recall&gt;,&lt;predicate&gt;(&lt;arg1&gt;,...).</code></pre>
+<pre><code>modeb(&lt;recall&gt;,&lt;predicate&gt;(&lt;arg1&gt;,...)).</code></pre>
 <p>specifies the atoms that can appear in the body of clauses. <code>&lt;recall&gt;</code> can be an integer or <code>*</code>. <code>&lt;recall&gt;</code> indicates how many atoms for the predicate specification are retained in the bottom clause during a saturation step. <code>*</code> stands for all those that are found. Otherwise the indicated number is randomly chosen.</p>
 <p>Two specialization modes are available: <code>bottom</code> and <code>mode</code>. In the first, a bottom clause is built and the literals to be added during refinement are taken from it. In the latter, no bottom clause is built and the literals to be added during refinement are generated directly from the mode declarations.</p>
 <p>Arguments of the form</p>
@@ -228,7 +291,7 @@ determination(pos/0,config/2).</code></pre>
 <p>state that <code>triangle/1</code> can appear in the body of clauses for <code>pos/0</code>.</p>
 <p>SLIPCOVER also allows mode declarations of the form</p>
 <pre><code>modeh(&lt;r&gt;,[&lt;s1&gt;,...,&lt;sn&gt;],[&lt;a1&gt;,...,&lt;an&gt;],[&lt;P1/Ar1&gt;,...,&lt;Pk/Ark&gt;]). </code></pre>
-<p>These mode declarations are used to generate clauses with more than two head atoms. In them, <code>&lt;s1&gt;,...,&lt;sn&gt;</code> are schemas, <code>&lt;a1&gt;,...,&lt;an&gt;</code> are atoms such that <code>&lt;ai&gt;</code> is obtained from <span class="math inline">$\verb|&lt;si&gt;|$</span> by replacing placemarkers with variables, <code>&lt;Pi/Ari&gt;</code> are the predicates admitted in the body. <code>&lt;a1&gt;,...,&lt;an&gt;</code> are used to indicate which variables should be shared by the atoms in the head. An example of such a mode declaration (from <a href="http://cplint.lamping.unife.it/example/uwcselearn.pl"><code>uwcselearn.pl</code></a>) is</p>
+<p>These mode declarations are used to generate clauses with more than two head atoms. In them, <code>&lt;s1&gt;,...,&lt;sn&gt;</code> are schemas, <code>&lt;a1&gt;,...,&lt;an&gt;</code> are atoms such that <code>&lt;ai&gt;</code> is obtained from <span class="math inline">$\verb|&lt;si&gt;|$</span> by replacing placemarkers with variables, <code>&lt;Pi/Ari&gt;</code> are the predicates admitted in the body. <code>&lt;a1&gt;,...,&lt;an&gt;</code> are used to indicate which variables should be shared by the atoms in the head. An example of such a mode declaration (from <code>uwcselearn.pl</code>) is</p>
 <pre><code>modeh(*,
 [advisedby(+person,+person),tempadvisedby(+person,+person)],
 [advisedby(A,B),tempadvisedby(A,B)],
@@ -242,7 +305,7 @@ one_worn:-
   worn(_).
 none_worn:-
   \+ one_worn.</code></pre>
-<p>from <a href="http://cplint.lamping.unife.it/example/mach.pl"><code>mach.pl</code></a> and add the new predicate in a <code>modeb/2</code> fact</p>
+<p>from <a href="http://cplint.lamping.unife.it/example/learning/mach.pl"><code>mach.pl</code></a> and add the new predicate in a <code>modeb/2</code> fact</p>
 <pre><code>modeb(*,not_worn(-comp)).
 modeb(*,none_worn).</code></pre>
 <p>Note that successful negative literals do not instantiate the variables, so if you want a variable appearing in a negative literal to be an output variable you must instantiate before calling the negative literals. The new predicates must also be declared as input</p>
@@ -250,7 +313,7 @@ modeb(*,none_worn).</code></pre>
 input_cw(none_worn/0).</code></pre>
 <p>Lookahead can also be specified with facts of the form</p>
 <pre><code>lookahead(&lt;literal&gt;,&lt;list of literals&gt;).</code></pre>
-<p>In this case when a literal matching <code>&lt;literal&gt;</code> is added to the body of clause during refinement, then also the literals matching <code>&lt;list of literals&gt;</code> will be added. An example of such declaration (from <a href="http://cplint.lamping.unife.it/example/muta.pl"><code>muta.pl</code></a>) is</p>
+<p>In this case when a literal matching <code>&lt;literal&gt;</code> is added to the body of clause during refinement, then also the literals matching <code>&lt;list of literals&gt;</code> will be added. An example of such declaration (from <a href="http://cplint.lamping.unife.it/example/learning/muta.pl"><code>muta.pl</code></a>) is</p>
 <pre><code>lookahead(logp(_),[(_=_))]).</code></pre>
 <p>Note that <code>&lt;list of literals&gt;</code> is copied with <code>copy_term/2</code> before matching, so variables in common between <code>&lt;literal&gt;</code> and <code>&lt;list of literals&gt;</code> may not be in common in the refined clause.</p>
 <p>It is also possible to specify that a literal can only be added together with other literals with facts of the form</p>
@@ -293,8 +356,8 @@ config(2,o2,up).
 in(2,o2,o3).
 triangle(2,o1).
 config(2,o1,up).</code></pre>
-<p>which is contained in the <a href="http://cplint.lamping.unife.it/example/bongardkeys.pl"><code>bongardkeys.pl</code></a> This is also how model <code>2</code> above is stored in SWI-Prolog database. The two modalities, models and keys, can be mixed in the same file.</p>
-<p>Note that you can add background knowledge that is not probabilistic directly to the file writing the clauses taking into account the model argument. For example <a href="http://cplint.lamping.unife.it/example/carc.pl"><code>carc.pl</code></a> contains</p>
+<p>which is contained in the <a href="http://cplint.lamping.unife.it/example/learning/bongardkeys.pl"><code>bongardkeys.pl</code></a> This is also how model <code>2</code> above is stored in SWI-Prolog database. The two modalities, models and keys, can be mixed in the same file.</p>
+<p>Note that you can add background knowledge that is not probabilistic directly to the file writing the clauses taking into account the model argument. For example (<code>carc.pl</code>) contains</p>
 <pre><code>connected(_M,Ring1,Ring2):-
   Ring1 \= Ring2,
   member(A,Ring1),
@@ -303,7 +366,7 @@ config(2,o1,up).</code></pre>
 symbond(Mod,A,B,T):- bond(Mod,A,B,T).
 symbond(Mod,A,B,T):- bond(Mod,B,A,T).</code></pre>
 <p>where the first argument of all the atoms is the model.</p>
-<p>Example <a href="http://cplint.lamping.unife.it/example/registration.pl"><code>registration.pl</code></a> contains for example</p>
+<p>Example <a href="http://cplint.lamping.unife.it/example/learning/registration.pl"><code>registration.pl</code></a> contains for example</p>
 <pre><code>party(M,P):-
   participant(M,_, _, P, _).</code></pre>
 <p>that defines intensionally the target predicate <code>party/1</code>. Here <code>M</code> is the model and <code>participant/4</code> is defined in the interpretations. You can also define intensionally the negative examples with</p>
@@ -315,7 +378,7 @@ fold(test,[490,491,...]).</code></pre>
 <p>As the input file is a Prolog program, you can define intensionally the folds as in</p>
 <pre><code>fold(all,F):-
   findall(I,int(I),F).</code></pre>
-<p><code>fold/2</code> is dynamic so you can also write (<a href="http://cplint.lamping.unife.it/example/registration.pl"><code>registration.pl</code></a>)</p>
+<p><code>fold/2</code> is dynamic so you can also write (<a href="http://cplint.lamping.unife.it/example/learning/registration.pl"><code>registration.pl</code></a>)</p>
 <pre><code>:- fold(all,F),
    sample(4,F,FTr,FTe),
    assert(fold(rand_train,FTr)),
@@ -402,8 +465,11 @@ fold(test,[490,491,...]).</code></pre>
 <div id="ref-RigSwi10-ICLP10-IC">
 <p>7. Fabrizio Riguzzi and Terrance Swift. 2010. Tabling and Answer Subsumption for Reasoning on Logic Programs with Annotated Disjunctions. <em>Technical communications of the international conference on logic programming</em>, Schloss Dagstuhl–Leibniz-Zentrum fuer Informatik, 162–171. <a href="http://doi.org/10.4230/LIPIcs.ICLP.2010.162" class="uri">http://doi.org/10.4230/LIPIcs.ICLP.2010.162</a></p>
 </div>
+<div id="ref-Rig13-FI-IJ">
+<p>8. Fabrizio Riguzzi. 2013. MCINTYRE: A Monte Carlo system for probabilistic logic programming. <em>Fundamenta Informaticae</em> 124, 4: 521–541. <a href="http://doi.org/10.3233/FI-2013-847" class="uri">http://doi.org/10.3233/FI-2013-847</a></p>
+</div>
 <div id="ref-VenVer04-ICLP04-IC">
-<p>8. J. Vennekens, S. Verbaeten, and M. Bruynooghe. 2004. Logic programs with annotated disjunctions. <em>International conference on logic programming</em>, Springer, 195–209.</p>
+<p>9. J. Vennekens, S. Verbaeten, and M. Bruynooghe. 2004. Logic programs with annotated disjunctions. <em>International conference on logic programming</em>, Springer, 195–209.</p>
 </div>
 </div>
 </body>
