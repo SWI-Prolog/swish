@@ -2,7 +2,7 @@
 
 <div class="nb-cell markdown">
 # Machines
-In this section we will see how to learn the parameters given a background and initial program.
+In this section we will see how to learn the parameters given a background knowledge and an initial program.
 
 *Note*: the learning algorithms are available only if you use the Prolog editor.
 
@@ -14,7 +14,9 @@ To execute a learning algorithm the input source must be divided in five parts:
 - language bias information,
 - example interpretations.
 
-He we will define a program step by step and then execute the EMBLEM algorithm which learns the parameters of a given initial LPAD program. For more information of how to perform learning see the manual *Help*-&gt;*Help on cplint* ([PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)).
+Here we will define a program step by step and then execute the algorithm EMBLEM [1,2,3] which learns the parameters of a given initial LPAD program. 
+
+For more information of how to perform learning see the manual *Help*-&gt;*Help on cplint* ([PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)).
 
 ### Preamble
 In order to perform either EMBLEM or SLIPCOVER you need to import the library =slipcover= with the command
@@ -146,7 +148,7 @@ In our example we do not have open world input predicates.
 ### Example interpretations
 The last part of the file contains the data. You can specify data with two modalities: models and keys.
 
-In the models type, you specify an example as a list of Prolog facts initiated by =|begin(model(&lt;name&gt;)).|= and terminated by =|end(model(&lt;name&gt;)).|=.
+In the models type, you specify an example model (or interpretation) as a list of Prolog facts initiated by =|begin(model(&lt;name&gt;)).|= and terminated by =|end(model(&lt;name&gt;)).|=.
 
 Alternatively, with the keys modality, you can directly write the facts and the first argument will be interpreted as a model identifier.
 
@@ -195,12 +197,7 @@ we can define intensionally the folds as in
 </div>
 
 <div class="nb-cell program prolog">
-fold(all_folds,F):-
-findall(I,int(I),F).
-</div>
-
-<div class="nb-cell markdown">
-However, if we define the fold intensionally, we must write those commands after the examples.
+fold(all,F) :- findall(I,int(I),F).
 </div>
 
 <div class="nb-cell markdown">
@@ -397,14 +394,14 @@ fold(all, F) :- findall(I,int(I),F).
 
 <div class="nb-cell markdown">
 ### Execute parameter learning
-To execute the parameter learning algorith EMBLEM, execute the query with the form
+To execute the parameter learning algorithm EMBLEM, we need to execute a query with the form
 ==
 induce_par(&lt;list of folds&gt;,P).
 ==
 where &lt;list of folds&gt; is a list of the folds for training and =P= will contain the
 input program with updated parameters.
 
-In our example we want to learn the parameters by using all the folds. Therefore
+In our example we want to learn the parameters by using a fold which contains all the examples. Therefore
 </div>
 
 <div class="nb-cell query">
@@ -426,8 +423,6 @@ For more information about how to perform learning and EMBLEM see the manual *He
 [2] Elena Bellodi and Fabrizio Riguzzi. EM over binary decision diagrams for probabilistic logic programs. Technical Report CS-2011-01, Dipartimento di Ingegneria, Università di Ferrara, Italy, 2011
 
 [3] Elena Bellodi and Fabrizio Riguzzi. Expectation Maximization over binary decision diagrams for probabilistic logic programs. Intel. Data Anal., 16(6), 2012.
-
-[4] Elena Bellodi and Fabrizio Riguzzi. Structure learning of probabilistic logic programs by searching the clause space. Theory and Practice of Logic Programming, 2013.
 
 --
 [Back to Tutorial](tutorial/tutorial.swinb)
