@@ -18,7 +18,34 @@ To execute a learning algorithm the input source must be divided in five parts:
 - example interpretations
 
 ### Preamble
-In order to perform either EMBLEM or SLIPCOVER you need to import the "slipcover" library
+In order to perform either EMBLEM or SLIPCOVER you need to import the library =slipcover= with the command
+</div>
+
+<div class="nb-cell program prolog">
+:- use_module(library(slipcover)).
+</div>
+
+<div class="nb-cell markdown">
+After that you have to initialize =slipcover= with the command
+</div>
+
+<div class="nb-cell program prolog">
+:- sc.
+</div>
+
+<div class="nb-cell markdown">
+At this point you can start setting parameters for SLIPCOVER with the predicate set_sc/2. For the complete list of the available parameters see the manual *Help*->*Help on cplint*.
+
+### Background knowledge
+Now you can specify the background knowledge with a fact of the form
+==
+bg(<list of terms representing clauses>).
+== 
+Alternatively, you can specify a set of clauses by including them in a section between the goals =|
+</div>
+
+<div class="nb-cell markdown">
+For more information see the manual *Help*->*Help on cplint* https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf 
 </div>
 
 <div class="nb-cell markdown">

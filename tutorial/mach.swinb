@@ -398,10 +398,10 @@ To execute the parameter learning algorithm EMBLEM, we need to execute a query w
 ==
 induce_par(&lt;list of folds&gt;,P).
 ==
-where &lt;list of folds&gt; is a list of the folds for training and =P= will contain the
+where =|&lt;list of folds&gt;|= is a list of the folds for training and =P= will contain the
 input program with updated parameters.
 
-In our example we want to learn the parameters by using a fold which contains all the examples. Therefore
+In our example we want to learn the parameters by using the fold which contains all the examples (=all=). Therefore
 </div>
 
 <div class="nb-cell query">
