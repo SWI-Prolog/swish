@@ -127,7 +127,7 @@ female(cathy).</code></pre>
 <p>Aggregate predicates on probabilistic subgoals are not implemented due to their high computational cost (if the aggregation is over <span class="math inline"><em>n</em></span> atoms, the possible values of the aggregation are potentially <span class="math inline">2<sup><em>n</em></sup></span>).</p>
 <p>In <code>mcintyre</code> you can query database clauses in the body of probabilistic clauses without any special syntax. You can also use <code>findall/3</code>.</p>
 <p><code>cplint</code> on SWISH allows two types of programs: LPAD and Prolog. In the first, you create a new LPAD in the editor, in the latter a Prolog program.</p>
-<p>In LPADs, you write in the editor the program without the library import and the <code>:- cplint</code> and <code>:- end_cplint.</code> compiler directives. <code>pita</code> is used for inference.</p>
+<p>In LPADs, you write in the editor the program without the library import and the compiler directives. <code>pita</code> is used for inference.</p>
 <p>You ask queries by writing the atom of which you want to compute the probability. In the coin example, the probability of <code>heads(coin)</code> can be obtained with the</p>
 <pre><code>?- heads(coin).</code></pre>
 <p>In Prolog programs, you have to enter the program above (<code>coin.pl</code>) and ask the probability of an atom using <code>pita</code> using the predicate <code>prob/2</code> as in</p>
@@ -383,7 +383,7 @@ fold(test,[490,491,...]).</code></pre>
    sample(4,F,FTr,FTe),
    assert(fold(rand_train,FTr)),
    assert(fold(rand_test,FTe)).</code></pre>
-<p>which however must be inserted after the input interpretations otherwise the facts for <code>int/1</code> will not be available and the fold <code>all</code> would be empty. This command uses <code>sample(N,List,Sampled,Rest)</code> exported from <code>slipcover</code> that samples <code>N</code> elements from <code>List</code> and returns the sampled elements in <code>Sampled</code> and the rest in <code>Rest</code>. If <code>Lilst</code> has <code>N</code> elements or less, <code>Sampled</code> is equal to <code>List</code> and <code>Rest</code> is empty.</p>
+<p>which however must be inserted after the input interpretations otherwise the facts for <code>int/1</code> will not be available and the fold <code>all</code> would be empty. This command uses <code>sample(N,List,Sampled,Rest)</code> exported from <code>slipcover</code> that samples <code>N</code> elements from <code>List</code> and returns the sampled elements in <code>Sampled</code> and the rest in <code>Rest</code>. If <code>List</code> has <code>N</code> elements or less, <code>Sampled</code> is equal to <code>List</code> and <code>Rest</code> is empty.</p>
 <h2 id="commands">Commands</h2>
 <h3 id="parameter-learning">Parameter Learning</h3>
 <p>To execute EMBLEM, prepare an input file in the editor panel as indicated above and call</p>
