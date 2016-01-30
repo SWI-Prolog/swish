@@ -93,6 +93,22 @@ This notebook gives an overview of example programs for inference.
   From
   Poole, David. _The independent choice logic and beyond._ Probabilistic
   inductive logic programming. Springer Berlin Heidelberg, 2008. 222-243.
+  - Probabilistic Left-Corner Grammar ([plcg.pl](example/inference/plcg.pl)) 
+  A grammar using the rules of a
+  context free grammar as a PCFG  but using a shift-reduce parser with 
+  probabilities assigned to shift-reduce operations. Version with a left
+  recursive grammar with MCINTYRE for inference.
+  From Sato, Taisuke, Yoshitaka Kameya, and Kenichi Kurihara. 
+  _Variational Bayes via propositionalized probability computation in PRISM._ 
+  Annals of Mathematics and Artificial Intelligence 54.1-3 (2008): 135-158.
+  - Prefix parse for a Probabilistic Left-Corner Grammar 
+  ([pre_plcg.pl](example/inference/pre_plcg.pl)) From
+  T. Sato, P. Mey, _Tabling for infinite probability computation_, in:
+  Intnational Confence on Logic Programming, Vol. 17 of LIPIcs, 2012,
+  pp.  348-358.
+  T. Sato, P. Mey, _Infinite probability computation by cyclic explanation
+  graphs_, Theory and Practice of Logic Programming 14 (2014) 909-937.
+  doi:10.1017/S1471068413000562.
 
 </div>
 </div>
