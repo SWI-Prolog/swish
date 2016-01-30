@@ -14,6 +14,7 @@
 <div id="TOC">
 <ul>
 <li><a href="#syn">Syntax</a></li>
+<li><a href="#semantics">Semantics</a></li>
 <li><a href="#inf">Inference</a><ul>
 <li><a href="#parameters">Parameters</a></li>
 </ul></li>
@@ -36,7 +37,7 @@
 <pre><code>h1 :- b1,...,bm,\+ c1,...,\+ cl.</code></pre>
 <p>stands for</p>
 <pre><code>h1:1 :- b1,...,bm,\+ c1,...,\+ cl.</code></pre>
-<p>The coin example of <span class="citation">[9]</span> is represented as (file <a href="http://cplint.lamping.unife.it/example/inference/coin.cpl"><code>coin.cpl</code></a>)</p>
+<p>The coin example of <span class="citation">[12]</span> is represented as (file <a href="http://cplint.lamping.unife.it/example/inference/coin.cpl"><code>coin.cpl</code></a>)</p>
 <pre><code>heads(Coin):1/2 ; tails(Coin):1/2 :- 
   toss(Coin),\+biased(Coin).
 
@@ -69,8 +70,11 @@ draw_red(R, G):-
   Prob is R/(R + G),
   red(Prob).</code></pre>
 <p>Variables in probabilistic annotations must be ground when resolution reaches the end of the body, otherwise an exception is raised.</p>
+<h1 id="semantics">Semantics</h1>
+<p>The semantics of LPADs for the case of programs without functions symbols can be given as follows. An LPAD defines a probability distribution over normal logic programs called <em>worlds</em>. A world is obtained from an LPAD by first grounding it and, by selecting a single head atom for each ground clause and by including in the world the clause with the selected head atom and the body. The probability of a world is the product of the probabilities associated to the heads selected. The probability of a ground atom (the query) is given by the sum of the probabilities of the worlds where the query is true.</p>
+<p>If the LPAD contains function symbols, the definition is more complex, see <span class="citation">[7,10,11]</span>.</p>
 <h1 id="inf">Inference</h1>
-<p><code>cplint</code> answers queries using the module <code>pita</code> or <code>mcintyre</code>. The first performs the program transformation technique of <span class="citation">[7]</span>. Differently from that work, techniques alternative to tabling and answer subsumption are used. The latter performs approximate inference by sampling using a different program transformation technique and is described in <span class="citation">[8]</span>.</p>
+<p><code>cplint</code> answers queries using the module <code>pita</code> or <code>mcintyre</code>. The first performs the program transformation technique of <span class="citation">[8]</span>. Differently from that work, techniques alternative to tabling and answer subsumption are used. The latter performs approximate inference by sampling using a different program transformation technique and is described in <span class="citation">[9]</span>.</p>
 <p>For answering queries, you have to prepare a Prolog file where you first load the inference module (for example <code>pita</code>), initialize it with a directive (for example <code>:- pita</code>) and then enclose the LPAD clauses in <code>:-begin_lpad.</code> and <code>:-end_lpad.</code> For example, the coin program above can be stored in <a href="http://cplint.lamping.unife.it/example/inference/coin.pl"><code>coin.pl</code></a> for performing inference with <code>pita</code> as follows</p>
 <pre><code>:- use_module(library(pita)).
 :- pita.
@@ -462,14 +466,23 @@ fold(test,[490,491,...]).</code></pre>
 <div id="ref-RaeLae95-ALT95">
 <p>6. L. De Raedt and W. Van Laer. 1995. Inductive constraint logic. <em>Proceedings of the 6th conference on algorithmic learning theory (aLT 1995)</em>, Springer, 80–94.</p>
 </div>
+<div id="ref-DBLP:journals/ai/Poole97">
+<p>7. David Poole. 1997. The independent choice logic for modelling multiple agents under uncertainty. <em>Artificial Intelligence</em> 94, 1-2: 7–56.</p>
+</div>
 <div id="ref-RigSwi10-ICLP10-IC">
-<p>7. Fabrizio Riguzzi and Terrance Swift. 2010. Tabling and Answer Subsumption for Reasoning on Logic Programs with Annotated Disjunctions. <em>Technical communications of the international conference on logic programming</em>, Schloss Dagstuhl–Leibniz-Zentrum fuer Informatik, 162–171. <a href="http://doi.org/10.4230/LIPIcs.ICLP.2010.162" class="uri">http://doi.org/10.4230/LIPIcs.ICLP.2010.162</a></p>
+<p>8. Fabrizio Riguzzi and Terrance Swift. 2010. Tabling and Answer Subsumption for Reasoning on Logic Programs with Annotated Disjunctions. <em>Technical communications of the international conference on logic programming</em>, Schloss Dagstuhl–Leibniz-Zentrum fuer Informatik, 162–171. <a href="http://doi.org/10.4230/LIPIcs.ICLP.2010.162" class="uri">http://doi.org/10.4230/LIPIcs.ICLP.2010.162</a></p>
 </div>
 <div id="ref-Rig13-FI-IJ">
-<p>8. Fabrizio Riguzzi. 2013. MCINTYRE: A Monte Carlo system for probabilistic logic programming. <em>Fundamenta Informaticae</em> 124, 4: 521–541. <a href="http://doi.org/10.3233/FI-2013-847" class="uri">http://doi.org/10.3233/FI-2013-847</a></p>
+<p>9. Fabrizio Riguzzi. 2013. MCINTYRE: A Monte Carlo system for probabilistic logic programming. <em>Fundamenta Informaticae</em> 124, 4: 521–541. <a href="http://doi.org/10.3233/FI-2013-847" class="uri">http://doi.org/10.3233/FI-2013-847</a></p>
+</div>
+<div id="ref-Rig15-PLP-IW">
+<p>10. Fabrizio Riguzzi. 2015. The distribution semantics is well-defined for all normal programs. <em>Proceedings of the 2nd international workshop on probabilistic logic programming (pLP)</em>, Sun SITE Central Europe, 69–84. Retrieved from <a href="http://ceur-ws.org/Vol-1413/#paper-06" class="uri">http://ceur-ws.org/Vol-1413/#paper-06</a></p>
+</div>
+<div id="ref-DBLP:journals/jair/SatoK01">
+<p>11. Taisuke Sato and Yoshitaka Kameya. 2001. Parameter learning of logic programs for symbolic-statistical modeling. <em>J. Artif. Intell. Res.</em> 15: 391–454.</p>
 </div>
 <div id="ref-VenVer04-ICLP04-IC">
-<p>9. J. Vennekens, S. Verbaeten, and M. Bruynooghe. 2004. Logic programs with annotated disjunctions. <em>International conference on logic programming</em>, Springer, 195–209.</p>
+<p>12. J. Vennekens, S. Verbaeten, and M. Bruynooghe. 2004. Logic programs with annotated disjunctions. <em>International conference on logic programming</em>, Springer, 195–209.</p>
 </div>
 </div>
 </body>
