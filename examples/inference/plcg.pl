@@ -80,7 +80,7 @@ terminal(b).
 
 /** <examples>
 
-?- mc_prob(plcg([a,b]),P). what is the probability of sentence [a,b]?
+?- mc_prob(plc([a,b]),P). what is the probability of sentence [a,b]?
 % expecte result ~  0.031
 
 
