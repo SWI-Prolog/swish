@@ -80,8 +80,19 @@ This notebook gives an overview of example programs for inference.
   graphs_, Theory and Practice of Logic Programming 14 (2014) 909-937.
   doi:10.1017/S1471068413000562.
   - Querying a deterministic database ([testdb.pl](example/inference/testdb.pl))
-  Deterministic predicates can be defined outside =begin/end_lpad= and 
+  Deterministic predicates can be defined outside `:-begin/end_lpad.` and 
   queried in the body of probabilistic clauses.
-</div>
+  - Existence uncertainty/unknown objects. 
+  The programs models a domain where the number of objects is uncertain.
+  In particular, the number of objects follows a geometric distribution
+  with parameter 0.3.
+  We can ask what is the probability that the object number n exists.
+  The goal has an infinite number of explanations so we have to either
+  set a depth bound ([var_objdb.pl](example/inference/var_objdb.pl)) or
+  use approximate inference ([var_obj.pl](example/inference/var_obj.pl)).
+  From
+  Poole, David. _The independent choice logic and beyond._ Probabilistic
+  inductive logic programming. Springer Berlin Heidelberg, 2008. 222-243.
 
+</div>
 </div>

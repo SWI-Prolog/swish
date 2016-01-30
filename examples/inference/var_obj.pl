@@ -15,6 +15,7 @@ inductive logic programming. Springer Berlin Heidelberg, 2008. 222-243.
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
 :- endif.
+:- style_check(-singleton).
 
 :- mc.
 
