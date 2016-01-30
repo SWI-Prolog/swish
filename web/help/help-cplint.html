@@ -128,7 +128,7 @@ male(david).
 female(anna).
 female(elen).
 female(cathy).</code></pre>
-<p>Aggregate predicates on probabilistic subgoals are not implemented due to their high computational cost (if the aggregation is over <span class="math inline"><em>n</em></span> atoms, the possible values of the aggregation are potentially <span class="math inline">2<sup><em>n</em></sup></span>).</p>
+<p>Aggregate predicates on probabilistic subgoals are not implemented due to their high computational cost (if the aggregation is over <span class="math inline"><em>n</em></span> atoms, the values of the aggregation are potentially <span class="math inline">2<sup><em>n</em></sup></span>).</p>
 <p>In <code>mcintyre</code> you can query database clauses in the body of probabilistic clauses without any special syntax. You can also use <code>findall/3</code>.</p>
 <p><code>cplint</code> on SWISH allows two types of programs: LPAD and Prolog. In the first, you create a new LPAD in the editor, in the latter a Prolog program.</p>
 <p>In LPADs, you write in the editor the program without the library import and the compiler directives. <code>pita</code> is used for inference.</p>
@@ -169,7 +169,7 @@ female(cathy).</code></pre>
 <li><p><code>min_error</code>: minimal width of the binomial proportion confidence interval for the probability of the query. When the confidence interval for the probability of the query is below <code>min_error</code>, the computation stops. Default value <code>0.01</code>.</p></li>
 <li><p><code>k</code>: the number of samples to take before checking whether the the binomial proportion confidence interval is below <code>min_error</code>. Default value <code>1000</code>. <code>max_samples</code>: the maximum number of samples to take. This is used when the probability of the query is very close to 0 or 1. In fact <code>mcintyre</code> also checks for the validity of the the binomial proportion confidence interval: if less than 5 failures or successes are sampled, even if the width of the confidence interval is less than <code>min_error</code>, the computation continues. This would lead to non-termination in cases where the probability is 0 or 1. <code>max_samples</code> ensures termination. Default value <code>10e4</code>.</p></li>
 </ul>
-<p>The example <a href="http://cplint.lamping.unife.it/example/inference/markov_chain.pl"><code>markov_chain.pl</code></a> shows that <code>mcintyre</code> can perform inference in presence of an infinite number of explanations for the goal. Differently from <code>pita</code>, no depth bound is necessary, as the probability of selecting the infinite computation branch is 0.</p>
+<p>The example <a href="http://cplint.lamping.unife.it/example/inference/markov_chain.pl"><code>markov_chain.pl</code></a> shows that <code>mcintyre</code> can perform inference in presence of an infinite number of explanations for the goal. Differently from <code>pita</code>, no depth bound is necessary, as the probability of selecting the infinite computation branch is 0. However, also <code>mcintyre</code> may not terminate if loops not involving probabilistic predicates are present.</p>
 <h1 id="learning">Learning</h1>
 <p>The following learning algorithms are available:</p>
 <ul>
