@@ -15,7 +15,6 @@ inductive logic programming. Springer Berlin Heidelberg, 2008. 222-243.
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
 :- endif.
-:- style_check(-singleton).
 
 :- mc.
 
@@ -28,7 +27,7 @@ numObj(N, N2) :-
   N1 is N + 1,
   numObj(N1, N2).
 
-more(_N):0.3.
+more(_):0.3.
 
 obj(I):-
  numObj(0,N),
