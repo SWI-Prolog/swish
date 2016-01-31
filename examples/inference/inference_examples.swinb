@@ -73,15 +73,42 @@ This notebook gives an overview of example programs for inference.
   The program computes the probability that a string is
   a prefix of a string genated by the grammar.
   From
-  T. Sato, P. Mey, _Tabling for infinite probability computation_, in:
+  T. Sato, P. Meyer, _Tabling for infinite probability computation_, in:
   Intnational Confence on Logic Programming, Vol. 17 of LIPIcs, 2012,
   pp.  348-358.
-  T. Sato, P. Mey, _Infinite probability computation by cyclic explanation
+  T. Sato, P. Meyer, _Infinite probability computation by cyclic explanation
   graphs_, Theory and Practice of Logic Programming 14 (2014) 909-937.
   doi:10.1017/S1471068413000562.
   - Querying a deterministic database ([testdb.pl](example/inference/testdb.pl))
-  Deterministic predicates can be defined outside =:-begin/end_lpad.= and 
+  Deterministic predicates can be defined outside `:-begin/end_lpad.` and 
   queried in the body of probabilistic clauses.
-</div>
+  - Existence uncertainty/unknown objects. 
+  The programs models a domain where the number of objects is uncertain.
+  In particular, the number of objects follows a geometric distribution
+  with parameter 0.3.
+  We can ask what is the probability that the object number n exists.
+  The goal has an infinite number of explanations so we have to either
+  set a depth bound ([var_objdb.pl](example/inference/var_objdb.pl)) or
+  use approximate inference ([var_obj.pl](example/inference/var_obj.pl)).
+  From
+  Poole, David. _The independent choice logic and beyond._ Probabilistic
+  inductive logic programming. Springer Berlin Heidelberg, 2008. 222-243.
+  - Probabilistic Left-Corner Grammar ([plcg.pl](example/inference/plcg.pl)) 
+  A grammar using the rules of a
+  context free grammar as a PCFG  but using a shift-reduce parser with 
+  probabilities assigned to shift-reduce operations. Version with a left
+  recursive grammar with MCINTYRE for inference.
+  From Sato, Taisuke, Yoshitaka Kameya, and Kenichi Kurihara. 
+  _Variational Bayes via propositionalized probability computation in PRISM._ 
+  Annals of Mathematics and Artificial Intelligence 54.1-3 (2008): 135-158.
+  - Prefix parse for a Probabilistic Left-Corner Grammar 
+  ([pre_plcg.pl](example/inference/pre_plcg.pl)) From
+  T. Sato, P. Meyer, _Tabling for infinite probability computation_, in:
+  Intnational Confence on Logic Programming, Vol. 17 of LIPIcs, 2012,
+  pp.  348-358.
+  T. Sato, P. Meyer, _Infinite probability computation by cyclic explanation
+  graphs_, Theory and Practice of Logic Programming 14 (2014) 909-937.
+  doi:10.1017/S1471068413000562.
 
+</div>
 </div>
