@@ -40,7 +40,10 @@ obj(I):-
 /** <examples>
 
 ?- mc_prob(obj(5),P). what is the probability that object 5 exists?
-% expecte result ~ 1.
+% expecte result ~ 0.002666
+?- mc_prob_bar(obj(5),P). what is the probability that object 5 exists?
+% expecte result ~ 0.002666
+
 
 
 */
