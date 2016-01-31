@@ -214,6 +214,10 @@ define([ "cm/lib/codemirror",
 	elem.on("preference", function(ev, pref) {
 	  elem.prologEditor('preference', pref);
 	});
+	elem.on("print", function() {
+	  if ( data.role != "query" )
+	    elem.prologEditor('print');
+	});
 
 	if ( options.save ) {
 	  //storage.typeName = options.typeName||"program";

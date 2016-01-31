@@ -39,6 +39,10 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 	elem.on("error", function(ev, data) { /* still needed? */
 	  elem.swishModal('show', data);
 	});
+	elem.on("alert", function(ev, str) {
+	  var icon = "<span class='glyphicon glyphicon-warning-sign'></span>";
+	  elem.swishModal('show', {title: icon, body:str});
+	});
 	elem.on("ajaxError", function(ev, jqXHR) {
 	  elem.swishModal('showAjaxError', jqXHR);
 	});
@@ -313,6 +317,9 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
     },
     feedback: function(options) {
       $(".swish-event-receiver").trigger("feedback", options);
+    },
+    alert: function(options) {
+      $(".swish-event-receiver").trigger("alert", options);
     }
   };
 });

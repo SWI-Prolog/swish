@@ -28,9 +28,9 @@
 */
 
 :- module(swish_config,
-	  [ swish_reply_config/1,	% +Request
+	  [ swish_reply_config/2,	% +Request, +Options
 	    swish_config/2,		% ?Type, ?Config
-	    swish_config_hash/1		% -HASH
+	    swish_config_hash/2		% -HASH, +Options
 	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
@@ -38,6 +38,7 @@
 
 :- multifile
 	config/2,			% ?Key, ?Value
+	config/3,			% ?Key, ?Value, +Options
 	source_alias/2,			% ?Alias, ?Options
 	authenticate/2.			% +Request, -User
 
@@ -48,31 +49,31 @@
 		 *	       CONFIG		*
 		 *******************************/
 
-%%	swish_reply_config(+Request) is semidet.
+%%	swish_reply_config(+Request, +Options) is semidet.
 %
 %	Emit a configuration object to the client if the client requests
 %	for '.../swish_config.json', regardless  of   the  path  prefix.
 
-swish_reply_config(Request) :-
+swish_reply_config(Request, Options) :-
 	option(path(Path), Request),
 	file_base_name(Path, 'swish_config.json'),
-	json_config(JSON),
+	json_config(JSON, Options),
 	reply_json(JSON).
 
-%%	swish_config_hash(-Hash) is det.
+%%	swish_config_hash(-Hash, +Options) is det.
 %
 %	True if Hash is the SHA1 of the SWISH config.
 
-swish_config_hash(Hash) :-
-	json_config(Config),
+swish_config_hash(Hash, Options) :-
+	json_config(Config, Options),
 	variant_sha1(Config, Hash).
 
 json_config(json{ http: json{ locations:JSON
 			    },
 		  swish: SWISHConfig
-		}) :-
+		}, Options) :-
 	http_locations(JSON),
-	swish_config(SWISHConfig).
+	swish_config_dict(SWISHConfig, Options).
 
 http_locations(JSON) :-
 	findall(ID-Path,
@@ -101,12 +102,12 @@ same_ids([Id-Path|T0], Id, T, [Path|TP]) :- !,
 same_ids(T, _, T, []).
 
 
-%%	swish_config(-Config:dict) is det.
+%%	swish_config_dict(-Config:dict, +Options) is det.
 %
 %	Obtain name-value pairs from swish_config:config/2
 
-swish_config(Config) :-
-	findall(Key-Value, config(Key, Value), Pairs),
+swish_config_dict(Config, Options) :-
+	findall(Key-Value, swish_config(Key, Value, Options), Pairs),
 	dict_pairs(Config, json, Pairs).
 
 %%	config(-Key, -Value) is nondet.
@@ -116,6 +117,11 @@ swish_config(Config) :-
 %	object (see =web/js/config.js=)
 
 swish_config(Key, Value) :-
+	swish_config(Key, Value, []).
+
+swish_config(Key, Value, Options) :-
+	config(Key, Value, Options).
+swish_config(Key, Value, _) :-
 	config(Key, Value).
 
 %%	source_alias(?Alias, ?Options) is nondet.
