@@ -3,7 +3,7 @@
 <div class="nb-cell markdown">
 # Coin
 
-This example shows the basic concepts of _Logic Programs with Annotated Disjunctions_ and how to use the tool *cplint on SWISH* to perform inference.
+This example shows the basic concepts of _Logic Programs with Annotated Disjunctions_ and how to use the tool *cplint on SWISH* to perform exact inference or simply inference.
 Let us suppose that we have one coin that we are not sure if it is biased. Now, if we toss the coin, what is the probability that it will land on head?
 
 ### Writing the program step by step
@@ -56,7 +56,7 @@ Before starting write our program, we need to choose an editor between "Prolog" 
 In this section we will see both editors (subsections *Full program with Prolog editor* and *Full program with LPAD editor*). However in the next examples of the tutorial we will use only the "Prolog" editor.
 
 ### Full program with the Prolog editor {#prolog_editor}
-The program is almost complete, what we need now is to load the library =pita= in order to perform inference. Therefore we import this library with the built-in predicate use_module/1. So we need to write
+The program is almost complete, what we need now is to load the library =pita= in order to perform exact inference (if we want to perform approximate inference, instead, we need to load =mcintyre=, see [Coin variant](tutorial/inference/coinmc.swinb). Therefore we import this library with the built-in predicate use_module/1. So we need to write
 </div>
 
 <div class="nb-cell program prolog">
@@ -109,6 +109,7 @@ prob(heads(coin),P).
 <div class="nb-cell markdown">
 To try this example click on the triangle icon next to the query. We will see that the coin will land on heads with 51% probability. In fact _|P(heads) = P(heads, fair) + P(heads, biased) = P(heads|fair)P(fair) + P(heads|biased)P(biased) = 0.5*0.9 + 0.6*0.1 = 0.51|_.
 
+--
 Complete example: [coin.pl](example/inference/coin.pl)
 
 --
@@ -141,6 +142,7 @@ heads(coin).
 </div>
 
 <div class="nb-cell markdown">
+--
 Complete example with the LPAD editor: [coin.cpl](example/inference/coin.cpl)
 
 --

@@ -1,0 +1,68 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Markov Chain
+
+In this example we want to know what is the likelihood that on an execution of the chain from a start state 's', a final state 't' will be reached? 
+The chains may be infinite so the query may have an infinite number of explanations and if we want exact inference and use PITA the inference may not terminate. To ensure termination, we have two solutions. We fix a bound on the depth of the derivations of PITA can be imposed by setting the parameters
+==
+:- set_pita(depth_bound,true).
+:- set_pita(depth,&lt;level of depth (integer)&gt;).
+==
+(see [exact inference variant of this example](markov_chaindb.pl)). Alternatively, MCINTYRE can be used. 
+
+In this example we will use the latter approach.
+
+## Full program
+Below the full program of this example is shown
+</div>
+
+<div class="nb-cell program prolog">
+% load the library 'mcintyre' to perform approximate inference
+:- use_module(library(mcintyre)).
+% load the renderer 'c3' for graphical results
+:- use_rendering(c3).
+% initialize the library 'mcintyre'
+:- mc.
+% to be written before the program
+:- begin_lpad.
+reach(S, I, T) :-
+  trans(S, I, U),
+  reach(U, next(I), T).
+
+reach(S, _, S).
+trans(s0,S,s0):0.5; trans(s0,S,s1):0.3; trans(s0,S,s2):0.2.
+trans(s1,S,s1):0.4; trans(s1,S,s3):0.1; trans(s1,S,s4):0.5.
+trans(s4,_,s3).
+% to be written after the program
+:- end_lpad.
+</div>
+
+<div class="nb-cell markdown">
+We ask for the probability that starting at state 's0' at instance 0, state 's3' is reachable
+</div>
+
+<div class="nb-cell query">
+mc_prob(reach(s0,0,s3),P).
+</div>
+
+<div class="nb-cell markdown">
+if we want to see the probability histogram
+</div>
+
+<div class="nb-cell query">
+mc_prob_bar(reach(s0,0,s3),P).
+</div>
+
+<div class="nb-cell markdown">
+--
+Complete example: [markov_chain.pl](example/inference/markov_chain.pl)
+
+--
+- Based on: Gorlin, Andrey, C. R. Ramakrishnan, and Scott A. Smolka. _Model checking with probabilistic tabled logic programming_. Theory and Practice of Logic Programming 12.4-5 (2012). 
+
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
+</div>
+
+</div>

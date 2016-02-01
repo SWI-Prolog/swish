@@ -116,6 +116,7 @@ prob_bar(on(2,1), P).
 </div>
 
 <div class="nb-cell markdown">
+--
 Complete example: [dice.pl](example/inference/dice.pl)
 
 --

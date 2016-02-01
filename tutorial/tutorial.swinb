@@ -4,7 +4,7 @@
 # Tutorial
 - *Theoretical preliminaries*
   - [Logic Program with Annotated Disjunctions (LPAD)](tutorial/lpad.swinb)
-- *Basic examples with inference*
+- *Basic examples with exact inference*
   - [Coin](tutorial/inference/coin.swinb). Simple inference.
   - [Dice](tutorial/inference/dice.swinb). Inference with graphical results.
   - [Epidemic](tutorial/inference/epidemic.swinb). LPAD with implicit _null_ atom in the clauses, noisy or between rule groundings.

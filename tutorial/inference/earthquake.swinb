@@ -51,6 +51,7 @@ prob_bar(earthquake(stromboli,moderate), P).
 <div class="nb-cell markdown">
 This example shows that conclusions from different rules are combined with a noisy or rule: the probability of a moderate earthquake at Stromboli is obtained by combining with noisy or the grounding of the first rule and the grounding of the second one, where the only variable is replaced by Stromboli. So the probability of an earthquake at Stromboli is 1-(1-0.5)*(1-0.6)=0.8. *Note:* if you submit the query the result will be 0.7999999999999998, this is due to numerical approximations performed during the computation.
 
+--
 Complete example: [earthquake.pl](example/inference/earthquake.pl)
 
 --

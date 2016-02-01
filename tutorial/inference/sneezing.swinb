@@ -27,7 +27,6 @@ strong_sneezing(X) : 0.2 ; moderate_sneezing(X) : 0.6 :- hay_fever(X).
 % Facts 
 flu(bob).
 hay_fever(bob).
-
 % to be written after the program
 :- end_lpad.
 </div>
@@ -49,6 +48,7 @@ prob_bar(strong_sneezing(bob), P).
 </div>
 
 <div class="nb-cell markdown">
+--
 Complete example: [sneezing.pl](example/inference/sneezing.pl)
 
 --
