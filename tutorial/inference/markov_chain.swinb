@@ -11,7 +11,7 @@ The chains may be infinite so the query may have an infinite number of explanati
 ==
 (see [exact inference variant of this example](markov_chaindb.pl)). Alternatively, MCINTYRE can be used. 
 
-In this example we will use the latter approach.
+Here we will use the latter approach.
 
 ## Full program
 Below the full program of this example is shown
