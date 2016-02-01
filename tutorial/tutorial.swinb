@@ -5,11 +5,14 @@
 - *Theoretical preliminaries*
   - [Logic Program with Annotated Disjunctions (LPAD)](tutorial/lpad.swinb)
 - *Basic examples with inference*
-  - [Coin](tutorial/coin.swinb). Simple inference.
-  - [Dice](tutorial/dice.swinb). Inference with graphical results.
-  - [Epidemic](tutorial/epidemic.swinb). LPAD with implicit _null_ atom in the clauses, noisy or between rule groundings.
-  - [Earthquake](tutorial/earthquake.swinb) noisy or between different rules.
-  - [Medical symptoms](tutorial/sneezing.swinb) noisy or between different rules.
+  - [Coin](tutorial/inference/coin.swinb). Simple inference.
+  - [Dice](tutorial/inference/dice.swinb). Inference with graphical results.
+  - [Epidemic](tutorial/inference/epidemic.swinb). LPAD with implicit _null_ atom in the clauses, noisy or between rule groundings.
+  - [Earthquake](tutorial/inference/earthquake.swinb) noisy or between different rules.
+  - [Medical symptoms](tutorial/inference/sneezing.swinb) noisy or between different rules.
+- *Examples with approximate inference (Monte Carlo sampling)*
+  - [Coin (variant)](tutorial/inference/coinmc.swinb). Approximate inference variant of [Coin](tutorial/inference/coin.swinb).
+  - [Markov chain](tutorial/inference/markov_chain.swinb) Approximate inference.
 - *Examples with structure and parameter learning*
   - [Machines](tutorial/mach.swinb). Parameter learning.
   - [Registration](tutorial/registration.swinb). Structure learning.
