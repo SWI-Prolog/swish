@@ -48,19 +48,20 @@ The full program of the example is show below.
 <div class="nb-cell program prolog">
 % load the 'pita' library to perform inference
 :- use_module(library(pita)).
+:- pita.
 % allows to create graphical results
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
 :- endif.
 % to be written before the program
-:- cplint.
+:- begin_lpad.
 
 epidemic : 0.6; pandemic : 0.3 :- flu(_), cold.
 cold : 0.7.
 flu(david).
 flu(robert).
 % to be written after the program
-:- end_cplint.
+:- end_lpad.
 </div>
 
 <div class="nb-cell markdown">
@@ -82,10 +83,10 @@ prob_bar(epidemic, P).
 <div class="nb-cell markdown">
 This example shows that conclusions from different groundings of a rule are combined with a noisy or rule: the probability of an epidemic is obtained by combining with noisy or the conclusions of the two groundings of the rule where the only variable is replaced by David or Robert. So the probability of an epidemic if =cold= is true is 0.6+0.6-0.6*0.6=84. Since =cold= is also uncertain, the overall probability is 0.84*0.7=0.588.
 
-Complete example: [epidemic.pl](example/epidemic.pl)
+Complete example: [epidemic.pl](example/inference/epidemic.pl)
 
 --
-Complete example with the LPAD editor: [epidemic.cpl](example/epidemic.cpl)
+Complete example with the LPAD editor: [epidemic.cpl](example/inference/epidemic.cpl)
 
 --
 - Based on: E. Bellodi and F. Riguzzi. _Expectation Maximization over binary decision diagrams for probabilistic logic programs_. Intelligent Data Analysis, 17(2):343-363, 2013.

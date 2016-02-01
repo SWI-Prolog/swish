@@ -34,8 +34,9 @@ Below we can see the full LPAD of the example.
 <div class="nb-cell program prolog">
 % Load 'pita' library to perform inference
 :- use_module(library(pita)).
+:- pita.
 % to be written before the program
-:- cplint.
+:- begin_lpad.
 % T = 0
 on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;
 on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
@@ -45,7 +46,7 @@ on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
   X1 is X-1,X1&gt;=0,on(X1,_),
   \+ on(X1,6).
 % to be written after the program
-:- end_cplint.
+:- end_lpad.
 </div>
 
 <div class="nb-cell markdown">
@@ -74,13 +75,11 @@ prob_bar(:Atom,-P).
 ==
 Where =Atom= is the query that we want to ask, while =P= is the variable that will contain a bar chart with two bars, one for the probability of the atom of being true and one for the probability of the atom of being false (1- the first). It provides a graphical representation of the difference between the two values.
 
-However, before submitting this kind of query, we need to add these 3 lines before the =|:- cplint.|= goal.
+However, before submitting this kind of query, we need to specify that we want to use the renderer =c3= by adding the following line before the =|:- begin_lpad.|= goal
 </div>
 
 <div class="nb-cell program prolog">
-:- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
-:- endif.
 </div>
 
 <div class="nb-cell markdown">
@@ -90,13 +89,11 @@ Therefore our program becomes
 <div class="nb-cell program prolog">
 % load the 'pita' library to perform inference
 :- use_module(library(pita)).
+:- pita.
 % load the graphical renderer
-:- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
-:- endif.
 % to be written before the program
-:- cplint.
-
+:- begin_lpad.
 % Program
 on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;
 on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
@@ -107,7 +104,7 @@ on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
   \+ on(X1,6).
 
 % to be written after the program
-:- end_cplint.
+:- end_lpad.
 </div>
 
 <div class="nb-cell markdown">
@@ -119,10 +116,10 @@ prob_bar(on(2,1), P).
 </div>
 
 <div class="nb-cell markdown">
-Complete example: [dice.pl](example/dice.pl)
+Complete example: [dice.pl](example/inference/dice.pl)
 
 --
-Complete example with the LPAD editor: [dice.cpl](example/dice.cpl)
+Complete example with the LPAD editor: [dice.cpl](example/inference/dice.cpl)
 
 --
 - Based on: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 

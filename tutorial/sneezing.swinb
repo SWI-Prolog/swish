@@ -18,8 +18,9 @@ The next two facts are certain and they states that Bob has the flu and hay feve
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
 :- endif.
+:- pita.
 % to be written before the program
-:- cplint.
+:- begin_lpad.
 % Rules
 strong_sneezing(X) : 0.3 ; moderate_sneezing(X) : 0.5 :- flu(X).
 strong_sneezing(X) : 0.2 ; moderate_sneezing(X) : 0.6 :- hay_fever(X).
@@ -28,7 +29,7 @@ flu(bob).
 hay_fever(bob).
 
 % to be written after the program
-:- end_cplint.
+:- end_lpad.
 </div>
 
 <div class="nb-cell markdown">
@@ -48,12 +49,12 @@ prob_bar(strong_sneezing(bob), P).
 </div>
 
 <div class="nb-cell markdown">
-Complete example: [sneezing.pl](example/sneezing.pl)
+Complete example: [sneezing.pl](example/inference/sneezing.pl)
 
 --
 This is again an example of a noisy or combining rule between the conclusions of two different clauses.
 
-Complete example with the LPAD editor: [sneezing.cpl](example/sneezing.cpl)
+Complete example with the LPAD editor: [sneezing.cpl](example/inference/sneezing.cpl)
 
 --
 - Based on: F. Riguzzi and T. Swift. _The PITA system: Tabling and answer subsumption for reasoning under uncertainty_. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, 11(4-5), pages 433-449, 2011.

@@ -64,7 +64,7 @@ The program is almost complete, what we need now is to load the library =pita= i
 </div>
 
 <div class="nb-cell markdown">
-Moreover, after =|:- use_module(library(pita))|= we need to write =|:- cplint.|= and =|:- end_cplint.|= respectively at the begin and at the end of the program. These goals are mandatory to initialize the inference system. 
+Moreover, after =|:- use_module(library(pita))|= we need to write =|:- pita.|= in order to initalize the library and the program should be enclosed by =|:- begin_lpad.|= and =|:- end_lpad.|= (respectively at the begin and at the end of the program). These goals are mandatory to initialize the inference system. 
 
 The full LPAD of this example is shown below.
 </div>
@@ -72,8 +72,9 @@ The full LPAD of this example is shown below.
 <div class="nb-cell program prolog">
 % load the 'pita' library to perform inference
 :- use_module(library(pita)).
+:- pita.
 % to be written before the program
-:- cplint.
+:- begin_lpad.
 
 % Rules
 heads(Coin): 1/2; tails(Coin) : 1/2 :- toss(Coin),\+biased(Coin).
@@ -82,7 +83,7 @@ heads(Coin): 0.6 ; tails(Coin) : 0.4 :- toss(Coin),biased(Coin).
 fair(Coin): 0.9 ; biased(Coin): 0.1.
 toss(coin).
 % to be written after the program
-:- end_cplint.
+:- end_lpad.
 </div>
 
 <div class="nb-cell markdown">
@@ -108,11 +109,11 @@ prob(heads(coin),P).
 <div class="nb-cell markdown">
 To try this example click on the triangle icon next to the query. We will see that the coin will land on heads with 51% probability. In fact _|P(heads) = P(heads, fair) + P(heads, biased) = P(heads|fair)P(fair) + P(heads|biased)P(biased) = 0.5*0.9 + 0.6*0.1 = 0.51|_.
 
-Complete example: [coin.pl](example/coin.pl)
+Complete example: [coin.pl](example/inference/coin.pl)
 
 --
 ### Full program with the LPAD editor {#lpad-editor}
-As mentioned before, if we use the LPAD editor, our program will be slightly different. We shall not load the library =pita= and the program shall not be enclosed by the goals =|:- cplint.|= and =|:- end_cplint.|=. Therefore our program with the LPAD editor is
+As mentioned before, if we use the LPAD editor, our program will be slightly different. We shall not load the library =pita= and the program shall not be enclosed by the goals =|:- begin_lpad.|= and =|:- end_lpad.|=. Therefore our program with the LPAD editor is
 </div>
 
 <div class="nb-cell program lpad">
@@ -140,7 +141,7 @@ heads(coin).
 </div>
 
 <div class="nb-cell markdown">
-Complete example with the LPAD editor: [coin.cpl](example/coin.cpl)
+Complete example with the LPAD editor: [coin.cpl](example/inference/coin.cpl)
 
 --
 - Based on: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctions_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 
