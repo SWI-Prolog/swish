@@ -310,6 +310,12 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       var update  = Boolean(options.file);
       var fork    = options.meta && meta.symbolic != "HEAD";
       var type    = tabbed.tabTypes[options.typeName];
+      var author  = config.swish.user ?
+        ( config.swish.user.realname && config.swish.user.email ?
+	    config.swish.user.realname + " <" + config.swish.user.email + ">" :
+	    config.swish.user.user
+        ) :
+	meta.author;
 
       if ( meta.public === undefined )
 	meta.public = true;
@@ -319,7 +325,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 			      form.fields.fileName(fork ? null: options.file,
 						   meta.public, meta.example),
 			      form.fields.title(meta.title),
-			      form.fields.author(meta.author),
+			      form.fields.author(author),
 			      update ? form.fields.commit_message() : undefined,
 			      form.fields.tags(meta.tags),
 			      form.fields.buttons(

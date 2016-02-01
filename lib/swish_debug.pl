@@ -133,8 +133,13 @@ uuid_code(_, X) :- char_type(X, xdigit(_)).
 		 *	     STATISTICS		*
 		 *******************************/
 
+:- if(current_predicate(http_unix_daemon:http_daemon/0)).
+:- use_module(library(broadcast)).
+:- listen(http(post_server_start), start_swish_stat_collector).
+:- else.
 :- initialization
 	start_swish_stat_collector.
+:- endif.
 
 %%	start_swish_stat_collector
 %

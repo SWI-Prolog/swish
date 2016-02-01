@@ -84,6 +84,10 @@ web_storage(Request) :-
 	storage(Method, Request).
 
 storage(get, Request) :-
+	(   swish_config:authenticate(Request, User)
+	->  Options = [user(User)]
+	;   Options = []
+	),
 	http_parameters(Request,
 			[ format(Fmt,  [ oneof([swish,raw,json,history,diff]),
 					 default(swish),
@@ -106,7 +110,8 @@ storage(get, Request) :-
 	->  Format = diff(RelTo)
 	;   Format = Fmt
 	),
-	storage_get(Request, Format).
+	storage_get(Request, Format, Options).
+
 storage(post, Request) :-
 	http_read_json_dict(Request, Dict),
 	option(data(Data), Dict, ""),
@@ -220,7 +225,7 @@ meta_allowed(tags,	     list(string)).
 meta_allowed(description,    string).
 meta_allowed(commit_message, string).
 
-%%	storage_get(+Request, +Format) is det.
+%%	storage_get(+Request, +Format, +Options) is det.
 %
 %	HTTP handler that returns information a given gitty file.
 %
@@ -238,9 +243,9 @@ meta_allowed(commit_message, string).
 %	     Reply with diff relative to RelTo.  Default is the
 %	     previous commit.
 
-storage_get(Request, swish) :-
-	swish_reply_config(Request), !.
-storage_get(Request, Format) :-
+storage_get(Request, swish, Options) :-
+	swish_reply_config(Request, Options), !.
+storage_get(Request, Format, _) :-
 	setting(directory, Dir),
 	request_file_or_hash(Request, Dir, FileOrHash, Type),
 	storage_get(Format, Dir, Type, FileOrHash, Request).

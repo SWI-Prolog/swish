@@ -10,10 +10,10 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  */
 
-define([ "jquery", "config", "tabbed", "form", "preferences",
+define([ "jquery", "config", "tabbed", "form", "preferences", "modal",
 	 "laconic", "runner", "storage", "sha1"
        ],
-       function($, config, tabbed, form, preferences) {
+       function($, config, tabbed, form, preferences, modal) {
 
 var cellTypes = {
   "prolog":   { label:"Prolog" },
@@ -179,10 +179,10 @@ var cellTypes = {
 	  });
 	  return this;
 	} else {
-	  alert("Not a SWISH notebook");
+	  modal.alert("Not a SWISH notebook");
 	}
       } else {
-	alert("Clipboard is empty");
+	modal.alert("Clipboard is empty");
       }
     },
 
@@ -205,7 +205,15 @@ var cellTypes = {
     },
 
     insertBelow: function() {
-      return this.notebook('insert', { where:"below" });
+      if ( this.notebook('insert', {where:"below", if_visible:true}) == false ) {
+	modal.alert("<p>New cell would appear outside the visible area of the " +
+		    "notebook." +
+		    "<p>Please select the cell below which you want the "+
+		    "new cell to appear or scroll to the bottom of the " +
+		    "notebook.");
+      }
+
+      return this;
     },
 
     run: function(cell) {
@@ -259,20 +267,44 @@ var cellTypes = {
      * inserted relative to the cell with the current focus.
      * @param {jQuery} [options.restore] If provided, it must contains
      * a save/restore node that will be used to fill the new cell.
+     * @param {Bool}   [options.if_visible]  If `true`, only insert is
+     * the insertion point is visible.
      */
     insert: function(options) {
       options   = options||{};
       var relto = currentCell(this);
       var cell  = options.cell || $.el.div({class:"nb-cell"});
+      var view  = this.find(".nb-view")
+      var viewrect = options.if_visible ? view[0].getBoundingClientRect()
+					: undefined;
 
       if ( relto ) {
 	if ( options.where == 'above' ) {
+	  if ( options.if_visible ) {
+	    var seltop = relto[0].getBoundingClientRect().top;
+	    if ( seltop < viewrect.top )
+	      return false;
+	  }
 	  $(cell).insertBefore(relto);
 	} else {
+	  if ( options.if_visible ) {
+	    var selbottom = relto[0].getBoundingClientRect().bottom;
+
+	    if ( selbottom > viewrect.bottom - 20 )
+	      return false;
+	  }
 	  $(cell).insertAfter(relto);
 	}
       } else {
-	this.find(".nb-content").append(cell);
+	var content = this.find(".nb-content");
+
+	if ( options.if_visible ) {
+	  var cbottom = content[0].getBoundingClientRect().bottom;
+
+	  if ( cbottom > viewrect.bottom - 20 )
+	    return false;
+	}
+	content.append(cell);
       }
 
       if ( !options.cell ) {
@@ -280,6 +312,8 @@ var cellTypes = {
       }
       this.notebook('updatePlaceHolder');
       this.notebook('active', $(cell));
+
+      return this;
     },
 
 		 /*******************************
@@ -503,6 +537,14 @@ var cellTypes = {
         if ( dom instanceof jQuery ) {
 	  elem.nbCell('restoreDOM', dom);
 	} else {
+	  var close = glyphButton("remove-circle", "close", "Close",
+				  "default", "xs");
+	  elem.append(close);
+	  $(close).addClass("close-select");
+	  $(close).on("click", function() {
+	    elem.nbCell('close');
+	  });
+
 	  elem.append($.el.div({class:"nb-type-select"},
 			       $.el.label("Create a "),
 			       g=$.el.div({class:"btn-group",role:"group"}),
@@ -935,7 +977,7 @@ var cellTypes = {
 	  file = href.slice(swishStore.length);
 	  $(ev.target).parents(".swish").swish('playFile', file);
 	} else {
-	  alert("File does not appear to come from gitty store?");
+	  modal.alert("File does not appear to come from gitty store?");
 	}
       } else if ( a.hasClass("file") ) {
 	done = true;
@@ -977,7 +1019,7 @@ var cellTypes = {
   };
 
   methods.run.program = function() {		/* program */
-    alert("Please define a query to run this program");
+    modal.alert("Please define a query to run this program");
   };
 
   methods.run.query = function(options) {	/* query */

@@ -431,10 +431,16 @@ var tabbed = {
 	tabbed.tabTypes[type].create(content, options);
       });
       $(g).addClass("swish-event-receiver");
-      $(g).on("download", function(ev) {
+      $(g).on("download save fileInfo print", function(ev) {
 	var tab = $(ev.target).closest(".tab-pane");
 	if ( tab.is(":visible") ) {
-	  alert("Please activate the tab you wish to download");
+	  var typelabel = { "download" : "you wish to download",
+			    "save"     : "you wish to save",
+			    "print"    : "you wish to print",
+			    "fileInfo" : "for which you want details"
+	  };
+
+	  modal.alert("Please activate the tab "+typelabel[ev.type]);
 	  ev.stopPropagation();
 	}
       });

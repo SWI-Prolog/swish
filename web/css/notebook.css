@@ -75,6 +75,15 @@
 { display: inline;
 }
 
+.nb-cell .close-select
+{ font-size: 150%;
+  padding: 0px 5px;
+  border: 0px;
+  color: #888;
+  background-color: transparent;
+  float: right;
+}
+
 .nb-cell.active, .nb-cell.active > .with-buttons
 { border: 1px solid #888;
 }
