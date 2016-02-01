@@ -51,10 +51,13 @@ toss(coin).</code></pre>
 <p>Moreover, the bodies of rules may contain the built-in predicates:</p>
 <pre><code>is/2, &gt;/2, &lt;/2, &gt;=/2 ,=&lt;/2,
 =:=/2, =\=/2, true/0, false/0,
-=/2, ==/2, \=/2 ,\==/2, length/2</code></pre>
+=/2, ==/2, \=/2 ,\==/2, !/0, length/2</code></pre>
 <p>The bodies may also contain the following library predicates:</p>
 <pre><code>member/2, max_list/2, min_list/2
-nth0/3, nth/3, dif/2, select/3</code></pre>
+nth0/3, nth/3, name/2, float/1,
+integer/1, var/1, @&gt;/2, 
+memberchk/2, select/3, dif/2,
+between/3</code></pre>
 <p>plus the predicate</p>
 <pre><code>average/2</code></pre>
 <p>that, given a list of numbers, computes its arithmetic mean.</p>
@@ -141,9 +144,17 @@ female(cathy).</code></pre>
 <p>if you include</p>
 <pre><code>:- use_rendering(c3).</code></pre>
 <p>before <code>:- pita.</code></p>
+<p>If the query is non-ground, <code>prob/2</code> returns in backtracking the succesful instantiations together with their probability.</p>
 <p>When using <code>mcintyre</code>, the predicates for querying are <code>mc_prob/2</code> and <code>mc_prob_bar/2</code> as in</p>
 <pre><code>?- mc_prob(heads(coin),P).
 ?- mc_prob_bar(heads(coin),P).</code></pre>
+<p>With <code>mcintyre</code>, you can also take a given number of sample with a call such as</p>
+<pre><code>?- mc_sample(heads(coin),1000,T,F,P).</code></pre>
+<p>that samples <code>heads(coin)</code> 1000 times and returns in <code>T</code> the number of successes, in <code>F</code> the number of failures and in <code>P</code> the estimated probability (<code>T/1000</code>).</p>
+<p>You can obtain a bar chart of the samples with</p>
+<pre><code>?- mc_sample_bar(heads(coin),1000,Chart).</code></pre>
+<p>that samples <code>heads(coin)</code> 1000 times and returns in <code>Char</code> a diagram with one bar for the number of successes and one bar for the number of failures.</p>
+<p>If the query is non-ground, <code>mc_prob/2</code>, <code>mc_prob_bar/2</code>, <code>mc_sample/5</code> and <code>mc_sample_bar/3</code> consider the query as existential so they estimate the probability that there is a successful ground instantiation.</p>
 <h2 id="parameters">Parameters</h2>
 <p>The inference modules have a number of parameters in order to control their behavior. They can be set with the directive</p>
 <pre><code>:- set_pita(&lt;parameter&gt;,&lt;value&gt;).</code></pre>
@@ -360,7 +371,7 @@ config(2,o2,up).
 in(2,o2,o3).
 triangle(2,o1).
 config(2,o1,up).</code></pre>
-<p>which is contained in the <a href="http://cplint.lamping.unife.it/example/learning/bongardkeys.pl"><code>bongardkeys.pl</code></a> This is also how model <code>2</code> above is stored in SWI-Prolog database. The two modalities, models and keys, can be mixed in the same file.</p>
+<p>which is contained in the <a href="http://cplint.lamping.unife.it/example/learning/bongardkeys.pl"><code>bongardkeys.pl</code></a> This is also how model <code>2</code> above is stored in SWI-Prolog database. The two modalities, models and keys, can be mixed in the same file. Facts for <code>int/1</code> are not asserted for interpretations in the key modality but can be added by the user explicitly.</p>
 <p>Note that you can add background knowledge that is not probabilistic directly to the file writing the clauses taking into account the model argument. For example (<code>carc.pl</code>) contains</p>
 <pre><code>connected(_M,Ring1,Ring2):-
   Ring1 \= Ring2,
