@@ -2,7 +2,7 @@
 
 <div class="nb-cell markdown">
 # Machines
-In this section we will see how to learn the parameters given a background knowledge and an initial program. We take into account the Machines dataset [1].
+In this section we will see how to learn the parameters given a background knowledge and an initial program. We take into account the Machines dataset (see reference).
 
 *Note*: the learning algorithms are available only if you use the Prolog editor.
 
@@ -10,41 +10,32 @@ In this section we will see how to learn the parameters given a background knowl
 To execute a learning algorithm the input source must be divided in five parts:
 - preamble,
 - background knowledge, i.e., knowledge valid for all interpretations,
-- Initial LPAD program for you which you want to learn the parameters (optional),
+- initial LPAD program for you which you want to learn the parameters (optional),
 - language bias information,
 - example interpretations.
 
-Here we will define a program step by step and then execute the algorithm EMBLEM [2,3,4] which learns the parameters of a given initial LPAD program. 
+Here we will define a program step by step and then execute the algorithm EMBLEM [1,2,3] which learns the parameters of a given initial LPAD program. 
 
 For more information of how to perform learning see the manual *Help*-&gt;*Help on cplint* ([PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)).
 
 ### Preamble
-In order to perform either EMBLEM or SLIPCOVER you need to import the library =slipcover= with the command
-</div>
-
-<div class="nb-cell program prolog">
+In order to perform either EMBLEM or SLIPCOVER you need to load the library =slipcover= with the command
+==
 :- use_module(library(slipcover)).
-</div>
-
-<div class="nb-cell markdown">
+==
 After that you have to initialize =slipcover= with the command
-</div>
-
-<div class="nb-cell program prolog">
+==
 :- sc.
-</div>
-
-<div class="nb-cell markdown">
+==
 At this point you can start setting parameters for SLIPCOVER with the predicate set_sc/2. For the complete list of the available parameters and their meanings see the manual *Help*-&gt;*Help on cplint*. In our example we will set the following parameters
-</div>
-
-<div class="nb-cell program prolog">
+==
 :- set_sc(depth_bound,false).
 :- set_sc(neg_ex,given).
 :- set_sc(megaex_bottom,15).
 :- set_sc(max_iter,10).
 :- set_sc(max_iter_structure,50).
 :- set_sc(verbosity,1).
+==
 </div>
 
 <div class="nb-cell markdown">
@@ -53,10 +44,8 @@ We have defined the preamble, now we can specify the background knowledge with a
 ==
 bg(&lt;list of terms representing clauses&gt;).
 == 
-Alternatively, we can specify a set of clauses by including them in a section between the goals =|:- begin_bg.|= and =|:- end_bg.|=. We will use this last approach.
-</div>
-
-<div class="nb-cell program prolog">
+Alternatively, we can specify a set of clauses by including them in a section between the goals =|:- begin_bg.|= and =|:- end_bg.|=. We will use the latter approach.
+==
 :- begin_bg.
 component(C):-
   replaceable(C).
@@ -75,6 +64,7 @@ one_worn:-
 none_worn:-
   \+ one_worn.
 :- end_bg.
+==
 </div>
 
 <div class="nb-cell markdown">
@@ -84,9 +74,7 @@ At this point we can define an initial program for which you want to learn the p
 in(&lt;list of terms representing clauses&gt;).
 ==
 Alternatively, you can specify an input program in a section between =|:- begin_in.|= and =|:- end_in.|=. We will use the latter method. Therefore in our example
-</div>
-
-<div class="nb-cell program prolog">
+==
 :- begin_in.
 class(sendback):0.5 :-
   worn(A),
@@ -99,6 +87,7 @@ class(fix):0.6 :-
 class(ok):0.5 :-
   not_worn(_A).
 :- end_in.
+==
 </div>
 
 <div class="nb-cell markdown">
@@ -110,13 +99,9 @@ The typical input for EMBLEM will be a set of interpretations, i.e. sets of grou
 output(&lt;predicate&gt;/&lt;arity&gt;).
 ==
 In our example
-</div>
-
-<div class="nb-cell program prolog">
+==
 output(class/1).
-</div>
-
-<div class="nb-cell markdown">
+==
 Input predicates are those whose atoms you are not interested in predicting.
 
 You can declare *closed world input predicates* with
@@ -128,17 +113,13 @@ For these predicates, the only true atoms are those in the interpretations and t
 input/hypothesized program are not used to derive atoms for these predicates.
 Moreover, clauses of the background knowledge that define closed world input predicates and that call an output predicate in the body will not be used for deriving examples.
 In our example
-</div>
-
-<div class="nb-cell program prolog">
+==
 input_cw(replaceable/1).
 input_cw(not_replaceable/1).
 input_cw(worn/1).
 input_cw(not_worn/1).
 input_cw(none_worn/0).
-</div>
-
-<div class="nb-cell markdown">
+==
 Besides closed world input predicate we can declare 
 *open world input predicates* with
 ==
@@ -146,7 +127,9 @@ input(&lt;predicate&gt;/&lt;arity&gt;).
 ==
 
 In our example we do not have open world input predicates.
+</div>
 
+<div class="nb-cell markdown">
 ### Example interpretations
 The last part of the file contains the data. You can specify data with two modalities: models and keys.
 
@@ -157,9 +140,7 @@ Alternatively, with the keys modality, you can directly write the facts and the 
 The two modalities, models and keys, can be mixed in the same source.
 
 If we use the model modality for the example 1
-</div>
-
-<div class="nb-cell program prolog">
+==
 begin(model(1)).
 class(sendback).
 neg(class(fix)).
@@ -167,44 +148,37 @@ neg(class(ok)).
 worn(gear).
 worn(engine).
 end(model(1)).
-</div>
+==
 
-<div class="nb-cell markdown">
-Instead, if we use the key modality, our example will be (note the first term of each fact)
-</div>
+Instead, if we use the key modality, our example will be (note the first argument of each fact)
 
-<div class="nb-cell program prolog">
+==
 class(1,sendback).
 neg(1,class(fix)).
 neg(1,class(ok)).
 worn(1,gear).
 worn(1,engine).
-</div>
+==
 
-<div class="nb-cell markdown">
 Then we must indicate how the examples are divided in folds with facts of the form: 
 ==
 fold(&lt;fold_name&gt;,&lt;list of model identifiers&gt;)
 ==
 as for example
-</div>
-
-<div class="nb-cell program prolog">
+==
 fold(train1,[1,2,3]).
 fold(train2,[4,5,6,7,8,9,10]).
-</div>
-
-<div class="nb-cell markdown">
-we can define intensionally the folds as in
-</div>
-
-<div class="nb-cell program prolog">
+==
+We can also define intensionally the folds as in
+==
 fold(all,F) :- findall(I,int(I),F).
+==
+where the system asserts a =|int(&lt;name&gt;).|= for each model enclosed in =|begin(model(&lt;name&gt;)).|= and =|end(model(&lt;name&gt;)).|=.
 </div>
 
 <div class="nb-cell markdown">
 ## Full dataset 
-Below the complete Machines dataset is shown.
+The complete Machines input file is
 </div>
 
 <div class="nb-cell program prolog">
@@ -392,8 +366,8 @@ fold(all, F) :- findall(I,int(I),F).
 </div>
 
 <div class="nb-cell markdown">
-### Execute parameter learning
-To execute the parameter learning algorithm EMBLEM, we need to execute a query with the form
+### Performing parameter learning
+To execute the parameter learning algorithm EMBLEM, we need to ask a query of the form
 ==
 induce_par(&lt;list of folds&gt;,P).
 ==
@@ -412,16 +386,18 @@ induce_par([all],P).
 Complete example: [mach.pl](example/learning/mach.pl)
 
 --
-[1] Based on: The ACE Data Mining System User's Manual https://dtai.cs.kuleuven.be/ACE/doc/ACEuser-1.2.16.pdf
+- Reference: The ACE Data Mining System User's Manual https://dtai.cs.kuleuven.be/ACE/doc/ACEuser-1.2.16.pdf
+</div>
 
+<div class="nb-cell markdown">
 --
 For more information about how to perform learning and EMBLEM see the manual *Help*-&gt;*Help on cplint* (or [PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)) and the papers:
 
-[2] Elena Bellodi and Fabrizio Riguzzi. EM over binary decision diagrams for probabilistic logic programs. In Proceedings of the 26th Italian Conference on Computational Logic (CILC2011), Pescara, Italy, 31 August 31-2 September, 2011.
+[1] Elena Bellodi and Fabrizio Riguzzi. EM over binary decision diagrams for probabilistic logic programs. In Proceedings of the 26th Italian Conference on Computational Logic (CILC2011), Pescara, Italy, 31 August 31-2 September, 2011.
 
-[3] Elena Bellodi and Fabrizio Riguzzi. EM over binary decision diagrams for probabilistic logic programs. Technical Report CS-2011-01, Dipartimento di Ingegneria, Università di Ferrara, Italy, 2011
+[2] Elena Bellodi and Fabrizio Riguzzi. EM over binary decision diagrams for probabilistic logic programs. Technical Report CS-2011-01, Dipartimento di Ingegneria, Università di Ferrara, Italy, 2011
 
-[4] Elena Bellodi and Fabrizio Riguzzi. Expectation Maximization over binary decision diagrams for probabilistic logic programs. Intel. Data Anal., 16(6), 2012.
+[3] Elena Bellodi and Fabrizio Riguzzi. Expectation Maximization over binary decision diagrams for probabilistic logic programs. Intel. Data Anal., 16(6), 2012.
 
 --
 [Back to Tutorial](tutorial/tutorial.swinb)

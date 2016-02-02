@@ -8,22 +8,17 @@ We will show how to perform a simple query and how to execute a query whose resu
 
 ### Writing the program step by step
 First of all we want to write a fact which states that at time 0 the die land on one of its faces with a uniform probability distribution (1/6 for each face). We use the predicate =|on(T,F)|= which means that the die landed on face F at time T.
-</div>
-
-<div class="nb-cell program prolog">
+==
 on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;
 on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
-</div>
-
-<div class="nb-cell markdown">
+==
 The following rule states that at time T the die lands on one of its faces with equal probability if at the previous time point it was thrown and it did not land on face 6.
-</div>
-
-<div class="nb-cell program prolog">
+==
 on(X,1):1/6;on(X,2):1/6;on(X,3):1/6;
 on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
   X1 is X-1,X1&gt;=0,on(X1,_),
   \+ on(X1,6).
+==
 </div>
 
 <div class="nb-cell markdown">
@@ -76,13 +71,9 @@ prob_bar(:Atom,-P).
 Where =Atom= is the query that we want to ask, while =P= is the variable that will contain a bar chart with two bars, one for the probability of the atom of being true and one for the probability of the atom of being false (1- the first). It provides a graphical representation of the difference between the two values.
 
 However, before submitting this kind of query, we need to specify that we want to use the renderer =c3= by adding the following line before the =|:- begin_lpad.|= goal
-</div>
-
-<div class="nb-cell program prolog">
+==
 :- use_rendering(c3).
-</div>
-
-<div class="nb-cell markdown">
+==
 Therefore our program becomes
 </div>
 
@@ -123,8 +114,10 @@ Complete example: [dice.pl](example/inference/dice.pl)
 Complete example with the LPAD editor: [dice.cpl](example/inference/dice.cpl)
 
 --
-- Based on: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 
+- Reference: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004.
+</div>
 
+<div class="nb-cell markdown">
 --
 [Back to Tutorial](tutorial/tutorial.swinb)
 </div>

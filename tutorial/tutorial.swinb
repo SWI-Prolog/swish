@@ -14,9 +14,9 @@
   - [Coin (variant)](tutorial/inference/coinmc.swinb). Approximate inference variant of [Coin](tutorial/inference/coin.swinb).
   - [Markov chain](tutorial/inference/markov_chain.swinb) Approximate inference.
 - *Examples with structure and parameter learning*
-  - [Machines](tutorial/mach.swinb). Parameter learning.
-  - [Registration](tutorial/registration.swinb). Structure learning.
-  - [Bongard](tutorial/bongard.swinb). Test the learned program with graphical results.
+  - [Machines](tutorial/learning/mach.swinb). Parameter learning.
+  - [Registration](tutorial/learning/registration.swinb). Structure learning.
+  - [Bongard](tutorial/learning/bongard.swinb). Test the learned program with graphical results.
 - *More Examples with inference*
   - see [cplint inference example programs](example/inference_examples.swinb)
 - *More Examples with structure and parameter learning*

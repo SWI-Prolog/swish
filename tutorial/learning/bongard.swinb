@@ -2,7 +2,7 @@
 
 <div class="nb-cell markdown">
 # Bongard
-In this tutorial section we will see how to execute a test on a program. We take into account the Bongard dataset [1].
+In this tutorial section we will see how to execute a test on a program. We take into account the Bongard dataset (see reference).
 
 ## How to test a program
 A program can also be tested on a test set with a query of the form
@@ -33,34 +33,26 @@ Suppose we want to learn new clauses (i.e. we perform structure learning) by usi
 
 ## Adding renderers
 It is possible to see the curves AUCROC, ROC and PR as graphs by including the renderer =c3= before =|:- sc.|=. Morover we include the renderer =lpad= to have the output program pretty printed. Therefore we add the following commands in the preamble before =|:- sc.|=.
-</div>
-
-<div class="nb-cell program prolog">
+==
 :- use_rendering(c3).
 :- use_rendering(lpad).
+==
 </div>
 
 <div class="nb-cell markdown">
 ## Dynamic folds
 We can intensionally create the fold containing all the example with
-</div>
-
-<div class="nb-cell program prolog">
+==
 fold(all,F):- findall(I,int(I),F).
-</div>
-
-<div class="nb-cell markdown">
+==
 We can dinamically create the folds =|train|= and =|test|= with the following command
-</div>
-
-<div class="nb-cell program prolog">
+==
 :- fold(all,F),
    sample(4,F,FTr,FTe),
    assert(fold(train,FTr)),
    assert(fold(test,FTe)).
-</div>
+==
 
-<div class="nb-cell markdown">
 This last command should however be inserted after the input interpretations. As can be seen, it uses =|sample(N,List,Sampled,Rest)|= exported from the library =slipcover= that samples =N= elements from =List= and returns the sampled elements in =Sampled= and the rest in =Rest=. If =Lilst= has =N= elements or less, =Sampled= is equal to =List= and =Rest= is empty.
 </div>
 
@@ -281,8 +273,10 @@ induce([train],P), test(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 Complete example: [bongard.pl](example/learning/bongard.pl)
 
 --
-[1] Based on: L. De Raedt and W. Van Laer. Inductive constraint logic. In Klaus P. Jantke, Takeshi Shinohara, and Thomas Zeugmann, editors, Proceedings of the Sixth International Workshop on Algorithmic Learning Theory, volume 997 of Lecture Notes in Artificial Intelligence, pages 80-94. SpringerVerlag, 1995.
+- Reference: L. De Raedt and W. Van Laer. Inductive constraint logic. In Klaus P. Jantke, Takeshi Shinohara, and Thomas Zeugmann, editors, Proceedings of the Sixth International Workshop on Algorithmic Learning Theory, volume 997 of Lecture Notes in Artificial Intelligence, pages 80-94. SpringerVerlag, 1995.
+</div>
 
+<div class="nb-cell markdown">
 --
 For more information about how to perform learning see the manual *Help*-&gt;*Help on cplint* (or [PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)). 
 

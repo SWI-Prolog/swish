@@ -2,7 +2,7 @@
 
 <div class="nb-cell markdown">
 # Registration
-In this tutorial section we will show how to perform structure learning. We take into account the Registration dataset [1].
+In this tutorial section we will show how to perform structure learning. We take into account the Registration dataset (see reference).
 
 *Note*: the learning algorithms are available only if you use the Prolog editor.
 
@@ -20,9 +20,7 @@ For more information of how to perform learning see the manual *Help*-&gt;*Help 
 
 ### Preamble 
 We load the library =slipcover=, initialize it and then set some parameters.
-</div>
-
-<div class="nb-cell program prolog">
+==
 :-use_module(library(slipcover)).
 :-sc.
 
@@ -30,14 +28,13 @@ We load the library =slipcover=, initialize it and then set some parameters.
 :- set_sc(neg_ex,given).
 :- set_sc(megaex_bottom,7).
 :- set_sc(verbosity,1).
+==
 </div>
 
 <div class="nb-cell markdown">
 ### Backgroud knowledge
 Now we write the background knowledge enclosed by =|:- begin_bg.|= and =|:- end_bg.|=.
-</div>
-
-<div class="nb-cell program prolog">
+==
 :- begin_bg.
 company_info(jvt,commercial).
 company_info(scuf,university).
@@ -66,14 +63,13 @@ course_type(C, T):-
 	course(C, _, T).
 
 :- end_bg.
+==
 </div>
 
 <div class="nb-cell markdown">
 ### Initial program
 Now we can define an inital LPAD program. The program is enclosed by =|:- begin_in.|= and =|:- end_in.|=.
-</div>
-
-<div class="nb-cell program prolog">
+==
 :- begin_in.
 party(yes):0.5:-
   company_type(commercial).
@@ -83,14 +79,12 @@ party(no):0.5:-
   course_len(A,4),
   \+ company_type(commercial).
 :- end_in.
-</div>
+==
+The initial program is expoited if we want to perform parameter learning, whereas it is ignored during structure learning.
 
-<div class="nb-cell markdown">
 ### Language Bias
 As in the [previous example](tutorial/mach.swinb) we define the set of output and input predicates
-</div>
-
-<div class="nb-cell program prolog">
+==
 % output predicates
 output(party/1).
 % input closed world predicates
@@ -104,9 +98,8 @@ input_cw(company/1).
 input_cw(company_info/2).
 input_cw(participant/4).
 input_cw(course/3).
-</div>
+==
 
-<div class="nb-cell markdown">
 We want to learn new clauses (the structure) for the program, in order to do that we need to add mode declarations in the style of [Progol](http://www.doc.ic.ac.uk/~shm/progol.html).
 
 To specify the atoms that can appear in the head of clauses you must use facts of the form
@@ -122,9 +115,7 @@ where =|&lt;recall&gt;|= can be an integer or *. =|&lt;recall&gt;|= indicates ho
 We refer to the manual for further details (*Help*-&gt;*Help on cplint*).
 
 In our example we use the following mode declarations
-</div>
-
-<div class="nb-cell program prolog">
+==
 modeh(*,party(yes)).
 modeh(*,party(no)).
 
@@ -134,63 +125,50 @@ modeb(*,not_company_type(-#ctype)).
 modeb(*,subscription(-sub)).
 modeb(*,course_len(+sub,-#cl)).
 modeb(*,course_type(+sub,-#ct)).
-</div>
+==
 
-<div class="nb-cell markdown">
 SLIPCOVER also requires facts for the determination/2 predicate Aleph-style that indicate which predicates can appear in the body of clauses. For our program we have
-</div>
 
-<div class="nb-cell program prolog">
+==
 determination(party/1,job/1).
 determination(party/1,not_company_type/1).
 determination(party/1,company_type/1).
 determination(party/1,subscription/1).
 determination(party/1,course_len/2).
 determination(party/1,course_type/2).
-</div>
+==
 
-<div class="nb-cell markdown">
 For example the first determination/2 fact states that the predicate job/1 can appear in the body of hypothesised clauses having party/1 in the head.
 </div>
 
 <div class="nb-cell markdown">
 ### Example interpretations
 Now we define the example models (or interpretations, i.e. a set of ground facts) and divide them in folds. Below is shown just one example in models modality.
-</div>
-
-<div class="nb-cell program prolog">
+==
 begin(model(adams)).
 participant(researcher,scuf,no,23).
 subscription(erm).
 subscription(so2).
 subscription(srw).
 end(model(adams)).
-</div>
-
-<div class="nb-cell markdown">
+==
 We can add background knowledge that is not probabilistic directly to the file writing the clauses taking into account the model argument. In our example
-</div>
-
-<div class="nb-cell program prolog">
+==
 party(M,P):-
   participant(M,_, _, P, _).
-</div>
+==
 
-<div class="nb-cell markdown">
 Here M is the model and participant/4 is defined in the interpretations. You can also define intensionally the negative examples with
-</div>
-
-<div class="nb-cell program prolog">
+==
 neg(party(M,yes)):- party(M,no).
 neg(party(M,no)):- party(M,yes).
-</div>
+==
 
-<div class="nb-cell markdown">
 Now we split the example models into fold. In this example we have only one fold which contains all the models.
-</div>
 
-<div class="nb-cell program prolog">
+==
 fold(all,F) :- findall(I,int(I),F).
+==
 </div>
 
 <div class="nb-cell markdown">
@@ -363,8 +341,10 @@ induce([all],P).
 Complete example: [registration.pl](example/learning/registration.pl)
 
 --
-[1] Based on: L. De Raedt, H. Blockeel, L. Dehaspe, and W. Van Laer. Three companions for data mining in first order logic. In S. Dzeroski and N. Lavrac, editors, Relational Data Mining, pages 105-139.  Springer-Verlag, 2001.
+- Reference: L. De Raedt, H. Blockeel, L. Dehaspe, and W. Van Laer. Three companions for data mining in first order logic. In S. Dzeroski and N. Lavrac, editors, Relational Data Mining, pages 105-139.  Springer-Verlag, 2001.
+</div>
 
+<div class="nb-cell markdown">
 --
 For more information about how to perform learning and SLIPCOVER see the manual *Help*-&gt;*Help on cplint* (or [PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)) and the paper:
 

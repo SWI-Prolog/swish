@@ -3,8 +3,8 @@
 <div class="nb-cell markdown">
 # Markov Chain
 
-In this example we want to know what is the likelihood that on an execution of the chain from a start state 's', a final state 't' will be reached? 
-The chains may be infinite so the query may have an infinite number of explanations and if we want exact inference and use PITA the inference may not terminate. To ensure termination, we have two solutions. We fix a bound on the depth of the derivations of PITA can be imposed by setting the parameters
+In this example we want to know what is the likelihood that on an execution of a Markov chain from a start state 's', a final state 't' will be reached?
+The chains may be infinite so the query may have an infinite number of explanations and if we want exact inference and use PITA, the inference may not terminate. To ensure termination, we have two solutions. We may either fix a bound on the depth of the derivations of PITA by setting the parameters
 ==
 :- set_pita(depth_bound,true).
 :- set_pita(depth,&lt;level of depth (integer)&gt;).
@@ -59,8 +59,10 @@ mc_prob_bar(reach(s0,0,s3),P).
 Complete example: [markov_chain.pl](example/inference/markov_chain.pl)
 
 --
-- Based on: Gorlin, Andrey, C. R. Ramakrishnan, and Scott A. Smolka. _Model checking with probabilistic tabled logic programming_. Theory and Practice of Logic Programming 12.4-5 (2012). 
+- Reference: Gorlin, Andrey, C. R. Ramakrishnan, and Scott A. Smolka. _Model checking with probabilistic tabled logic programming_. Theory and Practice of Logic Programming 12.4-5 (2012).
+</div>
 
+<div class="nb-cell markdown">
 --
 [Back to Tutorial](tutorial/tutorial.swinb)
 </div>

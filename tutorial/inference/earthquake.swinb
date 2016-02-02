@@ -58,8 +58,10 @@ Complete example: [earthquake.pl](example/inference/earthquake.pl)
 Complete example with the LPAD editor: [earthquake.cpl](example/inference/earthquake.cpl)
 
 --
-- Based on: F. Riguzzi and N. Di Mauro. _Applying the information bottleneck to statistical relational learning_. Machine Learning, 86(1):89-114, 2012.
+- Reference: F. Riguzzi and N. Di Mauro. _Applying the information bottleneck to statistical relational learning_. Machine Learning, 86(1):89-114, 2012.
+</div>
 
+<div class="nb-cell markdown">
 --
 [Back to Tutorial](tutorial/tutorial.swinb)
 </div>

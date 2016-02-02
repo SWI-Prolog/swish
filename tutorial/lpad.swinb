@@ -33,8 +33,10 @@ null : 0.3 ; h_1 : 0.5 ; h_2 : 0.2 :- b_1, ..., b_2.
 ==
 
 --
-- Reference: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 
+- Reference: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004.
+</div>
 
+<div class="nb-cell markdown">
 --
 [Back to Tutorial](tutorial/tutorial.swinb)
 </div>

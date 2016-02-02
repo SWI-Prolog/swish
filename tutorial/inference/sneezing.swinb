@@ -57,8 +57,10 @@ This is again an example of a noisy or combining rule between the conclusions of
 Complete example with the LPAD editor: [sneezing.cpl](example/inference/sneezing.cpl)
 
 --
-- Based on: F. Riguzzi and T. Swift. _The PITA system: Tabling and answer subsumption for reasoning under uncertainty_. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, 11(4-5), pages 433-449, 2011.
+- Reference: F. Riguzzi and T. Swift. _The PITA system: Tabling and answer subsumption for reasoning under uncertainty_. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, 11(4-5), pages 433-449, 2011.
+</div>
 
+<div class="nb-cell markdown">
 --
 [Back to Tutorial](tutorial/tutorial.swinb)
 </div>

@@ -6,10 +6,14 @@
 The LPAD of this example is the same of the one shown [here](tutorial/inference/coin.swinb), the only difference is the inference approach. In this example we will show how to perform an approximate inference with Monte Carlo sampling.
 
 Let us suppose that we have one coin that we are not sure if it is biased. Now, if we toss the coin, what is the probability that it will land on head?
+</div>
 
+<div class="nb-cell markdown">
 ## Perfom approximate inference
 To perform approximate we just need to load the library =mcintyre= instead of =pita= and to initialize it we need to write down the goal =|:- mc.|=. Except for query commands the rest is the same as we are performing exact inference.
+</div>
 
+<div class="nb-cell markdown">
 ## Full program
 Below the full LPAD of the example
 </div>
@@ -50,11 +54,14 @@ mc_prob_bar(heads(coin),P).
 </div>
 
 <div class="nb-cell markdown">
+--
 Complete example: [coinmc.pl](example/inference/coinmc.pl)
 
 --
-- Based on: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctions_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 
+- Reference: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctions_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004.
+</div>
 
+<div class="nb-cell markdown">
 --
 [Back to Tutorial](tutorial/tutorial.swinb)
 </div>
