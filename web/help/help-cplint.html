@@ -51,10 +51,13 @@ toss(coin).</code></pre>
 <p>Moreover, the bodies of rules may contain the built-in predicates:</p>
 <pre><code>is/2, &gt;/2, &lt;/2, &gt;=/2 ,=&lt;/2,
 =:=/2, =\=/2, true/0, false/0,
-=/2, ==/2, \=/2 ,\==/2, length/2</code></pre>
+=/2, ==/2, \=/2 ,\==/2, !/0, length/2</code></pre>
 <p>The bodies may also contain the following library predicates:</p>
 <pre><code>member/2, max_list/2, min_list/2
-nth0/3, nth/3, dif/2, select/3</code></pre>
+nth0/3, nth/3, name/2, float/1,
+integer/1, var/1, @&gt;/2, 
+memberchk/2, select/3, dif/2,
+between/3</code></pre>
 <p>plus the predicate</p>
 <pre><code>average/2</code></pre>
 <p>that, given a list of numbers, computes its arithmetic mean.</p>
@@ -134,16 +137,45 @@ female(cathy).</code></pre>
 <p>In LPADs, you write in the editor the program without the library import and the compiler directives. <code>pita</code> is used for inference.</p>
 <p>You ask queries by writing the atom of which you want to compute the probability. In the coin example, the probability of <code>heads(coin)</code> can be obtained with the</p>
 <pre><code>?- heads(coin).</code></pre>
-<p>In Prolog programs, you have to enter the program above (<code>coin.pl</code>) and ask the probability of an atom using <code>pita</code> using the predicate <code>prob/2</code> as in</p>
+<p>In Prolog programs, you have to enter the program above (<code>coin.pl</code>).</p>
+<p>You can ask the probability of an atom using <code>pita</code> using the predicate using <code> prob(:Query:atom,-Probability:float)</code> and query it with <code>pita</code> using <code> prob(:Query:atom,-Probability:float)</code> as in</p>
 <pre><code>?- prob(heads(coin),P).</code></pre>
-<p>You can also see the probability of the query being true and being false as a bar chart with</p>
+<p>If the query is non-ground, <code>prob/2</code> returns in backtracking the succesful instantiations together with their probability.</p>
+<p>When using <code>mcintyre</code>, the predicate for querying is</p>
+<pre><code>mc_prob(:Query:atom,-Probability:float)</code></pre>
+<p>as in</p>
+<pre><code>?- mc_prob(heads(coin),P).</code></pre>
+<p>With <code>mcintyre</code>, you can also take a given number of sample with</p>
+<pre><code>mc_sample(:Query:atom,+Samples:int,-Successes:int,-Failures:int,
+  -Probability:float).</code></pre>
+<p>as in (<a href="http://cplint.lamping.unife.it/example/inference/coinmc.pl"><code>coinmc.pl</code></a>)</p>
+<pre><code>?- mc_sample(heads(coin),1000,S,F,P).</code></pre>
+<p>that samples <code>heads(coin)</code> 1000 times and returns in <code>S</code> the number of successes, in <code>F</code> the number of failures and in <code>P</code> the estimated probability (<code>S/1000</code>).</p>
+<p>Moreover, you can sample arguments of queries with</p>
+<pre><code>mc_sample_arg(:Query:atom,+Samples:int,?Arg:var,-Values:list).</code></pre>
+<p>The predicate samples <code>Query</code> a number of <code>Samples</code> times. <code>Arg</code> should be a variable in <code>Query</code>. The predicate returns in <code>Values</code> a list of couples <code>L-N</code> where <code>L</code> is the list of values of <code>Arg</code> for which <code>Query</code> succeeds in world sampled at random and <code>N</code> is the number of samples. If <code>L</code> is the empty list, it means that for that sample the query failed. If, in all couples <code>L-N</code>, <code>L</code> is a list with a single element, it means that the clauses in the program are mutually exclusive, i.e., that in every sample, only one clause for each subgoal has the body true. This is one of the assumptions taken for programs of the PRISM system <span class="citation">[11]</span>. For example <a href="http://cplint.lamping.unife.it/example/inference/pfcglr.pl"><code>pfcglr.pl</code></a> and <a href="http://cplint.lamping.unife.it/example/inference/plcg.pl"><code>plcg.pl</code></a> satisfy this constraint while <a href="http://cplint.lamping.unife.it/example/inference/markov_chain.pl"><code>markov_chain.pl</code></a> and <a href="http://cplint.lamping.unife.it/example/inference/var_obj.pl"><code>var_obj.pl</code></a> don’t.</p>
+<p>An example of use of the above predicate is</p>
+<pre><code>?- mc_sample_arg(reach(s0,0,S),50,S,Values). </code></pre>
+<p>of <a href="http://cplint.lamping.unife.it/example/inference/markov_chain.pl"><code>markov_chain.pl</code></a> that takes 50 samples of <code>L</code> in <code>findall(S,(reach(s0,0,S),L)</code>.</p>
+<p>You can also see the probability of the query being true and being false as a bar chart with <code>prob_bar(:Query:atom,-Probability:dict)</code> as in</p>
 <pre><code>?- prob_bar(heads(coin),P).</code></pre>
 <p>if you include</p>
 <pre><code>:- use_rendering(c3).</code></pre>
-<p>before <code>:- pita.</code></p>
-<p>When using <code>mcintyre</code>, the predicates for querying are <code>mc_prob/2</code> and <code>mc_prob_bar/2</code> as in</p>
-<pre><code>?- mc_prob(heads(coin),P).
-?- mc_prob_bar(heads(coin),P).</code></pre>
+<p>before <code>:- pita.</code> <code>P</code> will be instantiated with a dict for rendering with <code>c3</code>. It will be shown as a bar chart with a bar for the probability of <code>heads(coin)</code> true and a bar for the probability of <code>heads(coin)</code> false.</p>
+<p>When using <code>mcintyre</code>, you can use</p>
+<pre><code>mc_prob_bar(:Query:atom,-Probability:dict)</code></pre>
+<p>as in</p>
+<pre><code>?- mc_prob_bar(heads(coin),P).</code></pre>
+<p>to obtain a chart representation of the probability.</p>
+<p>You can obtain a bar chart of the samples with</p>
+<pre><code>?- mc_sample_bar(heads(coin),1000,Chart).</code></pre>
+<p>that returns in <code>Chart</code> a diagram with one bar for the number of successes and one bar for the number of failures.</p>
+<p>You can also graph the results of sampling arguments with</p>
+<pre><code>mc_sample_arg_bar(:Query:atom,+Samples:int,?Arg:var,-Chart:dict).</code></pre>
+<p>that returns in <code>Chart</code> a bar chart with a bar for each possible sampled value whose size is the number of samples returning that value.</p>
+<p>An example is</p>
+<pre><code>?- mc_sample_arg_bar(reach(s0,0,S),50,S,Chart). </code></pre>
+<p>of <a href="http://cplint.lamping.unife.it/example/inference/markov_chain.pl"><code>markov_chain.pl</code></a>.</p>
 <h2 id="parameters">Parameters</h2>
 <p>The inference modules have a number of parameters in order to control their behavior. They can be set with the directive</p>
 <pre><code>:- set_pita(&lt;parameter&gt;,&lt;value&gt;).</code></pre>
@@ -360,7 +392,7 @@ config(2,o2,up).
 in(2,o2,o3).
 triangle(2,o1).
 config(2,o1,up).</code></pre>
-<p>which is contained in the <a href="http://cplint.lamping.unife.it/example/learning/bongardkeys.pl"><code>bongardkeys.pl</code></a> This is also how model <code>2</code> above is stored in SWI-Prolog database. The two modalities, models and keys, can be mixed in the same file.</p>
+<p>which is contained in the <a href="http://cplint.lamping.unife.it/example/learning/bongardkeys.pl"><code>bongardkeys.pl</code></a> This is also how model <code>2</code> above is stored in SWI-Prolog database. The two modalities, models and keys, can be mixed in the same file. Facts for <code>int/1</code> are not asserted for interpretations in the key modality but can be added by the user explicitly.</p>
 <p>Note that you can add background knowledge that is not probabilistic directly to the file writing the clauses taking into account the model argument. For example (<code>carc.pl</code>) contains</p>
 <pre><code>connected(_M,Ring1,Ring2):-
   Ring1 \= Ring2,
