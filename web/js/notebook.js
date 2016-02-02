@@ -864,6 +864,9 @@ var cellTypes = {
 
     this.append(buttons,
 		$.el.div({class:"query with-buttons"},
+			 $.el.a({href:"#", class:"nb-query-menu btn btn-default btn-sm",
+			         title:"Query menu"},
+				$.el.span({class:"glyphicon glyphicon-menu-hamburger"})),
 			 $.el.span({class:"prolog-prompt"}, "?-"),
 			 editor=$.el.div({class:"editor query"})));
 

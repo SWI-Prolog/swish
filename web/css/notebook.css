@@ -121,11 +121,22 @@
   width: calc(100% - 50px);
 }
 
+.nb-cell .nb-query-menu
+{ background: transparent;
+  float: left;
+  padding: 5px 5px 5px 5px;
+  border: 0px;
+  color: #888;
+}
+
+.nb-cell .nb-query-menu:hover
+{ color: #000;
+}
+
 .nb-cell .prolog-prompt
 { float: left;
-  width: 44px;			/* CodeMirror gutter width */
   padding-right: 0.3em;
-  padding-top: 0.2em;
+  padding-top: 0.25em;
   font-weight: bold;
   text-align: right;
 }
