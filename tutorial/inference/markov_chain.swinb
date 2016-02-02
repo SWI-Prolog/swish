@@ -55,6 +55,38 @@ mc_prob_bar(reach(s0,0,s3),P).
 </div>
 
 <div class="nb-cell markdown">
+Then if we want to sample reach(s0,0,s3) 1000 times, we can do it with
+</div>
+
+<div class="nb-cell query">
+mc_sample(reach(s0,0,s3),1000,S,F,P).
+</div>
+
+<div class="nb-cell markdown">
+If we want to see the bar graph of the sampling
+</div>
+
+<div class="nb-cell query">
+mc_sample_bar(reach(s0,0,s3),1000,Chart).
+</div>
+
+<div class="nb-cell markdown">
+If we want to sample the arguments of reach(s0,0,s3)
+</div>
+
+<div class="nb-cell query">
+mc_sample_arg(reach(s0,0,S),50,S,Values).
+</div>
+
+<div class="nb-cell markdown">
+To have a graphical results
+</div>
+
+<div class="nb-cell query">
+mc_sample_arg_bar(reach(s0,0,S),50,S,Chart).
+</div>
+
+<div class="nb-cell markdown">
 --
 Complete example: [markov_chain.pl](example/inference/markov_chain.pl)
 

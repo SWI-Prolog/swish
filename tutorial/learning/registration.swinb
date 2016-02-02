@@ -10,7 +10,7 @@ In this tutorial section we will show how to perform structure learning. We take
 To execute a learning algorithm the input source must be divided in five parts:
 - preamble,
 - background knowledge, i.e., knowledge valid for all interpretations,
-- Initial LPAD program for you which you want to learn the parameters (optional),
+- Initial LPAD (optional),
 - language bias information,
 - example interpretations.
 
@@ -68,7 +68,7 @@ course_type(C, T):-
 
 <div class="nb-cell markdown">
 ### Initial program
-Now we can define an inital LPAD program. The program is enclosed by =|:- begin_in.|= and =|:- end_in.|=.
+You can define an inital LPAD program enclosed by =|:- begin_in.|= and =|:- end_in.|=.
 ==
 :- begin_in.
 party(yes):0.5:-
@@ -80,7 +80,7 @@ party(no):0.5:-
   \+ company_type(commercial).
 :- end_in.
 ==
-The initial program is expoited if we want to perform parameter learning, whereas it is ignored during structure learning.
+This LPAD is not used for structure learning. It can be used only for testing the program on the data, see [Bongard](tutorial/learning/bongard.swinb) example.
 
 ### Language Bias
 As in the [previous example](tutorial/mach.swinb) we define the set of output and input predicates
@@ -108,7 +108,7 @@ modeh(&lt;recall&gt;,&lt;predicate&gt;(&lt;arg1&gt;,...)).
 ==
 To specify the atoms that can appear in the body of clauses you must use facts of the form
 ==
-modeh(&lt;recall&gt;,&lt;predicate&gt;(&lt;arg1&gt;,...)).
+modeb(&lt;recall&gt;,&lt;predicate&gt;(&lt;arg1&gt;,...)).
 ==
 where =|&lt;recall&gt;|= can be an integer or *. =|&lt;recall&gt;|= indicates how many atoms for the predicate specification are retained in the bottom clause during a saturation step. * stands for all those that are found.
 
@@ -143,7 +143,15 @@ For example the first determination/2 fact states that the predicate job/1 can a
 
 <div class="nb-cell markdown">
 ### Example interpretations
-Now we define the example models (or interpretations, i.e. a set of ground facts) and divide them in folds. Below is shown just one example in models modality.
+Now we define the example models (or interpretations, i.e. a set of ground facts) and divide them in folds. You can specify data with two modalities: models and keys.
+
+In the models type, you specify an example model (or interpretation) as a list of Prolog facts initiated by =|begin(model(&lt;name&gt;)).|= and terminated by =|end(model(&lt;name&gt;)).|=.
+
+Alternatively, with the keys modality, you can directly write the facts and the first argument will be interpreted as a model identifier.
+
+The two modalities, models and keys, can be mixed in the same source.
+
+In this example and for the rest of the section we will use the former modality.
 ==
 begin(model(adams)).
 participant(researcher,scuf,no,23).

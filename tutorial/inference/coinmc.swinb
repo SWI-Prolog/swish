@@ -54,6 +54,60 @@ mc_prob_bar(heads(coin),P).
 </div>
 
 <div class="nb-cell markdown">
+With MCINTYRE, you can also take a given number of sample with
+==
+mc_sample(:Query:atom,+Samples:int,-Successes:int,-Failures:int,-Probability:float).
+==
+For example this query
+</div>
+
+<div class="nb-cell query">
+mc_sample(heads(coin),1000,S,F,P).
+</div>
+
+<div class="nb-cell markdown">
+samples heads(coin) 1000 times and returns in T the number of successes, in F the number of failures and in P the estimated probability (T/1000).
+
+We can obtain a bar chart of the samples with the predicate mc_sample_bar/3 (*note:* remember to load the renderer =c3=)
+==
+mc_sample_bar(:Query:atom,+Samples:int,-Chart:dict).
+==
+In our example
+</div>
+
+<div class="nb-cell query">
+mc_sample_bar(heads(coin),1000,Chart).
+</div>
+
+<div class="nb-cell markdown">
+Moreover, we can sample arguments of queries with the predicate mc_sample_arg/4
+==
+mc_sample_arg(:Query:atom,+Samples:int,?Arg:var,-Values:list).
+==
+The predicate samples =Query= a number of =Samples= times. =Arg= should be a variable in =Query=. The predicate returns in =Values= a list of couples L-N where L is the list of values of Arg for which Query succeeds in world sampled at random and N is the number of samples. If L is the empty list, it means that for that sample the query failed. If, in all couples L-N, L is a list with a single element, it means that the clauses in the program are mutually exclusive, i.e., that in every sample, only one clause for each subgoal has the body true.
+
+So for example
+</div>
+
+<div class="nb-cell query">
+mc_sample_arg(heads(X),1000,X,List).
+</div>
+
+<div class="nb-cell markdown">
+here =X= can unify only with =coin=.
+
+If we want to see the bar graph of this sampling we use the predicate mc_sample_arg_bar/4
+==
+mc_sample_arg_bar(:Query:atom,+Samples:int,?Arg:var,-Chart:dict).
+==
+For example
+</div>
+
+<div class="nb-cell query">
+mc_sample_arg_bar(heads(X),1000,X,Chart).
+</div>
+
+<div class="nb-cell markdown">
 --
 Complete example: [coinmc.pl](example/inference/coinmc.pl)
 

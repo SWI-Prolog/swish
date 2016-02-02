@@ -139,7 +139,7 @@ Alternatively, with the keys modality, you can directly write the facts and the 
 
 The two modalities, models and keys, can be mixed in the same source.
 
-If we use the model modality for the example 1
+If we use the model modality for the example/interpretation 1
 ==
 begin(model(1)).
 class(sendback).
@@ -149,9 +149,9 @@ worn(gear).
 worn(engine).
 end(model(1)).
 ==
+If we use this modality the system asserts a =|int(&lt;name&gt;).|= for each model enclosed in =|begin(model(&lt;name&gt;)).|= and =|end(model(&lt;name&gt;)).|=.
 
 Instead, if we use the key modality, our example will be (note the first argument of each fact)
-
 ==
 class(1,sendback).
 neg(1,class(fix)).
@@ -159,8 +159,10 @@ neg(1,class(ok)).
 worn(1,gear).
 worn(1,engine).
 ==
+If we use this modality, facts for int/1 are not asserted for interpretations, but can be explicitily added by the user.
 
-Then we must indicate how the examples are divided in folds with facts of the form: 
+#### Fold division
+After we defined the examples/interpretations we must indicate how the examples are divided in folds with facts of the form: 
 ==
 fold(&lt;fold_name&gt;,&lt;list of model identifiers&gt;)
 ==
@@ -173,7 +175,6 @@ We can also define intensionally the folds as in
 ==
 fold(all,F) :- findall(I,int(I),F).
 ==
-where the system asserts a =|int(&lt;name&gt;).|= for each model enclosed in =|begin(model(&lt;name&gt;)).|= and =|end(model(&lt;name&gt;)).|=.
 </div>
 
 <div class="nb-cell markdown">
