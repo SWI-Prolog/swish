@@ -409,9 +409,8 @@ var tabbed = {
 	var type    = $(ev.target).data('type');
 	var tab     = $(ev.target).closest(".tab-pane");
 	var content = $.el.div();
-	var options = tabbed.tabTypes[type];
+	var options = $.extend({}, tabbed.tabTypes[type]);
 	var profile = tab.find("label.active > input[name=profile]").val();
-	var options = {};
 
 	if ( profile ) {
 	  options.profile = profile;
