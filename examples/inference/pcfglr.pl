@@ -70,5 +70,11 @@ rule('S',Der,['S','S']):0.4; rule('S',Der,[a]):0.3;
 
 ?- mc_sample_bar(pcfg([a,a]),1000,Chart). % take 1000 samples of pcfg([a,a])
 
+?- mc_sample_arg(pcfg(S),20,S,Values). % take 20 samples of S in 
+% findall(S,pcfg(S),L)
+
+?- mc_sample_arg_bar(pcfg(L),20,L,Chart). % take 20 samples of S in 
+% findall(S,pcfg(S),L)
+
 */
 

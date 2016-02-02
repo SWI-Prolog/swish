@@ -47,5 +47,9 @@ obj(I):-
 ?- mc_sample(obj(5),1000,T,F,P). % take 1000 samples of obj(5)
 
 ?- mc_sample_bar(obj(5),1000,Chart). % take 1000 samples of obj(5)
-*/
+
+?- mc_sample_arg(obj(I),100,I,Values). % take 1000 samples of obj(5)
+
+?- mc_sample_arg_bar(obj(I),100,I,Chart). % take 1000 samples of obj(5)
+**/
 

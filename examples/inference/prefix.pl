@@ -13,8 +13,8 @@ doi:10.1017/S1471068413000562.
 
 :- use_module(library(mcintyre)).
 
-:- if(current_predicate(use_rending/1)).
-:- use_rending(c3).
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
 :- endif.
 
 :- mc.
@@ -39,7 +39,7 @@ pre_pcfg([A|R],Der0,Der,[A|L1],L2):-
   \+ rule(A,_,_),     % A is a tminal, consume A
   pre_pcfg(R,Der0,Der,L1,L2).
 
-pre_pcfg([],Der,Der,L,L).      % tmination
+pre_pcfg([],Der,Der,L,L).      % termination
 
 rule('S',Der,['S','S']):0.4; rule('S',Der,[a]):0.3; 
   rule('S',Der,[b]):0.3.
@@ -64,6 +64,15 @@ rule('S',Der,['S','S']):0.4; rule('S',Der,[a]):0.3;
 % expected result ~ 0.0302.
 
 ?- mc_prob(pre_pcfg([b,a]),P).
+% expected result ~ 0.1014.
+
+?- mc_prob_bar(pre_pcfg([b,a]),P).
+% expected result ~ 0.1014.
+
+?- mc_sample(pre_pcfg([b,a]),1000,T,F,P).
+% expected result ~ 0.1014.
+
+?- mc_sample_bar(pre_pcfg([b,a]),1000,P).
 % expected result ~ 0.1014.
 
 

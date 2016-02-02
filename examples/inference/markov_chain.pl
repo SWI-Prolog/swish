@@ -59,5 +59,13 @@ trans(s4,_,s3).
 
 ?- mc_sample_bar(reach(s0,0,s1),1000,Chart).
 
+?- mc_sample_arg(reach(s0,0,S),50,S,Values). % take 50 samples of L in 
+% findall(S,pcfg(S),L)
+
+
+?- mc_sample_arg_bar(reach(s0,0,S),50,S,Chart). % take 50 samples of L in 
+% findall(S,pcfg(S),L)
+
+
 */
 
