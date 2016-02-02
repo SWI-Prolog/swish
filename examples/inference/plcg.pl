@@ -80,9 +80,17 @@ terminal(b).
 
 /** <examples>
 
-?- mc_prob(plc([a,b]),P). what is the probability of sentence [a,b]?
+?- mc_prob(plc([a,b]),P). % what is the probability of sentence [a,b]?
 % expecte result ~  0.031
 
+?- mc_sample(plc([a,b]),1000,T,F,P). % take 1000 samples of plc([a,b])
 
-*/
+?- mc_sample_bar(plc([a,b]),1000,Chart). % take 1000 samples of plc([a,b])
+
+?- mc_sample_arg(plc(S),20,S,Values). % take 20 samples of L in 
+% findall(S,pls(S),L)
+
+?- mc_sample_arg_bar(plc(L),20,L,Chart). % take 20 samples of L in 
+% findall(S,pls(S),L)
+**/
 
