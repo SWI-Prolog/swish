@@ -42,11 +42,12 @@ obj(I):-
 
 /** <examples>
 
-?- prob(obj(5),P). what is the probability that object 5 exists?
-% expecte result ~ 0.002666
-?- prob_bar(obj(5),P). what is the probability that object 5 exists?
-% expecte result ~ 0.002666
-
+?- prob(obj(2),P). what is the probability that object 2 exists?
+% expecte result 0.08189999999999999
+?- prob_bar(obj(2),P). what is the probability that object 2 exists?
+% expecte result 0.08189999999999999
+?- prob(numObj(0,2),P). % what is the probability that there are 2 objects?
+% expecte result 0.063
 
 */
 
