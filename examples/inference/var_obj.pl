@@ -39,10 +39,18 @@ obj(I):-
 
 /** <examples>
 
-?- mc_prob(obj(5),P). % what is the probability that object 5 exists?
+?- mc_prob(obj(2),P). % what is the probability that object 2 exists?
+% expecte result ~ 0.08992307692307693
+?- mc_prob_bar(obj(2),P). % what is the probability that object 2 exists?
+% expecte result ~ 0.08992307692307693
+??- mc_prob(obj(5),P). % what is the probability that object 5 exists?
 % expecte result ~ 0.002666
 ?- mc_prob_bar(obj(5),P). % what is the probability that object 5 exists?
 % expecte result ~ 0.002666
+?- mc_prob(numObj(0,2),P). % what is the probability that there are 2 objects?
+% expecte result ~ 0.0656
+?- mc_prob(numObj(0,5),P). % what is the probability that there are 5 objects?
+% expecte result ~ 0.0014
 
 ?- mc_sample(obj(5),1000,T,F,P). % take 1000 samples of obj(5)
 
@@ -51,5 +59,5 @@ obj(I):-
 ?- mc_sample_arg(obj(I),100,I,Values). % take 1000 samples of obj(5)
 
 ?- mc_sample_arg_bar(obj(I),100,I,Chart). % take 1000 samples of obj(5)
-**/
+*/
 
