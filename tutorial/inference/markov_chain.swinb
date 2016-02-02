@@ -71,7 +71,24 @@ mc_sample_bar(reach(s0,0,s3),1000,Chart).
 </div>
 
 <div class="nb-cell markdown">
-If we want to sample the arguments of reach(s0,0,s3)
+Moreover, we can sample arguments of queries with the predicate mc_sample_arg/4
+==
+mc_sample_arg(:Query:atom,+Samples:int,?Arg:var,-Values:list).
+==
+The predicate samples =Query= a number of =Samples= times. =Arg= should be a variable in =Query=. 
+The predicate returns in =Values= a list of couples =L-N= where =L= is the list of 
+values of =Arg= for which =Query= succeeds in world sampled at random and 
+=N= is the number of samples. If =L= is the empty list, it means that for that sample the query failed. 
+If =L= is a list with a 
+single element, it means that for that sample the query is 
+determinate. 
+If, in all couples =L-N=, =L= 
+is a list with a 
+single element, it means that the clauses in the program 
+are mutually exclusive, i.e., that in every sample, 
+only one clause for each subgoal has the body true.
+
+So for example we may sample the argument =S= of reach(s0,0,S) with
 </div>
 
 <div class="nb-cell query">
@@ -79,7 +96,11 @@ mc_sample_arg(reach(s0,0,S),50,S,Values).
 </div>
 
 <div class="nb-cell markdown">
-To have a graphical results
+If we want to see the bar graph of this sampling we use the predicate mc_sample_arg_bar/4
+==
+mc_sample_arg_bar(:Query:atom,+Samples:int,?Arg:var,-Chart:dict).
+==
+For example
 </div>
 
 <div class="nb-cell query">

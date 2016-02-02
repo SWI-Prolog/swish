@@ -80,7 +80,7 @@ party(no):0.5:-
   \+ company_type(commercial).
 :- end_in.
 ==
-This LPAD is not used for structure learning. It can be used only for testing the program on the data, see [Bongard](tutorial/learning/bongard.swinb) example.
+This LPAD is not used for structure learning. It can be used however for testing the program on the data, see the [Bongard](tutorial/learning/bongard.swinb) example.
 
 ### Language Bias
 As in the [previous example](tutorial/mach.swinb) we define the set of output and input predicates
