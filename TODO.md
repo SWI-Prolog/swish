@@ -139,6 +139,5 @@ _not_ see exactly the same UI for cooperation.  What about
     - use_module/2
     - ?- [file].
     - :- op(1150, fx, [(mode), (public)]).
-  - Selecting new Notebook/program does not change tab icon.
   - Load for tabbed search does not associate file history.
 
