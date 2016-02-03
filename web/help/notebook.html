@@ -2,10 +2,15 @@
 
 <html>
   <head>
+  <title>About Prolog notebooks</title>
   </head>
 <body>
-<h2>About Prolog notebooks</h2>
-
+<style>
+p.note { margin-left: 5%; margin-top: 1em; position: relative }
+p.note span.glyphicon-hand-right {
+float: left; font-size: 120%; color: orange; padding-right: 0.2em;
+}
+</style>
 <p>
 A notebook is a list of <i>cells</i>. Notebooks are different from a
 program with examples because they can <em>tell a story</em>, mixing
@@ -40,14 +45,24 @@ and moving cells.
 <li>
 To <b>link to another notebook</b>, create a markdown cell and use the
 markdown notation <code>[label](reference)</code>, e.g.,
-
-<pre style="font-size:80%">
-[All about lists](lists.swinb)
-</pre>
+<code>[All about lists](lists.swinb)</code>
 <li>
 To <b>link to file in the store</b>, create a markdown cell and use the
 markdown notation <code>[label](myfile.pl)</code>, e.g.,
+<code>[Basic predicates](basics.pl)</code>
 </ul>
 
+<h3>Notebook queries and programs</h3>
+
+A notebook <em>query</em> cell is executed against the program cell
+<strong>above it</strong> and all program cells marked as
+<em>background</em> using the <a class="btn btn-success btn-xs"><span
+style="color:#bef" class="glyphicon glyphicon-cloud"></span></a> button.
+
+<p class="note"><span class="glyphicon glyphicon-hand-right"></span>
+Longer fragments of code that are required throughout a notebook and
+possibly on multiple notebooks are defined in a <em>program</em> tab,
+saved and included using, e.g., <code>:- include(mybasics).</code> in a
+background program kept at the bottom of the notebook.
 </body>
 </html>
