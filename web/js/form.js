@@ -389,16 +389,20 @@ define([ "jquery", "config", "laconic", "tagmanager" ],
 	  var action = $(a).data('action');
 
 	  if ( action )
-	    action.call(client);
+	    action.call(client, a);
 
 	  return false;
 	}
 
 	function addMenuItem(label, onclick) {
-	  var a = $.el.a(label);
+	  if ( label.indexOf("--") == 0 ) {
+	    ul.append($.el.li({class:"divider"}));
+	  } else {
+	    var a = $.el.a(label);
 
-	   $(a).data('action', onclick);
-	   ul.append($.el.li(a));
+	    $(a).data('action', onclick);
+	    ul.append($.el.li(a));
+	  }
 	}
 
 	for(var a in actions) {
