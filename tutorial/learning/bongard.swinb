@@ -278,7 +278,7 @@ Complete example: [bongard.pl](example/learning/bongard.pl)
 
 <div class="nb-cell markdown">
 --
-For more information about how to perform learning see the manual *Help*-&gt;*Help on cplint* (or [PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)). 
+For more information about how to perform learning see the [manual](http://cplint.lamping.unife.it/help/help-cplint.html) (or [PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)). 
 
 --
 [Back to Tutorial](tutorial/tutorial.swinb)

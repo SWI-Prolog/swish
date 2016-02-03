@@ -16,7 +16,7 @@ To execute a learning algorithm the input source must be divided in five parts:
 
 Here we will define a program step by step and then execute the algorithm SLIPCOVER [2] which learns the structure and the parameters given a background knowledge. 
 
-For more information of how to perform learning see the manual *Help*-&gt;*Help on cplint* ([PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)).
+For more information of how to perform learning see the [manual](http://cplint.lamping.unife.it/help/help-cplint.html) ([PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)).
 
 ### Preamble 
 We load the library =slipcover=, initialize it and then set some parameters.
@@ -112,7 +112,7 @@ modeb(&lt;recall&gt;,&lt;predicate&gt;(&lt;arg1&gt;,...)).
 ==
 where =|&lt;recall&gt;|= can be an integer or *. =|&lt;recall&gt;|= indicates how many atoms for the predicate specification are retained in the bottom clause during a saturation step. * stands for all those that are found.
 
-We refer to the manual for further details (*Help*-&gt;*Help on cplint*).
+We refer to the [manual](http://cplint.lamping.unife.it/help/help-cplint.html) for further details.
 
 In our example we use the following mode declarations
 ==
@@ -354,9 +354,7 @@ Complete example: [registration.pl](example/learning/registration.pl)
 
 <div class="nb-cell markdown">
 --
-For more information about how to perform learning and SLIPCOVER see the manual *Help*-&gt;*Help on cplint* (or [PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)) and the paper:
-
-[2] Elena Bellodi and Fabrizio Riguzzi. Structure learning of probabilistic logic programs by searching the clause space. Theory and Practice of Logic Programming, 2013.
+For more information about how to perform learning and SLIPCOVER see the [manual](http://cplint.lamping.unife.it/help/help-cplint.html) (or [PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)) and the references in the [About page](http://cplint.lamping.unife.it/help/about.html#slipcover).
 
 --
 [Back to Tutorial](tutorial/tutorial.swinb)
