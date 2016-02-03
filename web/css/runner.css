@@ -116,7 +116,7 @@ div.runner-title > button {
   background: none repeat scroll 0 0 transparent;
   border: 0 none;
   cursor: pointer;
-  padding: 0;
+  padding: 3px 0px;
   color: #000;
   float: right;
   font-size: 21px;
@@ -126,6 +126,11 @@ div.runner-title > button {
   text-shadow: 0 1px 0 #fff;
   margin-left: 5px;
 }
+
+div.runner-title > button.rtb-toggleIconic
+{ padding: 8px 0px;
+}
+
 
 div.runners-menu button.dropdown-toggle:hover,
 div.runner-title > button:hover {
