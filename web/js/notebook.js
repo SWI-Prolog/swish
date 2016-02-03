@@ -10,10 +10,10 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  */
 
-define([ "jquery", "config", "tabbed", "form", "preferences", "modal",
+define([ "jquery", "config", "tabbed", "form", "preferences", "modal", "prolog",
 	 "laconic", "runner", "storage", "sha1"
        ],
-       function($, config, tabbed, form, preferences, modal) {
+       function($, config, tabbed, form, preferences, modal, prolog) {
 
 var cellTypes = {
   "program":  { label:"Program" },
@@ -875,7 +875,16 @@ var cellTypes = {
 	  "--":			   null,
 	  "Order by":              wrapSolution,
 	  "Distinct":              wrapSolution,
-	  "Limit":		   wrapSolution
+	  "Limit":		   wrapSolution,
+	  "---":		   null,
+	  "Download answers as CSV": function() {
+	    var query = this.find(".editor.query")
+			    .prologEditor('getSource', "query")
+			    .replace(/\.\s*$/,"");
+	    var source = this.nbCell('programs')
+			     .prologEditor('getSource');
+	    prolog.downloadCSV(query, source);
+	  }
         }
       });
 
