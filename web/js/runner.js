@@ -215,23 +215,10 @@ define([ "jquery", "config", "preferences",
 	var elem = $(this);
 	var data = {};
 
-	function closeButton() {
-	  var btn = $.el.button({title:"Close query"});
-	  $(btn).html('&times');
-
-	  $(btn).on("click", function() { elem.prologRunner('close'); });
-	  return btn;
-	}
-
-	function iconizeButton() {
-	  var btn = $.el.button({title:"Iconify query"}, "_");
-	  $(btn).on("click", function() { elem.prologRunner('toggleIconic'); });
-	  return btn;
-	}
-
-	function csvButton() {
-	  var btn = $.el.button({title:"Download CSV"}, "\u21ca");
-	  $(btn).on("click", function() { elem.prologRunner('downloadCSV'); });
+	function titleBarButton(glyph, title, action) {
+	  var btn = $.el.button({title:title, class:"rtb-"+action},
+				$.el.span({class:"glyphicon glyphicon-"+glyph}));
+	  $(btn).on("click", function() { elem.prologRunner(action); });
 	  return btn;
 	}
 
@@ -301,9 +288,9 @@ define([ "jquery", "config", "preferences",
 	  CodeMirror.runMode(query.query, "prolog", qspan);
 	  elem.append($.el.div(
 	    {class:"runner-title ui-widget-header"},
-	    closeButton(),
-	    iconizeButton(),
-	    csvButton(),
+	    titleBarButton("remove-circle", "Close",        'close'),
+	    titleBarButton("minus",         "Iconify",      'toggleIconic'),
+	    titleBarButton("download",      "Download CSV", 'downloadCSV'),
 	    stateButton(),
 	    qspan));
 	} else {
