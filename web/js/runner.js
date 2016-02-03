@@ -36,7 +36,7 @@ define([ "jquery", "config", "preferences",
 	function runnerMenu() {
 	  var icon = $.el.span();
 	  $(icon).html("&#9776");
-	  var menu = dropdownButton(
+	  var menu = form.widgets.dropdownButton(
 	    icon,
 	    { divClass:"runners-menu",
 	      ulClass:"pull-right",
@@ -238,7 +238,7 @@ define([ "jquery", "config", "preferences",
 	function stateButton() {
 	  var icon = $.el.span({class:"runner-state show-state idle"});
 
-	  return dropdownButton(icon);
+	  return form.widgets.dropdownButton(icon);
 	}
 
 	function controllerDiv() {
@@ -663,7 +663,7 @@ define([ "jquery", "config", "preferences",
       actions = $.extend({ "Re-run": function() { console.log("Re-Run ", this); }
 			 }, actions);
 
-      populateMenu(menu, this, actions);
+      form.widgets.populateMenu(menu, this, actions);
 
       return this;
     },
@@ -1045,55 +1045,6 @@ define([ "jquery", "config", "preferences",
 		   /*******************************
 		   *	       UTIL		*
 		   *******************************/
-
-  function dropdownButton(icon, options) {
-    if ( !options ) options = {};
-    var cls     = options.divClass;
-    var ulClass = options.ulClass;
-
-    var dropdown = $.el.div(
-      {class: "btn-group dropdown"+(cls?" "+cls:"")},
-      $.el.button(
-	{class:"dropdown-toggle",
-	 "data-toggle":"dropdown"},
-	icon),
-      $.el.ul({class:"dropdown-menu"+(ulClass?" "+ulClass:"")}));
-
-    if ( options.actions )
-      populateMenu($(dropdown), options.client, options.actions);
-
-    return dropdown;
-  }
-
-  function populateMenu(menu, client, actions) {
-    var ul = menu.find(".dropdown-menu");
-
-    function runMenu(a) {
-      var action = $(a).data('action');
-
-      if ( action )
-	action.call(client);
-
-      return false;
-    }
-
-    function addMenuItem(label, onclick) {
-      var a = $.el.a(label);
-
-       $(a).data('action', onclick);
-       ul.append($.el.li(a));
-    }
-
-    for(var a in actions) {
-      if ( actions.hasOwnProperty(a) ) {
-	addMenuItem(a, actions[a]);
-      }
-    }
-
-    ul.on("click", "a", function() { runMenu(this); } );
-
-    return menu;
-  }
 
   function glyphButton(glyph, title) {
     var btn = $.el.a({href:"#", class:"close btn btn-link btn-sm",
