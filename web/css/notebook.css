@@ -122,14 +122,19 @@
 }
 
 .nb-cell .nb-query-menu
-{ background: transparent;
+{ display: inline;
   float: left;
-  padding: 5px 5px 5px 5px;
+}
+
+.nb-query-menu button
+{ background: transparent;
+  padding: 3px 5px 0px 5px;
   border: 0px;
   color: #888;
 }
 
-.nb-cell .nb-query-menu:hover
+
+.nb-query-menu button:hover
 { color: #000;
 }
 

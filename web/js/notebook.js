@@ -862,11 +862,26 @@ var cellTypes = {
       glyphButton("play", "run",       "Run query",
 		  "primary", "xs"));
 
+    function wrapSolution(a)
+    { this.find(".editor.query").prologEditor('wrapSolution', $(a).text());
+    }
+
+    var menu = form.widgets.dropdownButton(
+      $.el.span({class:"glyphicon glyphicon-menu-hamburger"}),
+      { client: cell,
+	divClass: "nb-query-menu",
+        actions: {
+	  "Aggregate (count all)": wrapSolution,
+	  "--":			   null,
+	  "Order by":              wrapSolution,
+	  "Distinct":              wrapSolution,
+	  "Limit":		   wrapSolution
+        }
+      });
+
     this.append(buttons,
 		$.el.div({class:"query with-buttons"},
-			 $.el.a({href:"#", class:"nb-query-menu btn btn-default btn-sm",
-			         title:"Query menu"},
-				$.el.span({class:"glyphicon glyphicon-menu-hamburger"})),
+			 menu,
 			 $.el.span({class:"prolog-prompt"}, "?-"),
 			 editor=$.el.div({class:"editor query"})));
 
