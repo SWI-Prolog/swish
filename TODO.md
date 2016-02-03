@@ -99,10 +99,6 @@ _not_ see exactly the same UI for cooperation.  What about
 
 ## Notebooks
 
-  - Add menu to query cells (at the left) with:
-    - "Solutions" menu
-    - Open query in bottom-right query editor.
-    - Download as CSV
   - Save notebook/program as new profile?
 
 ## SWISH as Prolog frontenda for local usage
