@@ -1,5 +1,5 @@
 /*
-A six-sided dice is repeatedly thrown until the outcome is six.
+A six-sided die is repeatedly thrown until the outcome is six.
 on(T,F) means that on the Tth throw the face F came out.
 From
 J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated 
@@ -16,7 +16,7 @@ on(X,1):1/6;on(X,2):1/6;on(X,3):1/6;
 on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
   X1 is X-1,X1>=0,on(X1,_),
   \+ on(X1,6).
-% at time T the dice lands on one of its faces with equal probability if
+% at time T the die lands on one of its faces with equal probability if
 % at the previous time point it was thrown and it did not land on face 6
 
 
