@@ -412,10 +412,9 @@ var tabbed = {
 	var type    = $(ev.target).data('type');
 	var tab     = $(ev.target).closest(".tab-pane");
 	var content = $.el.div();
-	var options = tabbed.tabTypes[type];
-/*	var profile = tab.find("label.active > input[name=profile]").val();
-	var options = {};
-
+	var options = $.extend({}, tabbed.tabTypes[type]);
+/*	
+ 	var profile = tab.find("label.active > input[name=profile]").val();
 	if ( profile ) {
 	  options.profile = profile;
 	  options.value   = tab.tabbed('profileValue', profile,

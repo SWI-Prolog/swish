@@ -40,9 +40,6 @@
   - User provided rendering?
     - Allow for rewriting answer terms?
     - Allow generating HTML?  How to deal with security?
-  - Allow copy of Prolog representation.  See
-    http://www.javascriptkit.com/javatutors/copytoclipboard.shtml
-  - Allow download of rendered (HTML/SVG) representation.
 
 ## Sharing
 
@@ -74,7 +71,6 @@ _not_ see exactly the same UI for cooperation.  What about
     - etc ...
   - Make it easy to add HTTPS certificate based login.
     - not SWISH specific
-  - Change to digest login as default.
 
 ## Search
 
@@ -86,16 +82,6 @@ _not_ see exactly the same UI for cooperation.  What about
 
 ## Tabbed editor
 
-  - Notebook
-    - Connect query to above source.				[OK]
-    - Multiple sources:
-      - Allow naming sources?
-      - Allow one source to include others in the same notebook?
-    - Avoid hyperlinks to destroy the page.
-      - show predicate links in a modal dialog
-        - /pldoc/man?predicate=member/2				[OK]
-	- other predicate links.
-      - Use `target=` for others.
   - Source search: pass number of items being searched and
     if there are too many hits, balance over files.
   - Set tab-width per source?
@@ -111,13 +97,17 @@ _not_ see exactly the same UI for cooperation.  What about
       - Make sure running includes the browser version.
         - Send list of modified tabs
 
-## SWISH as Prolog frontend for local usage
+## Notebooks
+
+  - Save notebook/program as new profile?
+
+## SWISH as Prolog frontenda for local usage
 
   - Deal with login
     - Limit to localhost.  Proposed by Douglas Miles:
       - Generate random initial URL
       - Fire on this URL
-      - Esablish session cookie
+      - Establish session cookie
       - Demand this cookie and destroy the initial URL
     - Shared/remote usage
       - Describe how to setup HTTPS.
@@ -145,4 +135,5 @@ _not_ see exactly the same UI for cooperation.  What about
     - use_module/2
     - ?- [file].
     - :- op(1150, fx, [(mode), (public)]).
+  - Load for tabbed search does not associate file history.
 

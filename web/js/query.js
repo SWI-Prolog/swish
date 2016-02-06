@@ -244,67 +244,6 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
     },
 
     /**
-     * @param {String} [query] query to get the variables from
-     * @return {List.string} is a list of Prolog variables without
-     * duplicates
-     */
-
-    variables: function(query) {
-      var qspan = $.el.span({class:"query cm-s-prolog"});
-      var vars = [];
-
-      CodeMirror.runMode(query, "prolog", qspan);
-      $(qspan).find("span.cm-var").each(function() {
-	var name = $(this).text();
-	if ( vars.indexOf(name) < 0 )
-	  vars.push(name);
-      });
-
-      return vars;
-    },
-
-    /**
-     * Wrap current query in a solution modifier.
-     * TBD: If there is a selection, only wrap the selection
-     *
-     * @param {String} wrapper defines the type of wrapper to use.
-     */
-    wrapSolution: function(wrapper) {
-      var query = this.queryEditor('getQuery').replace(/\.\s*$/m, "");
-      var that = this;
-      var vars = this.queryEditor('variables', query);
-
-      function wrapQuery(pre, post) {
-	that.queryEditor('setQuery', pre + "("+query+")" + post + ".");
-	return that;
-      }
-
-      function order(l) {
-	var order = [];
-	for(var i=0; i<vars.length; i++)
-	  order.push("asc("+vars[i]+")");
-	return order.join(",");
-      }
-
-      switch ( wrapper ) {
-        case "Aggregate (count all)":
-	  return wrapQuery("aggregate_all(count, ", ", Count)");
-        case "Order by":
-	  return wrapQuery("order_by(["+order(vars)+"], ", ")");
-        case "Distinct":
-	  return wrapQuery("distinct(["+vars.join(",")+"], ", ")");
-        case "Limit":
-	  return wrapQuery("limit(10, ", ")");
-        case "Time":
-	  return wrapQuery("time(", ")");
-        case "Debug (trace)":
-	  return wrapQuery("trace, ", "");
-	default:
-	  alert("Unknown wrapper: \""+wrapper+"\"");
-      }
-    },
-
-    /**
      * Collect source and query and submit them to the associated
      * `runner`.
      *
@@ -439,7 +378,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
     }
 
     $(dropup).on("click", "a", function() {
-      Q(this).queryEditor('wrapSolution', $(this).text());
+      Q(this).find(".query").prologEditor('wrapSolution', $(this).text());
     });
 
     return dropup;

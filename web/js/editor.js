@@ -947,8 +947,73 @@ define([ "cm/lib/codemirror",
 
       this.storage(storage);
       return this;
-    }
+    },
 
+		 /*******************************
+		 *	QUERY MANIPULATION	*
+		 *******************************/
+
+    /**
+     * @param {String} [query] query to get the variables from
+     * @return {List.string} is a list of Prolog variables without
+     * duplicates
+     */
+
+    variables: function(query) {
+      var qspan = $.el.span({class:"query cm-s-prolog"});
+      var vars = [];
+
+      CodeMirror.runMode(query, "prolog", qspan);
+      $(qspan).find("span.cm-var").each(function() {
+	var name = $(this).text();
+	if ( vars.indexOf(name) < 0 )
+	  vars.push(name);
+      });
+
+      return vars;
+    },
+
+    /**
+     * Wrap current query in a solution modifier.
+     * TBD: If there is a selection, only wrap the selection
+     *
+     * @param {String} wrapper defines the type of wrapper to use.
+     */
+    wrapSolution: function(wrapper) {
+      var query = this.prologEditor('getSource', "query").replace(/\.\s*$/m, "");
+      var that = this;
+      var vars = this.prologEditor('variables', query);
+
+      function wrapQuery(pre, post) {
+	that.prologEditor('setSource', pre + "("+query+")" + post + ".")
+	    .focus();
+	return that;
+      }
+
+      function order(l) {
+	var order = [];
+	for(var i=0; i<vars.length; i++)
+	  order.push("asc("+vars[i]+")");
+	return order.join(",");
+      }
+
+      switch ( wrapper ) {
+        case "Aggregate (count all)":
+	  return wrapQuery("aggregate_all(count, ", ", Count)");
+        case "Order by":
+	  return wrapQuery("order_by(["+order(vars)+"], ", ")");
+        case "Distinct":
+	  return wrapQuery("distinct(["+vars.join(",")+"], ", ")");
+        case "Limit":
+	  return wrapQuery("limit(10, ", ")");
+        case "Time":
+	  return wrapQuery("time(", ")");
+        case "Debug (trace)":
+	  return wrapQuery("trace, ", "");
+	default:
+	  alert("Unknown wrapper: \""+wrapper+"\"");
+      }
+    }
   }; // methods
 
   tabbed.tabTypes.prolog = {

@@ -5,6 +5,13 @@
   <title>SWISH: SWI-Prolog for SHaring</title>
   </head>
 <body>
+<style>
+p.note { margin-left: 5%; position: relative }
+p.note span.glyphicon-hand-right {
+float: left; font-size: 150%; color: orange; padding-right: 0.2em;
+}
+</style>
+
 <h4>Table of Contents</h4>
   <ul>
     <li><a href="#help-basics">Basic operation</a></li>
@@ -26,9 +33,10 @@ against the <i>built-in</i> predicates of Prolog.  For example:
 ?- format("Hello world!~n").</pre>
 
 <p>
-A query can be executed by hitting <code>RETURN</code> if the query
-is complete and the caret is behind the '.' that terminates the query
-or by using the <b>Run!</b> button.  At this moment, the following happens:
+A query can be executed by hitting <code>RETURN</code> if the query is
+<em>complete</em> (i.e., ends in a full-stop) or by using the <a
+class="btn btn-xs btn-primary">Run!</a> button. At this moment, the
+following happens:
 
 <ol>
   <li>The interface creates a <em>runner</em> in the top-right window
@@ -48,11 +56,16 @@ or by using the <b>Run!</b> button.  At this moment, the following happens:
 </ol>
 
 <p>
-Note that <b>you do not have to save your program to execute it</b>.  If
-your are not satisfied with the answer to a query, you can simply
-edit the program and use the <b>Run!</b> again.  The new query is
-executed in a completely new environment.  In particular, data that
-you asserted in a previous query is not available in the next.
+Note that <b>you do not have to save your program to execute it</b>. If
+your are not satisfied with the answer to a query, you can simply edit
+the program and use <a class="btn btn-xs btn-primary">Run!</a> again.
+The new query is executed in a completely new environment. In
+particular, data that you asserted in a previous query is not available
+in the next.
+
+<p class="note">
+<span class="glyphicon glyphicon-hand-right"></span> Use
+<strong>Ctrl-Enter</strong> to insert a newline in a complete query
 
 <h2 id="help-examples">Embedding examples in the program text</h2>
 <p>
@@ -119,13 +132,17 @@ that provides shared editing, chat and voice communication.
 <p>
 After running a query, the <strong>complete</strong> result set for the
 query can be downloaded as a CSV (Comma Separated Values) document by
-clicking the double down arrow at the <em>runner</em> window. This
-causes a dialogue to appear that allows for specifying the columns,
-optionally the detailed result format (if the server provides multiple
-result formats), whether only <em>distinct</em> results should be
-returned and the maximum number of results to return. The latter is by
-default set to 10&nbsp;000 to avoid sending huge documents by accident.
-The field can be cleared to return all results.
+clicking the <span class="glyphicon glyphicon-download"></span> button
+at the top-right of a <em>runner</em> window or using the
+<strong>Download answers as CSV</strong> option from the <span
+class="glyphicon glyphicon-menu-hamburger"></span> button on
+<em>notebook query cells</em>. This causes a dialogue to appear that
+allows for specifying the columns, optionally the detailed result format
+(if the server provides multiple result formats), whether only
+<em>distinct</em> results should be returned and the maximum number of
+results to return. The latter is by default set to 10&nbsp;000 to avoid
+sending huge documents by accident. The field can be cleared to return
+all results.
 
 <h3>Download query results through an API</h3>
 <p>
@@ -198,6 +215,7 @@ providing the parameters below.  The URL accepts both `GET` and `POST` requests.
 
 <pre>
 http://swish.swi-prolog.org/?code=https://github.com/SWI-Prolog/swipl-devel/raw/master/demo/likes.pl&amp;q=likes(sam,Food).</pre>
+<a target="_blank" href="http://swish.swi-prolog.org/?code=https://github.com/SWI-Prolog/swipl-devel/raw/master/demo/likes.pl&amp;q=likes(sam,Food).">Try it!</a> (launches a new tab)
 
 </body>
 </html>

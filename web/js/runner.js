@@ -10,9 +10,9 @@
  */
 
 define([ "jquery", "config", "preferences",
-	 "cm/lib/codemirror", "form", "answer", "laconic"
+	 "cm/lib/codemirror", "form", "prolog", "answer", "laconic"
        ],
-       function($, config, preferences, CodeMirror, form) {
+       function($, config, preferences, CodeMirror, form, prolog) {
 
 		 /*******************************
 		 *	  THE COLLECTION	*
@@ -36,7 +36,7 @@ define([ "jquery", "config", "preferences",
 	function runnerMenu() {
 	  var icon = $.el.span();
 	  $(icon).html("&#9776");
-	  var menu = dropdownButton(
+	  var menu = form.widgets.dropdownButton(
 	    icon,
 	    { divClass:"runners-menu",
 	      ulClass:"pull-right",
@@ -215,30 +215,17 @@ define([ "jquery", "config", "preferences",
 	var elem = $(this);
 	var data = {};
 
-	function closeButton() {
-	  var btn = $.el.button({title:"Close query"});
-	  $(btn).html('&times');
-
-	  $(btn).on("click", function() { elem.prologRunner('close'); });
-	  return btn;
-	}
-
-	function iconizeButton() {
-	  var btn = $.el.button({title:"Iconify query"}, "_");
-	  $(btn).on("click", function() { elem.prologRunner('toggleIconic'); });
-	  return btn;
-	}
-
-	function csvButton() {
-	  var btn = $.el.button({title:"Download CSV"}, "\u21ca");
-	  $(btn).on("click", function() { elem.prologRunner('downloadCSV'); });
+	function titleBarButton(glyph, title, action) {
+	  var btn = $.el.button({title:title, class:"rtb-"+action},
+				$.el.span({class:"glyphicon glyphicon-"+glyph}));
+	  $(btn).on("click", function() { elem.prologRunner(action); });
 	  return btn;
 	}
 
 	function stateButton() {
 	  var icon = $.el.span({class:"runner-state show-state idle"});
 
-	  return dropdownButton(icon);
+	  return form.widgets.dropdownButton(icon);
 	}
 
 	function controllerDiv() {
@@ -302,19 +289,19 @@ define([ "jquery", "config", "preferences",
 	  if (query.codeType != "lpad") {
 	    elem.append($.el.div(
 	      {class:"runner-title ui-widget-header"},
-	      closeButton(),
-	      iconizeButton(),
-	      csvButton(),
+	      titleBarButton("remove-circle", "Close",        'close'),
+	      titleBarButton("minus",         "Iconify",      'toggleIconic'),
+	      titleBarButton("download",      "Download CSV", 'downloadCSV'),
 	      stateButton(),
 	      qspan));
-	  } else {
+            } else {
 	    elem.append($.el.div(
 	      {class:"runner-title ui-widget-header"},
-	      closeButton(),
-	      iconizeButton(),
+	      titleBarButton("remove-circle", "Close",        'close'),
+	      titleBarButton("minus",         "Iconify",      'toggleIconic'),
 	      stateButton(),
 	      qspan));
-	  }
+	  }  
 	} else {
 	  var close = glyphButton("remove-circle", "Close");
 	  elem.append(close);
@@ -678,102 +665,22 @@ define([ "jquery", "config", "preferences",
       actions = $.extend({ "Re-run": function() { console.log("Re-Run ", this); }
 			 }, actions);
 
-      populateMenu(menu, this, actions);
+      form.widgets.populateMenu(menu, this, actions);
 
       return this;
     },
 
     /**
      * Download query results as CSV.
-     * @param {Object} [options]
-     * @param {String} [options.projection] holds the Prolog projection
-     * variables, separated by commas, e.g., `"X,Y"`
-     * @param {String} [options.format="prolog"] holds a string that
-     * defines the variation of the CSV format, e.g., `"prolog"` or
-     * `"rdf"`
-     * @param {String|Number} [options.limit] defines the max number of
-     * results.
-     * @param {Boolean} [options.distinct] requests only distinct
-     * results.
      */
     downloadCSV: function(options) {
-      var elem = this;
       var data = this.data('prologRunner');
-      var vars = [];
+      var query = data.query.query.replace(/\.\s*$/,"");
 
-      options = options||{};
-
-      if ( options.projection ) {
-	var formel;
-	var format = options.format||"prolog";
-	var query = data.query.query.replace(/\.\s*$/,"");
-
-	function attr(name,value) {
-	  return $.el.input({type:"hidden", name:name, value:value});
-	}
-
-	if ( options.distinct )
-	  query = "distinct(["+options.projection+"],("+query+"))";
-	if ( options.limit ) {
-	  var limit = parseInt(options.limit.replace(/[ _]/g,""));
-
-	  if ( typeof(limit) == "number" ) {
-	    query = "limit("+limit+",("+query+"))";
-	  } else {
-	    alert("Not an integer: ", options.limit);
-	    return false;
-	  }
-	}
-
-	formel = $.el.form({ method:"POST",
-                             action:config.http.locations.pengines+"/create",
-			     target:"_blank"
-		           },
-			   attr("format", "csv"),
-			   attr("chunk", "100000000"),
-			   attr("application", "swish"),
-			   attr("ask", query),
-			   attr("src_text", data.query.source),
-			   attr("template", format+"("+options.projection+")"));
-	$("body").append(formel);
-	formel.submit();
-	$(formel).remove();
-      } else {
-	this.find("span.query span.cm-var").each(function() {
-	  var name = $(this).text();
-	  if ( vars.indexOf(name) < 0 )
-	    vars.push(name);
-        });
-
-
-	function infoBody() {
-	  var formel = $.el.form(
-            {class:"form-horizontal"},
-	    form.fields.projection(vars.join(",")),
-	    form.fields.csvFormat(config.swish.csv_formats,
-				  preferences.getVal("csvFormat")),
-	    form.fields.limit("10 000", false),
-	    form.fields.buttons(
-	      { label: "Download CSV",
-		action: function(ev, params) {
-		  ev.preventDefault();
-		  if ( config.swish.csv_formats.length > 1 )
-		    preferences.setVal("csvFormat", params.format);
-		  elem.prologRunner('downloadCSV', params);
-
-		  return false;
-		}
-	      }));
-	  this.append(formel);
-	}
-
-	form.showDialog({ title: "Download query results as CSV",
-			  body:  infoBody
-		        });
-      }
+      prolog.downloadCSV(query, data.query.source, options);
 
       return this;
-      },
+    },
 
   /**
    * @param {String} state defines the new state of the pengine.
@@ -1072,55 +979,6 @@ console.log(data);
 		   /*******************************
 		   *	       UTIL		*
 		   *******************************/
-
-  function dropdownButton(icon, options) {
-    if ( !options ) options = {};
-    var cls     = options.divClass;
-    var ulClass = options.ulClass;
-
-    var dropdown = $.el.div(
-      {class: "btn-group dropdown"+(cls?" "+cls:"")},
-      $.el.button(
-	{class:"dropdown-toggle",
-	 "data-toggle":"dropdown"},
-	icon),
-      $.el.ul({class:"dropdown-menu"+(ulClass?" "+ulClass:"")}));
-
-    if ( options.actions )
-      populateMenu($(dropdown), options.client, options.actions);
-
-    return dropdown;
-  }
-
-  function populateMenu(menu, client, actions) {
-    var ul = menu.find(".dropdown-menu");
-
-    function runMenu(a) {
-      var action = $(a).data('action');
-
-      if ( action )
-	action.call(client);
-
-      return false;
-    }
-
-    function addMenuItem(label, onclick) {
-      var a = $.el.a(label);
-
-       $(a).data('action', onclick);
-       ul.append($.el.li(a));
-    }
-
-    for(var a in actions) {
-      if ( actions.hasOwnProperty(a) ) {
-	addMenuItem(a, actions[a]);
-      }
-    }
-
-    ul.on("click", "a", function() { runMenu(this); } );
-
-    return menu;
-  }
 
   function glyphButton(glyph, title) {
     var btn = $.el.a({href:"#", class:"close btn btn-link btn-sm",

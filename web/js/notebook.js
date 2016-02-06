@@ -10,10 +10,10 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  */
 
-define([ "jquery", "config", "tabbed", "form", "preferences", "modal",
+define([ "jquery", "config", "tabbed", "form", "preferences", "modal", "prolog",
 	 "laconic", "runner", "storage", "sha1"
        ],
-       function($, config, tabbed, form, preferences, modal) {
+       function($, config, tabbed, form, preferences, modal, prolog) {
 
 var cellTypes = {
   "prolog":   { label:"Prolog" },
@@ -903,8 +903,35 @@ var cellTypes = {
       glyphButton("play", "run",       "Run query",
 		  "primary", "xs"));
 
+    function wrapSolution(a)
+    { this.find(".editor.query").prologEditor('wrapSolution', $(a).text());
+    }
+
+    var menu = form.widgets.dropdownButton(
+      $.el.span({class:"glyphicon glyphicon-menu-hamburger"}),
+      { client: cell,
+	divClass: "nb-query-menu",
+        actions: {
+	  "Aggregate (count all)": wrapSolution,
+	  "--":			   null,
+	  "Order by":              wrapSolution,
+	  "Distinct":              wrapSolution,
+	  "Limit":		   wrapSolution,
+	  "---":		   null,
+	  "Download answers as CSV": function() {
+	    var query = this.find(".editor.query")
+			    .prologEditor('getSource', "query")
+			    .replace(/\.\s*$/,"");
+	    var source = this.nbCell('programs')
+			     .prologEditor('getSource');
+	    prolog.downloadCSV(query, source);
+	  }
+        }
+      });
+
     this.append(buttons,
 		$.el.div({class:"query with-buttons"},
+			 menu,
 			 $.el.span({class:"prolog-prompt"}, "?-"),
 			 editor=$.el.div({class:"editor query"})));
 
