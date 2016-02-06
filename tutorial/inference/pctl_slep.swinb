@@ -316,8 +316,9 @@ config([counter| L]) :-
 
 neighbor(I,process(I,J)) :-
 	num(N),
-	(I&lt;N-&gt;
-	-&gt;  J is I+1
+	(I&lt;N
+  -&gt;
+      J is I+1
 	;   J = 1
 	).
 
