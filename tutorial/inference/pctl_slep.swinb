@@ -28,7 +28,7 @@ With this program you can
 The full program of this example is 
 </div>
 
-<div class="nb-cell program prolog">
+<div class="nb-cell program prolog" data-singleline="true">
 :- use_module(library(mcintyre)).
 
 :- if(current_predicate(use_rendering/1)).
@@ -59,17 +59,17 @@ models(S, prob_next(comp(Op, P), F),Hist,Limit,Time) :-
 	mc_sample(pmodels(S, next(F),Hist,Limit,Time),20, Q),
 	comp(Q, Op, P).
 
-comp(Q,>,P):-
-  Q>P.
+comp(Q,&gt;,P):-
+  Q&gt;P.
 
-comp(Q,>=,P):-
-  Q>=P.
+comp(Q,&gt;=,P):-
+  Q&gt;=P.
 
-comp(Q,<,P):-
-  Q<P.
+comp(Q,&lt;,P):-
+  Q&lt;P.
 
-comp(Q,=<,P):-
-  Q=<P.
+comp(Q,=&lt;,P):-
+  Q=&lt;P.
 
 
 % Path Formulae
@@ -98,7 +98,7 @@ pmodels(S, next(F), Hist,Limit,Time0,Time) :-
 within_limit(_Time,nolimit):-!.
 
 within_limit(Time,Limit):-
-  Time<Limit.
+  Time&lt;Limit.
 
 bounded_eventually(Prop,Rounds):-
   num(N),
@@ -128,7 +128,7 @@ final(elect, [_|L]) :-
 
 gen_elected_state(J, L) :-
 	(J==0
-	->    L=[]
+	-&gt;    L=[]
 	;     L = [state(3,_,_,_)|Rest],
 	      J1 is J-1,
 	      gen_elected_state(J1,Rest)
@@ -137,33 +137,33 @@ gen_elected_state(J, L) :-
 
 % transitions
 % module counter
-% [read] c<N-1 -> (c'=c+1);
+% [read] c&lt;N-1 -&gt; (c'=c+1);
 % reading
 trans(counter, counter(C), read, counter(D),_S,H,H) :-
   num(N),
-  C < N-1,
+  C &lt; N-1,
   D is C+1.
 
-% [read] c=N-1 -> (c'=c);
+% [read] c=N-1 -&gt; (c'=c);
 % finished reading
 trans(counter, counter(C), read, counter(C),_S,H,H) :-
   num(N),
   C =:= N-1.
 
-% [done] u1 | u2 | u3 | u4 -> (c'=c);
+% [done] u1 | u2 | u3 | u4 -&gt; (c'=c);
 % done
 trans(counter, counter(C), done, counter(C),S,H,H) :-
   get_processid(P), 
   nonlocal(process(P,_), uniqueid, 1,S).
    
 
-% [retry] !(u1 | u2 | u3 | u4) -> (c'=1);
+% [retry] !(u1 | u2 | u3 | u4) -&gt; (c'=1);
 % pick again reset counter 
 trans(counter, counter(_C), retry, counter(1),S,H,H) :-
         findall(P,get_processid(P),PL),
 	maplist(nl(S),PL).
 
-% [loop] s1=3 -> (c'=c);
+% [loop] s1=3 -&gt; (c'=c);
 % loop (when finished to avoid deadlocks)
 trans(counter, counter(C), loop, counter(C),S,H,H) :-
   nonlocal(process(1,_), state, 3,S).
@@ -175,37 +175,37 @@ trans(counter, counter(C), loop, counter(C),S,H,H) :-
 % s1=2 deciding
 % s1=3 finished
 
-% [pick] s1=0 -> 1/K : (s1'=1) & (p1'=0) & (v1'=0) & (u1'=true) + ...;
+% [pick] s1=0 -&gt; 1/K : (s1'=1) & (p1'=0) & (v1'=0) & (u1'=true) + ...;
 % pick value
 trans(process(_N,_Next), state(0,_,_,_), pick, state(1,1,R,R),_S,H,[pick(R)|H]) :-
   pick(H,R).
 
 %read 
-% [read] s1=1 &  u1 & !p1=v2 & c<N-1 -> (u1'=true) & (v1'=v2);
+% [read] s1=1 &  u1 & !p1=v2 & c&lt;N-1 -&gt; (u1'=true) & (v1'=v2);
 trans(process(_N,Next), state(1,1,_,P), read, state(1,1,V,P),S,H,H) :-
   nonlocal(counter, counter, C,S),
   num(CN),
-  C < CN - 1,
+  C &lt; CN - 1,
   nonlocal(process(Next,_), value, V,S),
   P \== V.
 
-% [read] s1=1 &  u1 &  p1=v2 & c<N-1 -> (u1'=false) & (v1'=v2) & (p1'=0);
+% [read] s1=1 &  u1 &  p1=v2 & c&lt;N-1 -&gt; (u1'=false) & (v1'=v2) & (p1'=0);
 trans(process(_N,Next), state(1,1,_,P), read, state(1,0,V,0),S,H,H) :-
   nonlocal(counter, counter, C,S),
   num(CN),
-  C < CN - 1,
+  C &lt; CN - 1,
   nonlocal(process(Next,_), value, V,S),
   P == V.
 
-% [read] s1=1 & !u1 &  c<N-1 -> (u1'=false) & (v1'=v2);
+% [read] s1=1 & !u1 &  c&lt;N-1 -&gt; (u1'=false) & (v1'=v2);
 trans(process(_N,Next), state(1,0,_,P), read, state(1,0,V,P),S,H,H) :-
   nonlocal(counter, counter, C,S),
   num(CN),
-  C < CN - 1,
+  C &lt; CN - 1,
   nonlocal(process(Next,_), value, V,S).
  
 % read and move to decide 
-% [read] s1=1 &  u1 & !p1=v2 & c=N-1 -> (s1'=2) & (u1'=true) & (v1'=0) & (p1'=0);
+% [read] s1=1 &  u1 & !p1=v2 & c=N-1 -&gt; (s1'=2) & (u1'=true) & (v1'=0) & (p1'=0);
 trans(process(_N,Next), state(1,1,_,P), read, state(2,1,0,0),S,H,H) :-
   nonlocal(counter, counter, C,S),
   num(CN),
@@ -213,7 +213,7 @@ trans(process(_N,Next), state(1,1,_,P), read, state(2,1,0,0),S,H,H) :-
   nonlocal(process(Next,_), value, V,S),
   P \== V.
 
-% [read] s1=1 &  u1 &  p1=v2 & c=N-1 -> (u1'=false) & (v1'=0) & (p1'=0);
+% [read] s1=1 &  u1 &  p1=v2 & c=N-1 -&gt; (u1'=false) & (v1'=0) & (p1'=0);
 trans(process(_N,Next), state(1,1,_,P), read, state(2,0,0,0),S,H,H) :-
   nonlocal(counter, counter, C,S),
   num(CN),
@@ -221,22 +221,22 @@ trans(process(_N,Next), state(1,1,_,P), read, state(2,0,0,0),S,H,H) :-
   nonlocal(process(Next,_), value, V,S),
   P == V.
 
-% [read] s1=1 & !u1 &  c=N-1 -> (s1'=2) & (u1'=false) & (v1'=0);
+% [read] s1=1 & !u1 &  c=N-1 -&gt; (s1'=2) & (u1'=false) & (v1'=0);
 trans(process(_N,_Next), state(1,0,_,P), read, state(2,0,0,P),S,H,H) :-
   nonlocal(counter, counter, C,S),
   num(CN),
   C =:= CN - 1.
 
 % done
-% [done] s1=2 -> (s1'=3) & (u1'=false) & (v1'=0) & (p1'=0);
+% [done] s1=2 -&gt; (s1'=3) & (u1'=false) & (v1'=0) & (p1'=0);
 trans(process(_N,_Next), state(2,_,_,_), done, state(3,0,0,0),_S,H,H).
 
 % retry
-% [retry] s1=2 -> (s1'=0) & (u1'=false) & (v1'=0) & (p1'=0);
+% [retry] s1=2 -&gt; (s1'=0) & (u1'=false) & (v1'=0) & (p1'=0);
 trans(process(_N,_Next), state(2,_,_,_), retry, state(0,0,0,0),_S,H,H).
 
 % loop (when finished to avoid deadlocks)
-% [loop] s1=3 -> (s1'=3);
+% [loop] s1=3 -&gt; (s1'=3);
 trans(process(_N,_Next), state(3,U,V,P), loop, state(3,U,V,P),_S,H,H).
 
 pick(H,V):-
@@ -252,7 +252,7 @@ pick_value(_H,_PH,_I,(P0,V0),(P0,V0)):-
 pick_value(H,PH,I,(P0,V0),(P1,V1)):-
   var(V0),
   PF is PH/P0,
-  (pick_fact(H,V0,PF)->
+  (pick_fact(H,V0,PF)-&gt;
     P1=PF,
     V1=I
   ;
@@ -276,7 +276,7 @@ find_matching_trans([P|Ps], [S|Ss], CS, PA, A, [S|Ts], Hi,Ho) :-
 	% skip current process; but then all transitions enabled in the current
 	% process will be prohibited for selection in later processes.
 	enabled_trans(P,L),
-	(nonvar(A) -> \+ member(A,L); true),
+	(nonvar(A) -&gt; \+ member(A,L); true),
 	append(L, PA, PA1),
 	find_matching_trans(Ps, Ss, CS, PA1, A, Ts, Hi, Ho).
 
@@ -316,8 +316,8 @@ config([counter| L]) :-
 
 neighbor(I,process(I,J)) :-
 	num(N),
-	(I<N
-	->  J is I+1
+	(I&lt;N-&gt;
+	-&gt;  J is I+1
 	;   J = 1
 	).
 
@@ -412,7 +412,7 @@ An example of use of the above predicate is
 </div>
 
 <div class="nb-cell query">
-?- mc_expectation(eventually(elect,T),1000,T,E).
+mc_expectation(eventually(elect,T),1000,T,E).
 </div>
 <div class="nb-cell markdown">
 that returns in \verb|E| the expected value of rounds necessary to elect a leader computed by taking 1000 samples.
