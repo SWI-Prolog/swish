@@ -40,7 +40,7 @@ edge(a,e):0.1.
 
 graph(digraph(G)):-
     findall(edge(A -> B,[label=P]),
-      clause(edge(_,A,B,_),(get_var_n(_,_,_,[P|_],_),_)),
+      clause(edge(A,B,_,_),(get_var_n(_,_,_,[P|_],_),_)),
       G).
 
 
