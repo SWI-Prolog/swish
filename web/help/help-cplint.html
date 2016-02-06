@@ -131,14 +131,16 @@ male(david).
 female(anna).
 female(elen).
 female(cathy).</code></pre>
-<p>Aggregate predicates on probabilistic subgoals are not implemented due to their high computational cost (if the aggregation is over <span class="math inline"><em>n</em></span> atoms, the values of the aggregation are potentially <span class="math inline">2<sup><em>n</em></sup></span>).</p>
+<p>Aggregate predicates on probabilistic subgoals are not implemented due to their high computational cost (if the aggregation is over <span class="math inline"><em>n</em></span> atoms, the values of the aggregation are potentially <span class="math inline">2<sup><em>n</em></sup></span>). The Yap version of <code>cplint</code> includes reasoning algorithms that allows aggregate predicates on probabilistic subgoals, see <a href="http://ds.ing.unife.it/~friguzzi/software/cplint/manual.html" class="uri">http://ds.ing.unife.it/~friguzzi/software/cplint/manual.html</a>.</p>
 <p>In <code>mcintyre</code> you can query database clauses in the body of probabilistic clauses without any special syntax. You can also use <code>findall/3</code>.</p>
 <p><code>cplint</code> on SWISH allows two types of programs: LPAD and Prolog. In the first, you create a new LPAD in the editor, in the latter a Prolog program.</p>
 <p>In LPADs, you write in the editor the program without the library import and the compiler directives. <code>pita</code> is used for inference.</p>
 <p>You ask queries by writing the atom of which you want to compute the probability. In the coin example, the probability of <code>heads(coin)</code> can be obtained with the</p>
 <pre><code>?- heads(coin).</code></pre>
 <p>In Prolog programs, you have to enter the program above (<code>coin.pl</code>).</p>
-<p>You can ask the probability of an atom using <code>pita</code> using the predicate using <code> prob(:Query:atom,-Probability:float)</code> and query it with <code>pita</code> using <code> prob(:Query:atom,-Probability:float)</code> as in</p>
+<p>You can ask the probability of an atom using <code>pita</code> using the predicate using</p>
+<pre><code>prob(:Query:atom,-Probability:float)|</code></pre>
+<p>as in</p>
 <pre><code>?- prob(heads(coin),P).</code></pre>
 <p>If the query is non-ground, <code>prob/2</code> returns in backtracking the succesful instantiations together with their probability.</p>
 <p>When using <code>mcintyre</code>, the predicate for querying is</p>
@@ -151,19 +153,33 @@ female(cathy).</code></pre>
 <p>as in (<a href="http://cplint.lamping.unife.it/example/inference/coinmc.pl"><code>coinmc.pl</code></a>)</p>
 <pre><code>?- mc_sample(heads(coin),1000,S,F,P).</code></pre>
 <p>that samples <code>heads(coin)</code> 1000 times and returns in <code>S</code> the number of successes, in <code>F</code> the number of failures and in <code>P</code> the estimated probability (<code>S/1000</code>).</p>
+<p>If you are just interested in the probability, you can use</p>
+<pre><code>mc_sample(:Query:atom,+Samples:int,-Probability:float) </code></pre>
+<p>as in (<a href="http://cplint.lamping.unife.it/example/inference/coinmc.pl"><code>coinmc.pl</code></a>)</p>
+<pre><code>?- mc_sample(heads(coin),1000,Prob).</code></pre>
+<p>that samples <code>heads(coin)</code> 1000 times and returns the estimated probability that a sample is true (i.e., that a sample succeeds).</p>
 <p>Moreover, you can sample arguments of queries with</p>
 <pre><code>mc_sample_arg(:Query:atom,+Samples:int,?Arg:var,-Values:list).</code></pre>
-<p>The predicate samples <code>Query</code> a number of <code>Samples</code> times. <code>Arg</code> should be a variable in <code>Query</code>. The predicate returns in <code>Values</code> a list of couples <code>L-N</code> where <code>L</code> is the list of values of <code>Arg</code> for which <code>Query</code> succeeds in a world sampled at random and <code>N</code> is the number of samples. If <code>L</code> is the empty list, it means that for that sample the query failed. If <code>L</code> is a list with a single element, it means that for that sample the query is determinate. If, in all couples <code>L-N</code>, <code>L</code> is a list with a single element, it means that the clauses in the program are mutually exclusive, i.e., that in every sample, only one clause for each subgoal has the body true. This is one of the assumptions taken for programs of the PRISM system <span class="citation">[11]</span>. For example <a href="http://cplint.lamping.unife.it/example/inference/pfcglr.pl"><code>pfcglr.pl</code></a> and <a href="http://cplint.lamping.unife.it/example/inference/plcg.pl"><code>plcg.pl</code></a> satisfy this constraint while <a href="http://cplint.lamping.unife.it/example/inference/markov_chain.pl"><code>markov_chain.pl</code></a> and <a href="http://cplint.lamping.unife.it/example/inference/var_obj.pl"><code>var_obj.pl</code></a> don’t.</p>
+<p>The predicate samples <code>Query</code> a number of <code>Samples</code> times. <code>Arg</code> should be a variable in <code>Query</code>. The predicate returns in <code>Values</code> a list of couples <code>L-N</code> where <code>L</code> is the list of values of <code>Arg</code> for which <code>Query</code> succeeds in a world sampled at random and <code>N</code> is the number of samples returning that list of values. If <code>L</code> is the empty list, it means that for that sample the query failed. If <code>L</code> is a list with a single element, it means that for that sample the query is determinate. If, in all couples <code>L-N</code>, <code>L</code> is a list with a single element, it means that the clauses in the program are mutually exclusive, i.e., that in every sample, only one clause for each subgoal has the body true. This is one of the assumptions taken for programs of the PRISM system <span class="citation">[11]</span>. For example <a href="http://cplint.lamping.unife.it/example/inference/pfcglr.pl"><code>pfcglr.pl</code></a> and <a href="http://cplint.lamping.unife.it/example/inference/plcg.pl"><code>plcg.pl</code></a> satisfy this constraint while <a href="http://cplint.lamping.unife.it/example/inference/markov_chain.pl"><code>markov_chain.pl</code></a> and <a href="http://cplint.lamping.unife.it/example/inference/var_obj.pl"><code>var_obj.pl</code></a> don’t.</p>
 <p>An example of use of the above predicate is</p>
 <pre><code>?- mc_sample_arg(reach(s0,0,S),50,S,Values). </code></pre>
 <p>of <a href="http://cplint.lamping.unife.it/example/inference/markov_chain.pl"><code>markov_chain.pl</code></a> that takes 50 samples of <code>L</code> in <code>findall(S,(reach(s0,0,S),L)</code>.</p>
+<p>You can sample arguments of queries also with</p>
+<pre><code>mc_sample_arg_first(:Query:atom,+Samples:int,?Arg:var,-Values:list).</code></pre>
+<p>samples <code>Query</code> a number of <code>Samples</code> times and returns in <code>Values</code> a list of couples <code>V-N</code> where <code>V</code> is the value of <code>Arg</code> returned as the first answer by <code>Query</code> in a world sampled at random and <code>N</code> is the number of samples returning that value. <code>V</code> is failure if the query fails. <code>mc_sample_arg_first/4</code> differs from <code>mc_sample_arg/4</code> because the first just computes the first answer of the query for each sampled world.</p>
+<p>Finally, you can compute expectations with</p>
+<pre><code>mc_expectation(:Query:atom,+N:int,?Arg:var,-Exp:float).</code></pre>
+<p>that computes the expected value of <code>Arg</code> in <code>Query</code> by sampling. It takes <code>N</code> samples of <code>Query</code> and sums up the value of <code>Arg</code> for each sample. The overall sum is divided by <code>N</code> to give <code>Exp</code>.</p>
+<p>An example of use of the above predicate is</p>
+<pre><code>?- mc_expectation(eventually(elect,T),1000,T,E).</code></pre>
+<p>of <a href="http://cplint.lamping.unife.it/example/inference/pctl_slep.pl"><code>pctl_slep.pl</code></a> that returns in <code>E</code> the expected value of <code>T</code> by taking 1000 samples.</p>
 <p>You can also see the probability of the query being true and being false as a bar chart with <code>prob_bar(:Query:atom,-Probability:dict)</code> as in</p>
 <pre><code>?- prob_bar(heads(coin),P).</code></pre>
 <p>if you include</p>
 <pre><code>:- use_rendering(c3).</code></pre>
 <p>before <code>:- pita.</code> <code>P</code> will be instantiated with a dict for rendering with <code>c3</code>. It will be shown as a bar chart with a bar for the probability of <code>heads(coin)</code> true and a bar for the probability of <code>heads(coin)</code> false.</p>
 <p>When using <code>mcintyre</code>, you can use</p>
-<pre><code>mc_prob_bar(:Query:atom,-Probability:dict)</code></pre>
+<pre><code>mc_prob_bar(:Query:atom,-Probability:dict).</code></pre>
 <p>as in</p>
 <pre><code>?- mc_prob_bar(heads(coin),P).</code></pre>
 <p>to obtain a chart representation of the probability.</p>
@@ -171,8 +187,9 @@ female(cathy).</code></pre>
 <pre><code>?- mc_sample_bar(heads(coin),1000,Chart).</code></pre>
 <p>that returns in <code>Chart</code> a diagram with one bar for the number of successes and one bar for the number of failures.</p>
 <p>You can also graph the results of sampling arguments with</p>
-<pre><code>mc_sample_arg_bar(:Query:atom,+Samples:int,?Arg:var,-Chart:dict).</code></pre>
-<p>that returns in <code>Chart</code> a bar chart with a bar for each possible sampled value whose size is the number of samples returning that value.</p>
+<pre><code>mc_sample_arg_bar(:Query:atom,+Samples:int,?Arg:var,-Chart:dict).
+mc_sample_arg_first_bar(:Query:atom,+Samples:int,?Arg:var,-Chart:dict) .</code></pre>
+<p>that return in <code>Chart</code> a bar chart with a bar for each possible sampled value whose size is the number of samples returning that value.</p>
 <p>An example is</p>
 <pre><code>?- mc_sample_arg_bar(reach(s0,0,S),50,S,Chart). </code></pre>
 <p>of <a href="http://cplint.lamping.unife.it/example/inference/markov_chain.pl"><code>markov_chain.pl</code></a>.</p>

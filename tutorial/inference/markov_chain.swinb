@@ -71,7 +71,7 @@ mc_sample_bar(reach(s0,0,s3),1000,Chart).
 </div>
 
 <div class="nb-cell markdown">
-Moreover, we can sample arguments of queries with the predicate mc_sample_arg/4
+We can also sample arguments of queries with the predicate mc_sample_arg/4
 ==
 mc_sample_arg(:Query:atom,+Samples:int,?Arg:var,-Values:list).
 ==
@@ -105,6 +105,27 @@ For example
 
 <div class="nb-cell query">
 mc_sample_arg_bar(reach(s0,0,S),50,S,Chart).
+</div>
+
+<div class="nb-cell markdown">
+
+Moreover, we can sample arguments of queries with the predicate mc_sample_arg_first/4
+==
+mc_sample_arg_first(:Query:atom,+Samples:int,?Arg:var,-Values:list)
+==
+that returns in =Values= a list of couples =V-N= where 
+=V= is the value of =Arg= returned as the first answer by =Query= in 
+a world sampled at random and =N= is the number of samples
+returning that value.
+=V= is =failure= if the query fails.
+=mc_sample_arg_first/4= differs from =mc_sample_arg/4= because the first just computes the first
+answer of the query for each sampled world.
+
+So for example we may sample 50 times the first answer for =S= in reach(s0,0,S) with
+</div>
+
+<div class="nb-cell query">
+mc_sample_arg_first(reach(s0,0,S),50,S,Values). 
 </div>
 
 <div class="nb-cell markdown">

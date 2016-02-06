@@ -101,7 +101,7 @@ This notebook gives an overview of example programs for inference.
   From Sato, Taisuke, Yoshitaka Kameya, and Kenichi Kurihara. 
   _Variational Bayes via propositionalized probability computation in PRISM._ 
   Annals of Mathematics and Artificial Intelligence 54.1-3 (2008): 135-158.
-  - Prefix parse for a Probabilistic Left-Corner Grammar 
+  - Prefix parser for a Probabilistic Left-Corner Grammar 
   ([pre_plcg.pl](example/inference/pre_plcg.pl)) From
   T. Sato, P. Meyer, _Tabling for infinite probability computation_, in:
   Intnational Confence on Logic Programming, Vol. 17 of LIPIcs, 2012,
@@ -109,6 +109,12 @@ This notebook gives an overview of example programs for inference.
   T. Sato, P. Meyer, _Infinite probability computation by cyclic explanation
   graphs_, Theory and Practice of Logic Programming 14 (2014) 909-937.
   doi:10.1017/S1471068413000562.
-
+  - Model checking of the Synchronous Leader Election Protocol expressed in 
+  Probabilistic Computation Tree Logic (PCTL).
+  ([pctl_slep.pl](example/inference/pctl_slep.pl)) 
+  From
+  Gorlin, Andrey, C. R. Ramakrishnan, and Scott A. Smolka. "Model checking with 
+  probabilistic tabled logic programming." Theory and Practice of Logic 
+  Programming 12.4-5 (2012): 681-700.
 </div>
 </div>

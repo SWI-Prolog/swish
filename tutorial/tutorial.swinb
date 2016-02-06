@@ -13,6 +13,7 @@
 - *Examples with approximate inference (Monte Carlo sampling)*
   - [Coin (variant)](tutorial/inference/coinmc.swinb). Approximate inference variant of [Coin](tutorial/inference/coin.swinb).
   - [Markov chain](tutorial/inference/markov_chain.swinb) Approximate inference.
+  - [Probabilistic Computation Tree Logic](tutorial/inference/pctl_slep.swinb) Approximate inference for computing expectations, mixing LPADs and Prolog.
 - *Examples with structure and parameter learning*
   - [Machines](tutorial/learning/mach.swinb). Parameter learning.
   - [Registration](tutorial/learning/registration.swinb). Structure learning.
