@@ -463,6 +463,7 @@ graph_exp_rounds_n(G).
 --
 Complete example: [pctl_slep.pl](example/inference/pctl_slep.pl)
 --
+
 - References: 
   - Gorlin, Andrey, C. R. Ramakrishnan, and Scott A. Smolka. _Model checking with probabilistic tabled logic programming_. Theory and Practice of Logic Programming 12.4-5 (2012).
   - http://www.prismmodelchecker.org/casestudies/synchronous_leader.php
