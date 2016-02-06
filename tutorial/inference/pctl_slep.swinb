@@ -443,10 +443,10 @@ graph_exp_rounds_n(G):-
   assert(num(NI)),
   assert(kr(KI)).
 ==
-Note that num/1 and kr/1 are declared as dynamic at the beginning of the 
-program, so their definition can be changed. num/1 stores the number of 
-processes N and kr/1 the value of K. 
-graph_exp_rounds_n/1 returns a dict that is rendered as a =c3= graph.
+Note that =num/1= and =kr/1= are declared as dynamic at the beginning of the 
+program, so their definition can be changed. =num/1= stores the number of 
+processes N and =kr/1= the value of K. 
+=graph_exp_rounds_n/1= returns a dict that is rendered as a =c3= graph.
 The predicates performs a findall/3 where it first asserts an increasing 
 value for N, from 3 to 8, and then computes the expected value of the rounds
 necessary to elect a leader. The resulting data is then inserted in a =c3=dict.
