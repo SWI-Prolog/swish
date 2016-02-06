@@ -416,7 +416,7 @@ An example of use of the above predicate is
 mc_expectation(eventually(elect,T),1000,T,E).
 </div>
 <div class="nb-cell markdown">
-that returns in \verb|E| the expected value of rounds necessary to elect a leader computed by taking 1000 samples.
+that returns in E the expected value of rounds necessary to elect a leader computed by taking 1000 samples.
 </div>
 
 <div class="nb-cell markdown">
@@ -450,7 +450,7 @@ graph_exp_rounds_n/1 returns a dict that is rendered as a =c3= graph.
 The predicates performs a findall/3 where it first asserts an increasing 
 value for N, from 3 to 8, and then computes the expected value of the rounds
 necessary to elect a leader. The resulting data is then inserted in a =c3=dict.
-Calling =graph_exp_rounds_n(G)= you get a graph of the expected number of rounds 
+Calling graph_exp_rounds_n(G) you get a graph of the expected number of rounds 
 to elect a leader as a
 funtion of the number of processes when K=3.
 </div>
@@ -462,7 +462,6 @@ graph_exp_rounds_n(G).
 <div class="nb-cell markdown">
 --
 Complete example: [pctl_slep.pl](example/inference/pctl_slep.pl)
-
 --
 - References: 
   - Gorlin, Andrey, C. R. Ramakrishnan, and Scott A. Smolka. _Model checking with probabilistic tabled logic programming_. Theory and Practice of Logic Programming 12.4-5 (2012).
