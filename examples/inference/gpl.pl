@@ -151,3 +151,5 @@ fdef(t(F), or(box(a, form(F)), diam(b, form(n(F))))).
 
 fdef(n(F), box(a, form(F))).
 
+:-end_lpad.
+
