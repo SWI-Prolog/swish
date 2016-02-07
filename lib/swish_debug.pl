@@ -97,7 +97,9 @@ stale_module_property(M, program_space, Space) :-
 swish_statistics(highlight_states(Count)) :-
 	aggregate_all(count, current_highlight_state(_,_), Count).
 swish_statistics(pengines(Count)) :-
-	aggregate_all(count, pengine_property(_,self(_)), Count).
+	aggregate_all(count, pengine_property(_,thread(_)), Count).
+swish_statistics(remote_pengines(Count)) :-
+	aggregate_all(count, pengine_property(_,remote(_)), Count).
 swish_statistics(pengines_created(Count)) :-
 	(   flag(pengines_created, Old, Old)
 	->  Count = Old
