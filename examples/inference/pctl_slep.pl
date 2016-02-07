@@ -18,8 +18,8 @@ With this program you can
   number of processes or of K
 From
 Gorlin, Andrey, C. R. Ramakrishnan, and Scott A. Smolka. "Model checking with probabilistic tabled logic programming." Theory and Practice of Logic Programming 12.4-5 (2012): 681-700.
-This program was kindly provided by Andrey Gorlin and modified by Fabrizio 
-Riguzzi.
+This program was kindly provided by Andrey Gorlin and adapted to MCINTYRE
+by Fabrizio Riguzzi.
 See also http://www.prismmodelchecker.org/casestudies/synchronous_leader.php
 */
 
