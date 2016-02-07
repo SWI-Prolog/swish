@@ -116,5 +116,16 @@ This notebook gives an overview of example programs for inference.
   Gorlin, Andrey, C. R. Ramakrishnan, and Scott A. Smolka. "Model checking with 
   probabilistic tabled logic programming." Theory and Practice of Logic 
   Programming 12.4-5 (2012): 681-700.
+  This program was kindly provided by Andrey Gorlin and adapted to MCINTYRE
+  by Fabrizio Riguzzi.
+  - Model checker for fuzzy formulas in generalized probabilistic logic,
+  an expressive logic based on the modal mu-calculus for probabilistic
+  systems.
+  From
+  Gorlin, Andrey, C. R. Ramakrishnan, and Scott A. Smolka. "Model checking with 
+  probabilistic tabled logic programming." Theory and Practice of Logic 
+  Programming 12.4-5 (2012): 681-700.
+  This program was kindly provided by Andrey Gorlin and adapted to MCINTYRE
+  by Fabrizio Riguzzi.
 </div>
 </div>
