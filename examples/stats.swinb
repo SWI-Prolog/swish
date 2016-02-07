@@ -35,7 +35,7 @@ program below for a description of chart/3.
 %	  - `cpu`: Total process CPU time in seconds
 %	  - `d_cpu`: Differential CPU time (% CPU)
 %	  - `pengines`: Total number of living Pengines
-%	  - `d_pengines`: Differential Pengines per second
+%	  - `d_pengines_created`: Pengines create rate (per second)
 %	  - `rss`: Resident set size in bytes
 %	  - `stack`: Total amount of memory allocated for Prolog stacks in bytes
 %	  - `heap`: `rss - stack`.  This is a rough estimate of the memory used
