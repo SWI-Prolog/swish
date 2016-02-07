@@ -53,11 +53,8 @@ all_models([SW|Rest], S, F, H) :-
 	models(T,F,[T,SW|H]),
 	all_models(Rest, S, F, H).
 
-% Prob. formulas of GPL are omitted until we know how to handle the
-% mu-calculus subset with canonical SCGFs.
-
-% Negated formulas are omitted until we know how to handle positive ones
-% with canonical SCFGs.  
+% Prob. formulas of GPL are omitted
+% Negated formulas are omitted
 
 
 temporal(tabled_models(_,_,_)).
