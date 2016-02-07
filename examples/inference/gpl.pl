@@ -71,23 +71,23 @@ temporal(tabled_models(_,_,_)).
 %
 % t = [a]x \/ <b>[a]x
 
-%% trans(s1(N), a, s1(N, a)).
-%% trans(s1(N), b, s1(N, b)).
-%% trans(s1(N), c, s1(N, c)).
-%% trans(s1(N), d, s1(N, d)).
+% trans(s1(N), a, s1(N, a)).
+% trans(s1(N), b, s1(N, b)).
+% trans(s1(N), c, s1(N, c)).
+% trans(s1(N), d, s1(N, d)).
 trans(s1(N), A, s1(N, A)).
 trans(s2(N), a, s2(N, a)) :- N>0.
 
-%% values(s1(_N, a), [s3]).
-%% values(s1(N, b), [s1(N), s2(N)]).
-%% values(s1(N, c), [s1(N), s2(N)]).
+% values(s1(_N, a), [s3]).
+% values(s1(N, b), [s1(N), s2(N)]).
+% values(s1(N, c), [s1(N), s2(N)]).
 values(s1(_N, a), [s3]) :- !.
 values(s1(N, _A), [s1(N), s2(N)]).
 values(s2(N, a), [s1(M)]) :- M is N-1.
 
-%% set_sw(s1(_N, a), [1]).
-%% set_sw(s1(_N, b), [0.3, 0.7]).
-%% set_sw(s1(_N, c), [0.5, 0.5]).
+% set_sw(s1(_N, a), [1]).
+% set_sw(s1(_N, b), [0.3, 0.7]).
+% set_sw(s1(_N, c), [0.5, 0.5]).
 set_sw(s1(_N, a), [1]) :- !.
 set_sw(s1(_N, b), [0.2, 0.8]) :- !.
 set_sw(s1(_N, _A), [0.1, 0.9]).
