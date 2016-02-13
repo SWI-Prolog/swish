@@ -221,7 +221,7 @@ preferences.setDefault("emacs-keybinding", false);
 	       data: {format: "json"},
 	       success: function(reply) {
 		 reply.url = url;
-		 reply.type = "gitty";
+		 reply.st_type = "gitty";
 
 		 function copyAttrs(names) {
 		   for(var i=0; i<names.length; i++) {
