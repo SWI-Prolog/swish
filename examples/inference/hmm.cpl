@@ -29,7 +29,7 @@ hmm(Q,S0,S,[L|O]):-
 	next_state(Q,Q1,S0),
 	letter(Q,L,S0),
 	hmm(Q1,[Q|S0],S,O).
-% an HMM in state Q differen from end goes in state Q1, emits the letter L 
+% an HMM in state Q different from end goes in state Q1, emits the letter L 
 % and continues the chain
 
 next_state(q1,q1,S):1/3;next_state(q1,q2,S):1/3;next_state(q1,end,S):1/3.
