@@ -127,5 +127,24 @@ This notebook gives an overview of example programs for inference.
   Programming 12.4-5 (2012): 681-700.
   This program was kindly provided by Andrey Gorlin and adapted to MCINTYRE
   by Fabrizio Riguzzi.
+  - Model checker for Recursive Markov Chains expressed in
+  generalized probabilistic logic. ([rmc.pl](example/inference/rmc.pl)) 
+  From
+  Gorlin, Andrey, C. R. Ramakrishnan, and Scott A. Smolka. "Model checking 
+  with probabilistic tabled logic programming." 
+  Theory and Practice of Logic Programming 12.4-5 (2012): 681-700.
+  This program was kindly provided by Andrey Gorlin and adapted to MCINTYRE
+  by Fabrizio Riguzzi.
+  - Hidden Markov model for part-of-speech tagging.  ([hmmpos.pl](example/inference/hmmpos.pl))
+  The states represent parts-of-speech, and the symbols emitted by the states 
+  are words. The assumption is that a word depends probabilistically on just 
+  its own part-of-speech (i.e. its tag) which in turn depends on the 
+  part-of-speech of the preceding word (or on the start state in case 
+  there is no preceding word).
+  From
+  http://www.ling.gu.se/~lager/Spaghetti/spaghetti.html
+  Original program by Torbjorn Lager, adapted to MCINTYRE by Fabrizio Riguzzi.
+  Argument sampling to approximately compute the Viterbi path (most probable
+  tagging).
 </div>
 </div>
