@@ -13,7 +13,7 @@ by Fabrizio Riguzzi.
 /** <examples>
 ?- mc_sample(models(s1(3), form(x(2)), []),10,P).
 % expected result 1
-
+% The values for s1 can be 0+, and for x from 2 to 7.
 */
 :- use_module(library(mcintyre)).
 
@@ -92,8 +92,15 @@ set_sw(s2(_N, a), [1]).
 
 msw(SW,H,V):-
   values(SW,L),
+  append(L0,[LastV],L),
   set_sw(SW,PH),
-  foldl(pick_value(SW,H),PH,L,(1,_),(_,V)).
+  append(PH0,[_LastP],PH),
+  foldl(pick_value(SW,H),PH0,L0,(1,_),(_,V)),
+  (var(V)->  
+    V=LastV
+  ;
+    true
+  ).
 
 pick_value(_SW,_H,_PH,_I,(P0,V0),(P0,V0)):-
   nonvar(V0).
