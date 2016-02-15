@@ -110,12 +110,12 @@ nodelab(N,node(N,[label=Lab])):-
 
 /** <examples>
 
-?- mc_sample_arg_bar(hmm(S,[he,can,can,a,can]),20,S,O).
+?- mc_sample_arg(hmm(S,[he,can,can,a,can]),20,S,O).
 % sample the state sequence corresonding to the phrase "he can can a can"
 % the most frequent state sequence is an approximate POS tagging for the 
 % sentence. It corresponds to the Viterbi path of the HMM.
 % expected result: the most frequent tagging should be [pron, aux, v, det, n]
-?- mc_sample_arg(hmm(S,[he,can,can,a,can]),20,S,O).
+?- mc_sample_arg_bar(hmm(S,[he,can,can,a,can]),20,S,O).
 
 ?- state_diagram(G).
 % show the state diagram
