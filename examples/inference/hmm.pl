@@ -12,6 +12,7 @@ vol. 5649. Springer, 55-69.
 
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
+:- use_rendering(graphviz).
 :- endif.
 
 :- pita.
@@ -39,7 +40,7 @@ hmm(Q,S0,S,[L|O]):-
 	next_state(Q,Q1,S0),
 	letter(Q,L,S0),
 	hmm(Q1,[Q|S0],S,O).
-% an HMM in state Q differen from end goes in state Q1, emits the letter L 
+% an HMM in state Q different from end goes in state Q1, emits the letter L 
 % and continues the chain
 
 next_state(q1,q1,S):1/3;next_state(q1,q2,S):1/3;next_state(q1,end,S):1/3.
@@ -57,12 +58,22 @@ letter(q2,a,S):0.25;letter(q2,c,S):0.25;letter(q2,g,S):0.25;letter(q2,t,S):0.25.
 
 :- end_lpad.
 
+
+state_diagram(digraph(G)):-
+    findall(edge(A -> B,[label=P]),
+      (clause(next_state(A,B,_,_,_),
+        (get_var_n(_,_,_,Probs,_),equality(_,_,N,_))),
+        nth0(N,Probs,P)),
+      G).
 /** <examples>
 
 ?- prob(hmm([a,c]),Prob). % what is the probability that the model emits the sequence [a,c])
 % expected result 0.01388888888888889
 ?- prob_bar(hmm([a,c]),Prob). % what is the probability that the model emits the sequence [a,c])
 % expected result 0.01388888888888889
+
+?- state_diagram(G).
+% show the state diagram
 
 */
  
