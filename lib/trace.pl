@@ -604,6 +604,7 @@ prolog_clause:open_source(File, Stream) :-
 
 exception_hook(Ex, Ex, _Frame, Catcher) :-
 	Catcher \== none,
+	Catcher \== 'C',
 	prolog_frame_attribute(Catcher, predicate_indicator, PI),
 	debug(trace(exception), 'Ex: ~p, catcher: ~p', [Ex, PI]),
 	PI == '$swish wrapper'/1,
