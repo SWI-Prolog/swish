@@ -49,11 +49,15 @@ See also http://www.prismmodelchecker.org/casestudies/synchronous_leader.php
 ?- graph_exp_rounds_k(G).
 % graph the expected number of rounds to elect a leader as a
 % funtion of K when N=3
+
+?- network_topology(G).
+% draw a graph representing the network topology
 */
 :- use_module(library(mcintyre)).
 
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
+:- use_rendering(graphviz).
 :- endif.
 :- dynamic kr/1,num/1.
 :- mc.
@@ -364,6 +368,12 @@ kr(4).
 
 
 :- end_lpad.
+
+network_topology(digraph(G)):-
+  config([_|L]),
+  maplist(to_edge,L,G).
+
+to_edge(process(A,B),edge(A -> B,[])).
 
 graph_prob(G):-
   retract(num(N)),
