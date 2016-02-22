@@ -152,5 +152,9 @@ This notebook gives an overview of example programs for inference.
     2. the probabilistic predicates =trans/3=, =trans2/4=, =out/3= and =out2/4= are defined intensionally
     3. the probability values are defined on the basis of frequency data from a
        (toy in this example) dataset
+  
+  From
+  http://stp.lingfil.uu.se/~nivre/docs/thesis3.pdf
+  Original program by Joakim Nivre and Torbjorn Lager, adapted to MCINTYRE by Fabrizio Riguzzi
 </div>
 </div>
