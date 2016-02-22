@@ -1,11 +1,11 @@
 /* 
 1st and 2nd-order Hidden Markov model for part-of-speech tagging.
 This program differs from http://cplint.lamping.unife.it/example/inference/hmmpos.pl because 
-1. the probabilistic predicates trans/3, trans2/4, out/3 and out2/4 are defined
+1. a 1st-order HMM and a 2nd-order HMM are included
+2. the probabilistic predicates trans/3, trans2/4, out/3 and out2/4 are defined
 intensionally 
-2. the prbability values are defined on the basis of frequency data from a 
+3. the probability values are defined on the basis of frequency data from a 
 (toy in this example) dataset
-3. a 1st-order HMM and a 2nd-order HMM are included
 The states represent parts-of-speech, and the symbols emitted by the states are words.
 In the 1st-order HMM, a word depends probabilistically on its own part-of-speech (i.e. its tag) which in turn depends on the part-of-speech of the preceding word (or on the start state in case there is no preceding word).
 In the 2nd-order HMM, a word depends probabilistically on its own part-of-speech and the preceding tag which in turn depends on the part-of-speech of the two preceding words (or on the start state in case there are no preceding words).
