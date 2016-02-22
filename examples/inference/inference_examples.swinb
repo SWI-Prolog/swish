@@ -146,5 +146,11 @@ This notebook gives an overview of example programs for inference.
   Original program by Torbjorn Lager, adapted to MCINTYRE by Fabrizio Riguzzi.
   Argument sampling to approximately compute the Viterbi path (most probable
   tagging).
+  - 1st- and 2nd-order Hidden Markov model for part-of-speech tagging ([hmmpos2.pl](example/inference/hmmpos2.pl)).
+  This program differs from ([hmmpos.pl](example/inference/hmmpos.pl)) because
+    1. a 1st-order HMM and a 2nd-order HMM are included
+    2. the probabilistic predicates =trans/3=, =trans2/4=, =out/3= and =out2/4= are defined intensionally
+    3. the probability values are defined on the basis of frequency data from a
+       (toy in this example) dataset
 </div>
 </div>
