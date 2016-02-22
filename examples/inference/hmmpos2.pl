@@ -26,8 +26,6 @@ Original program by Joakim Nivre and Torbjorn Lager, adapted to MCINTYRE by Fabr
 ?- mc_sample_arg_bar(hmm(S,['I',can,can,a,can]),1000,S,O).
 ?- mc_sample_arg_bar(hmm2(S,['I',can,can,a,can]),1000,S,O).
 
-?- state_diagram(G).
-% show the state diagram
 */
 
 :- use_module(library(mcintyre)).
@@ -195,16 +193,6 @@ prob_fact_word2(_,_,_,_,P):P.
 
 :- end_lpad.
 
-state_diagram(digraph(G)):-
-    findall(edge(A -> B,[label=P]),
-      (clause(trans(A,B,_),
-        (sample_head(_,_,Probs,_),_=N)),
-        nth0(N,Probs,_:P)),
-      G).
-
-
-
- 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
