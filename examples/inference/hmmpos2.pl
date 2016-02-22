@@ -15,7 +15,7 @@ Original program by Joakim Nivre and Torbjorn Lager, adapted to MCINTYRE by Fabr
 */
 /** <examples>
 
-?-  mc_sample_arg(hmm(S,['I',can,can,a,can]),10000,S,O).
+?-  mc_sample_arg(hmm(S,['I',can,can,a,can]),1000,S,O).
 % sample the state sequence corresonding to the phrase "I can can a can"
 % the most frequent state sequence is an approximate POS tagging for the
 % sentence. It corresponds to the Viterbi path of the HMM.
