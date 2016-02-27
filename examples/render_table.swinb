@@ -16,12 +16,19 @@ This plugin requires a two-deminsional array of terms.
      Specify the header for a table whos rows match the structure of
      HeaderSpec.  Each column header may be an arbitrary Prolog
      term.
+   - float_format(+Format)
+     Render floating point numbers using `format(Format,Float)`
+     
+Other options are passed to write_term/2     
      
 #### Reconised terms
 
 The table render plugin expects a proper list of _rows_.  Each row must have the same
-number of columns and, if a header is provided, the header list must have the same length
-as the number of columns.  *Rows* may be specified as a compound term (using any functor name) or a list.
+number of columns and, if a header is provided, the header list must have the same length as the number of columns.  Each *Row* must have the same shape and contain the same number of columns.  The following terms are supported to represent a row:
+
+  - A _list_
+  - A _compound term_, using any functor
+  - A _dict_.  In this case the keys of the dict are using to add a header.
 </div>
 
 <div class="nb-cell markdown">
@@ -47,7 +54,7 @@ X = [ [ 'Amsterdam', 'The Netherlands' ],
 <div class="nb-cell query">
 X = [ 'Amsterdam' - 'The Netherlands',
       'London' - 'United Kingdom',
-      'Paris'- 'France'
+      'Paris' - 'France'
     ].
 </div>
 
