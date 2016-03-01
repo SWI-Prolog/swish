@@ -151,15 +151,28 @@ var tabbed = {
     },
 
     /**
-     * Add a new tab from the provided source
+     * Add a new tab from the provided source.  If there is a _select_
+     * (new) tab, open the data in this tab.  Note that the "source"
+     * trigger is also trapped by a _select_ tab.  We however are
+     * registered first and overwrite the _select_ tab.
      */
     tabFromSource: function(src) {
-      var tab = this.tabbed('newTab', $("<span></span>"));
-      if ( typeof(src) == "object" )
-	delete src.newTab;
-      if ( !this.tabbed('setSource', tab, src) ) {
-	this.tabbed('removeTab', tab.attr("id"));
+      var select = this.find("div.tabbed-select");
+      if ( select.length > 0 ) {
+	var tab = $(select[0]).closest(".tab-pane");
+	this.tabbed('show', tab.attr("id"));
+	if ( typeof(src) == "object" )
+	  delete src.newTab;
+	this.tabbed('setSource', tab, src);
+      } else {
+	var tab = this.tabbed('newTab', $("<span></span>"));
+	if ( typeof(src) == "object" )
+	  delete src.newTab;
+	if ( !this.tabbed('setSource', tab, src) ) {
+	  this.tabbed('removeTab', tab.attr("id"));
+	}
       }
+
       return this;
     },
 
@@ -441,10 +454,10 @@ var tabbed = {
       });
       $(g).on("source", function(ev, src) {
 	var tab = $(ev.target).closest(".tab-pane");
-	if ( tab.is(":visible") &&
-	     tab.closest(".tabbed").tabbed('setSource', tab, src) ) {
-	  ev.stopPropagation();
-	}
+	ev.stopPropagation();
+	if ( tab.is(":visible") )
+	  tab.closest(".tabbed").tabbed('setSource', tab, src);
+	return false;
       });
       $(g).on("profile-selected", function(ev, profile) {
 	$(ev.target).find("button").each(function() {
