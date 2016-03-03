@@ -784,7 +784,12 @@ var cellTypes = {
      * Compute a state fingerprint for the current cell.
      */
     changeGen: function() {
-      return methods.changeGen[this.data(pluginName).type].call(this);
+      var type = this.data(pluginName).type;
+
+      if ( type )
+	return methods.changeGen[type].call(this);
+      else
+	return 0;
     }
   }; // methods
 
