@@ -230,6 +230,15 @@ define([ "cm/lib/codemirror",
 	    else
 	      cm.setGutterMarker(n, "Prolog-breakpoints", makeMarker());
 	  });
+	  if ( options.save ) {
+	    data.cm.on("change", function(cm, change) {
+	      var store = elem.data("storage");
+	      var clean = ( change.origin == "setValue" ||
+			    data.cm.isClean(store.cleanGeneration) );
+
+	      elem.prologEditor('markClean', clean);
+	    });
+	  }
 	}
       });
     },
@@ -443,6 +452,20 @@ define([ "cm/lib/codemirror",
     makeCurrent: function() {
       $(".swish-event-receiver").trigger("current-program", this);
       return this;
+    },
+
+    /**
+     * Called if the editor changes from clean to dirty or visa versa.
+     * This triggers `data-is-clean`, which is trapped by the tab to
+     * indicate the changed state of the editor.
+     */
+    markClean: function(clean) {
+      var data = this.data(pluginName);
+
+      if ( data.clean_signalled != clean )
+      { data.clean_signalled = clean;
+	this.trigger("data-is-clean", clean);
+      }
     },
 
     /**
@@ -840,6 +863,9 @@ define([ "cm/lib/codemirror",
       };
       storage.isClean = function(generation) {
 	return data.cm.isClean(generation);
+      };
+      storage.markClean = function(clean) {
+	elem.prologEditor('markClean', clean);
       };
 
       storage.cleanGeneration = data.cm.changeGeneration();

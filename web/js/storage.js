@@ -18,7 +18,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
   var pluginName = 'storage';
 
   var defaults = {
-    typeName: "program"
+    typeName: "program",
+    markClean: function(clean) {}
   }
 
   /** @lends $.fn.storage */
@@ -191,6 +192,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       var data = this.data(pluginName);
 
       data.setValue(data.cleanData);
+      data.cleanGeneration = data.changeGen();
       return this;
     },
 
@@ -282,6 +284,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 		   data.cleanGeneration = data.changeGen();
 		   data.cleanData       = data.getValue();
 		   data.cleanCheckpoint = "save";
+		   data.markClean(true);
 		   modal.feedback({ html: "Saved",
 				    owner: elem
 		                  });
