@@ -275,19 +275,23 @@ var cellTypes = {
       var relto = currentCell(this);
       var cell  = options.cell || $.el.div({class:"nb-cell"});
       var view  = this.find(".nb-view")
-      var viewrect = options.if_visible ? view[0].getBoundingClientRect()
-					: undefined;
+      var viewrect;
+
+      if ( options.if_visible ) {
+	if ( view.find(".nb-cell").length > 0 )
+	  viewrect = view[0].getBoundingClientRect();
+      }
 
       if ( relto ) {
 	if ( options.where == 'above' ) {
-	  if ( options.if_visible ) {
+	  if ( viewrect ) {
 	    var seltop = relto[0].getBoundingClientRect().top;
 	    if ( seltop < viewrect.top )
 	      return false;
 	  }
 	  $(cell).insertBefore(relto);
 	} else {
-	  if ( options.if_visible ) {
+	  if ( viewrect ) {
 	    var selbottom = relto[0].getBoundingClientRect().bottom;
 
 	    if ( selbottom > viewrect.bottom - 20 )
@@ -298,7 +302,7 @@ var cellTypes = {
       } else {
 	var content = this.find(".nb-content");
 
-	if ( options.if_visible ) {
+	if ( viewrect ) {
 	  var cbottom = content[0].getBoundingClientRect().bottom;
 
 	  if ( cbottom > viewrect.bottom - 20 )
