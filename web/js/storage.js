@@ -286,7 +286,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 				    owner: elem
 		                  });
 
-		   elem.tabbed('title', meta.name);
+		   elem.tabbed('title', data.meta.name);
 		   history.push(reply);
 		 }
 	       },
