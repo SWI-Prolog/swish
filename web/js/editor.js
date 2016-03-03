@@ -230,16 +230,22 @@ define([ "cm/lib/codemirror",
 	    else
 	      cm.setGutterMarker(n, "Prolog-breakpoints", makeMarker());
 	  });
-	  if ( options.save ) {
-	    data.cm.on("change", function(cm, change) {
-	      var store = elem.data("storage");
-	      var clean = ( change.origin == "setValue" ||
-			    data.cm.isClean(store.cleanGeneration) );
+	} /* end if prolog source */
 
-	      elem.prologEditor('markClean', clean);
-	    });
+	data.cm.on("change", function(cm, change) {
+	  var clean;
+
+	  if ( change.origin == "setValue" ) {
+	    clean = true;
+	  } else {
+	    var store = elem.data("storage");
+	    var gen = store ? store.cleanGeneration : data.cleanGeneration;
+
+	    clean = data.cm.isClean(gen);
 	  }
-	}
+
+	  elem.prologEditor('markClean', clean);
+	});
       });
     },
 
@@ -466,6 +472,15 @@ define([ "cm/lib/codemirror",
       { data.clean_signalled = clean;
 	this.trigger("data-is-clean", clean);
       }
+    },
+
+    /**
+     * Set notion of clean for editors that are not associated with a
+     * storage
+     */
+    setIsClean: function() {
+      var data = this.data(pluginName);
+      data.cleanGeneration = data.cm.changeGeneration();
     },
 
     /**
