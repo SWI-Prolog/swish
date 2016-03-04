@@ -73,6 +73,8 @@ swish or parts of swish easily into a page.
 http:location(pldoc, swish(pldoc), [priority(100)]).
 
 :- http_handler(swish(.), swish_reply([]), [id(swish), prefix]).
+:- http_handler('/sitemap.xml', http_reply_file('sitemap.xml', []),[]).
+:- http_handler('/robots.txt', http_reply_file('robots.txt', []),[]).
 
 :- multifile
 	swish_config:source_alias/2,

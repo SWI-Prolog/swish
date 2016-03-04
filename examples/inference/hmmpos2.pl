@@ -7,8 +7,13 @@ intensionally
 3. the probability values are defined on the basis of frequency data from a 
 (toy in this example) dataset
 The states represent parts-of-speech, and the symbols emitted by the states are words.
-In the 1st-order HMM, a word depends probabilistically on its own part-of-speech (i.e. its tag) which in turn depends on the part-of-speech of the preceding word (or on the start state in case there is no preceding word).
-In the 2nd-order HMM, a word depends probabilistically on its own part-of-speech and the preceding tag which in turn depends on the part-of-speech of the two preceding words (or on the start state in case there are no preceding words).
+In the 1st-order HMM, a word depends probabilistically on its own 
+part-of-speech (i.e. its tag) which in turn depends on the part-of-speech of 
+the preceding word (or on the start state in case there is no preceding word).
+In the 2nd-order HMM, a word depends probabilistically on its own 
+part-of-speech and the preceding tag which in turn depends on the 
+part-of-speech of the two preceding words (or on the start state in case there 
+are no preceding words).
 From
 http://stp.lingfil.uu.se/~nivre/docs/thesis3.pdf
 Original program by Joakim Nivre and Torbjorn Lager, adapted to MCINTYRE by Fabrizio Riguzzi
@@ -25,7 +30,9 @@ Original program by Joakim Nivre and Torbjorn Lager, adapted to MCINTYRE by Fabr
 %
 ?- mc_sample_arg_bar(hmm(S,['I',can,can,a,can]),1000,S,O).
 ?- mc_sample_arg_bar(hmm2(S,['I',can,can,a,can]),1000,S,O).
-
+?- mc_sample_arg(hmm(S,[can, the ,can, do, the, can ,can]),10000,S,O).
+% example by Douglas R. Miles
+?- mc_sample_arg_bar(hmm(S,[can, the ,can, do, the, can ,can]),10000,S,O).
 */
 
 :- use_module(library(mcintyre)).
