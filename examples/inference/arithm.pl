@@ -57,24 +57,45 @@ random_const(L,9):0.1.
 
 /** <examples>
 
-?- mc_rejection_sample(eval(2,4),eval(1,3),1000,T,F,P).
+?-  mc_rejection_sample(eval(2,4),eval(1,3),1000,T,F,P).
 % perform rejection sampling of eval(2,4) given that eval(1,3) is true
-% expected result T=3, F=39, P=0.07142857142857142
-?- mc_rejection_sample(eval(2,4),(eval(0,2),eval(1,3),10000,T,F,P).
+% expected result
+% T = 88,
+% F = 912,
+% P = 0.088.
+?- mc_rejection_sample(eval(2,4),(eval(0,2),eval(1,3)),10000,T,F,P).
 % perform rejection sampling of eval(2,4) given that 
 % eval(0,2) and eval(1,3) are true
-% expected result T=39, F=12, P=0.7647058823529411
+% expected result 
+% T = 1000,
+% F = 0,
+% P = 1.
 
 ?- mc_rejection_sample_arg(eval(2,Y),eval(1,3),10000,Y,V).
 % perform rejection sampling of argument Y of eval(2,Y) given that
 % eval(1,3) is true
-% expected result V = [[3]-419, [4]-47, [6]-44, [2]-28, [5]-10, [1]-3, [0]-1].
+% expected result 
+% V = [[3]-419, [4]-47, [6]-44, [2]-28, [5]-10, [1]-3, [0]-1].
 
 
 ?- mc_rejection_sample_arg(eval(2,Y),(eval(0,2),eval(1,3)),10000,Y,V).
 % perform rejection sampling of argument Y of eval(2,Y) given that
 % eval(0,2) and eval(1,3) are true
 % expected result V = [[4]-45].
+
+?- mc_mh_sample(eval(2,4),eval(1,3),10000,1,T,F,P).
+% perform Metropolis Hastings sampling of eval(2,Y) given that
+% eval(1,3) is true
+% T = 1151,
+% F = 8849,
+% P = 0.1151.
+
+?- mc_mh_sample(eval(2,4),(eval(0,2),eval(1,3)),100,1,T,F,P).
+% perform Metropolis Hastings sampling of eval(2,Y) given that
+% eval(0,2) and eval(1,3) are true
+% T = 100,
+% F = 0,
+% P = 1.
 
 
 */
