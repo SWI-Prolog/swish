@@ -1,8 +1,11 @@
 /*
-Throwing a coin with uncertainty on its fairness, from
-J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated 
-disjunctions. In International Conference on Logic Programming, 
-volume 3131 of LNCS, pages 195-209. Springer, 2004.
+Random arithmetic function from http://forestdb.org/models/arithmetic.html
+The model generatively defines a random arithmetic function.
+The problem is to predict the value returned by the function given one or
+two couples of input-output.
+Translated from the Church functional probabilistic programming language.
+Sampling is necessary as queries have an infinite number of explanations.
+Both rejection sampling and Metropolis/Hastings can be applied.
 */
 :- use_module(library(mcintyre)).
 
@@ -57,33 +60,6 @@ random_const(L,9):0.1.
 
 /** <examples>
 
-?-  mc_rejection_sample(eval(2,4),eval(1,3),1000,T,F,P).
-% perform rejection sampling of eval(2,4) given that eval(1,3) is true
-% expected result
-% T = 88,
-% F = 912,
-% P = 0.088.
-?- mc_rejection_sample(eval(2,4),(eval(0,2),eval(1,3)),10000,T,F,P).
-% perform rejection sampling of eval(2,4) given that 
-% eval(0,2) and eval(1,3) are true
-% expected result 
-% T = 1000,
-% F = 0,
-% P = 1.
-
-?- mc_rejection_sample_arg(eval(2,Y),eval(1,3),10000,Y,V).
-% perform rejection sampling of argument Y of eval(2,Y) given that
-% eval(1,3) is true
-% expected result 
-% V = [[3]-419, [4]-47, [6]-44, [2]-28, [5]-10, [1]-3, [0]-1].
-
-
-?- mc_rejection_sample_arg(eval(2,Y),(eval(0,2),eval(1,3)),10000,Y,V).
-% perform rejection sampling of argument Y of eval(2,Y) given that
-% eval(0,2) and eval(1,3) are true
-% expected result 
-% V = [[4]-45].
-
 ?- mc_mh_sample(eval(2,4),eval(1,3),10000,1,T,F,P).
 % perform Metropolis Hastings sampling of eval(2,Y) given that
 % eval(1,3) is true
@@ -100,27 +76,52 @@ random_const(L,9):0.1.
 % F = 0,
 % P = 1.
 
+
+?-  mc_rejection_sample(eval(2,4),eval(1,3),1000,T,F,P).
+% perform rejection sampling of eval(2,4) given that eval(1,3) is true
+% expected result
+% T = 88,
+% F = 912,
+% P = 0.088.
+?- mc_rejection_sample(eval(2,4),(eval(0,2),eval(1,3)),10000,T,F,P).
+% perform rejection sampling of eval(2,4) given that 
+% eval(0,2) and eval(1,3) are true
+% expected result 
+% T = 1000,
+% F = 0,
+% P = 1.
+
 ?- mc_mh_sample_arg(eval(2,Y),(eval(0,2),eval(1,3)),100,1,Y,V).
 % sample arg Y of eval(2,Y) given that 
 % eval(0,2) and eval(1,3) are true
 % Sample using Metropolis Hastings
 % exected result
 % V = [[4]-100].
+?- mc_mh_sample_arg_bar(eval(2,Y),(eval(0,2),eval(1,3)),100,1,Y,V).
 
-?- mc_mh_sample_arg(eval(2,Y),eval(1,3),100,1,Y,V).
+?- mc_mh_sample_arg(eval(2,Y),eval(1,3),1000,1,Y,V).
 % sample arg Y of eval(2,Y) given that 
 % eval(1,3) is true
 % Sample using Metropolis Hastings
 % exected result
-% V = [[6]-40, [5]-37, [4]-15, [3]-7].
-?- mc_mh_sample_arg_bar(eval(2,Y),eval(1,3),100,1,Y,V).
+% V = [[3]-619, [6]-236, [4]-130, [5]-15]
+?- mc_mh_sample_arg_bar(eval(2,Y),eval(1,3),1000,1,Y,V).
+
+
+?- mc_rejection_sample_arg(eval(2,Y),(eval(0,2),eval(1,3)),1000,Y,V).
+% sample argument Y of eval(2,Y) given that
+% eval(0,2) and eval(1,3) are true
+% Sample using rejection sampling
+% expected result 
+% V = [[4]-1000]
+?- mc_rejection_sample_arg_bar(eval(2,Y),(eval(0,2),eval(1,3)),1000,Y,V).
 
 ?- mc_rejection_sample_arg(eval(2,Y),eval(1,3),100,Y,V).
-% sample arg Y of eval(2,Y) given that 
+% sample argument Y of eval(2,Y) given that 
 % eval(1,3) is true
 % Sample using rejection sampling
 % exected result
-% V = [[3]-72, [6]-13, [4]-9, [2]-3, [5]-3].
+% V = [[3]-78, [4]-10, [6]-5, [2]-4, [5]-2, [1]-1]
 ?- mc_rejection_sample_arg_bar(eval(2,Y),eval(1,3),100,Y,V).
 
 */
