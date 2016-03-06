@@ -83,6 +83,9 @@ web_storage(Request) :-
 	option(method(Method), Request),
 	storage(Method, Request).
 
+:- multifile
+	swish_config:authenticate/2.
+
 storage(get, Request) :-
 	(   swish_config:authenticate(Request, User)
 	->  Options = [user(User)]

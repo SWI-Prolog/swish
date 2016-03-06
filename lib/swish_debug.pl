@@ -78,10 +78,12 @@ stale_module_property(M, pengine_queue, Queue) :-
 	pengines:pengine_queue(Pengine, Queue, _TimeOut, _Time).
 stale_module_property(M, pengine_pending_queue, Queue) :-
 	pengine_property(Pengine, module(M)),
-	clause(pengines:output_queue(Pengine, Queue, _Time), true).
+	member(G, [pengines:output_queue(Pengine, Queue, _Time)]),
+	call(G).		% fool ClioPatria cpack xref
 stale_module_property(M, thread, Thread) :-
 	pengine_property(Pengine, module(M)),
-	clause(pengines:pengine_property(Pengine, thread(Thread)), true).
+	member(G, [pengines:pengine_property(Pengine, thread(Thread))]),
+	call(G).		% fool ClioPatria cpack xref
 stale_module_property(M, thread_status, Status) :-
 	pengine_property(Pengine, module(M)),
 	pengine_property(Pengine, thread(Thread)),
