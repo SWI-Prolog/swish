@@ -4,7 +4,7 @@
 # Dice
 
 In this section we illustrate an example that models a game with a six-sided dice. The dice is repeatedly thrown until the outcome is six. When the outcome is six, the game stops. 
-We will show how to perform a simple query and how to execute a query whose results are graphically represented by a histogram.
+We will show how to perform a simple query, how to perform a conditional query and how to execute a query whose results are graphically represented by a histogram.
 
 ### Writing the program step by step
 First of all we want to write a fact which states that at time 0 the die land on one of its faces with a uniform probability distribution (1/6 for each face). We use the predicate =|on(T,F)|= which means that the die landed on face F at time T.
@@ -59,6 +59,16 @@ At this point we ask for the probability that the die will land on face 1 at tim
 <div class="nb-cell query">
 prob(on(2,1),P).
 </div>
+
+<div class="nb-cell markdown">
+We can also ask for the probability that the die will land on face 1 at time 2
+given that it landed on face 1 at time 0. 
+</div>
+
+<div class="nb-cell query">
+prob(on(2,1),on(0,1),P).
+</div>
+
 
 <div class="nb-cell markdown">
 ### How to execute a query with graphical results
