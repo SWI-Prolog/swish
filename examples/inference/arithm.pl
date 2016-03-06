@@ -2,7 +2,7 @@
 Random arithmetic function from http://forestdb.org/models/arithmetic.html
 The model generatively defines a random arithmetic function.
 The problem is to predict the value returned by the function given one or
-two couples of input-output.
+two couples of input-output, i.e., to compute a conditional probability.
 Translated from the Church functional probabilistic programming language.
 Sampling is necessary as queries have an infinite number of explanations.
 Both rejection sampling and Metropolis/Hastings can be applied.
@@ -83,11 +83,11 @@ random_const(L,9):0.1.
 % T = 88,
 % F = 912,
 % P = 0.088.
-?- mc_rejection_sample(eval(2,4),(eval(0,2),eval(1,3)),10000,T,F,P).
+?- mc_rejection_sample(eval(2,4),(eval(0,2),eval(1,3)),1000,T,F,P).
 % perform rejection sampling of eval(2,4) given that 
 % eval(0,2) and eval(1,3) are true
 % expected result 
-% T = 1000,
+% T = 100,
 % F = 0,
 % P = 1.
 
@@ -124,5 +124,14 @@ random_const(L,9):0.1.
 % V = [[3]-78, [4]-10, [6]-5, [2]-4, [5]-2, [1]-1]
 ?- mc_rejection_sample_arg_bar(eval(2,Y),eval(1,3),100,Y,V).
 
+?- mc_expectation(eval(2,Y),1000,Y,E).
+% what is the expected value of Y in eval(2,Y)?
+% expected result
+% E = 3.968
+
+?- mc_mh_expectation(eval(2,Y),eval(1,3),1000,1,Y,E).
+% what is the expected value of Y in eval(2,Y) given that eval(1,3) is true?
+% expected result
+% E = 2.855
 */
  

@@ -38,6 +38,9 @@ toss(coin).
 ?- prob_bar(tails(coin),Prob).  % what is the probability that coin lands tails?
 % expected result 0.49
 
+?- prob(heads(coin),biased(coin),Prob).  
+% what is the probability that coin lands heads given the coin is biased?
+% expected result 0.6
 
 
 */
