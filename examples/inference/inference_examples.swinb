@@ -146,7 +146,8 @@ This notebook gives an overview of example programs for inference.
   Original program by Torbjorn Lager, adapted to MCINTYRE by Fabrizio Riguzzi.
   Argument sampling to approximately compute the Viterbi path (most probable
   tagging).
-  - 1st- and 2nd-order Hidden Markov model for part-of-speech tagging ([hmmpos2.pl](example/inference/hmmpos2.pl)).
+  - 1st- and 2nd-order Hidden Markov model for part-of-speech tagging 
+  ([hmmpos2.pl](example/inference/hmmpos2.pl)).
   This program differs from ([hmmpos.pl](example/inference/hmmpos.pl)) because
     1. a 1st-order HMM and a 2nd-order HMM are included
     2. the probabilistic predicates =trans/3=, =trans2/4=, =out/3= and =out2/4= are defined intensionally
@@ -154,7 +155,18 @@ This notebook gives an overview of example programs for inference.
        (toy in this example) dataset
   
   From
-  http://stp.lingfil.uu.se/~nivre/docs/thesis3.pdf
-  Original program by Joakim Nivre and Torbjorn Lager, adapted to MCINTYRE by Fabrizio Riguzzi
+  Joakim Nivre. "Logic programming tools for probabilistic 
+  part-of-speech tagging." Master's thesis, Vaxjo University, 2000. 
+  [[pdf](http://stp.lingfil.uu.se/~nivre/docs/thesis3.pdf)]
+  Original program by Joakim Nivre and Torbjorn Lager, adapted to MCINTYRE by Fabrizio Riguzzi.
+  - Random arithmetic function from http://forestdb.org/models/arithmetic.html
+  ([arithm.pl](example/inference/arithm.pl)).
+  The model generatively defines a random arithmetic function.
+  The problem is to predict the value returned by the function given one or
+  two couples of input-output, i.e., to compute a conditional probability.
+  Translated from the Church functional probabilistic programming language.
+  Sampling is necessary as queries have an infinite number of explanations.
+  Both rejection sampling and Metropolis/Hastings can be applied.
+
 </div>
 </div>

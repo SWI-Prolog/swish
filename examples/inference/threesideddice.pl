@@ -49,9 +49,9 @@ on(X,1):1/3;on(X,2):1/3;on(X,3):1/3:-
 ?- prob_bar(on(3,1),Prob). % what is the probability that the dice lands on face 1 at time 3?
 % expected result 0.09876543209876543
 
-?- prob(on(2,1),on(0,1),p). % what is the probability that the dice lands on face 1 at time 2 given that it landed on face 1 at time 0?
+?- prob(on(2,1),on(0,1),Prob). % what is the probability that the dice lands on face 1 at time 2 given that it landed on face 1 at time 0?
 % expected result 0.222222222222222
-?- prob(on(2,1),on(1,1),p). % what is the probability that the dice lands on face 1 at time 2 given that it landed on face 1 at time 1?
+?- prob(on(2,1),on(1,1),Prob). % what is the probability that the dice lands on face 1 at time 2 given that it landed on face 1 at time 1?
 % expected result 0.333333333333333
 */
  
