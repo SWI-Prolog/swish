@@ -312,9 +312,14 @@ swish_navbar(Options) -->
         a([href('/help/credits.html'),target('_blank')],['Credits']),
         &(nbsp), &(nbsp),
         a([id('dismisslink'),href('')],['Dismiss']),
-	p([span([style('color:red')],['New']),': conditional probability computation algorithms:
-	exact, rejection sampling and Metropolis/Hastings'])
-        ])
+	p([span([style('color:red')],['New']),': ',
+	a([href('/help/help-cplint.html#condq'),target('_blank')],
+	['conditional probability computation algorithms']),': ',
+	a([href('/example/inference/threesideddice.pl')],
+	['exact']),', ',
+	a([href('/example/inference/arithm.pl')],
+	['rejection sampling and Metropolis/Hastings'])
+        ])])
         ),
 
 	html(nav([ class([navbar, 'navbar-default']),
