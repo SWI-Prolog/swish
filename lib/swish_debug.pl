@@ -78,10 +78,10 @@ stale_module_property(M, pengine_queue, Queue) :-
 	pengines:pengine_queue(Pengine, Queue, _TimeOut, _Time).
 stale_module_property(M, pengine_pending_queue, Queue) :-
 	pengine_property(Pengine, module(M)),
-	pengines:output_queue(Pengine, Queue, _Time).
+	clause(pengines:output_queue(Pengine, Queue, _Time), true).
 stale_module_property(M, thread, Thread) :-
 	pengine_property(Pengine, module(M)),
-	pengine_property(Pengine, thread(Thread)).
+	clause(pengines:pengine_property(Pengine, thread(Thread)), true).
 stale_module_property(M, thread_status, Status) :-
 	pengine_property(Pengine, module(M)),
 	pengine_property(Pengine, thread(Thread)),
@@ -269,12 +269,13 @@ swish_stats(stats{ cpu:CPU,
 	swish_statistics(pengines(Pengines)),
 	swish_statistics(pengines_created(PenginesCreated)).
 
-:- if(current_predicate(mallinfo/1)).
+:- if(\+current_predicate(mallinfo/1)).
+mallinfo(_{fordblks:0}).
+:- endif.
+
 fordblks(Fordblks) :-
 	mallinfo(MallInfo),
 	Fordblks = MallInfo.fordblks.
-:- endif.
-
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Maintain sliding statistics. The statistics are maintained in a ring. If
