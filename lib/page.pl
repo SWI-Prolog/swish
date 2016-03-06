@@ -298,7 +298,7 @@ swish_page(Options) -->
 
 swish_navbar(Options) -->
 	swish_resources,
-	html(div([id('navbarhelp'),style('height:23px;margin: 10px 5px;text-align:center;')],
+	html(div([id('navbarhelp'),style('height:40px;margin: 10px 5px;text-align:center;')],
         [span([style('color:maroon')],['cplint on ']),
         span([style('color:darkblue')],['SWI']),
         span([style('color:maroon')],['SH']),
@@ -311,7 +311,9 @@ swish_navbar(Options) -->
         &(nbsp), &(nbsp),
         a([href('/help/credits.html'),target('_blank')],['Credits']),
         &(nbsp), &(nbsp),
-        a([id('dismisslink'),href('')],['Dismiss'])
+        a([id('dismisslink'),href('')],['Dismiss']),
+	p([span([style('color:red')],['New']),': conditional probability computation algorithms:
+	exact, rejection sampling and Metropolis/Hastings'])
         ])
         ),
 

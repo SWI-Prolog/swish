@@ -8,7 +8,7 @@ html, body {
 
 nav.navbar { margin-bottom: 5px; }
 
-#content { width: 100%; height: calc(100% - 98px);
+#content { width: 100%; height: calc(100% - 115px);
 	   padding: 0px;
 	   background-color: white;
 	 }
