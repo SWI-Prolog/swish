@@ -318,7 +318,7 @@ swish_navbar(Options) -->
 	a([href('/example/inference/threesideddice.pl')],
 	['exact']),', ',
 	a([href('/example/inference/arithm.pl')],
-	['rejection sampling and Metropolis/Hastings'])
+	['rejection sampling and Metropolis-Hastings'])
         ])])
         ),
 
