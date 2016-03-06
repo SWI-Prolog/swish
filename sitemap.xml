@@ -302,6 +302,10 @@
   <changefreq>weekly</changefreq>
 </url>
 <url>
+  <loc>http://cplint.lamping.unife.it/example/inference/arithm.pl</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
   <loc>http://cplint.lamping.unife.it/example/learning/learning_examples.swinb</loc>
   <changefreq>weekly</changefreq>
 </url>
@@ -375,6 +379,10 @@
 </url>
 <url>
   <loc>http://cplint.lamping.unife.it/tutorial/inference/pctl_slep.swinb</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>http://cplint.lamping.unife.it/tutorial/inference/artihm.swinb</loc>
   <changefreq>weekly</changefreq>
 </url>
 <url>
