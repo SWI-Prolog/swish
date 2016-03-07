@@ -143,12 +143,12 @@ female(cathy).</code></pre>
 <p>In Prolog programs, you have to enter the program above (<code>coin.pl</code>).</p>
 <h2 id="uncondq">Unconditional Queries</h2>
 <p>You can ask the unconditional probability of an atom using <code>pita</code> with the predicate</p>
-<pre><code>prob(:Query:atom,-Probability:float)|</code></pre>
+<pre><code>prob(:Query:atom,-Probability:float).</code></pre>
 <p>as in</p>
 <pre><code>?- prob(heads(coin),P).</code></pre>
 <p>If the query is non-ground, <code>prob/2</code> returns in backtracking the succesful instantiations together with their probability.</p>
 <p>When using <code>mcintyre</code>, the predicate for querying is</p>
-<pre><code>mc_prob(:Query:atom,-Probability:float)</code></pre>
+<pre><code>mc_prob(:Query:atom,-Probability:float).</code></pre>
 <p>as in</p>
 <pre><code>?- mc_prob(heads(coin),P).</code></pre>
 <p>With <code>mcintyre</code>, you can also take a given number of sample with</p>
@@ -157,6 +157,7 @@ female(cathy).</code></pre>
 <p>as in (<a href="http://cplint.lamping.unife.it/example/inference/coinmc.pl"><code>coinmc.pl</code></a>)</p>
 <pre><code>?- mc_sample(heads(coin),1000,S,F,P).</code></pre>
 <p>that samples <code>heads(coin)</code> 1000 times and returns in <code>S</code> the number of successes, in <code>F</code> the number of failures and in <code>P</code> the estimated probability (<code>S/1000</code>).</p>
+<p>Differently from exact inference, in approximate inference the query can be a conjunction of atoms.</p>
 <p>If you are just interested in the probability, you can use</p>
 <pre><code>mc_sample(:Query:atom,+Samples:int,-Probability:float) </code></pre>
 <p>as in (<a href="http://cplint.lamping.unife.it/example/inference/coinmc.pl"><code>coinmc.pl</code></a>)</p>
@@ -179,10 +180,14 @@ female(cathy).</code></pre>
 <p>of <a href="http://cplint.lamping.unife.it/example/inference/pctl_slep.pl"><code>pctl_slep.pl</code></a> that returns in <code>E</code> the expected value of <code>T</code> by taking 1000 samples.</p>
 <h2 id="condq">Conditional Queries</h2>
 <p>You can ask the conditional probability of an atom given another atom using <code>pita</code> with the predicate</p>
-<pre><code>prob(:Query:atom,:Evidence:atom,-Probability:float)|</code></pre>
+<pre><code>prob(:Query:atom,:Evidence:atom,-Probability:float).</code></pre>
 <p>as in</p>
 <pre><code>?- prob(heads(coin),biased(coin),P).</code></pre>
 <p>If the query/evidence are non-ground, <code>prob/3</code> returns in backtracking ground instantiations together with their probability.</p>
+<p>If the evidence is composed of more than one atom, add a clause of the form</p>
+<pre><code>evidence:- e1,...,en.</code></pre>
+<p>to the program, where <code>e1,...,en</code> are the evidence atoms, and use the query</p>
+<pre><code>?- prob(goal,evidence,P).</code></pre>
 <p>When using <code>mcintyre</code>, you can ask conditional queries with rejection sampling or with Metropolis-Hastings Markov Chain Monte Carlo. In rejection sampling, you first query the evidence and, if the query is successful, query the goal in the same sample, otherwise the sample is discarded. In Metropolis-Hastings MCMC, <code>mcintyre</code> follows the algorithm proposed in <span class="citation">[<a href="#ref-nampally2014adaptive">6</a>]</span> (the non adaptive version): after a sample, a number of sampled probabilistic choices are deleted and the others are retained for the next sample. The sample is accepted with a probability of <span class="math inline">\(\min\{1,\frac{N_0}{N_1}\}\)</span> where <span class="math inline">\(N_0\)</span> is the number of choices sampled in the previous sample and <span class="math inline">\(N_1\)</span> is the number of choices sampled in the current sample.</p>
 <p>You can take a given number of sample with rejection sampling using</p>
 <pre><code>mc_rejection_sample(:Query:atom,:Evidence:atom,+Samples:int,
@@ -190,6 +195,7 @@ female(cathy).</code></pre>
 <p>as in (<a href="http://cplint.lamping.unife.it/example/inference/coinmc.pl"><code>coinmc.pl</code></a>)</p>
 <pre><code>?- mc_rejection_sample(heads(coin),biased(coin),1000,S,F,P).</code></pre>
 <p>that takes 1000 samples where <code>biased(coin)</code> is true and returns in <code>S</code> the number of samples where <code>heads(coin)</code> is true, in <code>F</code> the number of samples where <code>heads(coin)</code> is false and in <code>P</code> the estimated probability (<code>S/1000</code>).</p>
+<p>Differently from exact inference, in approximate inference the evidence can be a conjunction of atoms.</p>
 <p>You can take a given number of sample with Metropolis-Hastings MCMC using</p>
 <pre><code>mc_mh_sample(:Query:atom,:Evidence:atom,+Samples:int,+Lag:int,
   -Successes:int,-Failures:int,-Probability:float).</code></pre>

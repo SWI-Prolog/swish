@@ -94,7 +94,7 @@ mc_rejection_sample(eval(2,4),eval(1,3),1000,T,F,P).
 <div class="nb-cell markdown">
 that perform rejection sampling of eval(2,4) given that eval(1,3) is true.
 
-If you also know that eval(0,2) is true, you can use
+Differently from exact inference, in approximate inference the evidence can be a conjunction of atoms, so if you also know that eval(0,2) is true, you can use
 </div>
 <div class="nb-cell query">
 mc_rejection_sample(eval(2,4),(eval(0,2),eval(1,3)),1000,T,F,P).
@@ -146,7 +146,7 @@ eval(1,3) is true by taking 1000 samples using Metropolis-Hastings MCMC.
 --
 Complete example: [arithm.pl](example/inference/arithm.pl)
 
-
+--
 - References: 
   - Nampally, Arun, and C. R. Ramakrishnan. _Adaptive MCMC-Based Inference in Probabilistic Logic Programs_. arXiv preprint arXiv:1403.6036 (2014).
   - http://forestdb.org/models/arithmetic.html

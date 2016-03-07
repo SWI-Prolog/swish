@@ -80,6 +80,8 @@ mc_sample_bar(heads(coin),1000,Chart).
 </div>
 
 <div class="nb-cell markdown">
+Differently from exact inference, in approximate inference the query can be a conjunction of atoms.
+
 --
 Complete example: [coinmc.pl](example/inference/coinmc.pl)
 

@@ -41,6 +41,11 @@ on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
   X1 is X-1,X1&gt;=0,on(X1,_),
   \+ on(X1,6).
 % to be written after the program
+
+evidence:-
+  on(0,1),
+  on(1,1).
+
 :- end_lpad.
 </div>
 
@@ -61,7 +66,11 @@ prob(on(2,1),P).
 </div>
 
 <div class="nb-cell markdown">
-We can also ask for the probability that the die will land on face 1 at time 2
+We can ask conditional queries with the predicate
+==
+prob(:Query:atom,:Evidence:atom,-Probability:float).
+==
+For example, we can ask for the probability that the die will land on face 1 at time 2
 given that it landed on face 1 at time 0. 
 </div>
 
@@ -69,8 +78,23 @@ given that it landed on face 1 at time 0.
 prob(on(2,1),on(0,1),P).
 </div>
 
+<div class="nb-cell markdown">
+If the evidence is composed of more than one atom, add a clause of the form
+==
+evidence:- e1,...,en.
+==
+to the program, where `e1,...,en` are the evidence atoms, and use the query
+==
+?- prob(goal,evidence,P).
+==
+as for example in
+</div>
+<div class="nb-cell query">
+prob(on(2,1),evidence,P).
+</div>
 
 <div class="nb-cell markdown">
+
 ### How to execute a query with graphical results
 *cplint on SWISH* can show the probabilistic results of a query as histograms. What we have to do is to use the predicate prob_bar/2 instead of prob/2. This feature, however, it is only supported if we are using the "Prolog" editor, it is *NOT* supported with the "LPAD" editor.
 

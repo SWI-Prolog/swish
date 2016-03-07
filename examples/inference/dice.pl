@@ -29,6 +29,10 @@ on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
 % at time T the die lands on one of its faces with equal probability if
 % at the previous time point it was thrown and it did not land on face 6
 
+evidence:-
+  on(0,1),
+  on(1,1).
+
 :- end_lpad.
 
 /** <examples>
@@ -41,6 +45,9 @@ on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
 % expected result 0.11574074074074071
 ?- prob(on(2,1),on(0,1),Prob). % what is the probability that the die lands on face 1 at time 2 given that it landed on face 1 at time 0?
 % expected result 0.13888888888888887
+?- prob(on(2,1),evidence,Prob).
+% what is the probability that the die lands on face 1 at time 2 given that it landed on face 1 at times 0 and 1?
+% expected result 0.16666666666666666
 ?- prob_bar(on(0,1),Prob). % what is the probability that the die lands on face 1 at time 0?
 % expected result 0.16666666666666666
 ?- prob_bar(on(1,1),Prob). % what is the probability that the die lands on face 1 at time 1?
