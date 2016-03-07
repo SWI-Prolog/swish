@@ -315,10 +315,11 @@ swish_navbar(Options) -->
 	p([span([style('color:red')],['New']),': ',
 	a([href('/help/help-cplint.html#condq'),target('_blank')],
 	['conditional probability computation algorithms']),': ',
-	a([href('/example/inference/threesideddice.pl')],
+	a([href('/?code=https://raw.githubusercontent.com/friguzzi/swish/master/examples/inference/threesideddice.pl&q=prob(on(2,1),on(0,1),P).')],
 	['exact']),', ',
-	a([href('/example/inference/arithm.pl')],
-	['rejection sampling and Metropolis-Hastings'])
+	a([href('/?code=https://raw.githubusercontent.com/friguzzi/swish/master/examples/inference/arithm.pl&q=mc_rejection_sample(eval(2,4),eval(1,3),1000,T,F,P).')],
+	['rejection sampling']),' and ',
+	a([href('/?code=https://raw.githubusercontent.com/friguzzi/swish/master/examples/inference/arithm.pl&q=mc_mh_sample(eval(2,4),eval(1,3),10000,1,T,F,P).')],['Metropolis-Hastings'])
         ])])
         ),
 
