@@ -57,6 +57,12 @@ pre.console
   margin: 0px;
 }
 
+span.format
+{ white-space: pre;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+
+
 		 /*******************************
 		 *	GENERAL RENDERERS	*
 		 *******************************/

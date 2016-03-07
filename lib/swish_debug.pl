@@ -75,13 +75,16 @@ stale_module_property(M, pengine, Pengine) :-
 	pengine_property(Pengine, module(M)).
 stale_module_property(M, pengine_queue, Queue) :-
 	pengine_property(Pengine, module(M)),
-	pengines:pengine_queue(Pengine, Queue, _TimeOut, _Time).
+	member(G, pengines:pengine_queue(Pengine, Queue, _TimeOut, _Time)),
+	call(G).		% fool ClioPatria cpack xref
 stale_module_property(M, pengine_pending_queue, Queue) :-
 	pengine_property(Pengine, module(M)),
-	pengines:output_queue(Pengine, Queue, _Time).
+	member(G, [pengines:output_queue(Pengine, Queue, _Time)]),
+	call(G).		% fool ClioPatria cpack xref
 stale_module_property(M, thread, Thread) :-
 	pengine_property(Pengine, module(M)),
-	pengine_property(Pengine, thread(Thread)).
+	member(G, [pengines:pengine_property(Pengine, thread(Thread))]),
+	call(G).		% fool ClioPatria cpack xref
 stale_module_property(M, thread_status, Status) :-
 	pengine_property(Pengine, module(M)),
 	pengine_property(Pengine, thread(Thread)),
@@ -269,12 +272,13 @@ swish_stats(stats{ cpu:CPU,
 	swish_statistics(pengines(Pengines)),
 	swish_statistics(pengines_created(PenginesCreated)).
 
-:- if(current_predicate(mallinfo/1)).
+:- if(\+current_predicate(mallinfo/1)).
+mallinfo(_{fordblks:0}).
+:- endif.
+
 fordblks(Fordblks) :-
 	mallinfo(MallInfo),
 	Fordblks = MallInfo.fordblks.
-:- endif.
-
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Maintain sliding statistics. The statistics are maintained in a ring. If

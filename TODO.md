@@ -63,6 +63,8 @@ _not_ see exactly the same UI for cooperation.  What about
 	  - Save, clearing name.
     - Indicate branch points in history?
       - Requires complete graph in memory.
+  - Indicate modified tabs
+  - Re-map Control-S (google-docs ignores save)
 
 ## Login
 
@@ -100,8 +102,11 @@ _not_ see exactly the same UI for cooperation.  What about
 ## Notebooks
 
   - Save notebook/program as new profile?
+  - Collapsible sections?
+  - Move sections (or select multiple)
+  - Delete query from menu?  Better: undo for delete.
 
-## SWISH as Prolog frontenda for local usage
+## SWISH as Prolog frontend for local usage
 
   - Deal with login
     - Limit to localhost.  Proposed by Douglas Miles:
@@ -132,8 +137,12 @@ _not_ see exactly the same UI for cooperation.  What about
 
   - Colouring of /library/http/html_write.pl.  Broken sequences:
     - DCG exports
+    - DCG terminals
     - use_module/2
     - ?- [file].
     - :- op(1150, fx, [(mode), (public)]).
-  - Load for tabbed search does not associate file history.
+    - setof/3, etc. Var^
+  - CSV download of large data results in stack overflow.
+  - Force download in Safari and IE (<a download="..."> does not
+    work.
 

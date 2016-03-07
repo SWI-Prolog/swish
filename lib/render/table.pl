@@ -32,6 +32,8 @@
 	  ]).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
+:- use_module(library(pairs)).
+:- use_module(library(dicts)).
 :- use_module(library(option)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/term_html)).
@@ -55,6 +57,17 @@ Render table-like data.
 %	@tbd: recognise more formats
 
 term_rendering(Term, _Vars, Options) -->
+	{ is_list_of_dicts(Term, _Rows, ColNames)
+	}, !,
+	html(div([ style('display:inline-block'),
+		   'data-render'('List of terms as a table')
+		 ],
+		 [ table(class('render-table'),
+			 [ \header_row(ColNames),
+			   \rows(Term, Options)
+			 ])
+		 ])).
+term_rendering(Term, _Vars, Options) -->
 	{ is_list_of_terms(Term, _Rows, _Cols),
 	  header(Term, Header, Options)
 	}, !,
@@ -63,7 +76,7 @@ term_rendering(Term, _Vars, Options) -->
 		 ],
 		 [ table(class('render-table'),
 			 [ \header_row(Header),
-			   \rows(Term)
+			   \rows(Term, Options)
 			 ])
 		 ])).
 term_rendering(Term, _Vars, Options) -->
@@ -75,24 +88,31 @@ term_rendering(Term, _Vars, Options) -->
 		 ],
 		 [ table(class('render-table'),
 			 [ \header_row(Header),
-			   \rows(Term)
+			   \rows(Term, Options)
 			 ])
 		 ])).
 
-rows([]) --> [].
-rows([H|T]) -->
+rows([], _) --> [].
+rows([H|T], Options) -->
 	{ cells(H, Cells) },
-	html(tr(\row(Cells))),
-	rows(T).
+	html(tr(\row(Cells, Options))),
+	rows(T, Options).
 
-row([]) --> [].
-row([H|T]) -->
+row([], _) --> [].
+row([H|T], Options) -->
+	html(td(\term(H, Options))),
+	row(T, Options).
+row([H|T], Options) -->
 	html(td(\term(H, []))),
-	row(T).
+	row(T, Options).
 
 cells(Row, Cells) :-
 	is_list(Row), !,
 	Cells = Row.
+cells(Row, Cells) :-
+	is_dict(Row), !,
+	dict_pairs(Row, _Tag, Pairs),
+	pairs_values(Pairs, Cells).
 cells(Row, Cells) :-
 	compound(Row),
 	compound_name_arguments(Row, _, Cells).
@@ -155,6 +175,20 @@ is_list_of_terms(Term, Rows, Cols) :-
 is_term_row(Name, Arity, Term) :-
 	compound(Term),
 	compound_name_arity(Term, Name, Arity).
+
+%%	is_list_of_dicts(@Term, -Rows, -ColNames) is semidet.
+%
+%	True when Term is a list of Rows dicts, each holding ColNames as
+%	keys.
+
+is_list_of_dicts(Term, Rows, ColNames) :-
+	is_list(Term), Term \== [],
+	length(Term, Rows),
+	maplist(is_dict_row(ColNames), Term).
+
+is_dict_row(ColNames, Dict) :-
+	is_dict(Dict),
+	dict_keys(Dict, ColNames).
 
 %%	is_list_of_lists(@Term, -Rows, -Cols) is semidet.
 %

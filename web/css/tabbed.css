@@ -30,6 +30,22 @@ a.tab-new.compact > span {
   padding: 0px 5px;	/* top/bottom left/right */
 }
 
+span.tab-dirty {
+  display: none;
+  background-image: url("../icons/wip.png");
+  padding: 0px;
+  background-repeat: no-repeat;
+  background-size: 90% 60%;
+  background-position: 0% 40%;
+  vertical-align: middle;
+  height: 30px;
+  width: 21px;
+}
+
+.nav > li > a.compact.data-dirty > span.tab-dirty {
+  display: inline-block;
+}
+
 .tabbed-select: {
   width: 100%;
 }

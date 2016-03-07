@@ -65,24 +65,41 @@ http://swish.swi-prolog.org/
 
 ### Running SWISH without sandbox limitations
 
-By default, SWISH lets you only run _safe_  commands. If you want to use
-SWISH for unrestricted development, load the authentication module:
+By default, SWISH does not require the user   to  login but lets you run
+only _safe_ commands.  If  you  want   to  use  SWISH  for  unrestricted
+development, load the authentication module:
 
     ?- [lib/authenticate].
 
 Next, for first usage, you need  to   create  a user. The authentication
-module defines swish_add_user/3, which updates or  creates a file called
-`passwd`:
+module defines swish_add_user/0, which asks for   details about the user
+to be created and updates or  creates   a  file  called `passwd`. At the
+moment _Group_ and _E-Mail_ are stored, but not used.
 
-    ?- swish_add_user(guru, 'top secret', []).
+    ?- swish_add_user.
+    % Password file: /home/jan/src/prolog/swish/passwd (update)
+    User name: bob
+    Real name: Bob Hacker
+    Group:     user
+    E-Mail:    bob@hacker.org
+    Password:
+    (again):
+    true.
 
 If you now try to run a command in  SWISH, it will prompt for a user and
 password. After authentication you can run any Prolog predicate.
 
-**NOTE** Authentication uses plain HTTP   basic authentication. Only use
-this on trusted networks and do not  use   a  password  that you use for
-other sensitive services. If you want to  setup a public server this way
-you are strongly adviced to use HTTPS.
+**NOTE** Authentication uses HTTP _digest   authentication_  by default.
+This authentication method uses a   challenge-response  method to verify
+the password and ensures the credentials  change with every request such
+that old credentials cannot be re-used   by  an attacker. Unfortunately,
+the server stores the password as the   SHA1 hash created from the user,
+password and _realm_.  This  is   relatively  vulnerable  to brute-force
+attacks for anyone who gains access to the  password file due to the low
+computational overhead of SHA1. Also note   that  the exchanged commands
+and replies are not encrypted. Secure servers  should use HTTPS. This is
+supported by SWISH, but creating and   deploying the certificates can be
+rather involved.
 
 
 ## Design

@@ -174,9 +174,8 @@ preferences.setDefault("emacs-keybinding", false);
 	    },
 	    examples: elem.swish('examples'),
 	    runner:   data.runner,
+	    editor:   editor[0]
 	  });
-
-	editor.prologEditor('makeCurrent');
 
 	$(".notebook").notebook();
 
