@@ -1,7 +1,7 @@
 <div class="notebook">
 
 <div class="nb-cell markdown">
-# Markov Chain
+# Random arithmetic functions
 
 In this example we want to show how to perform conditional inference in
 an approximate way using sampling. In particular, we will show how to

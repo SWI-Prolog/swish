@@ -1,7 +1,7 @@
 <div class="notebook">
 
 <div class="nb-cell markdown">
-# Markov Chain
+# Probabilistic Computation Tree Logic
 
 In this example we want to perform model checking of the Synchronous Leader Election Protocol expressed in 
 Probabilistic Computation Tree Logic (PCTL).
