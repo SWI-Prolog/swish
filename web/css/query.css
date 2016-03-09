@@ -6,3 +6,5 @@ table.prolog-query .prolog-prompt { vertical-align: top; font-weight: bold; }
 
 span.run-chk-table { margin-right: 5px; color: #777777;}
 span.run-chk-table input { position: relative; top: 2px; }
+
+ul.dropdown-menu.history { max-height: 30ex; overflow: auto; }
