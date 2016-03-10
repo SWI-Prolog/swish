@@ -862,6 +862,10 @@ define([ "cm/lib/codemirror",
       return this.data(pluginName).cm.changeGeneration();
     },
 
+    isClean: function(gen) {
+      return this.data(pluginName).cm.isClean(gen);
+    },
+
     /**
      * Associate the editor with the server side (gitty) source
      */

@@ -218,9 +218,25 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
      * @param {String} query the new value of the query
      */
     setQuery: function(query) {
-      return this.find(".query")
-	         .prologEditor('setSource', query)
-		 .focus();
+      var data = this.data(pluginName);
+
+      data.cleanGen =
+	this.find(".query")
+	    .prologEditor('setSource', query)
+	    .focus()
+	    .prologEditor('changeGen');
+
+      return this;
+    },
+
+    isClean: function() {
+      var data = this.data(pluginName);
+
+      return ( !this.queryEditor('getQuery') ||
+	       ( data.cleanGen &&
+		 this.find(".query").prologEditor('isClean', data.cleanGen)
+	       )
+	     );
     },
 
     /**
