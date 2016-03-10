@@ -491,15 +491,17 @@ define([ "cm/lib/codemirror",
     pengine: function(options) {
       var data = this.data(pluginName);
 
-      if ( options.add ) {
-	data.pengines = data.pengines || [];
-	if ( data.pengines.indexOf(options.add) < 0 )
-	  data.pengines.push(options.add);
+      if ( data ) {
+	if ( options.add ) {
+	  data.pengines = data.pengines || [];
+	  if ( data.pengines.indexOf(options.add) < 0 )
+	    data.pengines.push(options.add);
 
-	return this;
-      } else if ( options.has ) {
-	return (data.pengines &&
-		data.pengines.indexOf(options.has) >= 0);
+	  return this;
+	} else if ( options.has ) {
+	  return (data.pengines &&
+		  data.pengines.indexOf(options.has) >= 0);
+	}
       }
     },
 
