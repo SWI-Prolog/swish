@@ -135,7 +135,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	};
 
 	var exl = data.examples();
-	if ( exl && exl[0] ) {
+	if ( exl && exl[0] && this.queryEditor('isClean') ) {
 	  this.queryEditor('setQuery', exl[0]);
 	} else {
 	  editor.prologEditor('refreshHighlight');
