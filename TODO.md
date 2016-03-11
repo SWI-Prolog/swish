@@ -140,6 +140,4 @@ _not_ see exactly the same UI for cooperation.  What about
     - use_module/2
     - ?- [file].
     - :- op(1150, fx, [(mode), (public)]).
-  - Force download in Safari and IE (<a download="..."> does not
-    work.
 
