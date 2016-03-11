@@ -82,7 +82,19 @@ success(Answers, VarTerm) :-
 	maplist(csv_answer, Answers, Rows),
 	format('Content-disposition: attachment; filename="swish-result.csv"~n'),
 	format('Content-type: text/csv~n~n'),
-	csv_write_stream(current_output, [VarTerm|Rows], []).
+	csv_write_stream(current_output, [VarTerm], []),
+	forall(paginate(100, Page, Rows),
+	       csv_write_stream(current_output, Page, [])).
+
+paginate(Len, Page, List) :-
+	length(Page0, Len),
+	(   append(Page0, Rest, List)
+	->  (   Page = Page0
+	    ;	paginate(Len, Page, Rest)
+	    )
+	;   Page = List
+	).
+
 
 csv_answer(JSON, Row) :-
 	is_dict(JSON), !,
