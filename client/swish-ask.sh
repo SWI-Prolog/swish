@@ -82,5 +82,6 @@ curl -s \
      -d application="swish" \
      -d src_text="$srctext" \
      -d format=csv \
-     -d chunk=100000000 \
+     -d chunk=10 \
+     -d solutions=all \
      $server/pengine/create
