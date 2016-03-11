@@ -30,7 +30,7 @@
 :- module(swish_csv, []).
 :- use_module(library(pengines), []).
 :- use_module(library(pairs)).
-:- use_module(library(csv)).
+:- use_module(library(csv), [csv_write_stream/3]).
 :- use_module(library(apply)).
 :- use_module(library(pprint)).
 :- use_module(library(option)).
