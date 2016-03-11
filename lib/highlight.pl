@@ -720,6 +720,7 @@ style(brace_term,	 brace_term_open-brace_term_close, []).
 style(dict_content,	 dict_open-dict_close,             []).
 style(expanded,		 expanded,			   [text]).
 style(comment_string,	 comment_string,		   []).
+style(ext_quant,	 ext_quant,			   []).
 					% from library(http/html_write)
 style(html(_Element),	 html,				   []).
 style(entity(_Element),	 entity,			   []).

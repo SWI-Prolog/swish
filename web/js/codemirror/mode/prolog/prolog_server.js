@@ -272,6 +272,7 @@ classification of tokens.
 		     "float": "number",
 		     "key": "atom",	/* TBD: or integer */
 		     "sep": "atom",	/* : in dict */
+		     "ext_quant": "atom", /* setof ^-symbol */
 
 		     "expanded": "expanded",
 		     "comment_string":"string",

@@ -10,6 +10,7 @@
 .cm-s-prolog span.cm-functor	       {color: #000; font-style: italic;}
 .cm-s-prolog span.cm-tag	       {color: #000; font-weight: bold;}
 .cm-s-prolog span.cm-key	       {color: #000; font-weight: bold;}
+.cm-s-prolog span.cm-ext_quant	       {color: #000; font-weight: bold;}
 .cm-s-prolog span.cm-qq_content        {color: #900;}
 .cm-s-prolog span.cm-qq_open,
 .cm-s-prolog span.cm-qq_sep,
