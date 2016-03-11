@@ -99,6 +99,8 @@ var tokenHelp = {
   "qatom":     "Quoted atom",
   "tag":       "Tag of a SWI7 dict",
 
+  "string_terminal": "Terminal (DCG)",
+
   "head":       null,
   "control":    null,
   "fullstop":   null,

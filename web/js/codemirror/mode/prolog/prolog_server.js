@@ -340,6 +340,8 @@ classification of tokens.
 		     "neck": "neck",
 		     "fullstop": "fullstop",
 
+		     "string_terminal": "string",
+
 		     "html": "functor",
 		     "entity": "atom",
 		     "html_attribute": "functor",
