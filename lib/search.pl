@@ -181,29 +181,13 @@ sow(Text, Offset) :-
 	Pre is Offset-1,
 	sub_atom(Text, Pre, 1, _, Before),
 	sub_atom(Text, Offset, 1, _, Start),
-	char_class(Start, Class),
-	\+ char_class(Before, Class).
-
-char_class(C, Class) :-
-	var(Class), !,
-	(   target_class(Class),
-	    char_type(C, Class)
-	->  true
-	;   Class = other
-	).
-char_class(C, Class) :-
-	(   target_class(Class)
-	->  char_type(C, Class)
-	;   \+ ( target_class(T),
-	         char_type(C, T)
-	       )
-	).
-
-target_class(lower).
-target_class(upper).
-target_class(digit).
-target_class(space).
-target_class(punct).
+	(   \+ char_type(Before, csym),
+	    char_type(Start, csym)
+	;   Before == '_',
+	    char_type(Start, csym)
+	;   char_type(Start, upper),
+	    char_type(Before, lower)
+	), !.
 
 %%	search(+Request)
 %
