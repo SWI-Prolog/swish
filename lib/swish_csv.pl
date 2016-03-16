@@ -63,9 +63,9 @@ csv(create(_Id, Features), VarNames, Options) :- !,
 	csv(Answer, VarNames, Options).
 csv(destroy(_Id, Wrapped), VarNames, Options) :- !,
 	csv(Wrapped, VarNames, Options).
-csv(success(_Id, Answers, _Time, _More), VarNames, Options) :- !,
+csv(success(_Id, Answers, _Time, More), VarNames, Options) :- !,
 	VarTerm =.. [row|VarNames],
-	success(Answers, VarTerm, Options).
+	success(Answers, VarTerm, [more(More)|Options]).
 csv(error(_Id, Error), _VarNames, _Options) :- !,
 	message_to_string(Error, Msg),
 	format('Status: 400 Bad request~n'),
