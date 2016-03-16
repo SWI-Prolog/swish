@@ -150,6 +150,8 @@ swish_config:config(public_access,      false).
 :- use_module(swish:lib/jquery).
 :- use_module(swish:lib/swish_debug).
 :- use_module(swish:library(pengines_io)).
+:- use_module(swish:library(solution_sequences)).
+:- use_module(swish:library(aggregate)).
 pengines:prepare_module(Module, swish, _Options) :-
 	pengines_io:pengine_bind_io_to_html(Module).
 
