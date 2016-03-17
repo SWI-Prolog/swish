@@ -89,7 +89,7 @@ define(["jquery", "preferences"],
     },
 
     openRecent: function(ev, doc) {
-      return history.openRecent[doc.type](ev, doc);
+      return history.openRecent[doc.st_type](ev, doc);
     },
 
     /**
