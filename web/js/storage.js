@@ -193,6 +193,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 
       data.setValue(data.cleanData);
       data.cleanGeneration = data.changeGen();
+      data.markClean(true);
       return this;
     },
 
