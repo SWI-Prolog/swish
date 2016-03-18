@@ -9,7 +9,7 @@ The chains may be infinite so the query may have an infinite number of explanati
 :- set_pita(depth_bound,true).
 :- set_pita(depth,&lt;level of depth (integer)&gt;).
 ==
-(see [exact inference variant of this example](markov_chaindb.pl)). Alternatively, MCINTYRE can be used. 
+(see [exact inference variant of this example](example/inference/markov_chaindb.pl)). Alternatively, MCINTYRE can be used. 
 
 Here we will use the latter approach.
 
