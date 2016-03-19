@@ -5,25 +5,42 @@ disjunctions. In International Conference on Logic Programming,
 volume 3131 of LNCS, pages 195-209. Springer, 2004.
 */
 :- use_module(library(mcintyre)).
-
+:- use_module(library(clpr)).
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
 :- endif.
 :- mc.
 :- begin_lpad.
+kf(N,O, T) :-
+  init(S),
+  kf_part(0, N, S,O,T).
+
+kfo(N,O) :-
+  init(S),
+  kf_part_o(0, N, S,O,_T).
+
+
 kf(N, T) :-
   init(S),
-  kf_part(0, N, S, T).
+  kf_part(0, N, S,_O,T).
 
-kf_part(I, N, S, T) :-
+kf_part(I, N, S,[V|RO], T) :-
   I < N, 
   NextI is I+1,
   trans(S,I,NextS),
   emit(NextS,I,V),
-  obs(NextI, V),
-  kf_part(NextI, N, NextS, T).
+  kf_part(NextI, N, NextS,RO, T).
 
-kf_part(N, N, S, S).
+kf_part(N, N, S, [],S).
+
+kf_part_o(I, N, S,[V|RO], T) :-
+  I < N, 
+  NextI is I+1,
+  trans(S,I,NextS),
+  emit_o(NextS,I,V),
+  kf_part_o(NextI, N, NextS,RO, T).
+
+kf_part_o(N, N, S, [],S).
 
 trans(S,I,NextS) :-
   trans_err(I,E),
@@ -33,49 +50,55 @@ emit(NextS,I,V) :-
   obs_err(I,X),
   V is NextS + X.
 
-init(S):gaussian(S,3,2).
+trans_o(S,I,NextS) :-
+  E is NextS-S,
+  trans_err(I,E).
 
-trans_err(_I,E):gaussian(E,0,2.5).
+emit_o(NextS,I,V) :-
+  X is V-NextS,
+  obs_err(I,X).
 
-obs_err(_I,E):gaussian(E,0,1.5).
+init(S):gaussian(S,0,1).
+
+trans_err(_,E):gaussian(E,0,2).
+
+obs_err(_,E):gaussian(E,0,1).
 :- end_lpad.
 
-hist_uncond(Samples,NBins,Chart):-
-  mc_sample_arg(mix(X),Samples,X,L0),
-  hist(L0,NBins,Chart).
-
-hist_rej_heads(Samples,NBins,Chart):-
-  mc_rejection_sample_arg(mix(X),heads,Samples,X,L0),
-  hist(L0,NBins,Chart).
-
-hist_mh_heads(Samples,Lag,NBins,Chart):-
-  mc_mh_sample_arg(mix(X),heads,Samples,Lag,X,L0),
-  hist(L0,NBins,Chart).
-
-hist_rej_dis(Samples,NBins,Chart):-
-  mc_rejection_sample_arg(mix(X),(mix(Y),Y>2),Samples,X,L0),
-  hist(L0,NBins,Chart).
-
-hist_mh_dis(Samples,Lag,NBins,Chart):-
-  mc_mh_sample_arg(mix(X),(mix(Y),Y>2),Samples,Lag,X,L0),
-  hist(L0,NBins,Chart).
 
 
-hist(L0,NBins,Chart):-
+hist_lw(Samples,NBins,Chart):-
+  mc_sample_arg(kf(1,Y),Samples,Y,L0),
+  mc_lw_sample_arg(kf(1,T),kfo(1,[2.5]),Samples,T,L),
+  hist(L0,L,NBins,Chart).
+
+
+hist(L0,P,NBins,Chart):-
   maplist(val,L0,L),
-  max_list(L,Max),
-  min_list(L,Min),
+  keysort(P,PS),
+  maplist(key,PS,P1),
+  append(L,P1,All),
+  max_list(All,Max),
+  min_list(All,Min),
   sort(L,L1),
   D is Max-Min,
   BinWidth is D/NBins,
   bin(NBins,L1,Min,BinWidth,LB),
-  Chart = c3{data:_{x:elem, rows:[elem-freq|LB], type:bar},
-          axis:_{ x:_{ tick:_{
-    format: 'function (x) { return x.toFixed(2);}' ,
-           fit: true,culling:_{max:7} }} },
-          bar:_{
-            width:_{ ratio: 1.0 }}, 
-            legend:_{show: false}}.
+  /*max_list(P1,MaxP),
+  min_list(P1,MinP),
+  DP is MaxP-MinP,
+  BWP is DP/NBins,*/
+  binP(NBins,PS,Min,BinWidth,PB),
+  maplist(split,LB,XA,YA),
+  maplist(split,PB,_XP,YP),
+  maplist(to_dict_pre,LB,DB),
+  maplist(to_dict_post,PB,DP),
+  dicts_join(x, DB, DP, Data),	
+%  Chart = c3{data:_{xs:_{pre: xpre,post: xpost}, 
+  %Chart = c3{data:_{xs:_{pre: xpre}, 
+  Chart = c3{data:_{x: x, 
+  rows: Data
+  }}.
 
 bin(0,_L,_Min,_BW,[]):-!.
 
@@ -97,9 +120,37 @@ count_bin([H|T0],U,F0,F,T):-
     count_bin(T0,U,F1,F,T)
   ).
 
+binP(0,_L,_Min,_BW,[]):-!.
+
+binP(N,L,Lower,BW,[V-Freq|T]):-
+  V is Lower+BW/2,
+  Upper is Lower+BW,
+  count_binP(L,Upper,0,Freq,L1),
+  N1 is N-1,
+  binP(N1,L1,Upper,BW,T).
+
+count_binP([],_U,F,F,[]).
+
+count_binP([H-W|T0],U,F0,F,T):-
+  (H>=U->
+    F=F0,
+    T=T0
+  ;
+    F1 is F0+W,
+    count_binP(T0,U,F1,F,T)
+  ).
+
+to_dict_pre(X-Y,r{x:X,pre:Y}).
+to_dict_post(X-Y,r{x:X,post:Y}).
+
 val([E]-_,E).
+
+key(K-_,K).
+
+split(X-Y,X,Y).
 /** <examples>
-?- hist_uncond(10000,40,G).
+mc_lw_sample_arg(kf(1,T),kfo(1,[2.5]),10,T,L).
+?- hist_lw(1000,40,G).
 
 ?- hist_rej_heads(10000,40,G).
 ?- hist_mh_heads(10000,2,40,G).
