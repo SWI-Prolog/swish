@@ -10,9 +10,10 @@
  */
 
 define([ "jquery", "config", "preferences",
-	 "cm/lib/codemirror", "form", "prolog", "answer", "laconic"
+	 "cm/lib/codemirror", "form", "prolog", "links",
+	 "answer", "laconic"
        ],
-       function($, config, preferences, CodeMirror, form, prolog) {
+       function($, config, preferences, CodeMirror, form, prolog, links) {
 
 		 /*******************************
 		 *	  THE COLLECTION	*
@@ -302,8 +303,7 @@ define([ "jquery", "config", "preferences",
 	}
 	if ( query.chunk )
 	  data.chunk = query.chunk;
-	elem.append($.el.div(
-	  {class:"runner-results"}));
+	elem.append($.el.div({class:"runner-results"}));
 	elem.append(controllerDiv());
 
 	elem.data('prologRunner', data);
@@ -318,6 +318,7 @@ define([ "jquery", "config", "preferences",
 	    }
 	  }
 	});
+	elem.on("click", "a", links.followLink);
 
 	data.savedFocus = document.activeElement;
 	elem.attr('tabindex', -1);
