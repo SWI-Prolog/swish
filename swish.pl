@@ -183,5 +183,8 @@ pengines:prepare_module(Module, swish, _Options) :-
 :- use_module(library(mcintyre)).
 :- use_module(library(slipcover)).
 :- use_module(library(auc)).
+:- use_module(library(clpr)).
+:- multifile sandbox:safe_primitive/1.
 
+sandbox:safe_primitive(nf_r:{_}).
 
