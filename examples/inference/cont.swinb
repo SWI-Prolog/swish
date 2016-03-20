@@ -5,10 +5,10 @@
 
 This notebook gives an overview of example programs for inference.
 
-  - ([gaussian_mixture.pl](example/inference/gaussian_mixture.pl)
-  - ([kalman_filter.pl](example/inference/kalman_filter.pl)
-  - ([gauss_mean_est.pl](example/inference/gauss_mean_est.pl)
-  - ([seven_scientists.pl](example/inference/seven_scientists.pl)
+  - [gaussian_mixture.pl](example/inference/gaussian_mixture.pl)
+  - [kalman_filter.pl](example/inference/kalman_filter.pl)
+  - [gauss_mean_est.pl](example/inference/gauss_mean_est.pl)
+  - [seven_scientists.pl](example/inference/seven_scientists.pl)
 
 </div>
 </div>
