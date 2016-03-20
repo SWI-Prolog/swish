@@ -17,7 +17,7 @@ kf(N,O, T) :-
 
 kfo(N,O) :-
   init(S),
-  kf_part_o(0, N, S,O,_T).
+  kf_part(0, N, S,O,_T).
 
 
 kf(N, T) :-
@@ -33,29 +33,12 @@ kf_part(I, N, S,[V|RO], T) :-
 
 kf_part(N, N, S, [],S).
 
-kf_part_o(I, N, S,[V|RO], T) :-
-  I < N, 
-  NextI is I+1,
-  trans(S,I,NextS),
-  emit_o(NextS,I,V),
-  kf_part_o(NextI, N, NextS,RO, T).
-
-kf_part_o(N, N, S, [],S).
-
 trans(S,I,NextS) :-
-  trans_err(I,E),
-  NextS is S + E.
-
-emit(NextS,I,V) :-
-  obs_err(I,X),
-  V is NextS + X.
-
-trans_o(S,I,NextS) :-
-  E is NextS-S,
+  {E =:= NextS - S},
   trans_err(I,E).
 
-emit_o(NextS,I,V) :-
-  X is V-NextS,
+emit(NextS,I,V) :-
+  {X =:= V - NextS},
   obs_err(I,X).
 
 init(S):gaussian(S,0,1).
