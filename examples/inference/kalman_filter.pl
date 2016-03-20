@@ -89,16 +89,37 @@ hist(L0,P,NBins,Chart):-
   DP is MaxP-MinP,
   BWP is DP/NBins,*/
   binP(NBins,PS,Min,BinWidth,PB),
-  maplist(split,LB,XA,YA),
-  maplist(split,PB,_XP,YP),
   maplist(to_dict_pre,LB,DB),
   maplist(to_dict_post,PB,DP),
-  dicts_join(x, DB, DP, Data),	
+  dicts_join(x, DB, DP, Data),
+  NTick=10,
+  TickWidth is D/NTick,
+  int_round(TickWidth,1,TW),
+  int_round(Min,1,MinR),
+  ticks(MinR,TW,Max,Tick),
 %  Chart = c3{data:_{xs:_{pre: xpre,post: xpost}, 
   %Chart = c3{data:_{xs:_{pre: xpre}, 
   Chart = c3{data:_{x: x, 
-  rows: Data
+  rows: Data,
+   axis:_{x:_{min:Min,max:Max,
+       tick:_{values:Tick}}}
   }}.
+
+ticks(Min,T,Max,[]):-
+  Min+T> Max,!.
+
+ticks(Min,T,Max,[Tick|RT]):-
+  Tick is Min+T,
+  ticks(Tick,T,Max,RT).
+
+int_round(TW0,F,TW):-
+  IP is float_integer_part(TW0*F),
+  (IP=\=0->
+    TW is IP/F
+  ;
+    F1 is F*10,
+    int_round(TW0,F1,TW)
+  ).
 
 bin(0,_L,_Min,_BW,[]):-!.
 
