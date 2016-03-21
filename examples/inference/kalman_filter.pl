@@ -79,14 +79,15 @@ hist(L0,P,NBins,Chart):-
   TickWidth is D/NTick,
   int_round(TickWidth,1,TW),
   int_round(Min,1,MinR),
-  ticks(MinR,TW,Max,Tick),
+  MinR1 is MinR-TW,
+  ticks(MinR1,TW,Max,Tick),
 %  Chart = c3{data:_{xs:_{pre: xpre,post: xpost}, 
   %Chart = c3{data:_{xs:_{pre: xpre}, 
   Chart = c3{data:_{x: x, 
-  rows: Data,
+  rows: Data},
    axis:_{x:_{min:Min,max:Max,
        tick:_{values:Tick}}}
-  }}.
+  }.
 
 ticks(Min,T,Max,[]):-
   Min+T> Max,!.

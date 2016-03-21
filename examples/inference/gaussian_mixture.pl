@@ -51,13 +51,34 @@ hist(L0,NBins,Chart):-
   D is Max-Min,
   BinWidth is D/NBins,
   bin(NBins,L1,Min,BinWidth,LB),
+  NTick=10,
+  TickWidth is D/NTick,
+  int_round(TickWidth,1,TW),
+  int_round(Min,1,MinR),
+  MinR1 is MinR-TW,
+  ticks(MinR1,TW,Max,Tick),
   Chart = c3{data:_{x:elem, rows:[elem-freq|LB], type:bar},
-          axis:_{ x:_{ tick:_{
-    format: 'function (x) { return x.toFixed(2);}' ,
-           fit: true,culling:_{max:7} }} },
+          axis:_{ x:_{ tick:_{values:Tick}}},
+%    format: 'function (x) { return x.toFixed(2);}' ,
+%           fit: true,culling:_{max:7} }} },
           bar:_{
             width:_{ ratio: 1.0 }}, 
             legend:_{show: false}}.
+ticks(Min,T,Max,[]):-
+  Min+T> Max,!.
+
+ticks(Min,T,Max,[Tick|RT]):-
+  Tick is Min+T,
+  ticks(Tick,T,Max,RT).
+
+int_round(TW0,F,TW):-
+  IP is float_integer_part(TW0*F),
+  (IP=\=0->
+    TW is IP/F
+  ;
+    F1 is F*10,
+    int_round(TW0,F1,TW)
+  ).
 
 bin(0,_L,_Min,_BW,[]):-!.
 
