@@ -92,8 +92,10 @@ hist(L0,P,NBins,Chart):-
 ticks(Min,T,Max,[]):-
   Min+T> Max,!.
 
-ticks(Min,T,Max,[Tick|RT]):-
+ticks(Min,T,Max,[TickN|RT]):-
   Tick is Min+T,
+  format(atom(TickA), '~2f', [Tick]),
+  atom_number(TickA,TickN),
   ticks(Tick,T,Max,RT).
 
 int_round(TW0,F,TW):-
