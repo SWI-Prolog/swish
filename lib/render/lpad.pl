@@ -121,85 +121,9 @@ body([H|T])-->
   {format(atom(A),"  ~p,~n",[H])},
   [A],body(T).
 
-row([]) --> [].
-row([H|T]) -->
-	html(td(\term(H, []))),
-	row(T).
 
 
-term_rendering(Term, _Vars, Options) -->
-	{ is_list_of_lists(Term, _Rows, _Cols),
-	  header(Term, Header, Options)
-	}, !,
-	html(div([ style('display:inline-block'),
-		   'data-render'('List of lists as a table')
-		 ],
-		 [ table(class('render-table'),
-			 [ \header_row(Header),
-			   \rows(Term)
-			 ])
-		 ])).
 
-rows([]) --> [].
-rows([H|T]) -->
-	{ cells(H, Cells) },
-	html(tr(\row(Cells))),
-	rows(T).
-
-row([]) --> [].
-row([H|T]) -->
-	html(td(\term(H, []))),
-	row(T).
-
-cells(Row, Cells) :-
-	is_list(Row), !,
-	Cells = Row.
-cells(Row, Cells) :-
-	compound(Row),
-	compound_name_arguments(Row, _, Cells).
-
-%%	header(+Table, -Header:list(Term), +Options) is semidet.
-%
-%	Compute the header to use. Fails if   a  header is specified but
-%	does not match.
-
-header(_, _, Options) :-
-	\+ option(header(_), Options), !.
-header([Row|_], ColHead, Options) :-
-	member(header(Header), Options),
-	generalise(Row, GRow),
-	generalise(Header, GRow), !,
-	header_list(Header, ColHead).
-
-generalise(List, VList) :-
-	is_list(List), !,
-	length(List, Len),
-	length(VList0, Len),
-	VList = VList0.
-generalise(Compound, VCompound) :-
-	compound(Compound), !,
-	compound_name_arity(Compound, Name, Arity),
-	compound_name_arity(VCompound0, Name, Arity),
-	VCompound = VCompound0.
-
-header_list(List, List) :- is_list(List), !.
-header_list(Compound, List) :-
-	Compound =.. [_|List].
-
-
-%%	header_row(ColNames:list)// is det.
-%
-%	Include a header row  if ColNames is not unbound.
-
-header_row(ColNames) -->
-	{ var(ColNames) }, !.
-header_row(ColNames) -->
-	html(tr(class(hrow), \header_columns(ColNames))).
-
-header_columns([]) --> [].
-header_columns([H|T]) -->
-	html(th(\term(H, []))),
-	header_columns(T).
 
 
 %%	is_list_of_terms(@Term, -Rows, -Cols) is semidet.
