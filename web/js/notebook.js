@@ -1083,8 +1083,12 @@ var cellTypes = {
 
   methods.saveDOM.html = function() {		/* HTML */
     var text = this.data('htmlText') || cellText(this);
+    var div  = $.el.div({class:"nb-cell html"});
 
-    return $.el.div({class:"nb-cell html"}, text);
+    // assume scripts are executed when put into the DOM
+    $(div).html(text);
+
+    return div;
   };
 
   methods.saveDOM.program = function() {	/* program */
@@ -1135,9 +1139,7 @@ var cellTypes = {
   };
 
   methods.restoreDOM.html = function(dom) {	/* HTML */
-    var text = dom.text().trim();
-    this.data('htmlText', text);
-    methods.run.html.call(this, text);
+    methods.run.html.call(this, dom.html());
   };
 
   methods.restoreDOM.program = function(dom) {	/* program */
