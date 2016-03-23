@@ -20,6 +20,7 @@ var cellTypes = {
   "program":  { label:"Program" },
   "query":    { label:"Query" },
   "markdown": { label:"Markdown" },
+  "html":     { label:"HTML" }
 };
 
 (function($) {
@@ -646,6 +647,7 @@ var cellTypes = {
 	this.removeClass("active");
 	switch( data.type ) {
 	  case "markdown":
+	  case "html":
 	    if ( this.hasClass("runnable") ) {
 	      this.nbCell('run');
 	    }
@@ -856,6 +858,18 @@ var cellTypes = {
     this.addClass("runnable");
   }
 
+  methods.type.html = function(options) {	/* HTML */
+    var editor;
+
+    options = options||{};
+    options.mode = "htmlmixed";
+
+    this.html("");
+    this.append(editor=$.el.div({class:"editor"}));
+    $(editor).prologEditor(options);
+    this.addClass("runnable");
+  }
+
   methods.type.program = function(options) {	/* program */
     var editor, bg;
 
@@ -996,6 +1010,41 @@ var cellTypes = {
     }
   };
 
+  methods.run.html = function(htmlText) {
+    var cell = this;
+
+    htmlText = htmlText||cellText(this);
+
+    function makeEditable(ev) {
+      var cell = $(ev.target).closest(".nb-cell");
+      var text = cell.data('htmlText');
+      cell.removeData('htmlText');
+      methods.type.html.call(cell, {value:text});
+      cell.off("dblclick", makeEditable);
+      cell.off("click", links.followLink);
+    }
+
+    function setHTML(data) {
+      try {
+	cell.html(data);
+      } catch(e) {
+	alert(e);
+      }
+      cell.removeClass("runnable");
+      cell.data('htmlText', htmlText);
+      cell.on("dblclick", makeEditable);
+      cell.on("click", "a", links.followLink);
+    }
+
+    if ( htmlText.trim() != "" )
+    { setHTML(htmlText);
+    } else
+    { setHTML("<div class='nb-placeholder'>"+
+	      "Empty HTML cell.  Double click to edit"+
+	      "</div>");
+    }
+  };
+
   methods.run.program = function() {		/* program */
     modal.alert("Please define a query to run this program");
   };
@@ -1030,6 +1079,12 @@ var cellTypes = {
     var text = this.data('markdownText') || cellText(this);
 
     return $.el.div({class:"nb-cell markdown"}, text);
+  };
+
+  methods.saveDOM.html = function() {		/* HTML */
+    var text = this.data('htmlText') || cellText(this);
+
+    return $.el.div({class:"nb-cell html"}, text);
   };
 
   methods.saveDOM.program = function() {	/* program */
@@ -1079,6 +1134,12 @@ var cellTypes = {
     methods.run.markdown.call(this, text);
   };
 
+  methods.restoreDOM.html = function(dom) {	/* HTML */
+    var text = dom.text().trim();
+    this.data('htmlText', text);
+    methods.run.html.call(this, text);
+  };
+
   methods.restoreDOM.program = function(dom) {	/* program */
     var opts = { value:dom.text().trim() };
 
@@ -1125,6 +1186,12 @@ var cellTypes = {
     return sha1(text);
   };
 
+  methods.changeGen.html = function() {	/* HTML */
+    var text = this.data('htmlText') || cellText(this);
+
+    return sha1(text);
+  };
+
   methods.changeGen.program = function() {	/* program */
     var text = "";
     var cell = this;
@@ -1164,6 +1231,12 @@ var cellTypes = {
 
   methods.isEmpty.markdown = function() {	/* markdown */
     var text = this.data('markdownText') || cellText(this);
+
+    return text.trim() == "";
+  };
+
+  methods.isEmpty.html = function() {	/* HTML */
+    var text = this.data('htmlText') || cellText(this);
 
     return text.trim() == "";
   };

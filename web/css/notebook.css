@@ -42,6 +42,11 @@
   border: 0px;
 }
 
+.nb-cell.html:not(.runnable)
+{ background-color: transparent;
+  border: 0px;
+}
+
 .nb-cell
 { box-sizing: border-box;
   background-color: #eee;
