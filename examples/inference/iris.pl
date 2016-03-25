@@ -13,12 +13,24 @@ volume 3131 of LNCS, pages 195-209. Springer, 2004.
 :- mc.
 :- begin_lpad.
 
+iris_par(I,par(D,Means),X1,X2,X3,X4):-
+  latent_class(I,D,K),
+  nth1(K,Means,[M1,M2,M3,M4,V1,V2,V3,V4]),
+  measure(1,I,K,M1,V1,X1),
+  measure(2,I,K,M2,V2,X2),
+  measure(3,I,K,M3,V3,X3),
+  measure(4,I,K,M4,V4,X4).
+
 iris(I,X1,X2,X3,X4):-
   category(I,K),
-  mean(K,x1,M1),
-  mean(K,x2,M2),
-  mean(K,x3,M3),
-  mean(K,x4,M4),
+  data_mean_var(1,DM1,_),
+  data_mean_var(2,DM2,_),
+  data_mean_var(3,DM3,_),
+  data_mean_var(4,DM4,_),
+  mean(K,x1,DM1,M1),
+  mean(K,x2,DM2,M2),
+  mean(K,x3,DM3,M3),
+  mean(K,x4,DM4,M4),
   measure(x1,I,K,M1,X1),
   measure(x2,I,K,M2,X2),
   measure(x3,I,K,M3,X3),
@@ -31,9 +43,10 @@ category(I,K):-
 prior_cat(Alfas,Values):dirichlet(Values,Alfas).
 
 
-mean(_,_,M): gaussian(M,0,1).
+mean(_,_,DM,M): gaussian(M,DM,1).
 
-measure(_,_,_,M,A): gaussian(A,M,1.0).
+measure(_,_,_,M,A): gaussian(A,M,3.0).
+measure(_,_,_,M,Var,A): gaussian(A,M,Var).
 
 latent_class(I,[A,B,C],V):-
 %  maplist(pair_val,[1,2,3],Par,D),
@@ -195,6 +208,96 @@ data(6.5,3.0,5.2,2.0,'Iris-virginica').
 data(6.2,3.4,5.4,2.3,'Iris-virginica').
 data(5.9,3.0,5.1,1.8,'Iris-virginica').
 
+
+em(It,True,Post):-
+  findall([A,B,C,D,Type],data(A,B,C,D,Type),LA),
+  pca(LA,True),
+  data_mean_var(1,DM1,V1),
+  data_mean_var(2,DM2,V2),
+  data_mean_var(3,DM3,V3),
+  data_mean_var(4,DM4,V4),
+  findall(M,(between(1,3,_),gauss(DM1,1.0,M)),[M11,M21,M31]),
+  findall(M,(between(1,3,_),gauss(DM2,1.0,M)),[M12,M22,M32]),
+  findall(M,(between(1,3,_),gauss(DM3,1.0,M)),[M13,M23,M33]),
+  findall(M,(between(1,3,_),gauss(DM4,1.0,M)),[M14,M24,M34]),
+  em_it(0,It,LA,par([1:0.2,2:0.5,3:0.3],
+  [M11,M12,M13,M14,V1,V2,V3,V4],[M21,M22,M23,M24,V1,V2,V3,V4],
+  [M31,M32,M33,M34,V1,V2,V3,V4]),
+  _Par,_,LA1),
+   %em_it(0,It,LA,par([1:1/3,2:1/3,3:1/3],
+%  [DM1,DM2,DM3,DM4,V1,V2,V3,V4],[DM1,DM2,DM3,DM4,V1,V2,V3,V4],
+%  [DM1,DM2,DM3,DM4,V1,V2,V3,V4]),
+%  _Par,_,LA1),
+  find_most_likely(LA1,LPostCat),
+  maplist(replace_cat,LA,LPostCat,LPost),
+  pca(LPost,Post).
+
+find_most_likely([L1,L2,L3],LC):-
+  maplist(classify,L1,L2,L3,LC).
+
+classify(_-W1,_-W2,_-W3,Cat):-
+  find_max([W1,W2,W3],Cat).
+
+em_it(It,It,_LA,Par,Par,LAOut,LAOut):-!.
+
+em_it(It0,It,LA,Par0,Par,_,LAOut):-
+  expect(LA,Par0,LA1,LL),
+  write('LL '),write(LL),nl,
+  maxim(LA1,Par1),
+  It1 is It0+1,
+  em_it(It1,It,LA,Par1,Par,LA1,LAOut).
+
+expect(LA,par([1:P1,2:P2,3:P3],
+  G1,G2,G3),[L1,L2,L3],LL):-
+  maplist(weight(G1,P1),LA,L01),
+  maplist(weight(G2,P2),LA,L02),
+  maplist(weight(G3,P3),LA,L03),
+  normal(L01,L02,L03,L1,L2,L3),
+  log_lik(L01,L02,L3,P1,P2,P3,LL).
+
+normal(L01,L02,L03,L1,L2,L3):-
+  maplist(px,L01,L02,L03,L1,L2,L3).
+
+px(X-W01,X-W02,X-W03,X-W1,X-W2,X-W3):-
+  S is W01+W02+W03,
+  W1 is W01/S,
+  W2 is W02/S,
+  W3 is W03/S.
+
+weight([M1,M2,M3,M4,V1,V2,V3,V4],P,[A,B,C,D,_],[A,B,C,D]-W):-
+  gauss_density_0(M1,V1,A,W1),
+  gauss_density_0(M2,V2,B,W2),
+  gauss_density_0(M3,V3,C,W3),
+  gauss_density_0(M4,V4,D,W4),
+  W is W1*W2*W3*W4*P.
+
+gauss_density_0(M,V,X,W):-
+  (V=:=0.0->
+   write(zero_var_gauss),
+    W=0.0
+  ;
+    gauss_density(M,V,X,W)
+  ).
+
+
+maxim([LA1,LA2,LA3],par([1:P1,2:P2,3:P3],C1,C2,C3)):-
+  stats(LA1,W1,C1),
+  stats(LA2,W2,C2),
+  stats(LA3,W3,C3),
+  SW is W1+W2+W3,
+  write(sw),write(SW),nl,
+  P1 is W1/SW,
+  P2 is W2/SW,
+  P3 is W3/SW.
+
+log_lik(L1,L2,L3,P1,P2,P3,LL):-
+  foldl(combine(P1,P2,P3),L1,L2,L3,0,LL).
+
+combine(P1,P2,P3,_-W1,_-W2,_-W3,LL0,LL):-
+  LLs is log(P1*W1+P2*W2+P3*W3),
+  %write((W1,W2,W3,LLs)),nl,
+  LL is LL0+LLs.
+
 sample_clusters(Samples,True,Prior,Post):-
   findall([A,B,C,D,Type],data(A,B,C,D,Type),LA),
   pca(LA,True),
@@ -252,7 +355,7 @@ update_counts_log(W,K,Card0,Card):-
   up_c_log(1,K,W,Card0,Card).
 
 up_c_log(K,K,W,[H|R],[H1|R]):-!,
-  H1 is H+exp(4000+W).
+  H1 is H+exp(1000+W).
 
 up_c_log(K0,K,W,[H|R0],[H|R]):-
   K1 is K0+1,
@@ -336,8 +439,75 @@ separate(DC,Cat,DataClass):-
   include(cat(Cat),DC,DataClass).
 
 
+assert_data_means:-
+  findall([A,B,C,D],data(A,B,C,D,_Type),LA),
+  maplist(component,LA,CA,CB,CC,CD),
+  mean(CA,M1),
+  mean(CB,M2),
+  mean(CC,M3),
+  mean(CD,M4),
+  variance(CA,M1,V1),
+  variance(CB,M2,V2),
+  variance(CC,M3,V3),
+  variance(CD,M4,V4),
+  assert(data_mean_var(1,M1,V1)),
+  assert(data_mean_var(2,M2,V2)),
+  assert(data_mean_var(3,M3,V3)),
+  assert(data_mean_var(4,M4,V4)).
+
+mean(L,M):-
+  length(L,N),
+  sum_list(L,S),
+  M is S/N.
+
+variance(L,M,Var):-
+  length(L,N),
+  foldl(agg_var(M),L,0,S),
+  Var is S/N.
+
+stats(LA,SW,[M1,M2,M3,M4,V1,V2,V3,V4]):-
+  maplist(component_weight,LA,CA,CB,CC,CD),
+  weighted_mean(CA,M1,SW),
+  weighted_mean(CB,M2,_),
+  weighted_mean(CC,M3,_),
+  weighted_mean(CD,M4,_),
+  weighted_var(CA,M1,V1),
+  weighted_var(CB,M2,V2),
+  weighted_var(CC,M3,V3),
+  weighted_var(CD,M4,V4).
+ 
+weighted_var(L,M,Var):-
+  foldl(agg_val_var(M),L,(0,0),(S,SW0)),
+  SW is SW0,
+  (SW=:=0.0->
+    write(zero_var),nl,
+    Var=1.0
+  ;
+    Var is S/SW
+  ).
+
+weighted_mean(L,M,SW):-
+  foldl(agg_val,L,(0,0),(S,SW0)),
+  SW is SW0,
+  (SW =:=0.0->
+    write(zero_mean),nl,
+    M is 0
+  ;
+    M is S/SW
+  ).
+
+agg_val(V -N,(S,SW),(S+V*N,SW+N)).
+agg_val_var(M,V -N,(S,SW),(S+(M-V)^2*N,SW+N)).
+agg_var(M,V,S,S+(M-V)^2).
+
+
+component([A,B,C,D],A,B,C,D).
+component_weight([A,B,C,D]-W,A-W,B-W,C-W,D-W).
+
+:- assert_data_means.
 /** <examples>
-?- sample_clusters(10,True,Prior,Post).
+?- em(10,T,P).
+?- sample_clusters(1000,True,Prior,Post).
 ?- mc_sample_arg_first(iris(0,X1,X2,X2,X4),10,(X1,X2,X3,X4),V).
 ?- pca(P).
 
