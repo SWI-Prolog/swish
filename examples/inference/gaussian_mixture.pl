@@ -56,11 +56,9 @@ hist(L0,NBins,Chart):-
   int_round(TickWidth,1,TW),
   int_round(Min,1,MinR),
   MinR1 is MinR-TW,
-  ticks(MinR1,TW,Max,Tick),
+  ticks(MinR1,TW,Max,_Tick),
   Chart = c3{data:_{x:elem, rows:[elem-freq|LB], type:bar},
-          axis:_{ x:_{ tick:_{values:Tick}}},
-%    format: 'function (x) { return x.toFixed(2);}' ,
-%           fit: true,culling:_{max:7} }} },
+          axis:_{ x:_{ tick:_{fit:false}}},
           bar:_{
             width:_{ ratio: 1.0 }}, 
             legend:_{show: false}}.

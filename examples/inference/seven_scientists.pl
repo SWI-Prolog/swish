@@ -117,8 +117,7 @@ hist(L0,P,NBins,Chart):-
   %Chart = c3{data:_{xs:_{pre: xpre}, 
   Chart = c3{data:_{x: x, 
   rows: Data},
-   axis:_{x:_{min:Min,max:Max,
-       tick:_{values:Tick}}}
+   axis:_{x:_{tick:_{fit:false}}}
   }.
 
 ticks(Min,T,Max,[]):-
