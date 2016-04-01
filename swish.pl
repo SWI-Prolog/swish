@@ -154,7 +154,7 @@ swish_config:config(public_access,      true).
 :- use_module(swish:library(pengines_io)).
 pengines:prepare_module(Module, swish, _Options) :-
 	pengines_io:pengine_bind_io_to_html(Module).
-
+%:- set_setting(swish:time_limit, 3600).
 % Additional sandboxing rules.
 :- use_module(lib/flags).
 
