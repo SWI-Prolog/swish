@@ -347,9 +347,12 @@ define([ "jquery", "config", "preferences",
 	    onstop: handleStop,
 	    onprompt: handlePrompt,
 	    onoutput: handleOutput,
+	    onping: handlePing,
 	    onerror: handleError,
 	    onabort: handleAbort});
 	  data.prolog.state = "idle";
+	  if ( config.swish.ping && data.prolog.ping != undefined )
+	    data.prolog.ping(config.swish.ping*1000);
 	});
 
 	return this;
@@ -910,6 +913,12 @@ define([ "jquery", "config", "preferences",
 
     elem.prologRunner('error', "** Execution aborted **");
     elem.prologRunner('setState', "aborted");
+  }
+
+  function handlePing() {
+    var elem = this.pengine.options.runner;
+
+    //console.log(this.data);
   }
 
   /**
