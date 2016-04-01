@@ -114,7 +114,8 @@ http:location(swish, root(.), [priority(-100)]).
 %	  that this flag has no effect if no authentication module is
 %	  loaded.
 %	  - ping
-%	  Ping pengine status every N seconds.
+%	  Ping pengine status every N seconds.  Updates sparkline
+%	  chart with stack usage.
 
 % Allow other code to overrule the defaults from this file.
 term_expansion(swish_config:config(Config, _Value), []) :-
@@ -126,7 +127,7 @@ swish_config:config(application,        swish).
 swish_config:config(csv_formats,        [prolog]).
 swish_config:config(community_examples, false).
 swish_config:config(public_access,      false).
-swish_config:config(ping,		30).
+swish_config:config(ping,		10).
 
 %%	swish_config:source_alias(Alias, Options) is nondet.
 %
