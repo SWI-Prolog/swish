@@ -139,6 +139,7 @@ render_dot(DOTString, Program, _Options) -->	% <svg> rendering
 			   read_string(ErrorOut, _, Error)
 		       ),
 		       (   process_wait(PID, _Status),
+			   close(ErrorOut, [force(true)]),
 			   close(XDotOut)
 		       ))
 	},
@@ -247,6 +248,7 @@ swish_send_graphviz(Request) :-
 		       read_string(ErrorOut, _, Error)
 		     ),
 		     (	 process_wait(PID, _Status),
+			 close(ErrorOut, [force(true)]),
 			 close(XDotOut)
 		     )),
 	(   Error == ""
