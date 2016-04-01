@@ -38,7 +38,7 @@ http://www.swi-prolog.org/download/swish/swish-bower-components.zip.
 Unpack the zip file, maintaining the directory structure, from the swish
 root directory to create the directory web/bower_components.
 
-Last updated: Jun 28, 2015: Added D3.js and C3.js
+Last updated: Apr 1, 2016: Added sparklines
 
 ### Get the latest SWI-Prolog
 
