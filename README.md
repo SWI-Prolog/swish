@@ -28,6 +28,7 @@ Once you have `bower`, run the following from the toplevel of `swish` to
 get the dependencies:
 
     bower install
+    make src
 
 #### Download as zip
 
