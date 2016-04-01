@@ -14,7 +14,7 @@ Creating a C3 chart requires including the directive  `:- use_rendering(c3).` an
     space changes.
   - The renderer performs some basic sanity checks on the data and may
     report an error.
-  
+
 ## Our first chart
 
 As a first example, we will create a chart for the _sine_ function in the range `0..360` degrees.  The predicate sin/2 defines the sine relation for 37 datapoints on 10 degrees intervals.  We use findall/3 to create the required data rows.
@@ -64,7 +64,7 @@ rows: [ x - sine,
       ]
 ```
 
-Finally, we can use _dicts_.  If we do so, we can omit the first row that 
+We can use _dicts_.  If we do so, we can omit the first row that
 defines the column names as the dict _keys_ are used for that.  So, the data can be represented as:
 
 ```
@@ -95,6 +95,44 @@ chart(Chart) :-
     findall(r{x:X,cos:Y}, cos(X,Y), CosData),	% create cos-series
     dicts_join(x, SinData, CosData, Data),		% join on common 'x' key
     Chart = c3{data:_{x:x, rows:Data}}.
+</div>
+
+<div class="nb-cell query">
+chart(Chart).
+</div>
+
+<div class="nb-cell markdown">
+You can also represent data with colums. In this case the data should be a list
+of lists where each sublist represent a series of values and the first element
+is the name of the series.
+
+```
+columns: [ [x,0,10,...],
+           [sine,0.0, 0.173,..],
+	   [cosine, 1.0, ...]
+	 ]
+```
+
+</div>
+<div class="nb-cell program">
+:- use_rendering(c3).
+
+sin(X,Y) :-
+    between(0,36,I),
+    X is I*10,
+    Y is sin(X*pi/180).
+
+cos(X,Y) :-
+    between(0,36,I),
+    X is I*10,
+    Y is cos(X*pi/180).
+
+chart(Chart) :-
+    findall(X, sin(X,Y), XData),	% create x values
+    findall(Y, sin(X,Y), SinData),	% create sin-series
+    findall(Y, cos(X,Y), CosData),	% create cos-series
+    Chart = c3{data:_{x:x, columns:[
+     [x|XData],[sine|SinData],[cosine|CosData]]}}.
 </div>
 
 <div class="nb-cell query">
@@ -160,7 +198,7 @@ Chart = c3{data:_{columns:_Pairs, type:pie}}.
 <div class="nb-cell query">
 popular_elements(_Pairs),
 Chart = c3{data:_{x:elem, rows:[elem-count|_Pairs], type:bar},
-   	       axis:_{x:_{type:category}}}.
+	       axis:_{x:_{type:category}}}.
 </div>
 
 <div class="nb-cell markdown">
