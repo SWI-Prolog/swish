@@ -70,6 +70,7 @@ term_rendering(Term, _Vars, _Options) -->
 
 is_nqueens(Term) :-
 	is_list(Term),
+	maplist(integer, Term),
 	length(Term, N),
 	numlist(1, N, All),
 	sort(Term, All).
