@@ -456,7 +456,7 @@ attribute(NameValue, _O)  -->
 
 value(Name, Value) -->
 	{ string_attribute(Name), !,
-	  atom_codes(Value, Codes)
+	  value_codes(Value, Codes)
 	},
 	"\"", cstring(Codes), "\"".
 value(_Name, Value, List, Tail) :-
@@ -480,6 +480,11 @@ spaces(N) -->
 	" ",
 	spaces(N2).
 
+value_codes(Value, Codes) :-
+	atomic(Value), !,
+	format(codes(Codes), '~w', [Value]).
+value_codes(Value, Codes) :-
+	format(codes(Codes), '~p', [Value]).
 
 
 		 /*******************************
