@@ -14,7 +14,7 @@ The `graphviz` renderer needs to obtain a dot specification and it needs to know
   - Using Layout(Graph), where `Graph` is a Prolog term representing the
     dot AST (Abstract Syntax Tree).  The AST is translated into concrete
     dot syntax using a DCG grammar.
-    
+
 Before we go into details, we do the _Hello World_ demo.  First, load the `graphviz` renderer:
 </div>
 
@@ -32,7 +32,7 @@ X = dot("digraph G { Hello-&gt;World }").
 
 <div class="nb-cell markdown">
 Using a dot string as specification is of course not desirable because it makes
-it hard to generate a graph from computed data.  We introduce the *Prolog representation* for dot with the same example.  The only noticible difference is that the _render selection corner_ becomes visible because the graph is given 
+it hard to generate a graph from computed data.  We introduce the *Prolog representation* for dot with the same example.  The only noticible difference is that the _render selection corner_ becomes visible because the graph is given
 the attribute `bgcolor=transparent` if no background is given, while the graphviz
 default is `white`.
 </div>
@@ -151,10 +151,20 @@ grammar below:
 <div class="nb-cell markdown">
 ## Generating Graphs from data
 
-Generating a graph from static data is of course not very interesting.  This section provides some examples for generating graphs from Prolog data.  This is where the Prolog representation of a _dot_ program comes in: it takes away the burden of generating the concrete dot syntax, avoiding issues such as proper escaping of labels.  In the example below we render an arbitrary (acyclic) Prolog term as a tree.  We do this by walking down the term, generating a node-id and a label for each node representing a compound term as well as each leaf.  Note that we cannot use the label as node id beause the same label may appear in multiple locations.  Thus, we generate dot statements like this:
+Generating a graph from static data is of course not very interesting.  This section provides an example for generating graphs from Prolog data.  This is where the Prolog representation of a _dot_ program comes in: it takes away the burden of generating the concrete dot syntax, avoiding issues such as proper escaping of labels.  In the example below we render an arbitrary (acyclic) Prolog term as a tree.  We do this by walking down the term, generating a node-id and a label for each node representing a compound term as well as each leaf.  Note that we cannot use the label as node id beause the same label may appear in multiple locations.  Thus, we generate dot statements like this:
 
   - node(Id, [label=Label])
   - `ChildID -&gt; ParentId`
+
+If `Label` is atomic, the plain value (without quotes, see write/1) will be rendered.
+Otherwise the label is handed to print/1 by the graphviz rendering.  Note that the
+graphviz rendering code is called _after_ the toplevel preparation of the answer.
+The toplevel preparation removes cycles, combines multiple variables bound to the
+same variable, binds named variables to a term =|'$VAR'(Name)|= and extracts
+_redidual goals_.  In particular, this implies you can *render a variable using
+its name* by using the plain variable as the label: The toplevel will bind the label to
+=|'$VAR'(Name)|= and print/1 will print this as the variable name.
+This is exploited by any_label/2 below.
 </div>
 
 <div class="nb-cell program">
@@ -171,11 +181,16 @@ tree(Compound, Root, Options0, Options) --&gt;
     children(Arguments, Root, Options0.put(id, ID1), Options).
 tree(Any, Leaf, Options0, Options) --&gt;
     { atom_concat(n, Options0.id, Leaf),
-      format(string(Label), '~p', [Any]),
       ID1 is Options0.id+1,
+      any_label(Any, Label, Color),
       Options = Options0.put(id, ID1)
     },
-    [ node(Leaf, [label=Label]) ].
+    [ node(Leaf, [label=Label, shape=none, fontcolor=Color]) ].
+
+any_label(Any, Label, red4) :-
+    var(Any), !, Label = Any.
+any_label(Any, Label, blue) :-
+    format(string(Label), '~p', [Any]).
 
 children([], _, Options, Options) --&gt; [].
 children([H|T], Parent, Options0, Options) --&gt;
