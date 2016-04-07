@@ -210,9 +210,10 @@ swish_stats(Name, Ring, Stats) :-
 stat_collect(Dims, Interval) :-
 	new_sliding_stats(Dims, SlidingStat),
 	get_time(Now),
-	stat_loop(SlidingStat, _{}, Now, Interval).
+	ITime is floor(Now),
+	stat_loop(SlidingStat, _{}, ITime, Interval, [true]).
 
-stat_loop(SlidingStat, Stat0, StatTime, Interval) :-
+stat_loop(SlidingStat, Stat0, StatTime, Interval, Wrap) :-
 	(   thread_self(Me),
 	    thread_get_message(Me, Request,
 			       [ deadline(StatTime)
@@ -221,12 +222,12 @@ stat_loop(SlidingStat, Stat0, StatTime, Interval) :-
 	    ->	true
 	    ;	debug(swish_stats, 'Failed to process ~p', [Request])
 	    ),
-	    stat_loop(SlidingStat, Stat0, StatTime, Interval)
-	;   swish_stats(Stat1),
+	    stat_loop(SlidingStat, Stat0, StatTime, Interval, Wrap)
+	;   get_stats(Wrap, Stat1),
 	    dif_stat(Stat1, Stat0, Stat),
-	    push_sliding_stats(SlidingStat, Stat),
+	    push_sliding_stats(SlidingStat, Stat, Wrap1),
 	    NextTime is StatTime+Interval,
-	    stat_loop(SlidingStat, Stat1, NextTime, Interval)
+	    stat_loop(SlidingStat, Stat1, NextTime, Interval, Wrap1)
 	).
 
 dif_stat(Stat1, Stat0, Stat) :-
@@ -247,38 +248,38 @@ reply_stats_request(Client-get_stats(Period), SlidingStat) :-
 	ring_values(Ring, Values),
 	thread_send_message(Client, get_stats(Period, Values)).
 
-%%	swish_stats(-Stats:dict) is det.
+%%	get_stats(+Wrap, -Stats:dict) is det.
 %
 %	Request elementary statistics.
 
-swish_stats(stats{ cpu:CPU,
-		   rss:RSS,
-		   fordblks:Fordblks,
-		   stack:Stack,
-		   pengines:Pengines,
-		   pengines_created:PenginesCreated,
-		   time:Time
-		 }) :-
+get_stats(Wrap, Stats) :-
+	Stats0 = stats{ cpu:CPU,
+			rss:RSS,
+			stack:Stack,
+			pengines:Pengines,
+			pengines_created:PenginesCreated,
+			time:Time
+		      },
 	get_time(Now),
 	Time is floor(Now),
 	statistics(process_cputime, PCPU),
 	statistics(cputime, MyCPU),
 	CPU is PCPU-MyCPU,
 	statistics(stack, Stack),
-	fordblks(Fordblks),
 	catch(procps_stat(Stat), _,
 	      Stat = stat{rss:0}),
 	RSS = Stat.rss,
 	swish_statistics(pengines(Pengines)),
-	swish_statistics(pengines_created(PenginesCreated)).
+	swish_statistics(pengines_created(PenginesCreated)),
+	add_fordblks(Wrap, Stats0, Stats).
 
-:- if(\+current_predicate(mallinfo/1)).
-mallinfo(_{fordblks:0}).
-:- endif.
-
-fordblks(Fordblks) :-
+:- if(current_predicate(mallinfo/1)).
+add_fordblks([true|_], Stats0, Stats) :- !,
 	mallinfo(MallInfo),
-	Fordblks = MallInfo.fordblks.
+	Stats = Stats0.put(fordblks, MallInfo.fordblks).
+:- endif.
+add_fordblks(_, Stats, Stats).
+
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Maintain sliding statistics. The statistics are maintained in a ring. If
@@ -289,20 +290,20 @@ new_sliding_stats(Dims, Stats) :-
 	maplist(new_ring, Dims, Rings),
 	compound_name_arguments(Stats, sliding_stats, Rings).
 
-push_sliding_stats(Stats, Values) :-
-	push_sliding_stats(1, Stats, Values).
+push_sliding_stats(Stats, Values, Wrap) :-
+	push_sliding_stats(1, Stats, Values, Wrap).
 
-push_sliding_stats(I, Stats, Values) :-
+push_sliding_stats(I, Stats, Values, [Wrap|WrapT]) :-
 	arg(I, Stats, Ring),
 	push_ring(Ring, Values, Wrap),
 	(   Wrap == true
 	->  average_ring(Ring, Avg),
 	    I2 is I+1,
-	    (	push_sliding_stats(I2, Stats, Avg)
+	    (	push_sliding_stats(I2, Stats, Avg, WrapT)
 	    ->	true
 	    ;	true
 	    )
-	;   true
+	;   WrapT = []
 	).
 
 new_ring(Dim, ring(0, Ring)) :-
