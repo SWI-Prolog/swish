@@ -1066,13 +1066,37 @@ var cellTypes = {
     modal.alert("Please define a query to run this program");
   };
 
+  /**
+   * Run a query cell.
+   * @param {Object} [options]
+   * @param {Any}    [options.bindings] Initial bindings.  If this is a
+		     string, it is simply prepended to the query.  If
+		     it is an object, it is translated into a sequence
+		     of Prolog unifications to bind the variables.
+   */
   methods.run.query = function(options) {	/* query */
     var programs = this.nbCell('programs');
     var settings = this.nbCell('getSettings');
+    var text     = cellText(this);
 
     options = options||{};
+    if ( options.bindings ) {
+      var pretext = "";
+      if ( typeof(options.bindings) === 'string' ) {
+	pretext = options.bindings;
+      } else {
+	for(var k in options.bindings) {
+	  if ( options.bindings.hasOwnProperty(k) ) {
+	    if ( pretext )
+	      pretext += ", ";
+	    pretext += k + " = " + Pengine.stringify(options.bindings[k]);
+	  }
+	}
+	text = pretext + ", (" + prolog.trimFullStop(text) + ")";
+      }
+    }
     var query = { source: programs.prologEditor('getSource'),
-                  query:  cellText(this),
+                  query:  text,
 		  tabled: settings.tabled||false,
 		  chunk:  settings.chunk,
 		  title:  false
