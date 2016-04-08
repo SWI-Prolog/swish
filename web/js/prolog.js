@@ -118,10 +118,10 @@ define([ "jquery", "config", "form", "preferences", "editor" ],
   /**
    * $.swish(options) creates a new Pengine with given default
    * options.  The default options are determined by `prolog.options`.
-   * Note that the pengine is created asynchronously and this function
-   * has no return value.  The created pengine can be accessed from the
-   * callback parameters.
-   * @return `undefined`
+   * This function expects pengines.js to be already loaded.  The
+   * bootstrapping of that is achieved in `swish.js`.
+   *
+   * @return {Pengine} the created pengine object
    */
   $.swish = function(options) {
     for(var opt in prolog.options) {
@@ -131,10 +131,7 @@ define([ "jquery", "config", "form", "preferences", "editor" ],
       }
     }
 
-    require([config.http.locations.pengines+"/pengines.js"],
-	    function() {
-	      new Pengine(options);
-	    });
+    return new Pengine(options);
   };
 
   return prolog;
