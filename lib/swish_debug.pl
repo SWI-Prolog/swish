@@ -276,7 +276,8 @@ get_stats(Wrap, Stats) :-
 :- if(current_predicate(mallinfo/1)).
 add_fordblks(Wrap, Stats0, Stats) :-
 	(   Wrap = [true|_]
-	->  mallinfo(MallInfo),
+	->  member(G, [mallinfo(MallInfo)]),
+	    call(G),			% fool ClioPatria xref
 	    FordBlks = MallInfo.get(fordblks),
 	    b_setval(fordblks, FordBlks)
 	;   nb_current(fordblks, FordBlks)
