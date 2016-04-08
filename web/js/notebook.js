@@ -671,12 +671,14 @@ var cellTypes = {
      * Run the current cell
      */
     run: function() {
+      var args = arguments;
+
       return this.each(function() {
 	var cell = $(this);
 	if ( cell.hasClass("runnable") ) {
 	  var data = cell.data(pluginName);
 
-	  return methods.run[data.type].apply(cell, arguments);
+	  return methods.run[data.type].apply(cell, args);
 	} else {
 	  console.log("Cell is not runnable: ", cell);
 	}
