@@ -48,31 +48,33 @@ define(["jquery", "config", "modal"],
 	}
       }
 
-      if ( a.hasClass("store") ) {
-	done = true;
-	ev.preventDefault();
-	var swishStore = config.http.locations.swish + "p/";
-	var href = a.attr("href");
-	if ( href.startsWith(swishStore) ) {
-	  file = href.slice(swishStore.length);
-	  $(ev.target).parents(".swish").swish('playFile', file);
+      if ( a.attr("href") ) {
+	if ( a.hasClass("store") ) {
+	  done = true;
+	  ev.preventDefault();
+	  var swishStore = config.http.locations.swish + "p/";
+	  var href = a.attr("href");
+	  if ( href.startsWith(swishStore) ) {
+	    file = href.slice(swishStore.length);
+	    $(ev.target).parents(".swish").swish('playFile', file);
+	  } else {
+	    modal.alert("File does not appear to come from gitty store?");
+	  }
+	} else if ( a.hasClass("file") ) {
+	  done = true;
+	  ev.preventDefault();
+	  $(ev.target).parents(".swish")
+		      .swish('playURL', {url: a.attr("href")});
+	} else if ( a.hasClass("builtin") ) {
+	  done = PlDoc(a.attr("href").split("predicate=").pop());
 	} else {
-	  modal.alert("File does not appear to come from gitty store?");
+	  done = PlDoc(a.attr("href").split("object=").pop());
 	}
-      } else if ( a.hasClass("file") ) {
-	done = true;
-	ev.preventDefault();
-        $(ev.target).parents(".swish")
-	            .swish('playURL', {url: a.attr("href")});
-      } else if ( a.hasClass("builtin") ) {
-	done = PlDoc(a.attr("href").split("predicate=").pop());
-      } else {
-	done = PlDoc(a.attr("href").split("object=").pop());
-      }
 
-      if ( !done ) {
-	ev.preventDefault();
-	window.open(a.attr("href"), '_blank');
+	if ( !done ) {
+	  ev.preventDefault();
+	  window.open(a.attr("href"), '_blank');
+	}
       }
     }
   }
