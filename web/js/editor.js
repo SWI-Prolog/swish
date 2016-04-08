@@ -928,7 +928,7 @@ define([ "cm/lib/codemirror",
      * @param {String} wrapper defines the type of wrapper to use.
      */
     wrapSolution: function(wrapper) {
-      var query = this.prologEditor('getSource', "query").replace(/\.\s*$/m, "");
+      var query = prolog.trimFullStop(this.prologEditor('getSource', "query"));
       var that = this;
       var vars = this.prologEditor('variables', query);
 

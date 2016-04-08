@@ -96,6 +96,13 @@ define([ "jquery", "config", "form", "preferences", "editor" ],
       },
 
     /**
+     * Remove the full-stop from a query string
+     */
+    trimFullStop: function(s) {
+      return s.replace(/\.\s*$/m, "");
+    },
+
+    /**
      * Default options for $.swish()
      */
     options: {
