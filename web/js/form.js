@@ -267,6 +267,17 @@ define([ "jquery", "config", "laconic", "tagmanager" ],
 	return elem;
       },
 
+      name: function(name) {
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("name", "Name", 3),
+		 $.el.div({class:"col-xs-9"},
+			  textInput("name",
+				    {placeholder:"Name",
+				     value:name})));
+	return elem;
+      },
+
       /**
        * @param {Object} options
        * @param {String} options.label is the label used for the

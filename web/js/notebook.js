@@ -704,7 +704,8 @@ var cellTypes = {
       return {
         tabled: this.data("tabled") == "true",
 	run:    this.data("run")    == "onload",
-	chunk:  parseInt(this.data("chunk")||"1")
+	chunk:  parseInt(this.data("chunk")||"1"),
+	name:   this.attr("name")
       };
     },
 
@@ -733,6 +734,7 @@ var cellTypes = {
 		  }
 		]),
 	  form.fields.chunk(current.chunk),
+	  form.fields.name(current.name||""),
 	  form.fields.buttons(
 	  { label: "Apply",
 	    offset: 3,
@@ -754,6 +756,12 @@ var cellTypes = {
 		  elem.data("chunk",  ""+values.chunk);
 		else
 		  elem.removeData("chunk");
+	      }
+	      if ( values.name.trim() != current.name ) {
+		if ( values.name.trim() )
+		  elem.attr("name",  ""+values.name.trim());
+		else
+		  elem.attr("name", null);
 	      }
 	    }
 	  })));
@@ -905,15 +913,22 @@ var cellTypes = {
     if ( options.tabled == undefined )
       options.tabled = preferences.getVal("tabled_results");
 
-    function setAttr(name) {
+    function setData(name) {
       if ( options[name] != undefined ) {
 	cell.data(name, ""+options[name]);
 	delete options[name];
       }
     }
-    setAttr("tabled");
-    setAttr("chunk");
-    setAttr("run");
+    function setAttr(name) {
+      if ( options[name] != undefined ) {
+	cell.attr(name, ""+options[name]);
+	delete options[name];
+      }
+    }
+    setData("tabled");
+    setData("chunk");
+    setData("run");
+    setAttr("name");
 
     options = $.extend({}, options,
       { role: "query",
@@ -1116,16 +1131,23 @@ var cellTypes = {
       return false;
     }
 
-    function copyAttr(name) {
+    function copyData(name) {
       var value;
       if ( (value=cell.data(name)) && !isDefault(name,value) ) {
 	$(dom).attr("data-"+name, value);
       }
     }
+    function copyAttr(name) {
+      var value;
+      if ( (value=cell.attr(name)) && value ) {
+	$(dom).attr(name, value);
+      }
+    }
 
-    copyAttr("tabled");
-    copyAttr("chunk");
-    copyAttr("run");
+    copyData("tabled");
+    copyData("chunk");
+    copyData("run");
+    copyAttr("name");
 
     return dom;
   };
@@ -1161,7 +1183,7 @@ var cellTypes = {
   methods.restoreDOM.query = function(dom) {	/* query */
     var opts = { value:dom.text().trim() };
 
-    function getAttr(name) {
+    function getData(name) {
       var value;
       if ( (value=dom.data(name)) ) {
 	if ( name == "chunk" )
@@ -1170,10 +1192,17 @@ var cellTypes = {
 	  opts[name] = value;
       }
     }
+    function getAttr(name) {
+      var value;
+      if ( (value=dom.attr(name)) ) {
+	opts[name] = value;
+      }
+    }
 
-    getAttr("tabled");
-    getAttr("chunk");
-    getAttr("run");
+    getData("tabled");
+    getData("chunk");
+    getData("run");
+    getAttr("name");
     if ( opts.tabled == undefined )
       opts.tabled = false;
 
@@ -1214,16 +1243,23 @@ var cellTypes = {
     var text = "";
     var cell = this;
 
-    function addAttr(name, key) {
+    function addData(name, key) {
       var value;
 
       if ( (value=cell.data(name)) )
 	text += key+value;
     }
+    function addAttr(name, key) {
+      var value;
 
-    addAttr("tabled", "T");
-    addAttr("chunk", "C");
-    addAttr("run", "R");
+      if ( (value=cell.attr(name)) )
+	text += key+value;
+    }
+
+    addData("tabled", "T");
+    addData("chunk", "C");
+    addData("run", "R");
+    addAttr("name", "N");
     text += "V"+cellText(this);
 
     return sha1(text);
