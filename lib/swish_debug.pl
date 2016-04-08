@@ -274,9 +274,14 @@ get_stats(Wrap, Stats) :-
 	add_fordblks(Wrap, Stats0, Stats).
 
 :- if(current_predicate(mallinfo/1)).
-add_fordblks([true|_], Stats0, Stats) :- !,
-	mallinfo(MallInfo),
-	Stats = Stats0.put(fordblks, MallInfo.fordblks).
+add_fordblks(Wrap, Stats0, Stats) :-
+	(   Wrap = [true|_]
+	->  mallinfo(MallInfo),
+	    FordBlks = MallInfo.get(fordblks),
+	    b_setval(fordblks, FordBlks)
+	;   nb_current(fordblks, FordBlks)
+	), !,
+	Stats = Stats0.put(fordblks, FordBlks).
 :- endif.
 add_fordblks(_, Stats, Stats).
 
