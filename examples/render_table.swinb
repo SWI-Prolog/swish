@@ -76,7 +76,8 @@ X = [ 'Amsterdam' - 'The Netherlands',
 </div>
 
 <div class="nb-cell markdown">
-*If* we specify a header, only data with a matching number of columns is rendered as a table.
+*If* we specify a header, only data with a matching number of columns is rendered as a table.  The query below will *not show a table* because the row terms do not match the
+header('Capital' - 'Country') header.
 </div>
 
 <div class="nb-cell query">

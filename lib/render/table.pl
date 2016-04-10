@@ -69,26 +69,26 @@ term_rendering(Term, _Vars, Options) -->
 		 ])).
 term_rendering(Term, _Vars, Options) -->
 	{ is_list_of_terms(Term, _Rows, _Cols),
-	  header(Term, Header, Options)
+	  header(Term, Header, Options, Options1)
 	}, !,
 	html(div([ style('display:inline-block'),
 		   'data-render'('List of terms as a table')
 		 ],
 		 [ table(class('render-table'),
 			 [ \header_row(Header),
-			   \rows(Term, Options)
+			   \rows(Term, Options1)
 			 ])
 		 ])).
 term_rendering(Term, _Vars, Options) -->
 	{ is_list_of_lists(Term, _Rows, _Cols),
-	  header(Term, Header, Options)
+	  header(Term, Header, Options, Options1)
 	}, !,
 	html(div([ style('display:inline-block'),
 		   'data-render'('List of lists as a table')
 		 ],
 		 [ table(class('render-table'),
 			 [ \header_row(Header),
-			   \rows(Term, Options)
+			   \rows(Term, Options1)
 			 ])
 		 ])).
 
@@ -117,18 +117,28 @@ cells(Row, Cells) :-
 	compound(Row),
 	compound_name_arguments(Row, _, Cells).
 
-%%	header(+Table, -Header:list(Term), +Options) is semidet.
+%%	header(+Table, -Header:list(Term), +Options, -RestOptions) is semidet.
 %
 %	Compute the header to use. Fails if   a  header is specified but
 %	does not match.
 
-header(_, _, Options) :-
-	\+ option(header(_), Options), !.
-header([Row|_], ColHead, Options) :-
-	member(header(Header), Options),
+header(_, _, Options0, Options) :-
+	\+ option(header(_), Options0), !,
+	Options = Options0.
+header([Row|_], ColHead, Options0, Options) :-
+	partition(is_header, Options0, HeaderOptions, Options),
+	member(HeaderOption, HeaderOptions),
+	header(HeaderOption, Header),
 	generalise(Row, GRow),
 	generalise(Header, GRow), !,
 	header_list(Header, ColHead).
+
+is_header(0) :- !, fail.
+is_header(header(_)).
+is_header(header=_).
+
+header(header(H), H).
+header(header=H, H).
 
 generalise(List, VList) :-
 	is_list(List), !,
