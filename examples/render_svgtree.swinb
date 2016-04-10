@@ -5,8 +5,8 @@
 
 #### Synopsis
 
-    :- use_renderer(svgtree).
-    :- use_renderer(svgtree, Options).
+    :- use_rendering(svgtree).
+    :- use_rendering(svgtree, Options).
 
 #### Options supported
 
