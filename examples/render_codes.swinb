@@ -5,8 +5,8 @@
 
 #### Synopsis
 
-    :- use_renderer(codes).
-    :- use_renderer(codes, Options).
+    :- use_rendering(codes).
+    :- use_rendering(codes, Options).
 
 #### Options supported
 
