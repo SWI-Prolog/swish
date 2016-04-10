@@ -69,4 +69,19 @@ length(Vs, 20), sat(card([2],Vs)),
 copy_term(Vs, Vs, [BDD]), maplist(del_attrs, Vs).
 </div>
 
+<div class="nb-cell markdown">
+
+Building on this idea, the third example shows that you can impose an
+arbitrary *order* on the variables in the&nbsp;BDD by first stating a
+tautology like `+[1,V1,V2,...]`. This orders the variables in the same
+way they appear in this list.
+
+</div>
+
+<div class="nb-cell query">
+sat(+[1,Z,Y,X]), sat(X+Y+Z),
+Vs = [X,Y,Z],
+copy_term(Vs, Vs, [BDD]), maplist(del_attrs, Vs).
+</div>
+
 </div>
