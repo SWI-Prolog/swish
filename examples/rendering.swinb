@@ -37,6 +37,7 @@ The following rendering plugins are currently supported.  Please visit the linke
       etc.) using [C3.js](http://www.c3js.org)
     - [codes](example/render_codes.swinb) renders lists of code-points as text.
   - Domain specific renderers
+    - [bdd](example/render_bdd.swinb) renders CLP(B) residual goals as Binary Decision Diagrams (BDDs)
     - [chess](example/render_chess.swinb) renders chess positions (currently only
       N-queen boards).
     - [sudoku](example/render_sudoku.swinb) renders sudoku puzzles.
