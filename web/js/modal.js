@@ -213,7 +213,7 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
      * which the feedback window is added.
      */
     feedback: function(options) {
-      var win = $.el.div({class:"feedback"});
+      var win = $.el.div({class:"feedback "+options.type||""});
       $(win).html(options.html);
 
       $(options.owner||"body").append(win);
