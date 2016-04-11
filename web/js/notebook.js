@@ -849,6 +849,10 @@ var cellTypes = {
 	return methods.changeGen[type].call(this);
       else
 	return 0;
+    },
+
+    text: function() {
+      return cellText(this);
     }
   }; // methods
 
