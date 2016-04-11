@@ -903,20 +903,28 @@ define([ "cm/lib/codemirror",
 
     /**
      * @param {String} [query] query to get the variables from
+     * @param {Boolean} [anon] if `true`, also include _X variables.
      * @return {List.string} is a list of Prolog variables without
      * duplicates
      */
 
-    variables: function(query) {
+    variables: function(query, anon) {
       var qspan = $.el.span({class:"query cm-s-prolog"});
       var vars = [];
 
       CodeMirror.runMode(query, "prolog", qspan);
-      $(qspan).find("span.cm-var").each(function() {
-	var name = $(this).text();
-	if ( vars.indexOf(name) < 0 )
-	  vars.push(name);
-      });
+
+      function addVars(selector) {
+	$(qspan).find(selector).each(function() {
+	  var name = $(this).text();
+	  if ( vars.indexOf(name) < 0 )
+	    vars.push(name);
+	});
+      }
+
+      addVars("span.cm-var");
+      if ( anon )
+	addVars("span.cm-var-2");
 
       return vars;
     },
