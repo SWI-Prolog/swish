@@ -116,6 +116,8 @@ http:location(swish, root(.), [priority(-100)]).
 %	  - ping
 %	  Ping pengine status every N seconds.  Updates sparkline
 %	  chart with stack usage.
+%	  - nb_eval_script
+%	  Evaluate scripts in HTML cells of notebooks?
 
 % Allow other code to overrule the defaults from this file.
 term_expansion(swish_config:config(Config, _Value), []) :-
@@ -128,6 +130,7 @@ swish_config:config(csv_formats,        [prolog]).
 swish_config:config(community_examples, false).
 swish_config:config(public_access,      false).
 swish_config:config(ping,		10).
+swish_config:config(notebook,		_{eval_script: true}).
 
 %%	swish_config:source_alias(Alias, Options) is nondet.
 %

@@ -1047,21 +1047,27 @@ var cellTypes = {
 
     function runHTML(data) {
       cell[0].innerHTML = data;
-      var scripts = [];
 
-      cell.find("script").each(function() {
-	var type = this.getAttribute('type')||"text/javascript";
-	if ( type == "text/javascript" )
-	  scripts.push(this.textContent);
-      });
+      if ( config.swish.notebook.eval_script == true ) {
+	var scripts = [];
 
-      if ( scripts.length > 0 ) {
-	var script = "(function(node){" + scripts.join("\n") + "})";
+	cell.find("script").each(function() {
+	  var type = this.getAttribute('type')||"text/javascript";
+	  if ( type == "text/javascript" )
+	    scripts.push(this.textContent);
+	});
 
-	try {
-	  eval(script)(cell);
-	} catch(e) {
-	  alert(e);
+	if ( scripts.length > 0 ) {
+	  var script = "(function(notebook){" + scripts.join("\n") + "})";
+	  var nb = new Notebook({
+	    cell: cell[0]
+	  });
+
+	  try {
+	    eval(script)(nb);
+	  } catch(e) {
+	    alert(e);
+	  }
 	}
       }
     }
@@ -1439,5 +1445,50 @@ function glyphButtonGlyph(elem, action, glyph) {
 
 function sep() {
   return $.el.span({class:"thin-space"}, " ");
+}
+
+		 /*******************************
+		 *	 NOTEBOOK ClASS		*
+		 *******************************/
+
+function Notebook(options) {
+  this.my_cell = options.cell;
+}
+
+/**
+ * Create a Pengine from default arguments
+ */
+Notebook.prototype.swish = $.swish;
+
+/**
+ * @param {String} [name] Return (query) cell with given name.  If
+ * name is omitted, return the current cell.
+ * @return {jQuery} Notebook cells
+ */
+Notebook.prototype.cell = function(name) {
+  if ( name )
+    return this.notebook().find('.nb-cell[name="'+name+'"]');
+  else
+    return $(this.my_cell);
+};
+
+/**
+ * @returns {jQuery} the notebook as a whole.
+ */
+Notebook.prototype.notebook = function() {
+  return $(this.my_cell).closest(".notebook");
+};
+
+/**
+ * Run named query cell with bindings
+ * @param {String} cell Name of the cell to run
+ * @param {Object|String} [bindings] Bindings to pass to the query.
+ */
+Notebook.prototype.run = function(cell, bindings) {
+  var options = {};
+  if ( bindings )
+    options.bindings = bindings;
+
+  this.cell(cell).nbCell('run', options);
 }
 });
