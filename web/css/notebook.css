@@ -101,6 +101,10 @@
 { height: 0px;
 }
 
+.nb-cell .CodeMirror-scroll
+{ max-height: 40em;
+}
+
 .nb-cell .CodeMirror
 { border-radius: 5px;
 }
