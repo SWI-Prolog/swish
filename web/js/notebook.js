@@ -522,8 +522,17 @@ var cellTypes = {
     }
 
     var html = $($.el.div(dom)).html();
+    var nest = [];
     return html.replace(/(<div [^>]*>|<\/div>)/g, function(t) {
-      return "\n"+orderAttrs(t)+"\n";
+      var is_cell;
+      if ( t == "</div>" ) {
+	is_cell = nest.pop();
+	return is_cell ? "\n"+t+"\n" : t;
+      } else {
+	is_cell = (t.match(/nb-cell/) != null);
+	nest.push(is_cell);
+	return is_cell ? "\n"+orderAttrs(t)+"\n" : t;
+      }
     }).slice(1);
   }
 
