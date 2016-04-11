@@ -1500,4 +1500,8 @@ Notebook.prototype.run = function(cell, bindings) {
 
   this.cell(cell).nbCell('run', options);
 }
+
+Notebook.prototype.$ = function(selector) {
+  return this.cell().find(selector);
+}
 });
