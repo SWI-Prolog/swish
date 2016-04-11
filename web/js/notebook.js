@@ -1034,7 +1034,7 @@ var cellTypes = {
   methods.run.html = function(htmlText) {
     var cell = this;
 
-    htmlText = htmlText||cellText(this);
+    htmlText = (htmlText||cellText(this)).trim();
 
     function makeEditable(ev) {
       var cell = $(ev.target).closest(".nb-cell");
@@ -1057,7 +1057,7 @@ var cellTypes = {
       cell.on("click", "a", links.followLink);
     }
 
-    if ( htmlText.trim() != "" )
+    if ( htmlText != "" )
     { setHTML(htmlText);
     } else
     { setHTML("<div class='nb-placeholder'>"+
