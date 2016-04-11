@@ -1467,7 +1467,15 @@ function Notebook(options) {
 /**
  * Create a Pengine from default arguments
  */
-Notebook.prototype.swish = $.swish;
+Notebook.prototype.swish = function(options) {
+  var pcells = this.cell().nbCell("programs");
+  var source = pcells.prologEditor('getSource');
+
+  if ( source )
+    options.src = source;
+
+  return $.swish(options);
+}
 
 /**
  * @param {String} [name] Return (query) cell with given name.  If
