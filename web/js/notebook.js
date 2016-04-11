@@ -1045,12 +1045,29 @@ var cellTypes = {
       cell.off("click", links.followLink);
     }
 
-    function setHTML(data) {
-      try {
-	cell.html(data);
-      } catch(e) {
-	alert(e);
+    function runHTML(data) {
+      cell[0].innerHTML = data;
+      var scripts = [];
+
+      cell.find("script").each(function() {
+	var type = this.getAttribute('type')||"text/javascript";
+	if ( type == "text/javascript" )
+	  scripts.push(this.textContent);
+      });
+
+      if ( scripts.length > 0 ) {
+	var script = "(function(node){" + scripts.join("\n") + "})";
+
+	try {
+	  eval(script)(cell);
+	} catch(e) {
+	  alert(e);
+	}
       }
+    }
+
+    function setHTML(data) {
+      runHTML(data);
       cell.removeClass("runnable");
       cell.data('htmlText', htmlText);
       cell.on("dblclick", makeEditable);
