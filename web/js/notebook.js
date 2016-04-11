@@ -1092,8 +1092,9 @@ var cellTypes = {
 	    pretext += k + " = " + Pengine.stringify(options.bindings[k]);
 	  }
 	}
-	text = pretext + ", (" + prolog.trimFullStop(text) + ")";
       }
+      if ( pretext )
+	text = pretext + ", (" + prolog.trimFullStop(text) + ")";
     }
     var query = { source: programs.prologEditor('getSource'),
                   query:  text,
