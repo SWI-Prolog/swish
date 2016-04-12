@@ -1,4 +1,5 @@
 <div class="notebook">
+
 <div class="nb-cell markdown">
 # Welcome to SWISH
 
@@ -41,4 +42,5 @@ You are reading a SWISH _notebook_.  A notebook is a mixture of _text_, _program
       the Japanese Wikipedia site on Prolog, illustrating multi-lingual
       capabilities of SWI-Prolog and SWISH.
 </div>
+
 </div>
