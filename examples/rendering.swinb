@@ -1,4 +1,5 @@
 <div class="notebook">
+
 <div class="nb-cell markdown">
 # Result rendering
 
@@ -79,4 +80,5 @@ SWISH uses [RequireJS](http://requirejs.org/) for dependency tracking.  This fun
 
 The RequireJS paths `c3` and `d3` are preconfigured to load [D3.js](http://www.d3js.org) and [C3.js](http://www.c3js.org)
 </div>
+
 </div>

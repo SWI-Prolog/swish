@@ -1,4 +1,5 @@
 <div class="notebook">
+
 <div class="nb-cell markdown">
 # SWISH Tutorials
 
@@ -8,4 +9,5 @@ This notebook provides an overview of tutorials about using SWISH.
   - [Using HTML cells in notebooks](example/htmlcell.swinb)
   - [Access the SWISH interface from Prolog](example/jquery.swinb)
 </div>
+
 </div>

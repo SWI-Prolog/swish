@@ -1,4 +1,5 @@
 <div class="notebook">
+
 <div class="nb-cell markdown">
 # Prolog tutorials
 
@@ -18,4 +19,5 @@ notebook.  Next, you have two options:
     a *pull request*.
   - Send a mail to jan@swi-prolog.org with a link to your tutorial.
 </div>
+
 </div>

@@ -1,4 +1,5 @@
 <div class="notebook">
+
 <div class="nb-cell html">
 <h2>Using HTML cells in SWISH notebooks</h2>
 
@@ -160,4 +161,5 @@ parse(Sentence, Tree) :-
     phrase(s(Tree), Words),
     atomics_to_string(Words, " ", Sentence).
 </div>
+
 </div>
