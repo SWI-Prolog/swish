@@ -1,10 +1,8 @@
 // list of examples, represented as a JSON list
 
-[
-{ "file":"examples.swinb",	  "title":"Example programs" },
-"--",
-{ "file":"dict.swinb",		  "title":"Dict tutorial" },
-{ "file":"rendering.swinb",	  "title":"Render data graphically" },
-{ "file":"stats.swinb",		  "title":"Usage statistics" },
-{ "file":"jquery.swinb",	  "title":"Access the SWISH interface" }
+[ { "file":"examples.swinb",	     "title":"Example programs" },
+  { "file":"prolog_tutorials.swinb", "title":"Prolog tutorials" },
+  { "file":"swish_tutorials.swinb",  "title":"SWISH tutorials" },
+  "--",
+  { "file":"stats.swinb",	     "title":"Usage statistics" }
 ]

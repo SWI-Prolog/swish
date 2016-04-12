@@ -1,5 +1,4 @@
 <div class="notebook">
-
 <div class="nb-cell markdown">
 # Accessing the SWISH interface
 
@@ -51,5 +50,4 @@ This level of interaction with the interface is probably not desirable.  Restric
 <div class="nb-cell query">
 jquery(this(".runner-results"), append("&lt;b&gt;Hello world&lt;/b&gt;"), R).
 </div>
-
 </div>

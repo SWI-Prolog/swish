@@ -1,0 +1,21 @@
+<div class="notebook">
+<div class="nb-cell markdown">
+# Prolog tutorials
+
+This notebook collects Prolog tutorials provided as SWISH notebooks.
+
+  - [Using SWI-Prolog version 7 dicts](example/dict.swinb)
+  
+---
+## Submitting a tutorial
+
+If you wish to submit a tutorial, create it on http://swish.swi-prolog.org as a new
+notebook.  Next, you have two options:
+
+  - Download the notebook to your computer using *File/Download*, fork
+    https://github.com/SWI-Prolog/swish, add the notebook to the `examples`
+    directory and edit `examples/prolog_tutorials.swinb`.  Finally, create
+    a *pull request*.
+  - Send a mail to jan@swi-prolog.org with a link to your tutorial.
+</div>
+</div>
