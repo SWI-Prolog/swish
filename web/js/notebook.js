@@ -529,11 +529,11 @@ var cellTypes = {
 	is_cell = nest.pop();
 	return is_cell ? "\n"+t+"\n" : t;
       } else {
-	is_cell = (t.match(/nb-cell/) != null);
+	is_cell = (t.match(/(nb-cell|notebook)/) != null);
 	nest.push(is_cell);
 	return is_cell ? "\n"+orderAttrs(t)+"\n" : t;
       }
-    });
+    }).slice(1);
   }
 
   tabbed.tabTypes.notebook = {
