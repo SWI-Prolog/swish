@@ -139,6 +139,7 @@ render_dot(DOTString, Program, _Options) -->	% <svg> rendering
 			   read_string(ErrorOut, _, Error)
 		       ),
 		       (   process_wait(PID, _Status),
+			   close(ErrorOut, [force(true)]),
 			   close(XDotOut)
 		       ))
 	},
@@ -247,6 +248,7 @@ swish_send_graphviz(Request) :-
 		       read_string(ErrorOut, _, Error)
 		     ),
 		     (	 process_wait(PID, _Status),
+			 close(ErrorOut, [force(true)]),
 			 close(XDotOut)
 		     )),
 	(   Error == ""
@@ -454,7 +456,7 @@ attribute(NameValue, _O)  -->
 
 value(Name, Value) -->
 	{ string_attribute(Name), !,
-	  atom_codes(Value, Codes)
+	  value_codes(Value, Codes)
 	},
 	"\"", cstring(Codes), "\"".
 value(_Name, Value, List, Tail) :-
@@ -478,6 +480,11 @@ spaces(N) -->
 	" ",
 	spaces(N2).
 
+value_codes(Value, Codes) :-
+	atomic(Value), !,
+	format(codes(Codes), '~w', [Value]).
+value_codes(Value, Codes) :-
+	format(codes(Codes), '~p', [Value]).
 
 
 		 /*******************************
@@ -494,6 +501,8 @@ string_attribute(href).
 string_attribute(id).
 string_attribute('URL').
 string_attribute(fillcolor).
+string_attribute(fontcolor).
+string_attribute(fontname).
 string_attribute(style).
 string_attribute(size).
 

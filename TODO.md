@@ -137,12 +137,7 @@ _not_ see exactly the same UI for cooperation.  What about
 
   - Colouring of /library/http/html_write.pl.  Broken sequences:
     - DCG exports
-    - DCG terminals
     - use_module/2
     - ?- [file].
     - :- op(1150, fx, [(mode), (public)]).
-    - setof/3, etc. Var^
-  - CSV download of large data results in stack overflow.
-  - Force download in Safari and IE (<a download="..."> does not
-    work.
 

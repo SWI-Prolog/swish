@@ -16,6 +16,7 @@
     "tagmanager": "*",
     "js-sha1": "*",
     "c3": "*",
-    "svg-pan-zoom": "*"
+    "svg-pan-zoom": "*",
+    "sparkline": "*"
   }
 }

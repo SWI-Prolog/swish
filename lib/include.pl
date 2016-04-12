@@ -127,13 +127,46 @@ prolog_colour:term_colours((:- include(File)),
 
 :- multifile
 	prolog:xref_open_source/2,
-	prolog:xref_source_file/3.
+	prolog:xref_source_file/3,
+	prolog:xref_source_identifier/2,
+	prolog:xref_source_time/2.
+
+%%	prolog:xref_source_identifier(+Src, -Id) is semidet.
+%%	prolog:xref_open_source(+File, -Stream) is det.
+%%	prolog:xref_source_time(+File, -Modified) is det.
+%
+%	Map swish://file to a file from the gitty store.
+
+prolog:xref_source_identifier(Src, Id) :-
+	atom(Src),
+	sub_atom(Src, 0, _, _, 'swish://'), !,
+	Id = Src.
 
 prolog:xref_open_source(File, Stream) :-
+	atom(File),
 	atom_concat('swish://', Name, File),
 	setting(web_storage:directory, Store),
 	catch(gitty_data(Store, Name, Data, _Meta), _, fail),
 	open_string(Data, Stream).
 
+prolog:xref_source_time(File, Modified) :-
+	atom(File),
+	atom_concat('swish://', Name, File),
+	setting(web_storage:directory, Store),
+	catch(gitty_commit(Store, Name, Meta), _, fail),
+	Modified = Meta.get(time).
+
+%%	prolog:xref_source_file(+Term, -Path, +Options)
+%
+%	Deal with the above expansion for :- include(program) to support
+%	the cross-referencer.
+
 prolog:xref_source_file(stream(Id, _Stream, [close(true)]), Id, _).
+prolog:xref_source_file(File, Id, Options) :-
+	atom(File),
+	option(relative_to(Src), Options),
+	atom(Src),
+	sub_atom(Src, 0, _, _, 'swish://'),
+	add_extension(File, FileExt),
+	atom_concat('swish://', FileExt, Id).
 

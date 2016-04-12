@@ -10,10 +10,11 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  */
 
-define([ "jquery", "config", "tabbed", "form", "preferences", "modal", "prolog",
+define([ "jquery", "config", "tabbed", "form",
+	 "preferences", "modal", "prolog", "links",
 	 "laconic", "runner", "storage", "sha1"
        ],
-       function($, config, tabbed, form, preferences, modal, prolog) {
+       function($, config, tabbed, form, preferences, modal, prolog, links) {
 
 var cellTypes = {
   "prolog":   { label:"Prolog" },
@@ -1008,80 +1009,16 @@ var cellTypes = {
       cell.removeData('markdownText');
       methods.type.markdown.call(cell, {value:text});
       cell.off("dblclick", makeEditable);
-      cell.off("click", followLink);
+      cell.off("click", links.followLink);
     }
 
-    function followLink(ev) {
-      var a = $(ev.target).closest("a");
-      var done = false;
-
-      function parsePred(s) {
-	var pred = {};
-	var i;
-
-	if ( (i=s.indexOf(":")) > 0 ) {
-	  pred.module = s.substring(0,i);
-	  s = s.slice(i+1);
-	}
-	if ( (i=s.indexOf("/")) > 0 ) {
-	  pred.name = s.substring(0,i);
-	  if ( s.charAt(i+1) == '/' )	/* name//arity is a non-terminal */
-	    pred.arity = parseInt(s.slice(i+2))+2;
-	  else
-	    pred.arity = parseInt(s.slice(i+1));
-
-	  if ( !isNaN(pred.arity) )
-	    return pred;
-	}
-      }
-
-      function PlDoc(from) {
-	if ( from ) {
-	  var pred = parsePred(decodeURIComponent(from));
-
-	  if ( pred ) {
-	    $(".swish-event-receiver").trigger("pldoc", pred);
-	    ev.preventDefault();
-
-	    return true;
-	  }
-	}
-      }
-
-      if ( a.hasClass("store") ) {
-	done = true;
-	ev.preventDefault();
-	var swishStore = config.http.locations.swish + "p/";
-	var href = a.attr("href");
-	if ( href.startsWith(swishStore) ) {
-	  file = href.slice(swishStore.length);
-	  $(ev.target).parents(".swish").swish('playFile', file);
-	} else {
-	  modal.alert("File does not appear to come from gitty store?");
-	}
-      } else if ( a.hasClass("file") ) {
-	done = true;
-	ev.preventDefault();
-        $(ev.target).parents(".swish")
-	            .swish('playURL', {url: a.attr("href")});
-      } else if ( a.hasClass("builtin") ) {
-	done = PlDoc(a.attr("href").split("predicate=").pop());
-      } else {
-	done = PlDoc(a.attr("href").split("object=").pop());
-      }
-
-      if ( !done ) {
-	ev.preventDefault();
-	window.open(a.attr("href"), '_blank');
-      }
-    }
 
     function setHTML(data) {
       cell.html(data);
       cell.removeClass("runnable");
       cell.data('markdownText', markdownText);
       cell.on("dblclick", makeEditable);
-      cell.on("click", "a", followLink);
+      cell.on("click", "a", links.followLink);
     }
 
     if ( markdownText.trim() != "" )

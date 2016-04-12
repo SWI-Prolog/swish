@@ -1,0 +1,87 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# The BDD renderer
+
+#### Synopsis
+
+    :- use_rendering(bdd).
+
+#### Options supported
+
+None
+
+#### Reconised terms
+
+The `bdd` renderer recognises CLP(B) residual goals of `library(clpb)`
+and draws them as Binary Decision Diagrams&nbsp;(BDDs). Both kinds of
+residual goals that `library(clpb)` can&nbsp;emit are supported by
+this&nbsp;renderer:
+
+By default, `library(clpb)` emits `sat/1` residual goals. These are
+first translated to&nbsp;BDDs by this renderer.
+
+In cases where the projection to `sat/1` goals is too costly, you can
+set the Prolog flag `clpb_residuals` to&nbsp;`bdd` yourself, and use
+`copy_term/3` to obtain a BDD&nbsp;representation of the
+residual&nbsp;goals. Currently, setting this flag does not affect the
+SWISH&nbsp;toplevel, so you also need to use&nbsp;`del_attrs/1`
+to&nbsp;avoid the costly projection. See below for an example.
+
+In both cases, the graphviz renderer is used for the final output.
+</div>
+
+<div class="nb-cell markdown">
+## Examples
+
+The first example simply enables the `bdd` renderer and posts a CLP(B)
+query to show the residual goal as a BDD.
+
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(bdd).
+:- use_module(library(clpb)).
+</div>
+
+<div class="nb-cell query">
+sat(X+Y).
+</div>
+
+<div class="nb-cell markdown">
+
+The second example sets `clpb_residuals` to&nbsp;`bdd` in order to
+prevent the costly projection to `sat/1` goals. Note that this also
+requires the use of&nbsp;`del_attrs/1` and&mdash;since renderers are
+not invoked on subterms&mdash;introducing a new variable for the
+single residual goal that represents the&nbsp;BDD.
+
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(bdd).
+:- use_module(library(clpb)).
+:- set_prolog_flag(clpb_residuals, bdd).
+</div>
+
+<div class="nb-cell query">
+length(Vs, 20), sat(card([2],Vs)),
+copy_term(Vs, Vs, [BDD]), maplist(del_attrs, Vs).
+</div>
+
+<div class="nb-cell markdown">
+
+Building on this idea, the third example shows that you can impose an
+arbitrary *order* on the variables in the&nbsp;BDD by first stating a
+tautology like `+[1,V1,V2,...]`. This orders the variables in the same
+way they appear in this list.
+
+</div>
+
+<div class="nb-cell query">
+sat(+[1,Z,Y,X]), sat(X+Y+Z),
+Vs = [X,Y,Z],
+copy_term(Vs, Vs, [BDD]), maplist(del_attrs, Vs).
+</div>
+
+</div>

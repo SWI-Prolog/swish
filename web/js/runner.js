@@ -10,9 +10,10 @@
  */
 
 define([ "jquery", "config", "preferences",
-	 "cm/lib/codemirror", "form", "prolog", "answer", "laconic"
+	 "cm/lib/codemirror", "form", "prolog", "links",
+	 "answer", "laconic", "sparkline"
        ],
-       function($, config, preferences, CodeMirror, form, prolog) {
+       function($, config, preferences, CodeMirror, form, prolog, links) {
 
 		 /*******************************
 		 *	  THE COLLECTION	*
@@ -263,19 +264,26 @@ define([ "jquery", "config", "preferences",
 	    return {input:inp, button:btn};
 	  }
 
+	  function statusChart() {
+	    var spark = $.el.span({class:"sparklines"}, "");
+
+	    return spark;
+	  }
+
 	  var inp = input();
 	  var div = $.el.div({class:"controller show-state"},
-			     $.el.div({class:"running"},
-				      button(abort, "Abort")),
-			     $.el.div({class:"wait-next"},
-				      button(next, "Next"),
-				      button(next10, "10"),
-				      button(next100, "100"),
-				      button(next1000, "1,000"), " ",
-				      button(stop, "Stop")),
-			     $.el.div({class:"wait-input"},
-				      button(abort, "Abort"), inp.button,
-				      $.el.span(inp.input)));
+			     $.el.span({class:"running"},
+				       button(abort, "Abort")),
+			     $.el.span({class:"wait-next"},
+				       button(next, "Next"),
+				       button(next10, "10"),
+				       button(next100, "100"),
+				       button(next1000, "1,000"), " ",
+				       button(stop, "Stop")),
+			     $.el.span({class:"wait-input"},
+				       button(abort, "Abort"), inp.button,
+				       $.el.span(inp.input)),
+			     statusChart());
 
 	  return div;
 	}
@@ -311,8 +319,7 @@ define([ "jquery", "config", "preferences",
 	}
 	if ( query.chunk )
 	  data.chunk = query.chunk;
-	elem.append($.el.div(
-	  {class:"runner-results"}));
+	elem.append($.el.div({class:"runner-results"}));
 	elem.append(controllerDiv());
 
 	elem.data('prologRunner', data);
@@ -327,6 +334,7 @@ define([ "jquery", "config", "preferences",
 	    }
 	  }
 	});
+	elem.on("click", "a", links.followLink);
 
 	data.savedFocus = document.activeElement;
 	elem.attr('tabindex', -1);
@@ -361,9 +369,13 @@ define([ "jquery", "config", "preferences",
 	    onstop: handleStop,
 	    onprompt: handlePrompt,
 	    onoutput: handleOutput,
+	    onping: handlePing,
 	    onerror: handleError,
 	    onabort: handleAbort});
 	  data.prolog.state = "idle";
+	  if ( config.swish.ping && data.prolog.ping != undefined ) {
+	    data.prolog.ping(config.swish.ping*1000);
+	  }
 	});
 
 	return this;
@@ -750,6 +762,62 @@ define([ "jquery", "config", "preferences",
     */
    alive: function() {
      return aliveState(this.prologRunner('getState'));
+   },
+
+   /**
+    * Handle ping data, updating the sparkline status
+    */
+   ping: function(stats) {
+     var data = this.data('prologRunner');
+
+     if ( data.prolog && data.prolog.state == "running" ) {
+       var spark = this.find(".sparklines");
+       var stacks = ["global", "local", "trail"];
+       var colors = ["red", "blue", "green"];
+       var names  = ["Global ", "Local ", "Trail "];
+       var maxlength = 10;
+
+       if ( !data.stacks )
+	 data.stacks = { global:{usage:[]}, local:{usage:[]}, trail:{usage:[]} };
+
+       for(i=0; i<stacks.length; i++) {
+	 var s = stacks[i];
+	 var limit = stats.stacks[s].limit;
+	 var usage = stats.stacks[s].usage;
+
+	 var u = Math.log10((usage/limit)*10000);
+	 function toBytes(limit, n) {
+	   var bytes = Math.round((Math.pow(10, n)/10000)*limit);
+
+	   function numberWithCommas(x) {
+	     x = x.toString();
+	     var pattern = /(-?\d+)(\d{3})/;
+	     while (pattern.test(x))
+	       x = x.replace(pattern, "$1,$2");
+	     return x;
+	   }
+
+	   return numberWithCommas(bytes);
+	 }
+
+	 data.stacks[s].limit = limit;
+	 if ( data.stacks[s].usage.length >= maxlength )
+	   data.stacks[s].usage = data.stacks[s].usage.slice(1);
+	 data.stacks[s].usage.push(u);
+	 spark.sparkline(data.stacks[s].usage,
+			 { composite: i>0,
+			   chartRangeMin: 0,
+			   chartRangeMax: 4,
+			   lineColor: colors[i],
+			   tooltipPrefix: names[i],
+			   tooltipSuffix: " bytes",
+			   tooltipChartTitle: i == 0 ? "Stack usage" : undefined,
+			   numberFormatter: function(n) {
+			     return toBytes(limit, n);
+			   }
+			 });
+       }
+     }
    }
 
   }; // methods
@@ -936,6 +1004,12 @@ console.log(data);
 
     elem.prologRunner('error', "** Execution aborted **");
     elem.prologRunner('setState', "aborted");
+  }
+
+  function handlePing() {
+    var elem = this.pengine.options.runner;
+
+    elem.prologRunner('ping', this.data);
   }
 
   /**

@@ -714,11 +714,13 @@ style(dict_function(F),  dict_function,			   [text(F)]).
 style(empty_list,	 list_open-list_close,		   []).
 style(list,		 list_open-list_close,		   []).
 style(dcg(terminal),	 list_open-list_close,		   []).
+style(dcg(string),	 string_terminal,		   []).
 style(dcg(plain),	 brace_term_open-brace_term_close, []).
 style(brace_term,	 brace_term_open-brace_term_close, []).
 style(dict_content,	 dict_open-dict_close,             []).
 style(expanded,		 expanded,			   [text]).
 style(comment_string,	 comment_string,		   []).
+style(ext_quant,	 ext_quant,			   []).
 					% from library(http/html_write)
 style(html(_Element),	 html,				   []).
 style(entity(_Element),	 entity,			   []).

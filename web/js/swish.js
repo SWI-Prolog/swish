@@ -23,6 +23,7 @@ require.config({
     c3:          "../bower_components/c3/c3",
     d3:          "../bower_components/d3/d3",
     "svg-pan-zoom": "../bower_components/svg-pan-zoom/dist/svg-pan-zoom.min",
+    sparkline:	 "../bower_components/sparkline/dist/jquery.sparkline",
 
 					/* CodeMirror extensions */
     "cm/mode/prolog": "codemirror/mode/prolog",

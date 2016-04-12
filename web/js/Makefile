@@ -6,7 +6,10 @@ JQ=jquery.jsdoc
 CONF=conf.json
 MAIN=swish.js
 
-all:	min require.js
+all:	src min require.js
+
+src::
+	$(MAKE) -C ../bower_components/sparkline jqs
 
 doc::	$(CONF) $(JQ) $(JS)
 	-jsdoc -p -c $(CONF) $(JQ) $(JS)

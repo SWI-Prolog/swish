@@ -30,9 +30,10 @@
 :- module(swish_csv, []).
 :- use_module(library(pengines), []).
 :- use_module(library(pairs)).
-:- use_module(library(csv)).
+:- use_module(library(csv), [csv_write_stream/3]).
 :- use_module(library(apply)).
 :- use_module(library(pprint)).
+:- use_module(library(option)).
 
 /** <module> Support CSV output from a Pengines server
 
@@ -46,7 +47,8 @@ SWISH program and obtain the results using   a simple web client such as
 
 :- multifile
 	pengines:write_result/3,
-	write_answers/2.
+	write_answers/2,		% Answers, Bindings
+	write_answers/3.		% Answers, Bindings, Options
 
 %%	pengines:write_result(+Format, +Event, +VarNames) is semidet.
 %
@@ -54,35 +56,59 @@ SWISH program and obtain the results using   a simple web client such as
 %	output.
 
 pengines:write_result(csv, Event, VarNames) :-
-	csv(Event, VarNames).
+	csv(Event, VarNames, []).
 
-csv(create(_Id, Features), VarNames) :- !,
+csv(create(_Id, Features), VarNames, Options) :- !,
 	memberchk(answer(Answer), Features),
-	csv(Answer, VarNames).
-csv(destroy(_Id, Wrapped), VarNames) :- !,
-	csv(Wrapped, VarNames).
-csv(success(_Id, Answers, _Time, _More), VarNames) :- !,
+	csv(Answer, VarNames, Options).
+csv(destroy(_Id, Wrapped), VarNames, Options) :- !,
+	csv(Wrapped, VarNames, Options).
+csv(success(_Id, Answers, _Time, More), VarNames, Options) :- !,
 	VarTerm =.. [row|VarNames],
-	success(Answers, VarTerm).
-csv(error(_Id, Error), _VarNames) :- !,
+	success(Answers, VarTerm, [more(More)|Options]).
+csv(error(_Id, Error), _VarNames, _Options) :- !,
 	message_to_string(Error, Msg),
 	format('Status: 400 Bad request~n'),
 	format('Content-type: text/plain~n~n'),
 	format('ERROR: ~w~n', [Msg]).
-csv(output(_Id, message(_Term, _Class, HTML, _Where)), _VarNames) :- !,
+csv(output(_Id, message(_Term, _Class, HTML, _Where)), _VarNames, _Opts) :- !,
 	format('Status: 400 Bad request~n'),
 	format('Content-type: text/html~n~n'),
 	format('<html>~n~s~n</html>~n', [HTML]).
-csv(Event, _VarNames) :-
+csv(page(Page, Event), VarNames, _Options) :-
+	csv(Event, VarNames, [page(Page)]).
+csv(Event, _VarNames, _) :-
 	print_term(Event, [output(user_error)]).
 
-success(Answers, VarTerm) :-
-	write_answers(Answers, VarTerm), !.
-success(Answers, VarTerm) :-
+success(Answers, VarTerm, Options) :-
+	write_answers(Answers, VarTerm, Options), !.
+success(Answers, VarTerm, Options) :-
+	write_answers(Answers, VarTerm), !,
+	assertion(\+option(page(_), Options)).
+success(Answers, _VarTerm, Options) :-
+	option(page(Page), Options),
+	Page > 1, !,
 	maplist(csv_answer, Answers, Rows),
+	forall(paginate(100, OutPage, Rows),
+	       csv_write_stream(current_output, OutPage, [])).
+success(Answers, VarTerm, _Options) :-
+	maplist(csv_answer, Answers, Rows),
+	format('Content-encoding: chunked~n'),
 	format('Content-disposition: attachment; filename="swish-result.csv"~n'),
 	format('Content-type: text/csv~n~n'),
-	csv_write_stream(current_output, [VarTerm|Rows], []).
+	csv_write_stream(current_output, [VarTerm], []),
+	forall(paginate(100, Page, Rows),
+	       csv_write_stream(current_output, Page, [])).
+
+paginate(Len, Page, List) :-
+	length(Page0, Len),
+	(   append(Page0, Rest, List)
+	->  (   Page = Page0
+	    ;	paginate(Len, Page, Rest)
+	    )
+	;   Page = List
+	).
+
 
 csv_answer(JSON, Row) :-
 	is_dict(JSON), !,

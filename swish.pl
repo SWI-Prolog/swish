@@ -40,7 +40,7 @@
 :- use_module(lib/page, []).
 :- use_module(lib/storage).
 :- use_module(lib/include).
-:- use_module(lib/csv).
+:- use_module(lib/swish_csv).
 :- use_module(lib/examples).
 :- use_module(lib/profiles).
 :- use_module(lib/highlight).
@@ -114,6 +114,9 @@ http:location(swish, root(.), [priority(-100)]).
 %	  only running queries and saving files is restricted. Note
 %	  that this flag has no effect if no authentication module is
 %	  loaded.
+%	  - ping
+%	  Ping pengine status every N seconds.  Updates sparkline
+%	  chart with stack usage.
 
 % Allow other code to overrule the defaults from this file.
 term_expansion(swish_config:config(Config, _Value), []) :-
@@ -125,7 +128,12 @@ swish_config:config(tabled_results,     false).
 swish_config:config(application,        swish).
 swish_config:config(csv_formats,        [prolog]).
 swish_config:config(community_examples, false).
+<<<<<<< HEAD
 swish_config:config(public_access,      true).
+=======
+swish_config:config(public_access,      false).
+swish_config:config(ping,		10).
+>>>>>>> d31ff8c626b8eae5b21f7f265c8f03e9c96a8b13
 
 %%	swish_config:source_alias(Alias, Options) is nondet.
 %
@@ -152,6 +160,8 @@ swish_config:config(public_access,      true).
 :- use_module(swish:lib/jquery).
 :- use_module(swish:lib/swish_debug).
 :- use_module(swish:library(pengines_io)).
+:- use_module(swish:library(solution_sequences)).
+:- use_module(swish:library(aggregate)).
 pengines:prepare_module(Module, swish, _Options) :-
 	pengines_io:pengine_bind_io_to_html(Module).
 %:- set_setting(swish:time_limit, 3600).
@@ -191,3 +201,4 @@ sandbox:safe_primitive(nf_r:{_}).
 sandbox:safe_primitive(real:(_ <- _)).
 
 
+:- use_module(swish(lib/render/bdd),	  []).

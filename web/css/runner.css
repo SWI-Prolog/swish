@@ -148,14 +148,16 @@ span.runner-state.false      { background-image: url("../icons/dead.png");    }
 span.runner-state.error,
 span.runner-state.aborted    { background-image: url("../icons/error.png");   }
 
-div.controller.running    > div.running    { display:block; }
-div.controller.wait-next  > div.wait-next  { display:block; }
-div.controller.wait-input > div.wait-input { display:block; }
-div.controller > div                       { display:none;  }
+div.controller.running    > span.running    { display:inline; }
+div.controller.running    > span.sparklines { display:inline; }
+div.controller.wait-next  > span.sparklines { display:inline; }
+div.controller.wait-next  > span.wait-next  { display:inline; }
+div.controller.wait-input > span.wait-input { display:inline; }
+div.controller > span                       { display:none;  }
 
-div.wait-input button { float: right; box-sizing: border-box; }
-div.wait-input span   { display: block; overflow: hidden; }
-div.wait-input input  { width: 100%; box-sizing: border-box; }
+span.wait-input button { float: right; box-sizing: border-box; }
+span.wait-input span   { display: block; overflow: hidden; }
+span.wait-input input  { width: 100%; box-sizing: border-box; }
 
 /* print-message output */
 
@@ -235,4 +237,12 @@ div.prolog-exception
 { color: #f00;
   font-size: 80%;
   margin-left: 5em;
+}
+
+div.controller.running > span.sparklines { margin-left: 0.5em; }
+
+.jqstooltip {
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
 }

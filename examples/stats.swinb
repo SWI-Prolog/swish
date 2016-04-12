@@ -72,6 +72,11 @@ add_heap_mb(Stat0, Stat) :-
               Stat0.get(fordblks)
             ) / (1024^2), !,
     put_dict(heap_mb, Stat0, Heap, Stat).
+add_heap_mb(Stat0, Stat) :-
+    Heap is ( Stat0.get(rss) -
+              Stat0.get(stack)
+            ) / (1024^2), !,
+    put_dict(heap_mb, Stat0, Heap, Stat).
 add_heap_mb(Stat, Stat).
 
 rss_mb(Stat0, Stat) :-

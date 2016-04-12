@@ -117,11 +117,15 @@ user:term_expansion((:- use_rendering(Renderer, Options)), Expanded) :-
 	expand_rendering(Renderer, Options, Expanded).
 
 expand_rendering(Module:Renderer, Options,
-		 Module:'swish renderer'(Renderer, Options)) :- !,
+		 [ (:- discontiguous(Module:'swish renderer'/2)),
+		   Module:'swish renderer'(Renderer, Options)
+		 ]) :- !,
 	must_be(atom, Module),
 	must_be(atom, Renderer).
 expand_rendering(Renderer, Options,
-		 'swish renderer'(Renderer, Options)) :-
+		 [ (:- discontiguous('swish renderer'/2)),
+		   'swish renderer'(Renderer, Options)
+		 ]) :-
 	must_be(atom, Renderer).
 
 %%	pengines_io:binding_term(+Term, +Vars, +Options) is semidet.

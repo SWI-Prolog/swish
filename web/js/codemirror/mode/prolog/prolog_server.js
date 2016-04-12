@@ -272,6 +272,7 @@ classification of tokens.
 		     "float": "number",
 		     "key": "atom",	/* TBD: or integer */
 		     "sep": "atom",	/* : in dict */
+		     "ext_quant": "atom", /* setof ^-symbol */
 
 		     "expanded": "expanded",
 		     "comment_string":"string",
@@ -339,6 +340,8 @@ classification of tokens.
 		     "brace_term_close": "brace_term_close",
 		     "neck": "neck",
 		     "fullstop": "fullstop",
+
+		     "string_terminal": "string",
 
 		     "html": "functor",
 		     "entity": "atom",

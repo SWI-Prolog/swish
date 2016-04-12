@@ -553,15 +553,17 @@ define([ "cm/lib/codemirror",
     pengine: function(options) {
       var data = this.data(pluginName);
 
-      if ( options.add ) {
-	data.pengines = data.pengines || [];
-	if ( data.pengines.indexOf(options.add) < 0 )
-	  data.pengines.push(options.add);
+      if ( data ) {
+	if ( options.add ) {
+	  data.pengines = data.pengines || [];
+	  if ( data.pengines.indexOf(options.add) < 0 )
+	    data.pengines.push(options.add);
 
-	return this;
-      } else if ( options.has ) {
-	return (data.pengines &&
-		data.pengines.indexOf(options.has) >= 0);
+	  return this;
+	} else if ( options.has ) {
+	  return (data.pengines &&
+		  data.pengines.indexOf(options.has) >= 0);
+	}
       }
     },
 
@@ -957,6 +959,10 @@ define([ "cm/lib/codemirror",
      */
     changeGen: function() {
       return this.data(pluginName).cm.changeGeneration();
+    },
+
+    isClean: function(gen) {
+      return this.data(pluginName).cm.isClean(gen);
     },
 
     /**
