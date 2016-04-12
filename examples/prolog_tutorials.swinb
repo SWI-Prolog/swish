@@ -14,7 +14,7 @@ If you wish to submit a tutorial, create it on http://swish.swi-prolog.org as a 
 notebook.  Next, you have two options:
 
   - Download the notebook to your computer using *File/Download*, fork
-    https://github.com/SWI-Prolog/swish, add the notebook to the `examples`
+    https://github.com/SWI-Prolog/swish.git and add the notebook to the `examples`
     directory and edit `examples/prolog_tutorials.swinb`.  Finally, create
     a *pull request*.
   - Send a mail to jan@swi-prolog.org with a link to your tutorial.
