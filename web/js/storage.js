@@ -377,6 +377,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 		   options.cleanGeneration = options.changeGen();
 		   options.cleanData       = options.getValue();
 		   options.cleanCheckpoint = "save";
+		   options.markClean(true);
 		   modal.feedback({ html: "Saved",
 				    owner: elem
 		                  });
