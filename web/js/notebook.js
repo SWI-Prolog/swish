@@ -533,7 +533,7 @@ var cellTypes = {
 	nest.push(is_cell);
 	return is_cell ? "\n"+orderAttrs(t)+"\n" : t;
       }
-    }).slice(1);
+    });
   }
 
   tabbed.tabTypes.notebook = {
