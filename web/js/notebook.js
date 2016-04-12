@@ -444,7 +444,7 @@ var cellTypes = {
 	  $(cell).nbCell($(this));
 	});
 
-	this.find(".nb-cell.query").nbCell('onload');
+	this.find(".nb-cell").nbCell('onload');
 	this.notebook('updatePlaceHolder');
       }
     },
@@ -699,10 +699,14 @@ var cellTypes = {
     },
 
     onload: function() {
+      var args = arguments;
+
       return this.each(function() {
 	var cell = $(this);
-	if ( cell.data("run") == "onload" )
-	  cell.nbCell("run");
+	var data = cell.data(pluginName);
+
+	if ( methods.onload[data.type] )
+	  methods.onload[data.type].apply(cell, args);
       });
     },
 
@@ -1040,8 +1044,14 @@ var cellTypes = {
     }
   };
 
-  methods.run.html = function(htmlText) {
+  methods.run.html = function(htmlText, options) {
     var cell = this;
+
+    options = options||{};
+    if ( options.html == false )
+    { runScripts();
+      return;
+    }
 
     htmlText = (htmlText||cellText(this)).trim();
 
@@ -1054,10 +1064,9 @@ var cellTypes = {
       cell.off("click", links.followLink);
     }
 
-    function runHTML(data) {
-      cell[0].innerHTML = data;
-
-      if ( config.swish.notebook.eval_script == true ) {
+    function runScripts() {
+      if ( config.swish.notebook.eval_script == true &&
+	   options.eval_script != false ) {
 	var scripts = [];
 
 	cell.find("script").each(function() {
@@ -1079,6 +1088,11 @@ var cellTypes = {
 	  }
 	}
       }
+    }
+
+    function runHTML(data) {
+      cell[0].innerHTML = data;
+      runScripts();
     }
 
     function setHTML(data) {
@@ -1146,6 +1160,24 @@ var cellTypes = {
     this.append(runner);
     $(runner).prologRunner(query);
   };
+
+		 /*******************************
+		 *	       ONLOAD		*
+		 *******************************/
+
+/* These methods are executed after all cells have been initialised */
+
+  methods.onload.query = function() {
+    if ( this.data("run") == "onload" )
+      this.nbCell("run");
+  };
+
+  methods.onload.html = function() {
+    return methods.run.html.call(this,
+				 undefined,	/* text */
+				 {html:false, eval_script:true});
+  };
+
 
 		 /*******************************
 		 *	SAVE/RESTORE DOM	*
@@ -1224,7 +1256,7 @@ var cellTypes = {
   };
 
   methods.restoreDOM.html = function(dom) {	/* HTML */
-    methods.run.html.call(this, dom.html());
+    methods.run.html.call(this, dom.html(), {eval_script:false});
   };
 
   methods.restoreDOM.program = function(dom) {	/* program */
