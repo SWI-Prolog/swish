@@ -128,12 +128,8 @@ swish_config:config(tabled_results,     false).
 swish_config:config(application,        swish).
 swish_config:config(csv_formats,        [prolog]).
 swish_config:config(community_examples, false).
-<<<<<<< HEAD
-swish_config:config(public_access,      true).
-=======
 swish_config:config(public_access,      false).
 swish_config:config(ping,		10).
->>>>>>> d31ff8c626b8eae5b21f7f265c8f03e9c96a8b13
 
 %%	swish_config:source_alias(Alias, Options) is nondet.
 %
