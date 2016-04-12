@@ -7,8 +7,8 @@
  * @requires jquery
  */
 
-define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
-       function(config, preferences) {
+define([ "config", "preferences", "links", "jquery", "laconic", "bootstrap" ],
+       function(config, preferences, links) {
 
 (function($) {
   var pluginName = 'swishModal';
@@ -176,6 +176,7 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
       }
       $(title).html(options.title);
       $(modalel).modal({show: true})
+		.on("click", "a", links.followLink)
 	        .on("shown.bs.modal", initTagsManagers)
 	        .on("hidden.bs.modal", function() {
 		  $(this).remove();

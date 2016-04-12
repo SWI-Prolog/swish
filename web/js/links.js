@@ -42,6 +42,7 @@ define(["jquery", "config", "modal"],
 	var pred = parsePred(decodeURIComponent(from));
 
 	if ( pred ) {
+	  $(ev.target).closest("#ajaxModal").modal('hide');
 	  $(".swish-event-receiver").trigger("pldoc", pred);
 	  ev.preventDefault();
 
@@ -123,32 +124,50 @@ define(["jquery", "config", "modal"],
       var a = $(ev.target).closest("a");
       var done = false;
 
+      function accept() {
+	done = true;
+	ev.preventDefault();
+
+	$(ev.target).closest("#ajaxModal").modal('hide');
+      }
+
       if ( a.attr("href") ) {
-	if ( a.hasClass("store") ) {
-	  done = true;
-	  ev.preventDefault();
-	  var swishStore = config.http.locations.swish + "p/";
-	  var href = a.attr("href");
-	  if ( href.startsWith(swishStore) ) {
-	    file = href.slice(swishStore.length);
-	    $(ev.target).parents(".swish").swish('playFile', file);
-	  } else {
-	    modal.alert("File does not appear to come from gitty store?");
-	  }
-	} else if ( a.hasClass("file") ) {
-	  done = true;
-	  ev.preventDefault();
+	var swishStore    = config.http.locations.swish + "p/";
+	var swishExamples = config.http.locations.swish + "example/";
+	var href	  = a.attr("href");
+	var modal;
+
+	if ( href.startsWith(swishStore) && !href.match(/#/) ) {
+	  accept();
+	  file = href.slice(swishStore.length);
+	  $(ev.target).parents(".swish").swish('playFile', file);
+	} else if ( a.hasClass("store") ) {
+	  accept();
+	  modal.alert("File does not appear to come from gitty store?");
+	} else if ( a.hasClass("file") ||
+		    (href.startsWith(swishExamples) && !href.match(/#/)) ) {
+	  accept();
 	  $(ev.target).parents(".swish")
-		      .swish('playURL', {url: a.attr("href")});
-	} else if ( a.hasClass("builtin") ) {
-	  done = functions.PlDoc(a.attr("href").split("predicate=").pop(), ev);
-	} else {
-	  done = functions.PlDoc(a.attr("href").split("object=").pop(), ev);
+		      .swish('playURL', {url: href});
+	} else if ( a.hasClass("builtin") && href.match(/predicate=/) ) {
+	  done = functions.PlDoc(href.split("predicate=").pop(), ev);
+	} else if ( href.match(/object=/) ) {
+	  done = functions.PlDoc(href.split("object=").pop(), ev);
+	} else if ( (modal=$(ev.target).closest("#ajaxModal")).length == 1 &&
+		    href.match(/#/) )
+	{ var id = href.split("#").pop();
+	  var target;
+
+	  if ( (target=modal.find("#"+id)).length == 1 )
+	  { done = true;
+	    ev.preventDefault();
+	    modal.animate({scrollTop: target.position().top}, 2000);
+	  }
 	}
 
 	if ( !done ) {
 	  ev.preventDefault();
-	  window.open(a.attr("href"), '_blank');
+	  window.open(href, '_blank');
 	}
       } else if ( a.data("query") ) {
 	functions.runQueryLink(a, ev);
