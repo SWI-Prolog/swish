@@ -45,6 +45,28 @@ var cellTypes = {
 	elem.addClass("notebook");
 	elem.addClass("swish-event-receiver");
 
+	function notebookMenu() {
+	  var icon = $.el.span({class:"glyphicon glyphicon-menu-hamburger"});
+	  var menu = form.widgets.dropdownButton(
+	    icon,
+	    { divClass:"notebook-menu btn-transparent",
+	      ulClass:"pull-right",
+	      client:elem,
+	      actions:
+	      { "Delete cell":     function() { this.notebook('delete'); },
+		"Copy cell":       function() { this.notebook('copy'); },
+		"Paste cell":      function() { this.notebook('paste'); },
+		"Move cell up":    function() { this.notebook('up'); },
+		"Move cell down":  function() { this.notebook('down'); },
+		"Insert cell":     function() { this.notebook('insertBelow'); },
+		"--":		   "Notebook actions",
+		"Exit fullscreen": function() { this.notebook('fullscreen', false) }
+	      }
+	    });
+
+	  return menu;
+	}
+
 	elem.append(toolbar = $.el.div(
             {class:"nb-toolbar"},
 	    glyphButton("trash", "delete", "Delete cell", "warning"),
@@ -59,6 +81,7 @@ var cellTypes = {
 	    ));
 	elem.append($.el.div({class:"nb-view", tabIndex:"-1"},
 			     content=$.el.div({class:"nb-content"}),
+			     notebookMenu(),
 			     $.el.div({class:"nb-bottom"})));
 
 	$(toolbar).on("click", "a.btn", function(ev) {
@@ -247,12 +270,12 @@ var cellTypes = {
 	var content = this.closest(".container.swish");
 
 	if ( val ) {
-	  this.addClass("fullscreen");
+	  this.addClass("fullscreen hamburger");
 	  data.org_tab = this.parent()[0];
 	  $(content.children()[0]).hide();
 	  content.append(this);
 	} else {
-	  this.removeClass("fullscreen");
+	  this.removeClass("fullscreen hamburger");
 	  $(data.org_tab).append(this);
 	  $(content.children()[0]).show();
 	}
