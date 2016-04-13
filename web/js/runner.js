@@ -38,7 +38,7 @@ define([ "jquery", "config", "preferences",
 	  var icon = $.el.span({class:"glyphicon glyphicon-menu-hamburger"});
 	  var menu = form.widgets.dropdownButton(
 	    icon,
-	    { divClass:"runners-menu",
+	    { divClass:"runners-menu btn-transparent",
 	      ulClass:"pull-right",
 	      client:elem,
 	      actions:

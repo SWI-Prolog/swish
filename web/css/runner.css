@@ -92,19 +92,6 @@ div.runners-menu {
   z-index: 2000;
 }
 
-div.runners-menu button.dropdown-toggle {
-  background: none repeat scroll 0 0 transparent;
-  border: 0 none;
-  cursor: pointer;
-  padding: 0;
-  color: #000;
-  float: right;
-  font-size: 16px;
-  font-weight: bold;
-  line-height: 1;
-  opacity: 0.2;
-}
-
 div.runner-title button.dropdown-toggle {
   background: none repeat scroll 0 0 transparent;
   border: 0 none;
@@ -131,8 +118,6 @@ div.runner-title > button.rtb-toggleIconic
 { padding: 8px 0px;
 }
 
-
-div.runners-menu button.dropdown-toggle:hover,
 div.runner-title > button:hover {
   opacity: 0.8;
 }
