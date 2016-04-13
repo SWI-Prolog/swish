@@ -1,6 +1,12 @@
 /* Style for the SWISH notebook
 */
 
+.notebook
+{ position: relative;
+  width: 100%;
+  height: 100%;
+}
+
 .nb-toolbar, .nb-content
 { width: 100%;
   padding-left: 1em;
@@ -13,6 +19,11 @@
   padding-bottom: 5px;
   margin-bottom: 1em;
   border-bottom: 1px solid #ddd;
+}
+
+.nb-toolbar .action-fullscreen
+{ right: 5px;
+  position: absolute;
 }
 
 .nb-view

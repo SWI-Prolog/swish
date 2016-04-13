@@ -54,7 +54,8 @@ var cellTypes = {
 	    glyphButton("chevron-up", "up", "Move cell up", "default"),
 	    glyphButton("chevron-down", "down", "Move cell down", "default"),
 	    sep(),
-	    glyphButton("plus", "insertBelow", "Insert cell below", "primary")
+	    glyphButton("plus", "insertBelow", "Insert cell below", "primary"),
+	    glyphButton("fullscreen", "fullscreen", "Full screen", "default")
 	    ));
 	elem.append($.el.div({class:"nb-view", tabIndex:"-1"},
 			     content=$.el.div({class:"nb-content"}),
@@ -234,6 +235,31 @@ var cellTypes = {
       cell = cell||currentCell(this);
       if ( cell )
 	cell.nbCell("run");
+    },
+
+    fullscreen: function(val) {
+      var data = this.data(pluginName);
+
+      if ( val == undefined )		/* default: toggle */
+	val = !this.hasClass("fullscreen");
+
+      if ( data.fullscreen != val ) {
+	var content = this.closest(".container.swish");
+
+	if ( val ) {
+	  this.addClass("fullscreen");
+	  data.org_tab = this.parent()[0];
+	  $(content.children()[0]).hide();
+	  content.append(this);
+	} else {
+	  this.removeClass("fullscreen");
+	  $(data.org_tab).append(this);
+	  $(content.children()[0]).show();
+	}
+	data.fullscreen = val;
+      }
+
+      return this;
     },
 
     cellType: function(cell, type) {
@@ -1469,7 +1495,8 @@ var cellTypes = {
 
 function glyphButton(glyph, action, title, style, size) {
   size = size||"sm";
-  var btn = $.el.a({href:"#", class:"btn btn-"+style+" btn-"+size,
+  var btn = $.el.a({href:"#",
+		    class:"btn btn-"+style+" btn-"+size+" action-"+action,
 		    title:title, "data-action":action},
 		   $.el.span({class:"glyphicon glyphicon-"+glyph}));
 
