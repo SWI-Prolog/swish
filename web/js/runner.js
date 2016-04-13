@@ -35,8 +35,7 @@ define([ "jquery", "config", "preferences",
 	var data = {};
 
 	function runnerMenu() {
-	  var icon = $.el.span();
-	  $(icon).html("&#9776");
+	  var icon = $.el.span({class:"glyphicon glyphicon-menu-hamburger"});
 	  var menu = form.widgets.dropdownButton(
 	    icon,
 	    { divClass:"runners-menu",
