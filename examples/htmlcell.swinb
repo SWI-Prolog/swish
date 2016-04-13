@@ -3,8 +3,8 @@
 <div class="nb-cell html">
 <h2>Using HTML cells in SWISH notebooks</h2>
 
-<p>T
-  his notebook shows how HTML cells in a notebook can be used to create arbitrary web applications
+<p>
+  This notebook shows how HTML cells in a notebook can be used to create arbitrary web applications
   inside a notebook.  The HTML is placed in a <code>div</code> element and is subject to
   <a href="http://getbootstrap.com/">Bootstrap</a> styling.
 </p>
@@ -29,6 +29,11 @@
     using the same algorithm as a query cell and sets the <code>application</code> to <code>swish</code>.
   </dd></dl>
 </div>
+
+<p>
+  Double click anywhere in this cell to <b>see the source</b>.  Then click anywhere
+  inside the notebook, but <em>outside</em> this cell to see the result.
+</p>
 
 <h4>Example</h4>
 
