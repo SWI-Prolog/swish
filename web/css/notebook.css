@@ -146,8 +146,12 @@ div.notebook-menu {
   float: right;
 }
 
+.nb-cell span.glyphicon-cloud
+{ color: black;
+}
+
 .nb-cell.background span.glyphicon-cloud
-{ color: #bef;
+{ color: white;
 }
 
 .nb-cell.query, .nb-cell.program

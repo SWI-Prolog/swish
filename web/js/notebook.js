@@ -752,18 +752,31 @@ var cellTypes = {
     onload: function() {
       var args = arguments;
 
-      return this.each(function() {
+      this.each(function() {
 	var cell = $(this);
 	var data = cell.data(pluginName);
 
 	if ( methods.onload[data.type] )
 	  methods.onload[data.type].apply(cell, args);
       });
+
+      return this.nbCell('refresh');
     },
 
     close: function() {
       this.find(".prolog-runner").prologRunner('close');
       return this.remove();
+    },
+
+    refresh: function() {
+      if ( this.hasClass("program") ) {
+	this.find("a[data-action='background']")
+            .attr('title', this.hasClass("background") ?
+			     "Used for all queries in this notebook" :
+		             "Used for queries below this cell");
+
+      }
+      return this;
     },
 
     getSettings: function() {
@@ -861,6 +874,7 @@ var cellTypes = {
       this.toggleClass("background");
       this.find("a[data-action=background]").blur();
       this.closest(".notebook").notebook('checkModified');
+      this.nbCell('refresh');
       return this;
     },
 
