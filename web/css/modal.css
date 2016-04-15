@@ -19,3 +19,7 @@ div.feedback.warning {
 { color: #fa0;
   font-size: 150%;
 }
+
+.modal-header .warning
+{ color: red;
+}
