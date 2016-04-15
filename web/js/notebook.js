@@ -266,21 +266,10 @@ var cellTypes = {
       if ( val == undefined )		/* default: toggle */
 	val = !this.hasClass("fullscreen");
 
-      if ( data.fullscreen != val ) {
-	var content = this.closest(".container.swish");
-
-	if ( val ) {
-	  this.addClass("fullscreen hamburger");
-	  data.org_tab = this.parent()[0];
-	  $(content.children()[0]).hide();
-	  content.append(this);
-	} else {
-	  this.removeClass("fullscreen hamburger");
-	  $(data.org_tab).append(this);
-	  $(content.children()[0]).show();
-	}
-	data.fullscreen = val;
-      }
+      if ( val )
+	$("body.swish").swish('fullscreen', this);
+      else
+	$("body.swish").swish('exitFullscreen');
 
       return this;
     },

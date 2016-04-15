@@ -434,6 +434,45 @@ preferences.setDefault("emacs-keybinding", false);
     },
 
     /**
+     * Make DOM element fullscreen
+     * @param {DOM} node is the element to turn into fullscreen.
+     * Currently this only works for a notebook.
+     */
+    fullscreen: function(node) {
+      if ( !node.hasClass("fullscreen") ) {
+	var content = this.find(".container.swish");
+
+	node.addClass("fullscreen hamburger");
+	node.data("fullscreen_origin", node.parent()[0]);
+	$(content.children()[0]).hide();
+	content.append(node);
+      }
+
+      return this;
+    },
+
+    /**
+     * If some element is in fullscreen mode, revert
+     * back to tabbed mode.
+     * @return {Boolean} `true` if successful.
+     */
+    exitFullscreen: function() {
+      var content = this.find(".container.swish");
+      var node = $(content.children()[1]);
+
+      if ( node && node.hasClass("fullscreen") ) {
+	node.removeClass("fullscreen hamburger");
+	$(node.data("fullscreen_origin")).append(node);
+	$.removeData(node, "fullscreen_origin");
+	$(content.children()[0]).show();
+
+	return true;
+      }
+
+      return false;
+    },
+
+    /**
      * Open TogetherJS after lazy loading.
      */
     collaborate: function() {
