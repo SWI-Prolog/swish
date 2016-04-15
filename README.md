@@ -50,7 +50,7 @@ you            need            the             [nightly            build
 system    from    the     current      git     development    repository
 [swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
 
-Jul 5, 2015: SWI-Prolog 7.3.4 supports SWISH completely.
+Apr 15, 2016: SWI-Prolog 7.3.20 supports SWISH completely.
 
 ## Running SWISH
 
