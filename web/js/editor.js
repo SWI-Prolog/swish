@@ -15,6 +15,7 @@ define([ "cm/lib/codemirror",
 	 "cm/mode/prolog/prolog-template-hint",
 	 "modal",
 	 "tabbed",
+	 "prolog",
 
 	 "storage",
 
@@ -44,7 +45,7 @@ define([ "cm/lib/codemirror",
 	 "cm/keymap/emacs",
        ],
        function(CodeMirror, config, preferences, form, templateHint,
-		modal, tabbed) {
+		modal, tabbed, prolog) {
 
 (function($) {
   var pluginName = 'prologEditor';

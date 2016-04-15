@@ -9,7 +9,14 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "form", "preferences", "editor" ],
+/* Also depends on "editor", but requireJS cannot handle cyclic dependencies.
+   As downloadCSV() is only called after initialisation we dropped this
+   dependency.
+*/
+
+define([ "jquery", "config", "form", "preferences",
+	 /* "editor" */
+       ],
        function($, config, form, preferences) {
   var prolog = {
     /**
