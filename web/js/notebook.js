@@ -823,12 +823,14 @@ var cellTypes = {
 		else
 		  elem.removeData("chunk");
 	      }
-	      if ( values.name.trim() != current.name ) {
-		if ( values.name.trim() )
-		  elem.attr("name",  ""+values.name.trim());
+	      var name = values.name ? values.name.trim() : "";
+	      if (  name != current.name ) {
+		if ( name )
+		  elem.attr("name", name);
 		else
 		  elem.attr("name", null);
 	      }
+	      elem.closest(".notebook").notebook('checkModified');
 	    }
 	  })));
       }
@@ -858,6 +860,7 @@ var cellTypes = {
     background: function() {
       this.toggleClass("background");
       this.find("a[data-action=background]").blur();
+      this.closest(".notebook").notebook('checkModified');
       return this;
     },
 
