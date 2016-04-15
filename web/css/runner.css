@@ -179,7 +179,7 @@ td.answer-nth { color: #060; font-size: 80%; font-style: italic;
 /* The debugger */
 
 div.trace-buttons button > span { display: none; }
-div.trace-buttons button
+div.trace-buttons button, div.RIP
 { display: inline-block;
   width: 24px;
   height: 24px;
@@ -195,6 +195,9 @@ button.skip     { background-image: url("../icons/stepOver.png"); }
 button.up       { background-image: url("../icons/stepOut.png"); }
 button.retry    { background-image: url("../icons/retry.png"); }
 button.abort    { background-image: url("../icons/abort.png"); }
+
+div.RIP	{ background-image: url("../icons/rip.png");   }
+
 
 span.depth
 { display: inline-block;
