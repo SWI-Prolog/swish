@@ -273,7 +273,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	       data: JSON.stringify(post),
 	       success: function(reply) {
 		 if ( reply.error ) {
-		   alert(JSON.stringify(reply));
+		   modal.alert(errorString("Could not save", reply));
 		 } else {
 		   if ( data.meta &&
 			data.meta.example != reply.meta.example ) {
@@ -375,7 +375,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	       data: data,
 	       success: function(reply) {
 		 if ( reply.error ) {
-		   alert(JSON.stringify(reply));
+		   modal.alert(errorString("Could not save", reply));
 		 } else {
 		   options.cleanGeneration = options.changeGen();
 		   options.cleanData       = options.getValue();
@@ -651,6 +651,15 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 
     form.append(table);
   }
+
+  function errorString(action, error) {
+    if ( error.error == "file_exists" ) {
+      return action + ": file exists: " + error.file;
+    }
+
+    return JSON.stringify(error);
+  }
+
 
   /**
    * <Class description>
