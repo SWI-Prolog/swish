@@ -207,6 +207,7 @@ preferences.setDefault("emacs-keybinding", false);
      * be used to highlight the Prolog port at the indicated location.
      */
     playFile: function(options) {
+      var elem = this;
       if ( typeof(options) == "string" )
 	options = {file:options};
 
@@ -236,7 +237,7 @@ preferences.setDefault("emacs-keybinding", false);
 			     "prompt"
 			   ]);
 
-		 menuBroadcast("source", reply);
+		 elem.swish('setSource', reply);
 	       },
 	       error: function(jqXHR) {
 		 modal.ajaxError(jqXHR);
@@ -256,6 +257,7 @@ preferences.setDefault("emacs-keybinding", false);
      * @param {Regex}   [options.search] Text searched for.
      */
     playURL: function(options) {
+      var elem = this;
       var existing = this.find(".storage").storage('match', options);
 
       if ( existing && existing.storage('expose', "Already open") )
@@ -295,13 +297,27 @@ preferences.setDefault("emacs-keybinding", false);
 			     "prompt"
 			   ]);
 
-		 menuBroadcast("source", msg);
+		 elem.swish('setSource', msg);
 	       },
 	       error: function(jqXHR) {
 		 modal.ajaxError(jqXHR);
 	       }
       });
     },
+
+    /**
+     * Open a source.  If we are in fullscreen mode and the current
+     * object cannot be opened by the current fullscreen node, we
+     * leave fullscreen mode and retry.  Called by playFile and playURL.
+     */
+    setSource: function(options) {
+      menuBroadcast("source", options);
+      if ( !this.find(".storage").storage('match', options) ) {
+	if ( this.swish('exitFullscreen') )
+	  menuBroadcast("source", options);
+      }
+    },
+
 
     /**
      * @param {Object} ex

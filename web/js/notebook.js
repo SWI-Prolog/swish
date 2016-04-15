@@ -261,8 +261,6 @@ var cellTypes = {
     },
 
     fullscreen: function(val) {
-      var data = this.data(pluginName);
-
       if ( val == undefined )		/* default: toggle */
 	val = !this.hasClass("fullscreen");
 
