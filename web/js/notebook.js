@@ -33,6 +33,8 @@ var cellTypes = {
      * Initialize a Prolog Notebook.
      * @param {Object} options
      * @param {String} [options.value] provides the initial content
+     * @param {Boolean} [options.fullscreen] open notebook in fullscreen
+     * mode.
      */
     _init: function(options) {
       options = options||{};
@@ -154,7 +156,9 @@ var cellTypes = {
 	  copyData("meta");
 	  copyData("st_type");
 
-	  elem.notebook('value', content.text());
+	  elem.notebook('value', content.text(),
+			{ fullscreen: elem.hasClass("fullscreen")
+			});
 	  content.remove();
 	} else {
 	  elem.notebook('placeHolder');
@@ -452,6 +456,9 @@ var cellTypes = {
      * @param {Object} options
      * @param {Boolean} [options.skipEmpty=false] if `true`, do not save
      *		        empty cells.
+     * @param {Boolean} [options.fullscren] if `true', go fullscreen.
+     * Default is `true` if the toplevel `div.notebook` has a class
+     * `fullscreen`.
      * @param [String] val is an HTML string that represents
      * the notebook state.
      */
@@ -473,7 +480,15 @@ var cellTypes = {
 	var dom = $.el.div();
 
 	content.html("");
-	$(dom).html(val);
+	dom.innerHTML = val;		/* do not execute scripts */
+
+	if ( options.fullscreen == undefined )
+	  options.fullscreen = $(dom).find("div.notebook").hasClass("fullscreen");
+	if ( options.fullscreen ) {
+	  this.removeClass("fullscreen");
+	  this.notebook('fullscreen', true);
+	}
+
 	$(dom).find(".nb-cell").each(function() {
 	  var cell = $.el.div({class:"nb-cell"});
 	  content.append(cell);
