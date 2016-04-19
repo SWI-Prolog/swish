@@ -982,8 +982,8 @@ define([ "jquery", "config", "preferences",
 		     "queries by using |Next|, |Stop| or by\n"+
 		     "closing some queries.";
     } else if ( typeof(this.data) == 'string' ) {
-      this.messsage = this.data
-			  .replace(new RegExp("'"+this.pengine.id+"':", 'g'), "");
+      this.message = this.data
+			 .replace(new RegExp("'"+this.pengine.id+"':", 'g'), "");
     } else {
       this.message = "Unknown error";
     }
