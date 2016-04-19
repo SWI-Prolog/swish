@@ -41,7 +41,11 @@ This notebook gives an overview of example programs for inference.
   - Coins ([coin2.cpl](example/inference/coin2.cpl), [coin2.pl](example/inference/coin2.pl)) Throwing two coins with uncertainty on their fairness. From J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctions_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004. 
   - Three sided dice ([threesideddice.cpl](example/inference/threesideddice.cpl), 
   [threesideddice.pl](example/inference/threesideddice.pl))
-  A three-sided die is repeatedly thrown until the outcome is three. From F. Riguzzi and T. Swift. _The PITA system: Tabling and answer subsumption for reasoning under uncertainty_. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, 11(4-5), pages 433-449, 2011.
+  A three-sided die is repeatedly thrown until the outcome is three. From F. Riguzzi and T. Swift. _The PITA system: Tabling and answer subsumption for reasoning under uncertainty_. Theory and Practice of Logic Programming, 27th International Conference on Logic Programming (ICLP'11) Special Issue, 11(4-5), pages 433-449, 2011. 
+  [threesideddicemc.pl](example/inference/threesideddicemc.pl) is a 
+  version which adds the possibility of querying for the probability that
+  the die lands on face 1 at least once. This query has an infinite number of
+  explanations and MCINTYRE is required to answer it.
   - Mendelian inheritance of the color of pea plant - larger family ([mendelc.cpl](example/inference/mendelc.cpl), [mendelc.pl](example/inference/mendelc.pl)) From H. Blockeel. _Probabilistic logical models for mendel's experiments: An exercise_. In Inductive Logic Programming, Work in Progress Track, 2004.
   - Meta probabilities ([meta.cpl](example/inference/meta.cpl), [meta.pl](example/inference/meta.pl)) Probabilities computation in the body of probabilistic clauses (also called Nested probability computation).
   - Max combining rule ([metacomb.pl](example/inference/metacomb.pl)) Meta probabilities for implementing a max combining rule. From De Raedt, Luc, and Angelika Kimmig. _Probabilistic (logic) programming concepts_. Machine Learning (2015): 1-43.
