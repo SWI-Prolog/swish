@@ -1050,12 +1050,14 @@ var cellTypes = {
 	  "Limit":		   wrapSolution,
 	  "---":		   null,
 	  "Download answers as CSV": function() {
-	    var query = this.find(".editor.query")
-			    .prologEditor('getSource', "query")
-			    .replace(/\.\s*$/,"");
+	    var query  = cellText(this).replace(/\.\s*$/,"");
 	    var source = this.nbCell('programs')
 			     .prologEditor('getSource');
-	    prolog.downloadCSV(query, source);
+	    var options = {};
+	    var name   = this.attr("name");
+	    if ( name )
+	      options.name = name;
+	    prolog.downloadCSV(query, source, options);
 	  }
         }
       });
