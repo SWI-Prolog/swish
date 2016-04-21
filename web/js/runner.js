@@ -773,7 +773,7 @@ define([ "jquery", "config", "preferences",
    ping: function(stats) {
      var data = this.data('prologRunner');
 
-     if ( data.prolog && data.prolog.state == "running" ) {
+     if ( data && data.prolog && data.prolog.state == "running" ) {
        var spark = this.find(".sparklines");
        var stacks = ["global", "local", "trail"];
        var colors = ["red", "blue", "green"];
