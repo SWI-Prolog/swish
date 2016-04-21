@@ -47,6 +47,7 @@ SWISH program and obtain the results using   a simple web client such as
 
 :- multifile
 	pengines:write_result/3,
+	pengines:write_result/4,
 	write_answers/2,		% Answers, Bindings
 	write_answers/3.		% Answers, Bindings, Options
 
@@ -57,6 +58,12 @@ SWISH program and obtain the results using   a simple web client such as
 
 pengines:write_result(csv, Event, VarNames) :-
 	csv(Event, VarNames, []).
+pengines:write_result(csv, Event, VarNames, OptionDict) :-
+	(   Disposition = OptionDict.get(disposition)
+	->  Options = [disposition(Disposition)]
+	;   Options = []
+	),
+	csv(Event, VarNames, Options).
 
 csv(create(_Id, Features), VarNames, Options) :- !,
 	memberchk(answer(Answer), Features),
@@ -75,8 +82,8 @@ csv(output(_Id, message(_Term, _Class, HTML, _Where)), _VarNames, _Opts) :- !,
 	format('Status: 400 Bad request~n'),
 	format('Content-type: text/html~n~n'),
 	format('<html>~n~s~n</html>~n', [HTML]).
-csv(page(Page, Event), VarNames, _Options) :-
-	csv(Event, VarNames, [page(Page)]).
+csv(page(Page, Event), VarNames, Options) :-
+	csv(Event, VarNames, [page(Page)|Options]).
 csv(Event, _VarNames, _) :-
 	print_term(Event, [output(user_error)]).
 
@@ -91,10 +98,11 @@ success(Answers, _VarTerm, Options) :-
 	maplist(csv_answer, Answers, Rows),
 	forall(paginate(100, OutPage, Rows),
 	       csv_write_stream(current_output, OutPage, [])).
-success(Answers, VarTerm, _Options) :-
+success(Answers, VarTerm, Options) :-
+	option(disposition(Disposition), Options, 'swish-result.csv'),
 	maplist(csv_answer, Answers, Rows),
 	format('Content-encoding: chunked~n'),
-	format('Content-disposition: attachment; filename="swish-result.csv"~n'),
+	format('Content-disposition: attachment; filename="~w"~n', [Disposition]),
 	format('Content-type: text/csv~n~n'),
 	csv_write_stream(current_output, [VarTerm], []),
 	forall(paginate(100, Page, Rows),

@@ -1056,7 +1056,7 @@ var cellTypes = {
 	    var options = {};
 	    var name   = this.attr("name");
 	    if ( name )
-	      options.name = name;
+	      options.disposition = name;
 	    prolog.downloadCSV(query, source, options);
 	  }
         }

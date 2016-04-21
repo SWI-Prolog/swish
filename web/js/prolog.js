@@ -31,9 +31,14 @@ define([ "jquery", "config", "form", "preferences",
      * results.
      * @param {Boolean} [options.distinct] requests only distinct
      * results.
+     * @param {String} [options.disposition] provides the default for
+     * the download file.  If no extension is given, ".csv" is added.
      */
     downloadCSV: function(query, source, options) {
       options = options||{};
+      options.disposition = (options.disposition||
+			     options.filename||
+			     "swish-results.csv");
 
       if ( options.projection ) {
 	var formel;
@@ -63,15 +68,20 @@ define([ "jquery", "config", "form", "preferences",
 			   attr("format", "csv"),
 			   attr("chunk", "10"),
 			   attr("solutions", "all"),
+			   attr("disposition", options.disposition),
 			   attr("application", "swish"),
 			   attr("ask", query),
 			   attr("src_text", source),
 			   attr("template", format+"("+options.projection+")"));
+	console.log(formel);
 	$("body").append(formel);
 	formel.submit();
 	$(formel).remove();
       } else {
 	var vars = $().prologEditor('variables', query);
+	var disposition = options.disposition;
+	if ( disposition.indexOf(".") < 0 )
+	  disposition += ".csv";
 
 	function infoBody() {
 	  var formel = $.el.form(
@@ -80,6 +90,7 @@ define([ "jquery", "config", "form", "preferences",
 	    form.fields.csvFormat(config.swish.csv_formats,
 				  preferences.getVal("csvFormat")),
 	    form.fields.limit("10 000", false),
+	    form.fields.filename(disposition, 2),
 	    form.fields.buttons(
 	      { label: "Download CSV",
 		action: function(ev, params) {
