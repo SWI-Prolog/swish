@@ -621,4 +621,42 @@ classification of tokens.
     return elem[0];
   }
 
+  /**
+   * @param {Object} token is an enriched token
+   * @returns {Array(Object)} is an array of source references.
+   */
+
+  CodeMirror.prototype.getTokenReferences = function(token) {
+    var result = [];
+
+    function setFile(obj, from) {
+      if ( from && from.indexOf("swish://") == 0 ) {
+	obj.file = from.substring(8);
+	return true;
+      }
+    }
+
+    switch(token.type) {
+      case "goal_local":
+	var obj = {
+	  title: "Source for "+token.text+"/"+token.arity,
+	  line:  token.line,
+	  regex: new RegExp("\\b"+RegExp.escape(token.text), "g"),
+	  showAllMatches: true
+	};
+	setFile(obj, token.file);
+	result.push(obj);
+	break;
+      case "file":
+	var obj = {};
+
+	if ( setFile(obj, token.path) ) {
+	  obj.title = "Included file " + obj.file;
+	  result.push(obj);
+	}
+        break;
+    }
+
+    return result;
+  }
 });
