@@ -103,6 +103,9 @@ preferences.setDefault("emacs-keybinding", false);
 	"Notebook ...": function() {
 	  menuBroadcast("help", {file:"notebook.html"});
 	},
+	"Editor ...": function() {
+	  menuBroadcast("help", {file:"editor.html"});
+	},
 	"Background": "--",
 	"Limitations ...": function() {
 	  menuBroadcast("help", {file:"beware.html"});
