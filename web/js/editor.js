@@ -952,10 +952,10 @@ define([ "cm/lib/codemirror",
 
       if ( locations && locations.length > 0 ) {
 	var ul = $.el.ul();
-	var select = $.el.div({class: "goto-source"}, $.el.div("Go to"), ul);
-	var modal  = $.el.div({class: "edit-modal"},
-			      $.el.div({class: "mask"}),
-			      select)
+	var select  = $.el.div({class: "goto-source"}, $.el.div("Go to"), ul);
+	var modalel = $.el.div({class: "edit-modal"},
+			       $.el.div({class: "mask"}),
+			       select)
 
 	for(var i=0; i<locations.length; i++) {
 	  var loc = locations[i];
@@ -965,10 +965,10 @@ define([ "cm/lib/codemirror",
 	var coord = data.cm.cursorCoords(true);
 	$(select).css({top: coord.bottom, left: coord.left});
 
-	$("body").append(modal);
-	$(modal).on("click", function(ev) {
+	$("body").append(modalel);
+	$(modalel).on("click", function(ev) {
 	  var i = $(ev.target).data('locindex');
-	  $(modal).remove();
+	  $(modalel).remove();
 
 	  if ( i !== undefined ) {
 	    var loc = locations[i];
@@ -976,13 +976,28 @@ define([ "cm/lib/codemirror",
 	    if ( loc.file ) {
 	      elem.closest(".swish").swish('playFile', loc);
 	    } else {
-	      elem.prologEditor('gotoLine', loc.line, loc).focus();
+	      var editor;
+
+	      // If we are the query editor, we must find the related
+	      // program editor.
+	      if ( data.role == "query" ) {
+		editor = elem.closest(".prolog-query-editor")
+			     .queryEditor('getProgramEditor');
+
+		if ( !editor[0] )
+		  modal.alert("No related program editor");
+	      } else
+	      { editor = elem;
+	      }
+
+	      if ( editor && editor[0] )
+		editor.prologEditor('gotoLine', loc.line, loc).focus();
 	    }
 
 	  }
 	});
 
-	$(modal).show();
+	$(modalel).show();
       }
 
       return this;
