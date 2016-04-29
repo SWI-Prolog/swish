@@ -154,8 +154,47 @@ define([ "cm/lib/codemirror",
 	    options.continueComments = "Enter";
 	    options.gutters = ["Prolog-breakpoints"]
 	  }
+
+	  /*
+	   * Long click detection and handling.
+	   */
+	  data.long_click = {};
+	  function moveLongClick(ev) {
+	    var lc = data.long_click;
+	    var dx = ev.clientX - lc.clientX;
+	    var dy = ev.clientY - lc.clientY;
+	    if ( Math.sqrt(dx*dx+dy*dy) > 5 )
+	      cancelLongClick();
+	  }
+	  function cancelLongClick() {
+	    elem.off("mousemove", moveLongClick);
+	    var lc = data.long_click;
+	    if ( lc.timeout ) {
+	      clearTimeout(lc.timeout);
+	      lc.target  = undefined;
+	      lc.timeout = undefined;
+	    }
+	  }
+
+	  elem.on("mousedown", ".CodeMirror-code", function(ev) {
+	    var lc = data.long_click;
+
+	    lc.clientX = ev.clientX;
+	    lc.clientY = ev.clientY;
+	    elem.on("mousemove", moveLongClick);
+	    data.long_click.timeout = setTimeout(function() {
+	      cancelLongClick();
+	      elem.prologEditor('contextAction');
+	    }, 500);
+	  });
+	  elem.on("mouseup", function(ev) {
+	    cancelLongClick();
+	  });
 	}
 
+	/*
+	 * Create CodeMirror
+	 */
 	if ( (ta=elem.children("textarea")[0]) ) {
 	  function copyData(name) {
 	    var value = $(ta).data(name);
@@ -895,6 +934,19 @@ define([ "cm/lib/codemirror",
       storage.cleanCheckpoint = "load";
 
       this.storage(storage);
+      return this;
+    },
+
+    /**
+     * Act on the current token.  Normally invoked after a long click.
+     */
+    contextAction: function() {
+      var data  = this.data(pluginName);
+      var here  = data.cm.getCursor();
+      var token = data.cm.getTokenAt(here, true);
+      var et    = data.cm.getEnrichedToken(token);
+
+      console.log(et);
       return this;
     },
 
