@@ -574,10 +574,29 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	if ( current == data.cleanData ) {
 	  $(diff).append($.el.p("No changes"));
 	} else {
+	  var rb;
+	  var buttons = $.el.div({ class:"btn-group diff",
+			           role:"group"
+				 },
+				 $.el.button({ name:"close",
+					       'data-dismiss':"modal",
+				               class:"btn btn-primary"
+					     },
+					     "Close"),
+				 rb=
+				 $.el.button({ name:"revert",
+				               class:"btn btn-danger",
+					       'data-dismiss':"modal"
+					     },
+					     "Revert changes"));
 	  $(diff).diff({ base: data.cleanData,
 			 head: current,
 			 baseName: baseName[data.cleanCheckpoint]
 		       });
+	  this.append($.el.div({class: "wrapper text-center"}, buttons));
+	  $(rb).on("click", function(ev) {
+	    $(".swish-event-receiver").trigger("revert");
+	  });
 	  this.parents("div.modal-dialog").addClass("modal-wide");
 	}
       }

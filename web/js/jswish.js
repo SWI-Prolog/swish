@@ -72,9 +72,6 @@ preferences.setDefault("emacs-keybinding", false);
 	"View changes": function() {
 	  menuBroadcast("diff");
 	},
-	"Revert changes": function() {
-	  menuBroadcast("revert");
-	},
 	"Options": "--",
 	"Semantic highlighting": {
 	  preference: "semantic-highlighting",

@@ -23,3 +23,7 @@ div.feedback.warning {
 .modal-header .warning
 { color: red;
 }
+
+div.btn-group.diff
+{ margin-top: 1em;
+}
