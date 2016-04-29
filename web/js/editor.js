@@ -972,7 +972,7 @@ define([ "cm/lib/codemirror",
 
 	  if ( i !== undefined ) {
 	    var loc = locations[i];
-	    console.log(loc);
+
 	    if ( loc.file ) {
 	      elem.closest(".swish").swish('playFile', loc);
 	    } else {
