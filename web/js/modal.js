@@ -241,7 +241,6 @@ define([ "config", "preferences", "links", "jquery", "laconic", "bootstrap" ],
 	    var id = input.attr("data-notagain");
 	    preferences.setNotAgain(id);
 	  }
-	  modalel.modal({show:false});
 	});
 
     return button;
