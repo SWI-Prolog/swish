@@ -893,6 +893,8 @@ define([ "cm/lib/codemirror",
 	if ( cm._searchMarkers.length > 0 )
 	  cm.on("cursorActivity", clearSearchMarkers);
       }
+
+      return this;
     },
 
     /**
@@ -941,12 +943,48 @@ define([ "cm/lib/codemirror",
      * Act on the current token.  Normally invoked after a long click.
      */
     contextAction: function() {
+      var elem  = this;
       var data  = this.data(pluginName);
       var here  = data.cm.getCursor();
       var token = data.cm.getTokenAt(here, true);
       var et    = data.cm.getEnrichedToken(token);
+      var locations = data.cm.getTokenReferences(et);
 
-      console.log(et);
+      if ( locations && locations.length > 0 ) {
+	var ul = $.el.ul();
+	var select = $.el.div({class: "goto-source"}, $.el.div("Go to"), ul);
+	var modal  = $.el.div({class: "edit-modal"},
+			      $.el.div({class: "mask"}),
+			      select)
+
+	for(var i=0; i<locations.length; i++) {
+	  var loc = locations[i];
+	  $(ul).append($.el.li($.el.a({'data-locindex':i}, loc.title)));
+	}
+
+	var coord = data.cm.cursorCoords(true);
+	$(select).css({top: coord.bottom, left: coord.left});
+
+	$("body").append(modal);
+	$(modal).on("click", function(ev) {
+	  var i = $(ev.target).data('locindex');
+	  $(modal).remove();
+
+	  if ( i !== undefined ) {
+	    var loc = locations[i];
+	    console.log(loc);
+	    if ( loc.file ) {
+	      elem.closest(".swish").swish('playFile', loc);
+	    } else {
+	      elem.prologEditor('gotoLine', loc.line, loc).focus();
+	    }
+
+	  }
+	});
+
+	$(modal).show();
+      }
+
       return this;
     },
 
