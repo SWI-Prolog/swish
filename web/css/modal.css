@@ -11,7 +11,19 @@ div.feedback {
   box-shadow: 3px 3px 5px #888;
 }
 
+div.feedback.warning {
+  background-color: #fdd;
+}
+
 .modal-header .glyphicon-warning-sign
 { color: #fa0;
   font-size: 150%;
+}
+
+.modal-header .warning
+{ color: red;
+}
+
+div.btn-group.diff
+{ margin-top: 1em;
 }

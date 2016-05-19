@@ -267,6 +267,30 @@ define([ "jquery", "config", "laconic", "tagmanager" ],
 	return elem;
       },
 
+      name: function(name, col) {
+	col = col||3;
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("name", "Name", col),
+		 $.el.div({class:"col-xs-"+(12-col)},
+			  textInput("name",
+				    {placeholder:"Name",
+				     value:name})));
+	return elem;
+      },
+
+      filename: function(name, col) {
+	col = col||3;
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("filename", "File name", col),
+		 $.el.div({class:"col-xs-"+(12-col)},
+			  textInput("filename",
+				    {placeholder:"File name",
+				     value:name})));
+	return elem;
+      },
+
       /**
        * @param {Object} options
        * @param {String} options.label is the label used for the

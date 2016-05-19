@@ -60,3 +60,37 @@
   font-size: 120%;
   position: relative; top: -0.2em;
 }
+
+		 /*******************************
+		 *	       JUMP		*
+		 *******************************/
+
+div.edit-modal
+{ position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 2000;
+}
+
+
+div.edit-modal > div.mask
+{ position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: #000;
+  opacity: 0.2;
+}
+
+div.edit-modal .goto-source
+{ position: absolute;
+  padding: 0.2em 0.5em 0em;
+  border-radius: 5px;
+  border: 1px solid #000;
+  background: #fff;
+  box-shadow: 10px 10px 5px #888888;
+  z-index: 2001;
+}

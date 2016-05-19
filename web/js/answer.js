@@ -198,9 +198,11 @@ define([ "jquery", "laconic" ],
    */
   function evalScripts(elem) {
     elem.find("script").each(function() {
-      if ( this.getAttribute('type') == "text/javascript" )
+      var type = this.getAttribute('type')||"text/javascript";
+      if ( type == "text/javascript" ) {
 	$.ajaxScript = $(this);
 	eval(this.textContent);
+      }
     });
     if ( $.ajaxScript )
       delete $.ajaxScript;

@@ -1,10 +1,20 @@
 /* Style for the SWISH notebook
 */
 
+.notebook
+{ position: relative;
+  width: 100%;
+  height: 100%;
+}
+
 .nb-toolbar, .nb-content
 { width: 100%;
   padding-left: 1em;
   padding-right: 1em;
+}
+
+.notebook.hamburger .nb-toolbar {
+  display: none;
 }
 
 .nb-toolbar
@@ -13,6 +23,28 @@
   padding-bottom: 5px;
   margin-bottom: 1em;
   border-bottom: 1px solid #ddd;
+}
+
+.nb-toolbar .action-fullscreen
+{ right: 5px;
+  position: absolute;
+}
+
+div.notebook-menu {
+ display: none;
+}
+
+.notebook.hamburger div.notebook-menu {
+  display: block;
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  z-index: 2000;
+}
+
+.notebook.hamburger .nb-view {
+  top: 0px;
+  height: 100%;
 }
 
 .nb-view
@@ -38,6 +70,11 @@
 }
 
 .nb-cell.markdown:not(.runnable)
+{ background-color: transparent;
+  border: 0px;
+}
+
+.nb-cell.html:not(.runnable)
 { background-color: transparent;
   border: 0px;
 }
@@ -96,6 +133,10 @@
 { height: 0px;
 }
 
+.nb-cell .CodeMirror-scroll
+{ max-height: 40em;
+}
+
 .nb-cell .CodeMirror
 { border-radius: 5px;
 }
@@ -105,8 +146,12 @@
   float: right;
 }
 
+.nb-cell span.glyphicon-cloud
+{ color: black;
+}
+
 .nb-cell.background span.glyphicon-cloud
-{ color: #bef;
+{ color: white;
 }
 
 .nb-cell.query, .nb-cell.program

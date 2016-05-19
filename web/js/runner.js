@@ -35,11 +35,10 @@ define([ "jquery", "config", "preferences",
 	var data = {};
 
 	function runnerMenu() {
-	  var icon = $.el.span();
-	  $(icon).html("&#9776");
+	  var icon = $.el.span({class:"glyphicon glyphicon-menu-hamburger"});
 	  var menu = form.widgets.dropdownButton(
 	    icon,
-	    { divClass:"runners-menu",
+	    { divClass:"runners-menu btn-transparent",
 	      ulClass:"pull-right",
 	      client:elem,
 	      actions:
@@ -433,10 +432,29 @@ define([ "jquery", "config", "preferences",
     /**
      * Add an error message to the output.  The error is
      * wrapped in a `<pre class="error">` element.
-     * @param {String} msg the plain-text error message
+     * @param {String|Object} options If `options` is a string, it is a
+     * plain-text error message.  Otherwise it is the Pengine error
+     * object.
+     * @param {String} options.message is the plain error message
+     * @param {String} options.code is the error code
      */
-    error: function(msg) {
+    error: function(options) {
+      var msg;
+
+      if ( typeof(options) == 'object' ) {
+	if ( options.code == "died" ) {
+	  addAnswer(this, $.el.div({
+	    class:"RIP",
+	    title:"Remote pengine timed out"
+	  }));
+	  return this;
+	}
+	msg = options.message;
+      } else
+	msg = options;
+
       addAnswer(this, $.el.pre({class:"prolog-message msg-error"}, msg));
+      return this;
     },
 
     /**
@@ -770,7 +788,7 @@ define([ "jquery", "config", "preferences",
    ping: function(stats) {
      var data = this.data('prologRunner');
 
-     if ( data.prolog && data.prolog.state == "running" ) {
+     if ( data && data.prolog && data.prolog.state == "running" ) {
        var spark = this.find(".sparklines");
        var stacks = ["global", "local", "trail"];
        var colors = ["red", "blue", "green"];
@@ -987,15 +1005,17 @@ console.log(data);
     var msg;
 
     if ( this.code == "too_many_pengines" ) {
-      msg = "Too many open queries.  Please complete some\n"+
-	    "queries by using |Next|, |Stop| or by\n"+
-	    "closing some queries.";
-    } else
-    { msg = String(this.data)
-                .replace(new RegExp("'"+this.pengine.id+"':", 'g'), "");
+      this.message = "Too many open queries.  Please complete some\n"+
+		     "queries by using |Next|, |Stop| or by\n"+
+		     "closing some queries.";
+    } else if ( typeof(this.data) == 'string' ) {
+      this.message = this.data
+			 .replace(new RegExp("'"+this.pengine.id+"':", 'g'), "");
+    } else {
+      this.message = "Unknown error";
     }
 
-    elem.prologRunner('error', msg);
+    elem.prologRunner('error', this);
     elem.prologRunner('setState', "error");
   }
 

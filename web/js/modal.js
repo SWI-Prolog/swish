@@ -7,8 +7,8 @@
  * @requires jquery
  */
 
-define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
-       function(config, preferences) {
+define([ "config", "preferences", "links", "jquery", "laconic", "bootstrap" ],
+       function(config, preferences, links) {
 
 (function($) {
   var pluginName = 'swishModal';
@@ -176,6 +176,7 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
       }
       $(title).html(options.title);
       $(modalel).modal({show: true})
+		.on("click", "a", links.followLink)
 	        .on("shown.bs.modal", initTagsManagers)
 	        .on("hidden.bs.modal", function() {
 		  $(this).remove();
@@ -213,7 +214,7 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
      * which the feedback window is added.
      */
     feedback: function(options) {
-      var win = $.el.div({class:"feedback"});
+      var win = $.el.div({class:"feedback "+options.type||""});
       $(win).html(options.html);
 
       $(options.owner||"body").append(win);
@@ -240,7 +241,6 @@ define([ "config", "preferences", "jquery", "laconic", "bootstrap" ],
 	    var id = input.attr("data-notagain");
 	    preferences.setNotAgain(id);
 	  }
-	  modalel.modal({show:false});
 	});
 
     return button;

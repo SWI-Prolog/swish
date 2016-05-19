@@ -9,7 +9,14 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "form", "preferences", "editor" ],
+/* Also depends on "editor", but requireJS cannot handle cyclic dependencies.
+   As downloadCSV() is only called after initialisation we dropped this
+   dependency.
+*/
+
+define([ "jquery", "config", "form", "preferences",
+	 /* "editor" */
+       ],
        function($, config, form, preferences) {
   var prolog = {
     /**
@@ -24,9 +31,14 @@ define([ "jquery", "config", "form", "preferences", "editor" ],
      * results.
      * @param {Boolean} [options.distinct] requests only distinct
      * results.
+     * @param {String} [options.disposition] provides the default for
+     * the download file.  If no extension is given, ".csv" is added.
      */
     downloadCSV: function(query, source, options) {
       options = options||{};
+      options.disposition = (options.disposition||
+			     options.filename||
+			     "swish-results.csv");
 
       if ( options.projection ) {
 	var formel;
@@ -56,15 +68,20 @@ define([ "jquery", "config", "form", "preferences", "editor" ],
 			   attr("format", "csv"),
 			   attr("chunk", "10"),
 			   attr("solutions", "all"),
+			   attr("disposition", options.disposition),
 			   attr("application", "swish"),
 			   attr("ask", query),
 			   attr("src_text", source),
 			   attr("template", format+"("+options.projection+")"));
+	console.log(formel);
 	$("body").append(formel);
 	formel.submit();
 	$(formel).remove();
       } else {
 	var vars = $().prologEditor('variables', query);
+	var disposition = options.disposition;
+	if ( disposition.indexOf(".") < 0 )
+	  disposition += ".csv";
 
 	function infoBody() {
 	  var formel = $.el.form(
@@ -73,6 +90,7 @@ define([ "jquery", "config", "form", "preferences", "editor" ],
 	    form.fields.csvFormat(config.swish.csv_formats,
 				  preferences.getVal("csvFormat")),
 	    form.fields.limit("10 000", false),
+	    form.fields.filename(disposition, 2),
 	    form.fields.buttons(
 	      { label: "Download CSV",
 		action: function(ev, params) {
@@ -93,8 +111,46 @@ define([ "jquery", "config", "form", "preferences", "editor" ],
       }
 
       return this;
-      }
+      },
+
+    /**
+     * Remove the full-stop from a query string
+     */
+    trimFullStop: function(s) {
+      return s.replace(/\.\s*$/m, "");
+    },
+
+    /**
+     * Default options for $.swish()
+     */
+    options: {
+      application: "swish",
+      chunk: 5
+    }
   }
+
+		 /*******************************
+		 *	     PENGINES		*
+		 *******************************/
+
+  /**
+   * $.swish(options) creates a new Pengine with given default
+   * options.  The default options are determined by `prolog.options`.
+   * This function expects pengines.js to be already loaded.  The
+   * bootstrapping of that is achieved in `swish.js`.
+   *
+   * @return {Pengine} the created pengine object
+   */
+  $.swish = function(options) {
+    for(var opt in prolog.options) {
+      if ( prolog.options.hasOwnProperty(opt) &&
+	   !options.hasOwnProperty(opt) ) {
+	options[opt] = prolog.options[opt];
+      }
+    }
+
+    return new Pengine(options);
+  };
 
   return prolog;
 });

@@ -1,0 +1,22 @@
+/* Reusable CSS for elements created by form.js
+*/
+
+/* form.dropdownButton() if btn-transparent is added
+*/
+
+div.btn-transparent button.dropdown-toggle {
+  background: none repeat scroll 0 0 transparent;
+  border: 0 none;
+  cursor: pointer;
+  padding: 0;
+  color: #000;
+  float: right;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  opacity: 0.2;
+}
+
+div.btn-transparent > button:hover {
+  opacity: 0.8;
+}

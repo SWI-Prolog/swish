@@ -275,7 +275,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	       data: JSON.stringify(post),
 	       success: function(reply) {
 		 if ( reply.error ) {
-		   alert(JSON.stringify(reply));
+		   modal.alert(errorString("Could not save", reply));
 		 } else {
 		   if ( data.meta &&
 			data.meta.example != reply.meta.example ) {
@@ -297,7 +297,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 		 }
 	       },
 	       error: function(jqXHR) {
-		 modal.ajaxError(jqXHR);
+		 elem.storage('saveAs');
 	       }
 	     });
 
@@ -307,13 +307,13 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
     /**
      * Provide a Save As dialog
      */
-    saveAs: function() {
-      var options = this.data(pluginName);
-      var meta    = options.meta||{};
+    saveAs: function(options) {
+      var data = this.data(pluginName);
+      var meta    = data.meta||{};
       var editor  = this;
-      var update  = Boolean(options.file);
-      var fork    = options.meta && meta.symbolic != "HEAD";
-      var type    = tabbed.tabTypes[options.typeName];
+      var update  = Boolean(data.file);
+      var fork    = data.meta && meta.symbolic != "HEAD";
+      var type    = tabbed.tabTypes[data.typeName];
       var author  = config.swish.user ?
         ( config.swish.user.realname && config.swish.user.email ?
 	    config.swish.user.realname + " <" + config.swish.user.email + ">" :
@@ -324,9 +324,11 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       if ( meta.public === undefined )
 	meta.public = true;
 
+      options = options||{};
+
       function saveAsBody() {
 	this.append($.el.form({class:"form-horizontal"},
-			      form.fields.fileName(fork ? null: options.file,
+			      form.fields.fileName(fork ? null: data.file,
 						   meta.public, meta.example),
 			      form.fields.title(meta.title),
 			      form.fields.author(author),
@@ -336,14 +338,15 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 				{ label: fork   ? "Fork "+type.label :
 					 update ? "Update "+type.label :
 						  "Save "+type.label,
-				  action: function(ev,data) {
-				            editor.storage('save', data);
+				  action: function(ev, as) {
+				            editor.storage('save', as);
 					    return false;
 				          }
 				})));
       }
 
-      form.showDialog({ title: fork   ? "Fork from "+meta.commit.substring(0,7) :
+      form.showDialog({ title: options.title ? options.title :
+			       fork   ? "Fork from "+meta.commit.substring(0,7) :
 			       update ? "Save new version" :
 			                "Save "+type.label+" as",
 			body:  saveAsBody
@@ -374,18 +377,30 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	       data: data,
 	       success: function(reply) {
 		 if ( reply.error ) {
-		   alert(JSON.stringify(reply));
+		   modal.alert(errorString("Could not save", reply));
 		 } else {
 		   options.cleanGeneration = options.changeGen();
 		   options.cleanData       = options.getValue();
 		   options.cleanCheckpoint = "save";
+		   options.markClean(true);
 		   modal.feedback({ html: "Saved",
 				    owner: elem
 		                  });
 		 }
 	       },
 	       error: function(jqXHR) {
-		 modal.ajaxError(jqXHR);
+		 if ( jqXHR.status == 403 ) {
+		   var url = options.url;
+		   delete(options.meta);
+		   delete(options.st_type);
+		   delete(options.url);
+		   elem.storage('saveAs', {
+		     title: "<div class='warning'>Could not save to "+url+
+			    "</div> Save a copy as"
+		   });
+		 } else
+		 { modal.ajaxError(jqXHR);
+		 }
 	       }
 	     });
 
@@ -561,10 +576,29 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	if ( current == data.cleanData ) {
 	  $(diff).append($.el.p("No changes"));
 	} else {
+	  var rb;
+	  var buttons = $.el.div({ class:"btn-group diff",
+			           role:"group"
+				 },
+				 $.el.button({ name:"close",
+					       'data-dismiss':"modal",
+				               class:"btn btn-primary"
+					     },
+					     "Close"),
+				 rb=
+				 $.el.button({ name:"revert",
+				               class:"btn btn-danger",
+					       'data-dismiss':"modal"
+					     },
+					     "Revert changes"));
 	  $(diff).diff({ base: data.cleanData,
 			 head: current,
 			 baseName: baseName[data.cleanCheckpoint]
 		       });
+	  this.append($.el.div({class: "wrapper text-center"}, buttons));
+	  $(rb).on("click", function(ev) {
+	    $(".swish-event-receiver").trigger("revert");
+	  });
 	  this.parents("div.modal-dialog").addClass("modal-wide");
 	}
       }
@@ -639,6 +673,15 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 
     form.append(table);
   }
+
+  function errorString(action, error) {
+    if ( error.error == "file_exists" ) {
+      return action + ": file exists: " + error.file;
+    }
+
+    return JSON.stringify(error);
+  }
+
 
   /**
    * <Class description>

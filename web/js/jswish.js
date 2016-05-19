@@ -131,7 +131,7 @@ preferences.setDefault("emacs-keybinding", false);
           }
 
         }*/
-      
+
     }
   }; // defaults;
 
@@ -222,6 +222,7 @@ preferences.setDefault("emacs-keybinding", false);
      * be used to highlight the Prolog port at the indicated location.
      */
     playFile: function(options) {
+      var elem = this;
       if ( typeof(options) == "string" )
 	     options = {file:options};
 
@@ -251,7 +252,7 @@ preferences.setDefault("emacs-keybinding", false);
 			     "prompt"
 			   ]);
 
-		 menuBroadcast("source", reply);
+		 elem.swish('setSource', reply);
 	       },
 	       error: function(jqXHR) {
 		 modal.ajaxError(jqXHR);
@@ -271,6 +272,7 @@ preferences.setDefault("emacs-keybinding", false);
      * @param {Regex}   [options.search] Text searched for.
      */
     playURL: function(options) {
+      var elem = this;
       var existing = this.find(".storage").storage('match', options);
 
       if ( existing && existing.storage('expose', "Already open") )
@@ -309,16 +311,29 @@ preferences.setDefault("emacs-keybinding", false);
 			     "newTab", "noHistory",
 			     "prompt"
 			   ]);
-     console.log("jswish playURL");
-     console.log("msg");
-     console.log(msg);
-		 menuBroadcast("source", msg);
+
+		 elem.swish('setSource', msg);
+
 	       },
 	       error: function(jqXHR) {
 		 modal.ajaxError(jqXHR);
 	       }
       });
     },
+
+    /**
+     * Open a source.  If we are in fullscreen mode and the current
+     * object cannot be opened by the current fullscreen node, we
+     * leave fullscreen mode and retry.  Called by playFile and playURL.
+     */
+    setSource: function(options) {
+      menuBroadcast("source", options);
+      if ( !this.find(".storage").storage('match', options) ) {
+	if ( this.swish('exitFullscreen') )
+	  menuBroadcast("source", options);
+      }
+    },
+
 
     /**
      * @param {Object} ex
@@ -460,6 +475,45 @@ preferences.setDefault("emacs-keybinding", false);
 	  return $(".prolog-editor").prologEditor('getExamples');
 	};
       }
+    },
+
+    /**
+     * Make DOM element fullscreen
+     * @param {DOM} node is the element to turn into fullscreen.
+     * Currently this only works for a notebook.
+     */
+    fullscreen: function(node) {
+      if ( !node.hasClass("fullscreen") ) {
+	var content = this.find(".container.swish");
+
+	node.addClass("fullscreen hamburger");
+	node.data("fullscreen_origin", node.parent()[0]);
+	$(content.children()[0]).hide();
+	content.append(node);
+      }
+
+      return this;
+    },
+
+    /**
+     * If some element is in fullscreen mode, revert
+     * back to tabbed mode.
+     * @return {Boolean} `true` if successful.
+     */
+    exitFullscreen: function() {
+      var content = this.find(".container.swish");
+      var node = $(content.children()[1]);
+
+      if ( node && node.hasClass("fullscreen") ) {
+	node.removeClass("fullscreen hamburger");
+	$(node.data("fullscreen_origin")).append(node);
+	$.removeData(node, "fullscreen_origin");
+	$(content.children()[0]).show();
+
+	return true;
+      }
+
+      return false;
     },
 
     /**

@@ -166,9 +166,7 @@ var tabbed = {
 
     /**
      * Add a new tab from the provided source.  If there is a _select_
-     * (new) tab, open the data in this tab.  Note that the "source"
-     * trigger is also trapped by a _select_ tab.  We however are
-     * registered first and overwrite the _select_ tab.
+     * (new) tab, open the data in this tab.
      */
     tabFromSource: function(src) {
       var select = this.find("div.tabbed-select");

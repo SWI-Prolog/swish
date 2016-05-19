@@ -15,6 +15,7 @@ define([ "cm/lib/codemirror",
 	 "cm/mode/prolog/prolog-template-hint",
 	 "modal",
 	 "tabbed",
+	 "prolog",
 
 	 "storage",
 
@@ -44,7 +45,7 @@ define([ "cm/lib/codemirror",
 	 "cm/keymap/emacs",
        ],
        function(CodeMirror, config, preferences, form, templateHint,
-		modal, tabbed) {
+		modal, tabbed, prolog) {
 
 (function($) {
   var pluginName = 'prologEditor';
@@ -164,6 +165,42 @@ define([ "cm/lib/codemirror",
 	    options.continueComments = "Enter";
 	    options.gutters = ["Prolog-breakpoints"]
 	  }
+
+	  /*
+	   * Long click detection and handling.
+	   */
+	  data.long_click = {};
+	  function moveLongClick(ev) {
+	    var lc = data.long_click;
+	    var dx = ev.clientX - lc.clientX;
+	    var dy = ev.clientY - lc.clientY;
+	    if ( Math.sqrt(dx*dx+dy*dy) > 5 )
+	      cancelLongClick();
+	  }
+	  function cancelLongClick() {
+	    elem.off("mousemove", moveLongClick);
+	    var lc = data.long_click;
+	    if ( lc.timeout ) {
+	      clearTimeout(lc.timeout);
+	      lc.target  = undefined;
+	      lc.timeout = undefined;
+	    }
+	  }
+
+	  elem.on("mousedown", ".CodeMirror-code", function(ev) {
+	    var lc = data.long_click;
+
+	    lc.clientX = ev.clientX;
+	    lc.clientY = ev.clientY;
+	    elem.on("mousemove", moveLongClick);
+	    data.long_click.timeout = setTimeout(function() {
+	      cancelLongClick();
+	      elem.prologEditor('contextAction');
+	    }, 500);
+	  });
+	  elem.on("mouseup", function(ev) {
+	    cancelLongClick();
+	  });
 	} else if ( options.mode == "lpad" ) {
 	  options.placeholder = "Your LPAD rules and facts go here ..."
 	  data.role = options.role;
@@ -185,7 +222,12 @@ define([ "cm/lib/codemirror",
 	  }
 	}
 
-	if ( ta ) {
+	
+
+	/*
+	 * Create CodeMirror
+	 */
+	if ( (ta=elem.children("textarea")[0]) ) {
 	  function copyData(name) {
 	    var value = $(ta).data(name);
 	    if ( value ) {
@@ -952,6 +994,8 @@ define([ "cm/lib/codemirror",
 	if ( cm._searchMarkers.length > 0 )
 	  cm.on("cursorActivity", clearSearchMarkers);
       }
+
+      return this;
     },
 
     /**
@@ -996,26 +1040,98 @@ define([ "cm/lib/codemirror",
       return this;
     },
 
+    /**
+     * Act on the current token.  Normally invoked after a long click.
+     */
+    contextAction: function() {
+      var elem  = this;
+      var data  = this.data(pluginName);
+      var here  = data.cm.getCursor();
+      var token = data.cm.getTokenAt(here, true);
+      var et    = data.cm.getEnrichedToken(token);
+      var locations = data.cm.getTokenReferences(et);
+
+      if ( locations && locations.length > 0 ) {
+	var ul = $.el.ul();
+	var select  = $.el.div({class: "goto-source"}, $.el.div("Go to"), ul);
+	var modalel = $.el.div({class: "edit-modal"},
+			       $.el.div({class: "mask"}),
+			       select)
+
+	for(var i=0; i<locations.length; i++) {
+	  var loc = locations[i];
+	  $(ul).append($.el.li($.el.a({'data-locindex':i}, loc.title)));
+	}
+
+	var coord = data.cm.cursorCoords(true);
+	$(select).css({top: coord.bottom, left: coord.left});
+
+	$("body").append(modalel);
+	$(modalel).on("click", function(ev) {
+	  var i = $(ev.target).data('locindex');
+	  $(modalel).remove();
+
+	  if ( i !== undefined ) {
+	    var loc = locations[i];
+
+	    if ( loc.file ) {
+	      elem.closest(".swish").swish('playFile', loc);
+	    } else {
+	      var editor;
+
+	      // If we are the query editor, we must find the related
+	      // program editor.
+	      if ( data.role == "query" ) {
+		editor = elem.closest(".prolog-query-editor")
+			     .queryEditor('getProgramEditor');
+
+		if ( !editor[0] )
+		  modal.alert("No related program editor");
+	      } else
+	      { editor = elem;
+	      }
+
+	      if ( editor && editor[0] )
+		editor.prologEditor('gotoLine', loc.line, loc).focus();
+	    }
+
+	  }
+	});
+
+	$(modalel).show();
+      }
+
+      return this;
+    },
+
 		 /*******************************
 		 *	QUERY MANIPULATION	*
 		 *******************************/
 
     /**
      * @param {String} [query] query to get the variables from
+     * @param {Boolean} [anon] if `true`, also include _X variables.
      * @return {List.string} is a list of Prolog variables without
      * duplicates
      */
 
-    variables: function(query) {
+    variables: function(query, anon) {
       var qspan = $.el.span({class:"query cm-s-prolog"});
       var vars = [];
 
       CodeMirror.runMode(query, "prolog", qspan);
-      $(qspan).find("span.cm-var").each(function() {
-	var name = $(this).text();
-	if ( vars.indexOf(name) < 0 )
-	  vars.push(name);
-      });
+
+      function addVars(selector) {
+	$(qspan).find(selector).each(function() {
+	  var name = $(this).text();
+	  if ( vars.indexOf(name) < 0 )
+	    vars.push(name);
+	});
+      }
+
+      addVars("span.cm-var");
+      if ( anon )
+	addVars("span.cm-var-2");
 
       return vars;
     },
@@ -1027,7 +1143,7 @@ define([ "cm/lib/codemirror",
      * @param {String} wrapper defines the type of wrapper to use.
      */
     wrapSolution: function(wrapper) {
-      var query = this.prologEditor('getSource', "query").replace(/\.\s*$/m, "");
+      var query = prolog.trimFullStop(this.prologEditor('getSource', "query"));
       var that = this;
       var vars = this.prologEditor('variables', query);
 

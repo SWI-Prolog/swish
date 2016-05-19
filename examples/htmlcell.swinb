@@ -1,0 +1,170 @@
+<div class="notebook">
+
+<div class="nb-cell html">
+<h2>Using HTML cells in SWISH notebooks</h2>
+
+<p>
+  This notebook shows how HTML cells in a notebook can be used to create arbitrary web applications
+  inside a notebook.  The HTML is placed in a <code>div</code> element and is subject to
+  <a href="http://getbootstrap.com/">Bootstrap</a> styling.
+</p>
+<p>
+  The cell can contain <code>script</code> elements.  The script elements are executed after
+  the whole notebook is loaded and after editing the HTML cell and clicking outside the cell.
+  First, the text of all script element without a <code>lang</code> attribute or <code>lang="text/javascript"</code>
+  is collected.  This is wrapped into an <em>anonymous</em> function with the argument
+  <code>notebook</code>.  The <code>notebook</code> argument is an object with the following
+  properties:
+</p>
+
+<div class="list-group">
+  <dl class="dl-horizontal">
+    <dt>.cell()</dt><dd>Returns a jQuery object pointing to the HTML cell
+    </dd><dt>.notebook()</dt><dd>Returns a jQuery object of the entire notebook
+    </dd><dt>.$(selector)</dt><dd>Returns a jQuery object holding all DOM elements
+    matching <var>selector</var> in the current HTML cell.
+    </dd><dt>.run(query, parameters)</dt><dd>Run the named query cell.  <var>Parameters</var> is an object
+    binding Prolog variables in the query to specified values.
+    </dd><dt>.swish(options)</dt><dd>Wrapper around <code>new Pengine()</code> that fetches the sources
+    using the same algorithm as a query cell and sets the <code>application</code> to <code>swish</code>.
+  </dd></dl>
+</div>
+
+<p>
+  Double click anywhere in this cell to <b>see the source</b>.  Then click anywhere
+  inside the notebook, but <em>outside</em> this cell to see the result.
+</p>
+
+<h4>Example</h4>
+
+<p>In the example below we provide an English grammer, some example sentences
+  and simple Bootstrap form to interact with the query.  The examples are loaded
+  dynamically from the example sentences defined in the Prolog program at the
+  end of the page.
+</p>
+
+<div class="panel panel-default">
+  <div class="panel-body">
+    <div class="form-group">
+      <label>Sentence</label>
+      <div class="input-group">
+        <div class="input-group-btn">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Example
+            <span class="caret"></span></button>
+          <ul class="dropdown-menu">
+          </ul>
+        </div>
+        <input class="form-control">
+        <div class="input-group-btn">
+          <button type="button" class="btn btn-primary">Parse</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Load examples from the predicate examples/1.  notebook.swish() is a wrapper
+  // around new Pengine() that fetches the sources using the same algorithm as
+  // a query cell and set the `application` to `swish`.
+  // notebook.$() is a shorthand for notebook.cell().find(), evaluating to a
+  // jQuery object that matches the objects from the current cell.
+  function loadExamples() {
+    var seen = 0;
+    notebook.$(".dropdown-menu").html("");
+    notebook.swish({ ask: "example(Ex)",
+                     ondata: function(data) {
+                     notebook.$(".dropdown-menu").append('<li><a>'+data.Ex+'</li>');
+                     if ( seen++ == 0 )
+                       notebook.$("input").val(data.Ex);
+                    }
+                   });
+  }
+  // Load the examples on page load as well as if the user clicks the
+  // dropdown menu, so changes are reflected.
+  loadExamples();
+  notebook.$(".dropdown-toggle").on("click", loadExamples);
+
+  // Pass selected examples to the input field.
+  notebook.$(".dropdown-menu").on("click", "li", function(ev) {
+    notebook.$("input").val($(this).text());
+  });
+
+  // If the "Parse" button is clicked, run the query named "parse"
+  // binding Sentence to the input string.  The function
+  // notebook.run() takes the name of a query and an object
+  // holding bindings.  This is translated to run the query
+  // Sentence = (String), (parse(Sentence, Tree)).
+  notebook.$(".btn-primary").on("click", function() {
+    notebook.run("parse", {Sentence: notebook.$("input").val()});
+  });
+</script>
+</div>
+
+<div class="nb-cell query" name="parse">
+parse(Sentence, Tree).
+</div>
+
+<div class="nb-cell markdown">
+### The programs
+
+Below are three program fragments.  All three are declared as _background_ programs, so they are available to all queries posted from this notebook.  They specify
+
+  - The grammar itself
+  - Examples that are loaded into the above interface.
+  - Calling the grammar and translating it to a graphical tree
+
+You can change the grammar as well as the example sentences and see the immediate effect.
+</div>
+
+<div class="nb-cell program" data-background="true">
+% A simple English DCG grammar
+% ============================
+
+s(s(NP,VP)) --&gt; np(NP, Num), vp(VP, Num).
+
+np(NP, Num) --&gt; pn(NP, Num).
+np(np(Det,N), Num) --&gt; det(Det, Num), n(N, Num).
+np(np(Det,N,PP), Num) --&gt; det(Det, Num), n(N, Num), pp(PP).
+
+vp(vp(V,NP), Num) --&gt; v(V, Num), np(NP, _).
+vp(vp(V,NP,PP), Num) --&gt; v(V, Num), np(NP, _), pp(PP).
+
+pp(pp(P,NP)) --&gt; p(P), np(NP, _).
+
+det(det(a), sg) --&gt; [a].
+det(det(the), _) --&gt; [the].
+
+pn(pn(john), sg) --&gt; [john].
+
+n(n(man), sg) --&gt; [man].
+n(n(men), pl) --&gt; [men].
+n(n(telescope), sg) --&gt; [telescope].
+
+v(v(sees), sg) --&gt; [sees].
+v(v(see), pl) --&gt; [see].
+v(v(saw), _) --&gt; [saw].
+
+p(p(with)) --&gt; [with].
+</div>
+
+<div class="nb-cell program" data-background="true" data-singleline="true">
+example("john sees a man").
+example("a man sees john").
+example("john sees a man with a telescope").
+</div>
+
+<div class="nb-cell program" data-background="true" data-singleline="true">
+:- use_rendering(svgtree, [list(false)]).
+
+parse(Sentence, Tree) :-
+    nonvar(Sentence), !,
+    split_string(Sentence, " ", " ", Strings),
+    maplist(atom_string, Words, Strings),
+    phrase(s(Tree), Words).
+parse(Sentence, Tree) :-
+    phrase(s(Tree), Words),
+    atomics_to_string(Words, " ", Sentence).
+</div>
+
+</div>

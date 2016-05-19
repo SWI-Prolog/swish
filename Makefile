@@ -1,3 +1,6 @@
+BOWER_ARCHIVE=swish-bower-components.zip
+BOWER_URL=http://www.swi-prolog.org/download/swish/${BOWER_ARCHIVE}
+
 all: css js
 
 css::
@@ -12,6 +15,10 @@ src::
 clean::
 	@$(MAKE) -C web/css clean
 	@$(MAKE) -C web/js clean
+
+bower-components::
+	curl $(BOWER_URL) > $(BOWER_ARCHIVE)
+	unzip $(BOWER_ARCHIVE)
 
 swish-bower-components.zip::
 	rm -f $@

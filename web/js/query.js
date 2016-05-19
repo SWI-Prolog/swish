@@ -166,6 +166,18 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
     },
 
     /**
+     * @returns {jQuery} the associated program editor
+     */
+    getProgramEditor: function() {
+      var data = this.data(pluginName);
+
+      if ( data.editor )
+	return $(data.editor);
+      else
+	return $();
+    },
+
+    /**
      * @param {Array.String} set or extend the contents of the
      * _Examples_ menu.
      * @param {Boolean} [clear=true] clear the list before adding the
