@@ -10,9 +10,9 @@ This notebook illustrates SWI-Prolog tabling, implementing the examples from the
 
 The nth-Fibonacci number is the sum of the two preceeding ones, where the Fibonacci number of 0 and 1 are both 1.
 
-### First, the simple way:
+### First, the simple way
 
-The most natural representation in Prolog goes like below.  Unfortunately, the _complexity_ of this is order 2^N ...
+The most natural definition for the N-th Fibonacci number in Prolog is below.  Unfortunately, the _complexity_ of this is O(2^N), making it only suitable for the few Fibonacci numbers.
 </div>
 
 <div class="nb-cell program">
@@ -63,7 +63,7 @@ time(fib(1000, Fib)).
 <div class="nb-cell markdown">
 ## Computing connections in a graph
 
-Tabling also avoids non-termination of the computation due to _left recursion_, i.e., a goal calling (possibly indirectly) a copy of itself.  It also avoids computing the same results twice.  This means that, for example, connections in a railway network can be evaluated without _stratification_ and _cycle detection_ being added by the user.  Here is an example.
+Tabling also avoids non-termination of the computation due to _left recursion_, i.e., a goal calling (possibly indirectly) a copy of itself.  Finally, tabling avoids producing the same results twice by ignoring any (intermediate) result that is already in its tables. This means that, for example, connections in a railway network can be evaluated without _stratification_ and _cycle detection_ being added by the user.  Here is an example.
 </div>
 
 <div class="nb-cell program">
