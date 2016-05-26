@@ -170,6 +170,7 @@ pengines:prepare_module(Module, swish, _Options) :-
 %:- set_setting(swish:time_limit, 3600).
 % Additional sandboxing rules.
 :- use_module(lib/flags).
+:- use_module(lib/logging).
 
 % Libraries that are nice to have in SWISH, but cannot be loaded
 % because they use directives that are considered unsafe.  We load
