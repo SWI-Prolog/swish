@@ -106,7 +106,7 @@ swish_reply(Options, Request) :-
 
 swish_reply2(Options, Request) :-
 	option(method(Method), Request),
-	Method \== get, !,
+	Method \== get, Method \== head, !,
 	swish_rest_reply(Method, Request, Options).
 swish_reply2(_, Request) :-
 	serve_resource(Request), !.

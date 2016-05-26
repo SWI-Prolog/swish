@@ -1,0 +1,99 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Using tabling (SLG resolution)
+
+This notebook illustrates SWI-Prolog tabling, implementing the examples from the 
+[manual page](http://www.swi-prolog.org/pldoc/man?section=tabling).  Please consult this page for additional background information.
+
+## Computing Fibonacci numbers
+
+The nth-Fibonacci number is the sum of the two preceeding ones, where the Fibonacci number of 0 and 1 are both 1.
+
+### First, the simple way
+
+The most natural definition for the N-th Fibonacci number in Prolog is below.  Unfortunately, the _complexity_ of this is O(2^N), making it only suitable for the few Fibonacci numbers.
+</div>
+
+<div class="nb-cell program">
+fib(0, 1) :- !.
+fib(1, 1) :- !.
+fib(N, F) :-
+        N &gt; 1,
+        N1 is N-1,
+        N2 is N-2,
+        fib(N1, F1),
+        fib(N2, F2),
+        F is F1+F2.
+</div>
+
+<div class="nb-cell query">
+time(fib(30, Fib)).
+</div>
+
+<div class="nb-cell markdown">
+### Now using tabling
+
+By simply adding a table/1 directive, repetitive computation of lower numbers is avoided.  Note that this effectively also inverts the order of computation, were we
+compute low Fibonacci first.
+</div>
+
+<div class="nb-cell program">
+:- table fib/2.
+
+fib(0, 1) :- !.
+fib(1, 1) :- !.
+fib(N, F) :-
+        N &gt; 1,
+        N1 is N-1,
+        N2 is N-2,
+        fib(N1, F1),
+        fib(N2, F2),
+        F is F1+F2.
+</div>
+
+<div class="nb-cell query">
+time(fib(30, Fib)).
+</div>
+
+<div class="nb-cell query">
+time(fib(1000, Fib)).
+</div>
+
+<div class="nb-cell markdown">
+## Computing connections in a graph
+
+Tabling also avoids non-termination of the computation due to _left recursion_, i.e., a goal calling (possibly indirectly) a copy of itself.  Finally, tabling avoids producing the same results twice by ignoring any (intermediate) result that is already in its tables. This means that, for example, connections in a railway network can be evaluated without _stratification_ and _cycle detection_ being added by the user.  Here is an example.
+</div>
+
+<div class="nb-cell program">
+:- use_module(library(tabling)).
+:- table connection/2.
+
+connection(X, Y) :-
+        connection(X, Z),
+        connection(Z, Y).
+connection(X, Y) :-
+        connection(Y, X).
+
+connection('Amsterdam', 'Schiphol').
+connection('Amsterdam', 'Haarlem').
+connection('Schiphol', 'Leiden').
+connection('Haarlem', 'Leiden').
+</div>
+
+<div class="nb-cell query" data-tabled="true">
+connection('Amsterdam', X).
+</div>
+
+<div class="nb-cell markdown">
+### About Tabling in SWI-Prolog
+
+Tabling in SWI-Prolog is based on _delimited continuations_.  The initiative to this
+comes from Tom Schrijvers, Benoit Desouter and Bart Demoen.   See
+
+  - [Tabling as a library with delimited control](http://dx.doi.org/10.1017/S1471068415000137)
+  - [Delimited continuations for prolog](http://dx.doi.org/10.1017/S1471068413000331)
+</div>
+
+</div>

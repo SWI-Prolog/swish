@@ -161,6 +161,10 @@ swish_config:config(notebook,		_{eval_script: true}).
 :- use_module(swish:library(pengines_io)).
 :- use_module(swish:library(solution_sequences)).
 :- use_module(swish:library(aggregate)).
+:- if(exists_source(library(tabling))).
+:- use_module(swish:library(tabling)).
+:- endif.
+
 pengines:prepare_module(Module, swish, _Options) :-
 	pengines_io:pengine_bind_io_to_html(Module).
 %:- set_setting(swish:time_limit, 3600).
