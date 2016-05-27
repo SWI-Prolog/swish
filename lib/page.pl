@@ -60,7 +60,6 @@
 
 :- use_module(config).
 :- use_module(help).
-:- use_module(form).
 :- use_module(search).
 
 /** <module> Provide the SWISH application as Prolog HTML component
