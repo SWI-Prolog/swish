@@ -290,18 +290,26 @@ swish_add_user(Data) :-
 	Groups = [user,administrator],
 	validate_form(
 	    Data,
-	    [ field(user,     User,     [alnum, length > 4]),
+	    [ field(user,     User,     [alnum, atom, length >= 2]),
 	      field(realname, RealName, [strip, alnum_and_spaces]),
 	      field(email,    Email,    [email]),
 	      field(group,    Group,    [downcase, atom,oneof(Groups)]),
 	      field(pwd1,     Pwd1,     [password]),
 	      field(pwd2,     Pwd2,     [password])
 	    ]),
+	new_user(User),
 	(   Pwd1 == Pwd2
 	->  true
-	;   input_error(pwd2, password_mismatch)
+	;   input_error(pwd2, matching_password)
 	),
 	swish_add_user(User, Pwd1, [Group,RealName,Email]).
+
+new_user(User) :-
+	writeable_passwd_file(File),
+	exists_file(File),
+	http_current_user(File, User, _Fields), !,
+	input_error(user, new_user).
+new_user(_).
 
 
 		 /*******************************

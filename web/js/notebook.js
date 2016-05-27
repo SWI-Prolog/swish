@@ -1610,7 +1610,29 @@ Notebook.prototype.run = function(cell, bindings) {
     options.bindings = bindings;
 
   this.cell(cell).nbCell('run', options);
-}
+};
+
+/**
+ * Submit a form, calling a predicate
+ * @param {String} formsel is the selector to find the form in the
+ * notebook cell.
+ * @param {Object} options
+ * @param {String} options.predicate predicate to call.  The predicate
+ * receives one argument, containing the form data as a dict.
+ * @param {Function} options.onsuccess is the function run on successful
+ * completion
+ */
+Notebook.prototype.submit = function(formsel, options) {
+  var formel = this.$(formsel);
+  var data   = form.serializeAsObject(formel);
+
+  form.formError(formel, null);
+  this.swish({
+    ask: options.predicate+"(("+Pengine.stringify(data)+"))",
+    onerror: function(data) { form.formError(formel, data); },
+    onsuccess: options.onsuccess
+  });
+};
 
 Notebook.prototype.$ = function(selector) {
   return this.cell().find(selector);

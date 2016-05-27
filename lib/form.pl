@@ -61,7 +61,7 @@ validate_form([field(Field, Value, Options)|T], Dict, Errors) :-
 	catch(validate_field(Dict, Field, Value, Options),
 	      error(input_error(Field, Error),_),
 	      true),
-	(   var(Field)
+	(   var(Error)
 	->  Errors = Errors1
 	;   Errors = [input_error(Field, Error)|Errors1]
 	),
@@ -90,8 +90,14 @@ validate_form([field(Field, Value, Options)|T], Dict, Errors) :-
 %	  Value is converted to a floating point number.
 %	  - integer
 %	  Value is converted to an integer.
+%	  - length > N
+%	  The value must have at more than N characters
 %	  - length >= N
 %	  The value must have at least N characters
+%	  - length =< N
+%	  The value must have at most N characters
+%	  - length < N
+%	  The value must have at less than N characters
 %	  - number
 %	  Value is converted to a number (integer or float)
 %	  - oneof(List)
@@ -123,10 +129,19 @@ validate_value([H|T], Value0, Value, Field) :-
 
 validate_step(alnum, Value, Value) :-
 	forall(sub_atom(Value, _, 1, _, Char),
-	       char_type(alnum, Char)).
+	       char_type(Char, alnum)).
 validate_step(length >= N, Value, Value) :-
 	string_length(Value, Len),
 	Len >= N.
+validate_step(length > N, Value, Value) :-
+	string_length(Value, Len),
+	Len > N.
+validate_step(length < N, Value, Value) :-
+	string_length(Value, Len),
+	Len < N.
+validate_step(length =< N, Value, Value) :-
+	string_length(Value, Len),
+	Len =< N.
 validate_step(strip, Value0, Value) :-
 	normalize_space(string(Value), Value0).
 validate_step(alnum_and_spaces, Value, Value) :-
@@ -232,8 +247,22 @@ field_errors([H|T]) -->
 expected(oneof(List)) --> !,
 	[ 'One of '-[] ],
 	oneof(List).
+expected(required) --> !,
+	[ 'This field is required'-[] ].
+expected(length > N) --> !,
+	[ 'Needs at more than ~d characters'-[N] ].
+expected(length >= N) --> !,
+	[ 'Needs at least ~d characters'-[N] ].
+expected(length =< N) --> !,
+	[ 'Needs at most ~d characters'-[N] ].
+expected(length < N) --> !,
+	[ 'Needs less than ~d characters'-[N] ].
+expected(matching_password) -->
+	[ 'The password does not match'-[] ].
+expected(new_user) -->
+	[ 'A user with this name already exists'-[] ].
 expected(Expected) --> !,
-	[ '~w'-[Expected] ].
+	[ 'This field must hold a valid ~w'-[Expected] ].
 
 oneof([One]) --> !,
 	[ '~w'-[One] ].
