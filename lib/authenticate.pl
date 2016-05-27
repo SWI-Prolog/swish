@@ -30,7 +30,8 @@
 :- module(swish_authenticate,
 	  [ swish_add_user/3,		% +User, +Passwd, +Fields
 	    swish_add_user/1,		% +Dict
-	    swish_add_user/0
+	    swish_add_user/0,
+	    swish_current_user/2	% ?User, ?Data
 	  ]).
 :- use_module(library(pengines), []).
 :- use_module(library(lists)).
@@ -187,6 +188,15 @@ is_sha1(Hash) :-
 	atom_length(Hash, 32),
 	forall(sub_atom(Hash, _, 1, _, Char),
 	       char_type(Char, xdigit(_))).
+
+%%	swish_current_user(?User, -Dict) is nondet.
+%
+%	True if User is a user with properties.
+
+swish_current_user(User,
+		   u{user:User, group:Group, realname:RealName, email:Email}) :-
+	password_file(File),
+	http_current_user(File, User, [_Hash,Group,RealName,Email]).
 
 %%	swish_add_user(+User, +Passwd, +Fields) is det.
 %
