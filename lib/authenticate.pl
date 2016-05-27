@@ -29,6 +29,7 @@
 
 :- module(swish_authenticate,
 	  [ swish_add_user/3,		% +User, +Passwd, +Fields
+	    swish_add_user/1,		% +Dict
 	    swish_add_user/0
 	  ]).
 :- use_module(library(pengines), []).
@@ -38,6 +39,7 @@
 :- use_module(library(http/http_authenticate)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
+:- use_module(form).
 
 :- use_module(config).
 :- use_module(page, []).
@@ -278,6 +280,28 @@ read_pwd(21, _, P) :-			% Control-U
 read_pwd(C, P0, P) :-
 	append(P0, [C], P1),
 	read_pwd(P1, P).
+
+
+%%	swish_add_user(+Data:dict) is det.
+%
+%	Add a user from Data.
+
+swish_add_user(Data) :-
+	Groups = [user,administrator],
+	validate_form(
+	    Data,
+	    [ field(user,     User,     [alnum, length > 4]),
+	      field(realname, RealName, [strip, alnum_and_spaces]),
+	      field(email,    Email,    [email]),
+	      field(group,    Group,    [downcase, atom,oneof(Groups)]),
+	      field(pwd1,     Pwd1,     [password]),
+	      field(pwd2,     Pwd2,     [password])
+	    ]),
+	(   Pwd1 == Pwd2
+	->  true
+	;   input_error(pwd2, password_mismatch)
+	),
+	swish_add_user(User, Pwd1, [Group,RealName,Email]).
 
 
 		 /*******************************
