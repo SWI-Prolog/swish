@@ -112,7 +112,7 @@ hist(L0,P,NBins,Chart):-
   int_round(TickWidth,1,TW),
   int_round(Min,1,MinR),
   MinR1 is MinR-TW,
-  ticks(MinR1,TW,Max,Tick),
+  ticks(MinR1,TW,Max,_Tick),
 %  Chart = c3{data:_{xs:_{pre: xpre,post: xpost}, 
   %Chart = c3{data:_{xs:_{pre: xpre}, 
   Chart = c3{data:_{x: x, 
