@@ -1,8 +1,5 @@
 /*
-Throwing a coin with uncertainty on its fairness, from
-J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated 
-disjunctions. In International Conference on Logic Programming, 
-volume 3131 of LNCS, pages 195-209. Springer, 2004.
+Islam, Muhammad Asiful, C. R. Ramakrishnan, and I. V. Ramakrishnan. "Inference in probabilistic logic programs with continuous random variables." Theory and Practice of Logic Programming 12.4-5 (2012): 505-523.
 */
 :- use_module(library(mcintyre)).
 :- use_module(library(clpr)).

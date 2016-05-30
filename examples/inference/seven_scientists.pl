@@ -1,8 +1,4 @@
 /*
-Throwing a coin with uncertainty on its fairness, from
-J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated 
-disjunctions. In International Conference on Logic Programming, 
-volume 3131 of LNCS, pages 195-209. Springer, 2004.
 http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=gaussian-posteriors
 */
 :- use_module(library(mcintyre)).
