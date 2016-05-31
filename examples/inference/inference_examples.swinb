@@ -203,6 +203,15 @@ Islam, Muhammad Asiful, C. R. Ramakrishnan, and I. V. Ramakrishnan.
 Theory and Practice of Logic Programming 12.4-5 (2012): 505-523.
 Russell, S. and Norvig, P. 2010. Arficial Intelligence: A Modern Approach.
 Third Edition, Prentice Hall, Figure 15.10 page 587
+  - Posterior estimation in Bayesian models
+  ([gaussian_mean_est.pl](example/inference/gauss_mean_est.pl)).
+  We are trying to estimate the true value of a Gaussian distributed random
+  variable, given some observed data. The variance is known (2) and we
+  suppose that the mean has a Gaussian distribution with mean 1 and variance
+  sqrt(5). Given that we observe 9 and 8, what does the distribution of the
+  random variable changes with respect to the case of no observations?
+  From
+  http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=gaussian-posteriors
 
 </div>
 </div>

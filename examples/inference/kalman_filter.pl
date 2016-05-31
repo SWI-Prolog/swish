@@ -62,7 +62,7 @@ obs_err(_,E):gaussian(E,0,1).
 
 
 
-hist_lw(Samples,NBins,Chart):-
+dens_lw(Samples,NBins,Chart):-
   mc_sample_arg(kf(1,_O1,Y),Samples,Y,L0),
   mc_lw_sample_arg(kf(1,_O2,T),kf(1,[2.5],_T),Samples,T,L),
   densities(L0,L,NBins,Chart).
@@ -71,7 +71,7 @@ hist_lw(Samples,NBins,Chart):-
 % Observation as in Russel and Norvig 2010, Fig 15.10
 
 /** <examples>
-?- hist_lw(1000,40,G).
+?- dens_lw(1000,40,G).
 % plot the density of the state at time 1 in case of no observation (prior)
 % and in case of observing 2.5 by taking 1000 samples and dividing the domain
 % in 40 bins
