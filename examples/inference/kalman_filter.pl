@@ -1,5 +1,10 @@
 /*
-Islam, Muhammad Asiful, C. R. Ramakrishnan, and I. V. Ramakrishnan. "Inference in probabilistic logic programs with continuous random variables." Theory and Practice of Logic Programming 12.4-5 (2012): 505-523.
+Kalman filter example from
+Islam, Muhammad Asiful, C. R. Ramakrishnan, and I. V. Ramakrishnan. 
+"Inference in probabilistic logic programs with continuous random variables." 
+Theory and Practice of Logic Programming 12.4-5 (2012): 505-523.
+Russell, S. and Norvig, P. 2010. Arficial Intelligence: A Modern Approach. 
+Third Edition, Prentice Hall, Figure 15.10 page 587
 */
 :- use_module(library(mcintyre)).
 :- use_module(library(clpr)).
@@ -39,8 +44,9 @@ emit(NextS,I,V) :-
   obs_err(I,X).
 
 init(S):gaussian(S,0,1).
-
+% prior as in Russel and Norvig 2010, Fig 15.10
 trans_err(_,E):gaussian(E,0,2).
+% transition noise as in Russel and Norvig 2010, Fig 15.10
 
 obs_err(_,E):gaussian(E,0,1).
 :- end_lpad.
@@ -50,107 +56,9 @@ obs_err(_,E):gaussian(E,0,1).
 hist_lw(Samples,NBins,Chart):-
   mc_sample_arg(kf(1,Y),Samples,Y,L0),
   mc_lw_sample_arg(kf(1,T),kfo(1,[2.5]),Samples,T,L),
-  hist(L0,L,NBins,Chart).
+  densities(L0,L,NBins,Chart).
+% observation as in Russel and Norvig 2010, Fig 15.10
 
-
-hist(L0,P,NBins,Chart):-
-  maplist(val,L0,L),
-  keysort(P,PS),
-  maplist(key,PS,P1),
-  append(L,P1,All),
-  max_list(All,Max),
-  min_list(All,Min),
-  sort(L,L1),
-  D is Max-Min,
-  BinWidth is D/NBins,
-  bin(NBins,L1,Min,BinWidth,LB),
-  /*max_list(P1,MaxP),
-  min_list(P1,MinP),
-  DP is MaxP-MinP,
-  BWP is DP/NBins,*/
-  binP(NBins,PS,Min,BinWidth,PB),
-  maplist(to_dict_pre,LB,DB),
-  maplist(to_dict_post,PB,DP),
-  dicts_join(x, DB, DP, Data),
-  NTick=10,
-  TickWidth is D/NTick,
-  int_round(TickWidth,1,TW),
-  int_round(Min,1,MinR),
-  MinR1 is MinR-TW,
-  ticks(MinR1,TW,Max,_Tick),
-%  Chart = c3{data:_{xs:_{pre: xpre,post: xpost}, 
-  %Chart = c3{data:_{xs:_{pre: xpre}, 
-  Chart = c3{data:_{x: x, 
-  rows: Data},
-   axis:_{ x:_{ tick:_{fit:false}}}
-  }.
-
-ticks(Min,T,Max,[]):-
-  Min+T> Max,!.
-
-ticks(Min,T,Max,[TickN|RT]):-
-  Tick is Min+T,
-  format(atom(TickA), '~2f', [Tick]),
-  atom_number(TickA,TickN),
-  ticks(Tick,T,Max,RT).
-
-int_round(TW0,F,TW):-
-  IP is float_integer_part(TW0*F),
-  (IP=\=0->
-    TW is IP/F
-  ;
-    F1 is F*10,
-    int_round(TW0,F1,TW)
-  ).
-
-bin(0,_L,_Min,_BW,[]):-!.
-
-bin(N,L,Lower,BW,[V-Freq|T]):-
-  V is Lower+BW/2,
-  Upper is Lower+BW,
-  count_bin(L,Upper,0,Freq,L1),
-  N1 is N-1,
-  bin(N1,L1,Upper,BW,T).
-
-count_bin([],_U,F,F,[]).
-
-count_bin([H|T0],U,F0,F,T):-
-  (H>=U->
-    F=F0,
-    T=T0
-  ;
-    F1 is F0+1,
-    count_bin(T0,U,F1,F,T)
-  ).
-
-binP(0,_L,_Min,_BW,[]):-!.
-
-binP(N,L,Lower,BW,[V-Freq|T]):-
-  V is Lower+BW/2,
-  Upper is Lower+BW,
-  count_binP(L,Upper,0,Freq,L1),
-  N1 is N-1,
-  binP(N1,L1,Upper,BW,T).
-
-count_binP([],_U,F,F,[]).
-
-count_binP([H-W|T0],U,F0,F,T):-
-  (H>=U->
-    F=F0,
-    T=T0
-  ;
-    F1 is F0+W,
-    count_binP(T0,U,F1,F,T)
-  ).
-
-to_dict_pre(X-Y,r{x:X,pre:Y}).
-to_dict_post(X-Y,r{x:X,post:Y}).
-
-val([E]-_,E).
-
-key(K-_,K).
-
-split(X-Y,X,Y).
 /** <examples>
 mc_lw_sample_arg(kf(1,T),kfo(1,[2.5]),10,T,L).
 ?- hist_lw(1000,40,G).

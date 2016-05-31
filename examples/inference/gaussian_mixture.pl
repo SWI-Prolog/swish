@@ -1,4 +1,7 @@
 /*
+Mixture of two Gaussians. A biased coin is thrown, if it lands heads X in mix(X)
+is sampled from a Gaussian with mean 0 and variance 1. if it lands tails X is
+sampled from a Gaussian with mean 5 and variance 2.
 */
 :- use_module(library(mcintyre)).
 
@@ -9,101 +12,79 @@
 :- begin_lpad.
 
 heads:0.6;tails:0.4. 
+% a coin is thrown. The coin is biased: with probability 0.6 it lands heads,
+% with probabiity 0.4 it lands tails
+
 g(X): gaussian(X,0, 1).
-h(X):gaussian(X,5, 2).
+% X in g(X)  follows a Gaussian distribution with mean 0 and variance 1
+h(X): gaussian(X,5, 2).
+% X in h(X)  follows a Gaussian distribution with mean 5 and variance 2
 
 mix(X) :- heads, g(X).
+% if the coin lands heads, X in mix(X) is given by g(X)
 mix(X) :- tails, h(X).
-
+% if the coin lands tails, X in mix(X) is given by h(X)
 
 :- end_lpad.
 
 hist_uncond(Samples,NBins,Chart):-
   mc_sample_arg(mix(X),Samples,X,L0),
-  hist(L0,NBins,Chart).
+  histogram(L0,NBins,Chart).
+% take SAmples samples of X in mix(X) and draw an histogram with NBins bins representing 
+% the probability density of X 
 
 hist_rej_heads(Samples,NBins,Chart):-
   mc_rejection_sample_arg(mix(X),heads,Samples,X,L0),
-  hist(L0,NBins,Chart).
+  histogram(L0,NBins,Chart).
+% take Samples samples of X in mix(X) given that heads was true using 
+% rejection sampling and draw an
+% histogram with NBins bins representing the probability density of X
 
 hist_mh_heads(Samples,Lag,NBins,Chart):-
   mc_mh_sample_arg(mix(X),heads,Samples,Lag,X,L0),
-  hist(L0,NBins,Chart).
+  histogram(L0,NBins,Chart).
+% take Samples samples of X in mix(X) given that heads was true using 
+% Metropolis-Hastings and draw an
+% histogram with NBins bins representing the probability density of X
 
 hist_rej_dis(Samples,NBins,Chart):-
   mc_rejection_sample_arg(mix(X),(mix(Y),Y>2),Samples,X,L0),
-  hist(L0,NBins,Chart).
+  histogram(L0,NBins,Chart).
+% take Samples samples of X in mix(X) given that X>2 was true using 
+% rejection sampling and draw an
+% histogram with NBins bins representing the probability density of X
 
 hist_mh_dis(Samples,Lag,NBins,Chart):-
   mc_mh_sample_arg(mix(X),(mix(Y),Y>2),Samples,Lag,X,L0),
-  hist(L0,NBins,Chart).
+  histogram(L0,NBins,Chart).
+% take Samples samples of X in mix(X) given that X>2 was true using 
+% Metropolis-Hastings and draw an
+% histogram with NBins bins representing the probability density of X
 
 
-hist(L0,NBins,Chart):-
-  maplist(val,L0,L),
-  max_list(L,Max),
-  min_list(L,Min),
-  sort(L,L1),
-  D is Max-Min,
-  BinWidth is D/NBins,
-  bin(NBins,L1,Min,BinWidth,LB),
-  NTick=10,
-  TickWidth is D/NTick,
-  int_round(TickWidth,1,TW),
-  int_round(Min,1,MinR),
-  MinR1 is MinR-TW,
-  ticks(MinR1,TW,Max,_Tick),
-  Chart = c3{data:_{x:elem, rows:[elem-freq|LB], type:bar},
-          axis:_{ x:_{ tick:_{fit:false}}},
-          bar:_{
-            width:_{ ratio: 1.0 }}, 
-            legend:_{show: false}}.
-ticks(Min,T,Max,[]):-
-  Min+T> Max,!.
-
-ticks(Min,T,Max,[TickN|RT]):-
-  Tick is Min+T,
-  format(atom(TickA), '~2f', [Tick]),
-  atom_number(TickA,TickN),
-  ticks(Tick,T,Max,RT).
-
-int_round(TW0,F,TW):-
-  IP is float_integer_part(TW0*F),
-  (IP=\=0->
-    TW is IP/F
-  ;
-    F1 is F*10,
-    int_round(TW0,F1,TW)
-  ).
-
-bin(0,_L,_Min,_BW,[]):-!.
-
-bin(N,L,Lower,BW,[V-Freq|T]):-
-  V is Lower+BW/2,
-  Upper is Lower+BW,
-  count_bin(L,Upper,0,Freq,L1),
-  N1 is N-1,
-  bin(N1,L1,Upper,BW,T).
-
-count_bin([],_U,F,F,[]).
-
-count_bin([H|T0],U,F0,F,T):-
-  (H>=U->
-    F=F0,
-    T=T0
-  ;
-    F1 is F0+1,
-    count_bin(T0,U,F1,F,T)
-  ).
-
-val([E]-_,E).
 /** <examples>
 ?- hist_uncond(10000,40,G).
-
+% take 10000 samples of X in mix(X) and draw an histogram with 40 bins representing 
+% the probability density of X 
+?- mc_sample_arg(mix(X),1000,X,L),histogram(L,40,Chart).
+% take 10000 samples of X in mix(X) and draw an histogram with 40 bins representing 
+% the probability density of X
 ?- hist_rej_heads(10000,40,G).
+% take 10000 samples of X in mix(X) given that heads was true using 
+% rejection sampling and draw an
+% histogram with 40 bins representing the probability density of X
 ?- hist_mh_heads(10000,2,40,G).
+% take 10000 samples of X in mix(X) given that heads was true using 
+% Metropolis-Hastings and draw an
+% histogram with 40 bins representing the probability density of X
 ?- hist_rej_dis(10000,40,G).
+% take 10000 samples of X in mix(X) given that X>2 was true using 
+% rejection sampling and draw an
+% histogram with 40 bins representing the probability density of X
 ?- hist_mh_dis(10000,2,40,G).
+% take 10000 samples of X in mix(X) given that X>2 was true using 
+% Metropolis-Hastings and draw an
+% histogram with 40 bins representing the probability density of X
 
 */
  
