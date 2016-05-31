@@ -5,6 +5,23 @@
 
 This notebook gives an overview of example programs for inference.
 
+Examples divided by features:
+  - .cpl format: [coin.cpl](example/inference/coin.cpl), [dice.cpl](example/inference/dice.cpl), [epidemic.cpl](example/inference/epidemic.cpl), [earthquake.cpl](example/inference/earthquake.cpl),
+  [sneezing.cpl](example/inference/sneezing.cpl), [eruption.cpl](example/inference/eruption.cpl), [mendel.cpl](example/inference/mendel.cpl), [bloodtype.cpl](example/inference/bloodtype.cpl),
+  [path.cpl](example/inference/path.cpl), [alarm.cpl](example/inference/alarm.cpl), [hmm.cpl](example/inference/hmm.cpl), [pcfg.cpl](example/inference/pcfg.cpl), 
+  [uwcse.cpl](example/inference/uwcse.cpl), [cora.cpl](example/inference/cora.cpl),
+  [monty.cpl](example/inference/monty.cpl), [jail.cpl](example/inference/jail.cpl), [trigger.cpl](example/inference/trigger.cpl), [light.cpl](example/inference/light.cpl), [coin2.cpl](example/inference/coin2.cpl), [threesideddice.cpl](example/inference/threesideddice.cpl),
+  [mendelc.cpl](example/inference/mendelc.cpl), [meta.cpl](example/inference/meta.cpl)
+  - .pl format: [coin.cpl](example/inference/coin.cpl), [dice.cpl](example/inference/dice.cpl), [epidemic.cpl](example/inference/epidemic.cpl), [earthquake.cpl](example/inference/earthquake.cpl),
+  [sneezing.cpl](example/inference/sneezing.cpl), [eruption.cpl](example/inference/eruption.cpl), [mendel.cpl](example/inference/mendel.cpl), [bloodtype.cpl](example/inference/bloodtype.cpl),
+  [path.cpl](example/inference/path.cpl), [alarm.cpl](example/inference/alarm.cpl), [hmm.cpl](example/inference/hmm.cpl), [pcfg.cpl](example/inference/pcfg.cpl),
+  [uwcse.cpl](example/inference/uwcse.cpl), [cora.cpl](example/inference/cora.cpl),
+  [monty.cpl](example/inference/monty.cpl), [jail.cpl](example/inference/jail.cpl), [trigger.cpl](example/inference/trigger.cpl), [light.cpl](example/inference/light.cpl), [coin2.cpl](example/inference/coin2.cpl), [threesideddice.cpl](example/inference/threesideddice.cpl),
+  [mendelc.cpl](example/inference/mendelc.cpl), [meta.cpl](example/inference/meta.cpl)
+
+
+List of examples with description:
+
   - Coin ([coin.cpl](example/inference/coin.cpl),
    [coin.pl](example/inference/coin.pl)) 
    Throwing a coin with uncertainty on its fairness, 
@@ -184,25 +201,26 @@ This notebook gives an overview of example programs for inference.
   - One-dimensional  Kalman filter
   ([kalman_filter.pl](example/inference/kalman_filter.pl)).
   Hidden Markov model with a real
-value as state and a real value as output. The next state is given by
-the current state plus Gaussian noise (mean 0 and variance 2 in this example)
-and the output is given by the current state plus Gaussian noise (mean
-0 and variance 1 in this example).
-This example can be considered as modeling a random walk of a single continuous state variable with a noisy observation.
-Given that at time 0 the value 2.5 was
-observed, what is the distribution of the state at time 1 (filtering problem)?
-The distribution of the state is plotted in the case of having (posterior) or
-not having the observation (prior).
-Liklihood weighing is used to condition the distribution on evidence on
-a continuous random variable (evidence with probability 0).
-CLP(R) constraints allow both sampling and weighing samples with the same
-program.
-From
-Islam, Muhammad Asiful, C. R. Ramakrishnan, and I. V. Ramakrishnan.
-"Inference in probabilistic logic programs with continuous random variables."
-Theory and Practice of Logic Programming 12.4-5 (2012): 505-523.
-Russell, S. and Norvig, P. 2010. Arficial Intelligence: A Modern Approach.
-Third Edition, Prentice Hall, Figure 15.10 page 587
+  value as state and a real value as output. The next state is given by
+  the current state plus Gaussian noise (mean 0 and variance 2 in this example)
+  and the output is given by the current state plus Gaussian noise (mean
+  0 and variance 1 in this example).
+  This example can be considered as modeling a random walk of a single continuous state variable with a noisy observation.
+  Given that at time 0 the value 2.5 was
+  observed, what is the distribution of the state at time 1 (filtering problem)?
+  The distribution of the state is plotted in the case of having (posterior) or
+  not having the observation (prior).
+  Liklihood weighing is used to condition the distribution on evidence on
+  a continuous random variable (evidence with probability 0).
+  CLP(R) constraints allow both sampling and weighing samples with the same
+  program.
+  From
+  Islam, Muhammad Asiful, C. R. Ramakrishnan, and I. V. Ramakrishnan.
+  "Inference in probabilistic logic programs with continuous random variables."
+  Theory and Practice of Logic Programming 12.4-5 (2012): 505-523.
+  http://arxiv.org/pdf/1112.2681v3.pdf
+  Russell, S. and Norvig, P. 2010. Arficial Intelligence: A Modern Approach.
+  Third Edition, Prentice Hall, Figure 15.10 page 587
   - Posterior estimation in Bayesian models
   ([gaussian_mean_est.pl](example/inference/gauss_mean_est.pl)).
   We are trying to estimate the true value of a Gaussian distributed random
@@ -233,5 +251,29 @@ Third Edition, Prentice Hall, Figure 15.10 page 587
   estimates?
   From
   http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=gaussian-posteriors
+  - Factory producing widgets
+  ([widget.pl](example/inference/widget.pl)).
+  Consider a factory with two machines a and b. Each machine produces a widget
+  with a continuous feature. A widget is produced by machine a with probability
+  0.7 and by machine b with probability b.
+  If the widget is produced by machine a, the feature is distributed as a
+  Gaussian with mean 2.0 and variance 1.0.
+  If the widget is produced by machine b, the feature is distributed as a
+  Gaussian with mean 3.0 and variance 1.0.
+  The widget then is processed by a third machine that adds a random quantity to
+  the feature distributed as a Gaussian with mean 0.5 and variance 1.5.
+  What is the distribution of the feature?
+  What is the distribution of the feature given that the widget was procuded
+  by machine a?
+  What is the distribution of the feature given that the third machine added a
+  quantity greater than 0.2?
+  What is the distribution of the feature given that the third machine added
+  a quantity of 2.0?
+  Adapted from
+  Islam, Muhammad Asiful, C. R. Ramakrishnan, and I. V. Ramakrishnan.
+  "Inference in probabilistic logic programs with continuous random variables."
+  Theory and Practice of Logic Programming 12.4-5 (2012): 505-523.
+  http://arxiv.org/pdf/1112.2681v3.pdf
+
 </div>
 </div>

@@ -35,7 +35,7 @@ mix(X) :- tails, h(X).
 hist_uncond(Samples,NBins,Chart):-
   mc_sample_arg(mix(X),Samples,X,L0),
   histogram(L0,NBins,Chart).
-% take SAmples samples of X in mix(X) and draw an histogram with NBins bins representing 
+% take SAmples samples of X in mix(X) and draw a histogram with NBins bins representing 
 % the probability density of X 
 
 hist_rej_heads(Samples,NBins,Chart):-
@@ -69,10 +69,10 @@ hist_mh_dis(Samples,Lag,NBins,Chart):-
 
 /** <examples>
 ?- hist_uncond(10000,40,G).
-% take 10000 samples of X in mix(X) and draw an histogram with 40 bins representing 
+% take 10000 samples of X in mix(X) and draw a histogram with 40 bins representing 
 % the probability density of X 
 ?- mc_sample_arg(mix(X),1000,X,L),histogram(L,40,Chart).
-% take 10000 samples of X in mix(X) and draw an histogram with 40 bins representing 
+% take 10000 samples of X in mix(X) and draw a histogram with 40 bins representing 
 % the probability density of X
 ?- hist_rej_heads(10000,40,G).
 % take 10000 samples of X in mix(X) given that heads was true using 

@@ -1,10 +1,29 @@
 /*
-Throwing a coin with uncertainty on its fairness, from
-J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated 
-disjunctions. In International Conference on Logic Programming, 
-volume 3131 of LNCS, pages 195-209. Springer, 2004.
+Factory producing widgets.
+Consider a factory with two machines a and b. Each machine produces a widget
+with a continuous feature. A widget is produced by machine a with probability
+0.7 and by machine b with probability b.
+If the widget is produced by machine a, the feature is distributed as a
+Gaussian with mean 2.0 and variance 1.0.
+If the widget is produced by machine b, the feature is distributed as a
+Gaussian with mean 3.0 and variance 1.0.
+The widget then is processed by a third machine that adds a random quantity to
+the feature distributed as a Gaussian with mean 0.5 and variance 1.5.
+What is the distribution of the feature?
+What is the distribution of the feature given that the widget was procuded
+by machine a?
+What is the distribution of the feature given that the third machine added a
+quantity greater than 0.2?
+What is the distribution of the feature given that the third machine added
+a quantity of 2.0?
+Adapted from
+Islam, Muhammad Asiful, C. R. Ramakrishnan, and I. V. Ramakrishnan. 
+"Inference in probabilistic logic programs with continuous random variables." 
+Theory and Practice of Logic Programming 12.4-5 (2012): 505-523.
+http://arxiv.org/pdf/1112.2681v3.pdf
 */
 :- use_module(library(mcintyre)).
+:- use_module(library(clpr)).
 
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
@@ -16,7 +35,7 @@ widget(X) :-
   machine(M),
   st(M,Z),
   pt(Y),
-  X is Y + Z.
+  {X =:= Y + Z}.
 
 machine(a):0.3;machine(b):0.7.
 
@@ -31,147 +50,78 @@ pt(X): gaussian(X,0.5, 1.5).
 
 hist_uncond(Samples,NBins,Chart):-
   mc_sample_arg(widget(X),Samples,X,L0),
-  hist(L0,NBins,Chart).
+  histogram(L0,NBins,Chart).
+% What is the distribution of the feature?
 
-hist_rej_heads(Samples,NBins,Chart):-
+hist_rej_macha(Samples,NBins,Chart):-
   mc_rejection_sample_arg(widget(X),machine(a),Samples,X,L0),
-  hist(L0,NBins,Chart).
+  histogram(L0,NBins,Chart).
+% What is the distribution of the feature given that the widget was procuded
+% by machine a, computed by taking Samples samples with rejection sampling and
+% drawing a histogram with NBins bins?
 
-hist_mh_heads(Samples,Lag,NBins,Chart):-
+hist_mh_macha(Samples,Lag,NBins,Chart):-
   mc_mh_sample_arg(widget(X),machine(a),Samples,Lag,X,L0),
-  hist(L0,NBins,Chart).
+  histogram(L0,NBins,Chart).
+% What is the distribution of the feature given that the widget was procuded
+% by machine a, computed by taking Samples samples with Metropolis-Hastings
+% (lag=Lag) and drawing a histogram with NBins bins?
 
 hist_rej_dis(Samples,NBins,Chart):-
   mc_rejection_sample_arg(widget(X),(pt(Y),Y>0.2),Samples,X,L0),
-  hist(L0,NBins,Chart).
+  histogram(L0,NBins,Chart).
+% What is the distribution of the feature given that the third machine added a
+% quantity greater than 0.2, computed by taking Samples samples with rejection 
+% sampling and
+% drawing a histogram with NBins bins?
 
 hist_mh_dis(Samples,Lag,NBins,Chart):-
   mc_mh_sample_arg(widget(X),(pt(Y),Y>0.2),Samples,Lag,X,L0),
-  hist(L0,NBins,Chart).
+  histogram(L0,NBins,Chart).
+% What is the distribution of the feature given that the third machine added a
+% quantity greater than 0.2, computed by taking Samples samples with 
+% Metropolis-Hastings and
+% drawing a histogram with NBins bins?
 
 hist_lw(Samples,NBins,Chart):-
   mc_sample_arg(widget(Y),Samples,Y,L0),
   mc_lw_sample_arg(widget(X),pt(2.0),Samples,X,L),
-  hist(L0,L,NBins,Chart).
+  densities(L0,L,NBins,Chart).
+% What is the distribution of the feature given that the third machine added
+% a quantity of 2.0, computed by taking Samples samples with likelihood weighting
+% and drawing a density with NBins bins?
 
-hist(L0,P,NBins,Chart):-
-  maplist(val,L0,L),
-  keysort(P,PS),
-  maplist(key,PS,P1),
-  append(L,P1,All),
-  max_list(All,Max),
-  min_list(All,Min),
-  sort(L,L1),
-  D is Max-Min,
-  BinWidth is D/NBins,
-  bin(NBins,L1,Min,BinWidth,LB),
-  /*max_list(P1,MaxP),
-  min_list(P1,MinP),
-  DP is MaxP-MinP,
-  BWP is DP/NBins,*/
-  binP(NBins,PS,Min,BinWidth,PB),
-  maplist(to_dict_pre,LB,DB),
-  maplist(to_dict_post,PB,DP),
-  dicts_join(x, DB, DP, Data),
-  NTick=10,
-  TickWidth is D/NTick,
-  int_round(TickWidth,1,TW),
-  int_round(Min,1,MinR),
-  ticks(MinR,TW,Max,Tick),
-%  Chart = c3{data:_{xs:_{pre: xpre,post: xpost}, 
-  %Chart = c3{data:_{xs:_{pre: xpre}, 
-  Chart = c3{data:_{x: x, 
-  rows: Data,
-   axis:_{x:_{min:Min,max:Max,
-       tick:_{values:Tick}}}
-  }}.
 
-ticks(Min,T,Max,[]):-
-  Min+T> Max,!.
-
-ticks(Min,T,Max,[Tick|RT]):-
-  Tick is Min+T,
-  ticks(Tick,T,Max,RT).
-
-int_round(TW0,F,TW):-
-  IP is float_integer_part(TW0*F),
-  (IP=\=0->
-    TW is IP/F
-  ;
-    F1 is F*10,
-    int_round(TW0,F1,TW)
-  ).
-binP(0,_L,_Min,_BW,[]):-!.
-
-binP(N,L,Lower,BW,[V-Freq|T]):-
-  V is Lower+BW/2,
-  Upper is Lower+BW,
-  count_binP(L,Upper,0,Freq,L1),
-  N1 is N-1,
-  binP(N1,L1,Upper,BW,T).
-
-count_binP([],_U,F,F,[]).
-
-count_binP([H-W|T0],U,F0,F,T):-
-  (H>=U->
-    F=F0,
-    T=T0
-  ;
-    F1 is F0+W,
-    count_binP(T0,U,F1,F,T)
-  ).
-
-to_dict_pre(X-Y,r{x:X,pre:Y}).
-to_dict_post(X-Y,r{x:X,post:Y}).
-hist(L0,NBins,Chart):-
-  maplist(val,L0,L),
-  max_list(L,Max),
-  min_list(L,Min),
-  sort(L,L1),
-  D is Max-Min,
-  BinWidth is D/NBins,
-  bin(NBins,L1,Min,BinWidth,LB),
-  Chart = c3{data:_{x:elem, rows:[elem-freq|LB], type:bar},
-          axis:_{ x:_{ tick:_{
-    format: 'function (x) { return x.toFixed(2);}' ,
-           fit: true,culling:_{max:7} }} },
-          bar:_{
-            width:_{ ratio: 1.0 }}, 
-            legend:_{show: false}}.
-
-bin(0,_L,_Min,_BW,[]):-!.
-
-bin(N,L,Lower,BW,[V-Freq|T]):-
-  V is Lower+BW/2,
-  Upper is Lower+BW,
-  count_bin(L,Upper,0,Freq,L1),
-  N1 is N-1,
-  bin(N1,L1,Upper,BW,T).
-
-count_bin([],_U,F,F,[]).
-
-count_bin([H|T0],U,F0,F,T):-
-  (H>=U->
-    F=F0,
-    T=T0
-  ;
-    F1 is F0+1,
-    count_bin(T0,U,F1,F,T)
-  ).
-
-val([E]-_,E).
-
-key(K-_,K).
-
-split(X-Y,X,Y).
 /** <examples>
 ?- hist_lw(1000,40,G).
-?- hist_uncond(10000,40,G).
+% What is the distribution of the feature given that the third machine added
+% a quantity of 2.0, computed by taking 1000 samples with likelihood weighting
+% and drawing a density with 40 bins?
 
-?- hist_rej_heads(10000,40,G).
-?- hist_mh_heads(10000,2,40,G).
+?- hist_uncond(10000,40,G).
+% What is the distribution of the feature?
+
+?- hist_rej_macha(10000,40,G).
+% What is the distribution of the feature given that the widget was procuded
+% by machine a, computed by taking 10000 samples with rejection sampling and
+% drawing a histogram with 40 bins?
+
+?- hist_mh_macha(10000,2,40,G).
+% What is the distribution of the feature given that the widget was procuded
+% by machine a, computed by taking 10000 samples with Metropolis-Hastings
+% (lag=Lag) and drawing a histogram with 40 bins?
+
 ?- hist_rej_dis(10000,40,G).
+% What is the distribution of the feature given that the third machine added a
+% quantity greater than 0.2, computed by taking 10000 samples with rejection 
+% sampling and
+% drawing a histogram with 40 bins?
+
 ?- hist_mh_dis(10000,2,40,G).
+% What is the distribution of the feature given that the third machine added a
+% quantity greater than 0.2, computed by taking 10000 samples with 
+% Metropolis-Hastings and
+% drawing a histogram with 40 bins?
 
 */
  

@@ -48,7 +48,7 @@ measurement(_,M,Sigma,X): gaussian(X,M,Sigma*Sigma).
 hist_uncond(Samples,NBins,Chart):-
   mc_sample_arg(value(0,X),Samples,X,L0),
   histogram(L0,NBins,Chart).
-% take Samples samples of X for index 0 (X in val(0,X) and draw an
+% take Samples samples of X for index 0 (X in val(0,X) and draw a
 % histogram of the distribution with NBins bins
 
 hist_lw(Samples,NBins,Chart,E):-
