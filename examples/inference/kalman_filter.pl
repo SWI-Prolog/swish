@@ -1,10 +1,26 @@
 /*
-Kalman filter example from
+One-dimensional  Kalman filter. Hidden Markov model with a real
+value as state and a real value as output. The next state is given by
+the current state plus Gaussian noise (mean 0 and variance 2 in this example)
+and the output is given by the current state plus Gaussian noise (mean
+0 and variance 1 in this example). 
+This example can be considered as modeling a random walk of a single continuous 
+state variable with a noisy observation. 
+Given that at time 0 the value 2.5 was
+observed, what is the distribution of the state at time 1 (filtering problem)?
+The distribution of the state is plotted in the case of having (posterior) or 
+not having the observation (prior).
+Liklihood weighing is used to condition the distribution on evidence on
+a continuous random variable (evidence with probability 0).
+CLP(R) constraints allow both sampling and weighing samples with the same
+program.
+From
 Islam, Muhammad Asiful, C. R. Ramakrishnan, and I. V. Ramakrishnan. 
 "Inference in probabilistic logic programs with continuous random variables." 
 Theory and Practice of Logic Programming 12.4-5 (2012): 505-523.
 Russell, S. and Norvig, P. 2010. Arficial Intelligence: A Modern Approach. 
 Third Edition, Prentice Hall, Figure 15.10 page 587
+
 */
 :- use_module(library(mcintyre)).
 :- use_module(library(clpr)).
@@ -13,18 +29,10 @@ Third Edition, Prentice Hall, Figure 15.10 page 587
 :- endif.
 :- mc.
 :- begin_lpad.
+
 kf(N,O, T) :-
   init(S),
   kf_part(0, N, S,O,T).
-
-kfo(N,O) :-
-  init(S),
-  kf_part(0, N, S,O,_T).
-
-
-kf(N, T) :-
-  init(S),
-  kf_part(0, N, S,_O,T).
 
 kf_part(I, N, S,[V|RO], T) :-
   I < N, 
@@ -36,37 +44,37 @@ kf_part(I, N, S,[V|RO], T) :-
 kf_part(N, N, S, [],S).
 
 trans(S,I,NextS) :-
-  {E =:= NextS - S},
+  {NextS =:= E + S},
   trans_err(I,E).
 
 emit(NextS,I,V) :-
-  {X =:= V - NextS},
+  {NextS =:= V+X},
   obs_err(I,X).
 
 init(S):gaussian(S,0,1).
 % prior as in Russel and Norvig 2010, Fig 15.10
 trans_err(_,E):gaussian(E,0,2).
 % transition noise as in Russel and Norvig 2010, Fig 15.10
-
 obs_err(_,E):gaussian(E,0,1).
+% observation noise as in Russel and Norvig 2010, Fig 15.10
+
 :- end_lpad.
 
 
 
 hist_lw(Samples,NBins,Chart):-
-  mc_sample_arg(kf(1,Y),Samples,Y,L0),
-  mc_lw_sample_arg(kf(1,T),kfo(1,[2.5]),Samples,T,L),
+  mc_sample_arg(kf(1,_O1,Y),Samples,Y,L0),
+  mc_lw_sample_arg(kf(1,_O2,T),kf(1,[2.5],_T),Samples,T,L),
   densities(L0,L,NBins,Chart).
-% observation as in Russel and Norvig 2010, Fig 15.10
+% plot the density of the state at time 1 in case of no observation (prior)
+% and in case of observing 2.5.
+% Observation as in Russel and Norvig 2010, Fig 15.10
 
 /** <examples>
-mc_lw_sample_arg(kf(1,T),kfo(1,[2.5]),10,T,L).
 ?- hist_lw(1000,40,G).
-
-?- hist_rej_heads(10000,40,G).
-?- hist_mh_heads(10000,2,40,G).
-?- hist_rej_dis(10000,40,G).
-?- hist_mh_dis(10000,2,40,G).
+% plot the density of the state at time 1 in case of no observation (prior)
+% and in case of observing 2.5 by taking 1000 samples and dividing the domain
+% in 40 bins
 
 */
  

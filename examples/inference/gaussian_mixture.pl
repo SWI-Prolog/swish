@@ -2,6 +2,11 @@
 Mixture of two Gaussians. A biased coin is thrown, if it lands heads X in mix(X)
 is sampled from a Gaussian with mean 0 and variance 1. if it lands tails X is
 sampled from a Gaussian with mean 5 and variance 2.
+The example illustrates the use of continuous random variables and
+the use of sampling, including
+rejection sampling and Metropolis/Hastings. Moreover the example
+illustrates the use of the predicate histogram/3 for graphing the
+probability density function of continuous random variables.
 */
 :- use_module(library(mcintyre)).
 

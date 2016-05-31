@@ -171,6 +171,38 @@ This notebook gives an overview of example programs for inference.
   Translated from the Church functional probabilistic programming language.
   Sampling is necessary as queries have an infinite number of explanations.
   Both rejection sampling and Metropolis/Hastings can be applied.
+  - Gaussian mixture model
+  ([gaussian_mixture.pl](example/inference/gaussian_mixture.pl)).
+  Mixture of two Gaussians. A biased coin is thrown, if it lands heads X in mix(X)
+  is sampled from a Gaussian with mean 0 and variance 1. if it lands tails X is
+  sampled from a Gaussian with mean 5 and variance 2.
+  The example illustrates the use of continuous random variables and 
+  the use of sampling, including
+  rejection sampling and Metropolis/Hastings. Moreover the example
+  illustrates the use of the predicate histogram/3 for graphing the
+  probability density function of continuous random variables.
+  - One-dimensional  Kalman filter
+  ([kalman_filter.pl](example/inference/kalman_filter.pl)).
+  Hidden Markov model with a real
+value as state and a real value as output. The next state is given by
+the current state plus Gaussian noise (mean 0 and variance 2 in this example)
+and the output is given by the current state plus Gaussian noise (mean
+0 and variance 1 in this example).
+This example can be considered as modeling a random walk of a single continuous state variable with a noisy observation.
+Given that at time 0 the value 2.5 was
+observed, what is the distribution of the state at time 1 (filtering problem)?
+The distribution of the state is plotted in the case of having (posterior) or
+not having the observation (prior).
+Liklihood weighing is used to condition the distribution on evidence on
+a continuous random variable (evidence with probability 0).
+CLP(R) constraints allow both sampling and weighing samples with the same
+program.
+From
+Islam, Muhammad Asiful, C. R. Ramakrishnan, and I. V. Ramakrishnan.
+"Inference in probabilistic logic programs with continuous random variables."
+Theory and Practice of Logic Programming 12.4-5 (2012): 505-523.
+Russell, S. and Norvig, P. 2010. Arficial Intelligence: A Modern Approach.
+Third Edition, Prentice Hall, Figure 15.10 page 587
 
 </div>
 </div>
