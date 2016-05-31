@@ -215,6 +215,23 @@ Third Edition, Prentice Hall, Figure 15.10 page 587
   no observations?
   From
   http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=gaussian-posteriors
-
+  - Seven scientists, posterior estimation in Bayesian models
+  ([seven_scientists.pl](example/inference/seven_scientists.pl)).
+  Suppose seven scientists all go and perform the same experiment, each collecting
+  a measurement xi for i=1,..,7.
+  These scientists are varyingly good at their job, and while we can assume each 
+  scientist would estimate x correctly on average, some of them may have much more
+  error in their measurements than others.
+  They come back with the following seven observations:
+  [-27.020 3.570 8.191 9.898 9.603 9.945 10.056]
+  To model this situation, we put a prior on the mean and the standard deviation
+  of the measurements each of the 7 scientists.
+  For the mean, we use a Gaussian prior with mean 0 and variance sqrt(50).
+  For the standard deviation, we use a uniform prior between 0 and 25.
+  Given the above measurements, what is the posterior distribution of x?
+  What distribution over noise levels do we infer for each of these scientists' 
+  estimates?
+  From
+  http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=gaussian-posteriors
 </div>
 </div>
