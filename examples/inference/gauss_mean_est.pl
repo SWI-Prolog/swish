@@ -3,7 +3,7 @@ Posterior estimation in Bayesian models.
 We are trying to estimate the true value of a Gaussian distributed random
 variable, given some observed data. The variance is known (2) and we 
 suppose that the mean has a Gaussian distribution with mean 1 and variance
-sqrt(5). We take different measurement (e.g. at different times), indexed
+5. We take different measurement (e.g. at different times), indexed
 with an integer.
 Given that we observe 9 and 8 at indexes 1 and 2, how does the distribution 
 of the random variable (value at index 0) changes with respect to the case of 

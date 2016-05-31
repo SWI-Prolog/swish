@@ -6,21 +6,113 @@
 This notebook gives an overview of example programs for inference.
 
 Examples divided by features:
+  - continuous random variables: 
+  [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
+  [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
+  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl)
+  - likelihood weighting: 
+  [kalman_filter.pl](example/inference/kalman_filter.pl),
+  [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
+  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl)
+  - Metropolis-Hastings sampling: 
+  [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), 
+  [widget.pl](example/inference/widget.pl)
+  - rejection sampling: [coinmc.pl](example/inference/coinmc.pl),
+  [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [widget.pl](example/inference/widget.pl)
+  - argument sampling: 
+  [markov_chain.pl](example/inference/markov_chain.pl),
+  [plcg.pl](example/inference/plcg.pl),
+  [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl),
+  [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
+  [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
+  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl)
+  - variable number of objects: 
+  [var_objdb.pl](example/inference/var_objdb.pl), [var_obj.pl](example/inference/var_obj.pl)
+  - flexible probabilities:
+  [flexprob.pl](example/inference/flexprob.pl)
+  [persons.pl](example/inference/persons.pl)
+  - computation of expectations: [arithm.pl](example/inference/arithm.pl),
+  [pctl_slep.pl](example/inference/pctl_slep.pl), 
+  - infinite number of explanations:
+  [pcfglrdb.pl](example/inference/pcfglrdb.pl),
+  [pcfglr.pl](example/inference/pcfglr.pl), [markov_chaindb.pl](example/inference/markov_chaindb.pl),
+  [markov_chain.pl](example/inference/markov_chain.pl),
+  [prefix.pl](example/inference/prefix.pl),
+  [var_objdb.pl](example/inference/var_objdb.pl), [var_obj.pl](example/inference/var_obj.pl),
+  [plcg.pl](example/inference/plcg.pl), [pre_plcg.pl](example/inference/pre_plcg.pl),
+  [pctl_slep.pl](example/inference/pctl_slep.pl), 
+  [gpl.pl](example/inference/gpl.pl), [rmc.pl](example/inference/rmc.pl),
+  [arithm.pl](example/inference/arithm.pl), 
+  - meta probabilities:
+  [meta.pl](example/inference/meta.pl)
+  [metacomb.pl](example/inference/metacomb.pl)
+  - combining rules: [metacomb.pl](example/inference/metacomb.pl)
+  - graphics: 
+  [path.pl](example/inference/path.pl),
+  [pctl_slep.pl](example/inference/pctl_slep.pl), 
+  [hmmpos.pl](example/inference/hmmpos.pl),
+  [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), 
+  [kalman_filter.pl](example/inference/kalman_filter.pl),
+  [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
+  [seven_scientists.pl](example/inference/seven_scientists.pl), 
+  [widget.pl](example/inference/widget.pl)
+  - Monte Carlo unconditional inference: [coinmc.pl](example/inference/coinmc.pl), 
+  [pcfglr.pl](example/inference/pcfglr.pl), 
+  [markov_chain.pl](example/inference/markov_chain.pl),
+  [prefix.pl](example/inference/prefix.pl),
+  [var_obj.pl](example/inference/var_obj.pl),
+  [plcg.pl](example/inference/plcg.pl), [pre_plcg.pl](example/inference/pre_plcg.pl),
+  [pctl_slep.pl](example/inference/pctl_slep.pl), 
+  [gpl.pl](example/inference/gpl.pl), [rmc.pl](example/inference/rmc.pl),
+  [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl),
+  - conditional inference: [threesideddice.pl](example/inference/threesideddice.pl),
+  [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
+  [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
+  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl)
+  - unconditional inference: [coin.pl](example/inference/coin.pl), [coinmc.pl](example/inference/coinmc.pl), [dice.pl](example/inference/dice.pl), [epidemic.pl](example/inference/epidemic.pl), [earthquake.pl](example/inference/earthquake.pl),
+  [sneezing.pl](example/inference/sneezing.pl), [eruption.pl](example/inference/eruption.pl), [mendel.pl](example/inference/mendel.pl), [bloodtype.pl](example/inference/bloodtype.pl),
+  [path.pl](example/inference/path.pl), [alarm.pl](example/inference/alarm.pl), [hmm.pl](example/inference/hmm.pl), [pcfg.pl](example/inference/pcfg.pl),
+  [uwcse.pl](example/inference/uwcse.pl), [cora.pl](example/inference/cora.pl),
+  [mendelc.pl](example/inference/mendelc.pl), [meta.pl](example/inference/meta.pl)
+  [metacomb.pl](example/inference/metacomb.pl), [flexprob.pl](example/inference/flexprob.pl),
+  [persons.pl](example/inference/persons.pl), [pcfglrdb.pl](example/inference/pcfglrdb.pl),
+  [pcfglr.pl](example/inference/pcfglr.pl), [markov_chaindb.pl](example/inference/markov_chaindb.pl),
+  [markov_chain.pl](example/inference/markov_chain.pl),
+  [prefix.pl](example/inference/prefix.pl), [testdb.pl](example/inference/testdb.pl),
+  [var_objdb.pl](example/inference/var_objdb.pl), [var_obj.pl](example/inference/var_obj.pl),
+  [plcg.pl](example/inference/plcg.pl), [pre_plcg.pl](example/inference/pre_plcg.pl),
+  [pctl_slep.pl](example/inference/pctl_slep.pl), 
+  [gpl.pl](example/inference/gpl.pl), [rmc.pl](example/inference/rmc.pl),
+  [hmmpos.pl](example/inference/hmmpos.pl), 
+  [hmmpos2.pl](example/inference/hmmpos2.pl)
+  - .pl format: [coin.pl](example/inference/coin.pl), [coinmc.pl](example/inference/coinmc.pl), [dice.pl](example/inference/dice.pl), [epidemic.pl](example/inference/epidemic.pl), [earthquake.pl](example/inference/earthquake.pl),
+  [sneezing.pl](example/inference/sneezing.pl), [eruption.pl](example/inference/eruption.pl), [mendel.pl](example/inference/mendel.pl), [bloodtype.pl](example/inference/bloodtype.pl),
+  [path.pl](example/inference/path.pl), [alarm.pl](example/inference/alarm.pl), [hmm.pl](example/inference/hmm.pl), [pcfg.pl](example/inference/pcfg.pl),
+  [uwcse.pl](example/inference/uwcse.pl), [cora.pl](example/inference/cora.pl),
+  [monty.pl](example/inference/monty.pl), [jail.pl](example/inference/jail.pl), [trigger.pl](example/inference/trigger.pl), [light.pl](example/inference/light.pl), [coin2.pl](example/inference/coin2.pl), [threesideddice.pl](example/inference/threesideddice.pl),
+  [mendelc.pl](example/inference/mendelc.pl), [meta.pl](example/inference/meta.pl)
+  [metacomb.pl](example/inference/metacomb.pl), [flexprob.pl](example/inference/flexprob.pl),
+  [persons.pl](example/inference/persons.pl), [pcfglrdb.pl](example/inference/pcfglrdb.pl),
+  [pcfglr.pl](example/inference/pcfglr.pl), [markov_chaindb.pl](example/inference/markov_chaindb.pl),
+  [markov_chain.pl](example/inference/markov_chain.pl),
+  [prefix.pl](example/inference/prefix.pl), [testdb.pl](example/inference/testdb.pl),
+  [var_objdb.pl](example/inference/var_objdb.pl), [var_obj.pl](example/inference/var_obj.pl),
+  [plcg.pl](example/inference/plcg.pl), [pre_plcg.pl](example/inference/pre_plcg.pl),
+  [pctl_slep.pl](example/inference/pctl_slep.pl), 
+  [gpl.pl](example/inference/gpl.pl), [rmc.pl](example/inference/rmc.pl),
+  [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl),
+  [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
+  [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
+  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl)
   - .cpl format: [coin.cpl](example/inference/coin.cpl), [dice.cpl](example/inference/dice.cpl), [epidemic.cpl](example/inference/epidemic.cpl), [earthquake.cpl](example/inference/earthquake.cpl),
   [sneezing.cpl](example/inference/sneezing.cpl), [eruption.cpl](example/inference/eruption.cpl), [mendel.cpl](example/inference/mendel.cpl), [bloodtype.cpl](example/inference/bloodtype.cpl),
   [path.cpl](example/inference/path.cpl), [alarm.cpl](example/inference/alarm.cpl), [hmm.cpl](example/inference/hmm.cpl), [pcfg.cpl](example/inference/pcfg.cpl), 
   [uwcse.cpl](example/inference/uwcse.cpl), [cora.cpl](example/inference/cora.cpl),
   [monty.cpl](example/inference/monty.cpl), [jail.cpl](example/inference/jail.cpl), [trigger.cpl](example/inference/trigger.cpl), [light.cpl](example/inference/light.cpl), [coin2.cpl](example/inference/coin2.cpl), [threesideddice.cpl](example/inference/threesideddice.cpl),
   [mendelc.cpl](example/inference/mendelc.cpl), [meta.cpl](example/inference/meta.cpl)
-  - .pl format: [coin.cpl](example/inference/coin.cpl), [dice.cpl](example/inference/dice.cpl), [epidemic.cpl](example/inference/epidemic.cpl), [earthquake.cpl](example/inference/earthquake.cpl),
-  [sneezing.cpl](example/inference/sneezing.cpl), [eruption.cpl](example/inference/eruption.cpl), [mendel.cpl](example/inference/mendel.cpl), [bloodtype.cpl](example/inference/bloodtype.cpl),
-  [path.cpl](example/inference/path.cpl), [alarm.cpl](example/inference/alarm.cpl), [hmm.cpl](example/inference/hmm.cpl), [pcfg.cpl](example/inference/pcfg.cpl),
-  [uwcse.cpl](example/inference/uwcse.cpl), [cora.cpl](example/inference/cora.cpl),
-  [monty.cpl](example/inference/monty.cpl), [jail.cpl](example/inference/jail.cpl), [trigger.cpl](example/inference/trigger.cpl), [light.cpl](example/inference/light.cpl), [coin2.cpl](example/inference/coin2.cpl), [threesideddice.cpl](example/inference/threesideddice.cpl),
-  [mendelc.cpl](example/inference/mendelc.cpl), [meta.cpl](example/inference/meta.cpl)
 
 
-List of examples with description:
+Complete list of examples with description:
 
   - Coin ([coin.cpl](example/inference/coin.cpl),
    [coin.pl](example/inference/coin.pl)) 
@@ -174,7 +266,6 @@ List of examples with description:
     2. the probabilistic predicates =trans/3=, =trans2/4=, =out/3= and =out2/4= are defined intensionally
     3. the probability values are defined on the basis of frequency data from a
        (toy in this example) dataset
-  
   From
   Joakim Nivre. "Logic programming tools for probabilistic 
   part-of-speech tagging." Master's thesis, Vaxjo University, 2000. 
@@ -225,8 +316,8 @@ List of examples with description:
   ([gaussian_mean_est.pl](example/inference/gauss_mean_est.pl)).
   We are trying to estimate the true value of a Gaussian distributed random
   variable, given some observed data. The variance is known (2) and we
-  suppose that the mean has a Gaussian distribution with mean 1 and variance
-  sqrt(5). We take different measurement (e.g. at different times), indexed
+  suppose that the mean has a Gaussian distribution with mean 1 and variance 5. 
+  We take different measurement (e.g. at different times), indexed
   with an integer.
   Given that we observe 9 and 8 at indexes 1 and 2, how does the distribution
   of the random variable (value at index 0) changes with respect to the case of
