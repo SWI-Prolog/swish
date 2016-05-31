@@ -3,8 +3,11 @@ Posterior estimation in Bayesian models.
 We are trying to estimate the true value of a Gaussian distributed random
 variable, given some observed data. The variance is known (2) and we 
 suppose that the mean has a Gaussian distribution with mean 1 and variance
-sqrt(5). Given that we observe 9 and 8, what does the distribution of the 
-random variable changes with respect to the case of no observations?
+sqrt(5). We take different measurement (e.g. at different times), indexed
+with an integer.
+Given that we observe 9 and 8 at indexes 1 and 2, how does the distribution 
+of the random variable (value at index 0) changes with respect to the case of 
+no observations?
 From
 http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=gaussian-posteriors
 */
@@ -17,11 +20,11 @@ http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=gaussian-p
 :- begin_lpad.
 
 value(I,X) :- 
-  Var is sqrt(5),
-  mean(M,Var),
+  mean(M),
   value(I,M,X).
+% at time I we see X sampled from a Gaussian with mean M and variamce 2.0
 
-mean(M,Var): gaussian(M,1.0, Var).
+mean(M): gaussian(M,1.0, 5.0).
 % Gaussian distribution of the mean of the Gaussian of the variable
 
 value(_,M,X): gaussian(X,M, 2.0).
