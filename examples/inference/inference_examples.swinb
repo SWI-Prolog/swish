@@ -111,9 +111,45 @@ Examples divided by features:
   [monty.cpl](example/inference/monty.cpl), [jail.cpl](example/inference/jail.cpl), [trigger.cpl](example/inference/trigger.cpl), [light.cpl](example/inference/light.cpl), [coin2.cpl](example/inference/coin2.cpl), [threesideddice.cpl](example/inference/threesideddice.cpl),
   [mendelc.cpl](example/inference/mendelc.cpl), [meta.cpl](example/inference/meta.cpl)
 
+Example divided by application domain:
+  - natural language:
+  [pcfg.pl](example/inference/pcfg.pl),
+  [cora.pl](example/inference/cora.pl),
+  [pcfglrdb.pl](example/inference/pcfglrdb.pl),
+  [pcfglr.pl](example/inference/pcfglr.pl),
+  [prefix.pl](example/inference/prefix.pl), 
+  [plcg.pl](example/inference/plcg.pl), [pre_plcg.pl](example/inference/pre_plcg.pl),
+  [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl)
+  - biology: 
+  [path.pl](example/inference/path.pl),  [hmm.pl](example/inference/hmm.pl), 
+  - puzzles: [monty.pl](example/inference/monty.pl), [jail.pl](example/inference/jail.pl)
+  - genetics: [mendel.pl](example/inference/mendel.pl), [bloodtype.pl](example/inference/bloodtype.pl), [mendelc.pl](example/inference/mendelc.pl),
+  - model checking:
+  [markov_chaindb.pl](example/inference/markov_chaindb.pl),
+  [markov_chain.pl](example/inference/markov_chain.pl),
+  [pctl_slep.pl](example/inference/pctl_slep.pl), 
+  [gpl.pl](example/inference/gpl.pl), [rmc.pl](example/inference/rmc.pl),
+  - medicine: [epidemic.pl](example/inference/epidemic.pl),
+  [sneezing.pl](example/inference/sneezing.pl),
+  - games: [coin.pl](example/inference/coin.pl), [coinmc.pl](example/inference/coinmc.pl), [dice.pl](example/inference/dice.pl), [trigger.pl](example/inference/trigger.pl), [coin2.pl](example/inference/coin2.pl), [threesideddice.pl](example/inference/threesideddice.pl)
+  - social networks:
+  [uwcse.pl](example/inference/uwcse.pl)
+  - filtering: [kalman_filter.pl](example/inference/kalman_filter.pl)
+  - Bayesian estimation: 
+  [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
+  [seven_scientists.pl](example/inference/seven_scientists.pl)
+  - toy: [earthquake.pl](example/inference/earthquake.pl),
+   [eruption.pl](example/inference/eruption.pl),
+  [alarm.pl](example/inference/alarm.pl), 
+   [light.pl](example/inference/light.pl), 
+   [meta.pl](example/inference/meta.pl)
+  [metacomb.pl](example/inference/metacomb.pl), [flexprob.pl](example/inference/flexprob.pl),
+  [persons.pl](example/inference/persons.pl), 
+  [testdb.pl](example/inference/testdb.pl),
+  [var_objdb.pl](example/inference/var_objdb.pl), [var_obj.pl](example/inference/var_obj.pl),
+  [arithm.pl](example/inference/arithm.pl).
 
 Complete list of examples with description:
-
   - Coin ([coin.cpl](example/inference/coin.cpl),
    [coin.pl](example/inference/coin.pl)) 
    Throwing a coin with uncertainty on its fairness, 
