@@ -335,7 +335,7 @@ Complete list of examples with description:
   [-27.020 3.570 8.191 9.898 9.603 9.945 10.056]
   To model this situation, we put a prior on the mean and the standard deviation
   of the measurements each of the 7 scientists.
-  For the mean, we use a Gaussian prior with mean 0 and variance sqrt(50).
+  For the mean, we use a Gaussian prior with mean 0 and variance 50^2.
   For the standard deviation, we use a uniform prior between 0 and 25.
   Given the above measurements, what is the posterior distribution of x?
   What distribution over noise levels do we infer for each of these scientists' 

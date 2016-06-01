@@ -9,7 +9,7 @@ They come back with the following seven observations:
 [-27.020 3.570 8.191 9.898 9.603 9.945 10.056]
 To model this situation, we put a prior on the mean and the standard deviation
 of the measurements each of the 7 scientists.
-For the mean, we use a Gaussian prior with mean 0 and variance sqrt(50).
+For the mean, we use a Gaussian prior with mean 0 and variance 50^2.
 For the standard deviation, we use a uniform prior between 0 and 25.
 Given the above measurements, what is the posterior distribution of x?
 What distribution over noise levels do we infer for each of these scientists' 
@@ -36,8 +36,8 @@ std_dev(_,S): uniform(S,0,25).
 % the standard deviation is sampled for all scientists between 0 and 25 
 % uniformly
 
-mean(M): gaussian(M,0, sqrt(50)).
-% the mean is sampled from a Gaussian with mean 0 and variance sqrt(50)
+mean(M): gaussian(M,0, 2500).
+% the mean is sampled from a Gaussian with mean 0 and variance 50^2
 
 measurement(_,M,Sigma,X): gaussian(X,M,Sigma*Sigma).
 % the measurement is sampled from a Gaussian with mean M and variance
@@ -51,7 +51,7 @@ hist_uncond(Samples,NBins,Chart):-
 % take Samples samples of X for index 0 (X in val(0,X) and draw a
 % histogram of the distribution with NBins bins
 
-hist_lw(Samples,NBins,Chart,E):-
+dens_lw(Samples,NBins,Chart,E):-
   mc_sample_arg(value(0,Y),Samples,Y,L0),
   mc_lw_sample_arg(mean(X),(value(1,-27.020),value(2,3.570),
   value(3,8.191),value(4,9.898),value(5,9.603),value(6,9.945),
@@ -62,7 +62,7 @@ hist_lw(Samples,NBins,Chart,E):-
 % having observed the scientists' measurements and draw curves of the 
 % densities using NBins bins
 
-hist_lw_noise(Samples,Chart,E):-
+chart_lw_noise(Samples,Chart,E):-
   mc_lw_sample_arg((std_dev(1,Y1),std_dev(2,Y2),std_dev(3,Y3),std_dev(4,Y4),
     std_dev(5,Y5),std_dev(6,Y6),std_dev(7,Y7)),(value(1,-27.020),value(2,3.570),
   value(3,8.191),value(4,9.898),value(5,9.603),value(6,9.945),
@@ -97,12 +97,12 @@ exp(L,S,E):-
 agg(V-W,S,S+V*W).
 
 /** <examples>
-?- hist_lw(1000,40,G,E).
+?- dens_lw(1000,40,G,E).
 % take Samples samples of X for index 0 (X in val(0,X)) before and after
 % having observed the scientists' measurements and draw curves of the 
 % densities using NBins bins
 
-?- hist_lw_noise(1000,Chart,E).
+?- chart_lw_noise(1000,Chart,E).
 % take Samples samples of the standard deviation of the measurements of the
 % scientists (Y1,...,Y7 in std_dev(1,Y1),...,std_dev(7,Y7))
 % given the 7 observations and draw a bar chart of the mean of the samples

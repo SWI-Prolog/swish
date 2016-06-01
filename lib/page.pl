@@ -313,13 +313,15 @@ swish_navbar(Options) -->
         &(nbsp), &(nbsp),
         a([id('dismisslink'),href('')],['Dismiss']),
 	p([span([style('color:red')],['New']),': ',
-	a([href('/help/help-cplint.html#condq'),target('_blank')],
-	['conditional probability computation algorithms']),': ',
-	a([href('/?code=https://raw.githubusercontent.com/friguzzi/swish/master/examples/inference/threesideddice.pl&q=prob(on(2,1),on(0,1),P).')],
-	['exact']),', ',
-	a([href('/?code=https://raw.githubusercontent.com/friguzzi/swish/master/examples/inference/arithm.pl&q=mc_rejection_sample(eval(2,4),eval(1,3),1000,T,F,P).')],
-	['rejection sampling']),' and ',
-	a([href('/?code=https://raw.githubusercontent.com/friguzzi/swish/master/examples/inference/arithm.pl&q=mc_mh_sample(eval(2,4),eval(1,3),10000,1,T,F,P).')],['Metropolis-Hastings'])
+	a([href('/help/help-cplint.html#cont'),target('_blank')],
+	['continuous random variables']),' and ',
+	a([href('/help/help-cplint.html#condqcont'),target('_blank')],
+	['likelihood weighting']),': ',
+	a([href('/example/inference/gaussian_mixture.pl')],
+	['Gaussian mixture']),', ',
+	a([href('/example/inference/kalman_filter.pl')],
+	['Kalman filter']),', ',
+	a([href('/example/inference/seven_scientists.pl')],['Bayesian estimation'])
         ])])
         ),
 
