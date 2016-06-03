@@ -52,11 +52,11 @@ dens_lw(Samples,NBins,Chart):-
 
 /** <examples>
 ?- dens_lw(1000,40,G).
-% plot an histogram of the density of the random variable before any
-% % observations
-?- hist_uncond(10000,40,G).
 % plot the densities of the random variable before and after
-% % observing 9 and 8
+% observing 9 and 8
+?- hist_uncond(10000,40,G).
+% plot an histogram of the density of the random variable before any
+% observations
 
 */
  
