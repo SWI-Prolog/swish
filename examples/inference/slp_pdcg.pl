@@ -60,7 +60,8 @@ s(W,Num,np(N,NN),det(D,DD),n(M,MM),v(V,VV)) :-
      vp(W2,Num,np(NI,NN),det(DI,DD),n(MI,MM),v(VI,VV)).
 
 % np(Num) -> 0.4:: det(sg),n(sg) | 0.4:: n(pl) | 0.2::det(pl),n(pl)
-np_to(N,sg_dn):0.4; np_to(N,pl_n):0.4; np_to(N,pl_dn):0.2.
+0.4::np_to(N,sg_dn); 0.4::np_to(N,pl_n); 0.2::np_to(N,pl_dn).
+%np_to(N,sg_dn):0.4; np_to(N,pl_n):0.4; np_to(N,pl_dn):0.2.
 np(W,sg,np(N,NN),det(D,DD),n(M,MM),v(V,VV)) :-
      np_to(N,sg_dn),
      NI is N+1,
@@ -85,7 +86,8 @@ vp(W,Num,np(N,NN),det(D,DD),n(M,MM),v(V,VV)) :-
      np(W2,_,np(NI,NN),det(DI,DD),n(MI,MM),v(VI,VV)).
 
 % det(Num) -> 1/3 the(pl) | 1/3 the(sg) | 1/3 a(sg)
-det_to(N,the_pl):1/3; det_to(N,the_sg):1/3; det_to(N,a_sg):1/3.
+% det_to(N,the_pl):1/3; det_to(N,the_sg):1/3; det_to(N,a_sg):1/3.
+1/3::det_to(N,the_pl); 1/3::det_to(N,the_sg); 1/3::det_to(N,a_sg).
 det([the],pl,np(N,N),det(D,DD),n(M,M),v(V,V)) :-
      det_to(D,the_pl), DD is D+1.
 det([the],sg,np(N,N),det(D,DD),n(M,M),v(V,V)) :-
@@ -94,7 +96,8 @@ det([a],sg,np(N,N),det(D,DD),n(M,M),v(V,V)) :-
      det_to(D,a_sg), DD is D+1.
 
 % n(Num) -> 0.25 cat(sg) | 0.15 mouse(sg) | 0.1 dog(sg) | 0.25 cats(pl) | 0.15 mice(pl) | 0.1 dogs(pl)
-n_to(N,cat_sg):0.25;  n_to(N, mouse_sg):0.15 ; n_to(N, dog_sg):0.1 ; n_to(N, cats_pl):0.25 ; n_to(N, mice_pl):0.15 ; n_to(N, dogs_pl):0.1.
+0.25::n_to(N,cat_sg);  0.15::n_to(N, mouse_sg) ; 0.1::n_to(N, dog_sg) ; 0.25::n_to(N, cats_pl) ; 0.15::n_to(N, mice_pl) ; 0.1::n_to(N, dogs_pl).
+%n_to(N,cat_sg):0.25;  n_to(N, mouse_sg):0.15 ; n_to(N, dog_sg):0.1 ; n_to(N, cats_pl):0.25 ; n_to(N, mice_pl):0.15 ; n_to(N, dogs_pl):0.1.
 %n_to(N,cat_sg):0.5;  n_to(N, mouse_sg):0.3 ; n_to(N, dog_sg):0.2.
 % n_to(N, cats_pl):0.5 ; n_to(N, mice_pl):0.3 ; n_to(N, dogs_pl):0.2.
 n([cat],sg,np(N,N),det(D,D),n(M,MM),v(V,V)) :-
@@ -111,7 +114,8 @@ n([dogs],pl,np(N,N),det(D,D),n(M,MM),v(V,V)) :-
      n_to(M,dogs_pl), MM is M+1.
 
 % v(Num) -> 0.35 chases(sg) | 0.15 sees(sg) | 0.2 chase(pl) | 0.3 see(pl)
-v_to(N, chases_sg):0.35 ; v_to(N, sees_sg):0.15 ; v_to(N, chase_pl):0.2 ; v_to(N, see_pl):0.3.
+0.35::v_to(N, chases_sg) ; 0.15::v_to(N, sees_sg) ; 0.2::v_to(N, chase_pl) ; 0.3::v_to(N, see_pl).
+%v_to(N, chases_sg):0.35 ; v_to(N, sees_sg):0.15 ; v_to(N, chase_pl):0.2 ; v_to(N, see_pl):0.3.
 v([chases],sg,np(N,N),det(D,D),n(M,M),v(V,VV)) :-
      v_to(V,chases_sg), VV is V+1.
 v([sees],sg,np(N,N),det(D,D),n(M,M),v(V,VV)) :-
