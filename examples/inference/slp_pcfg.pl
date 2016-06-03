@@ -29,22 +29,20 @@ keep track of the derivation step.
 :- begin_lpad.
 
 s_as(N):0.2;s_bs(N):0.2;s_a(N):0.3;s_b(N):0.3.
-s([a|R],N0,N):-
+s([a|R],N0):-
   s_as(N0),
   N1 is N0+1,
-  s(R,N1,N).
-s([b|R],N0,N):-
+  s(R,N1).
+s([b|R],N0):-
   s_bs(N0),
   N1 is N0+1,
-  s(R,N1,N).
-s([a],N0,N):-
-  s_a(N0),
-  N is N0+1.
-s([b],N0,N):-
-  s_b(N0),
-  N is N0+1.
+  s(R,N1).
+s([a],N0):-
+  s_a(N0).
+s([b],N0):-
+  s_b(N0).
 
-s(L):-s(L,0,_).
+s(L):-s(L,0).
 :- end_lpad.
 
 /** <examples>

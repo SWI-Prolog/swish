@@ -47,11 +47,9 @@ base_random_fn(_X,L,C):-
 
 identity(_):0.5.
 
+random_const(_,C):discrete(C,[0:0.1,1:0.1,2:0.1,3:0.1,4:0.1,
+  5:0.1,6:0.1,7:0.1,8:0.1,9:0.1]).
 
-random_const(L,0):0.1;random_const(L,1):0.1;random_const(L,2):0.1;
-random_const(L,3):0.1;random_const(L,4):0.1;random_const(L,5):0.1;
-random_const(L,6):0.1;random_const(L,7):0.1;random_const(L,8):0.1;
-random_const(L,9):0.1.
 
 
 

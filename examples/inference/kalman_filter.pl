@@ -5,7 +5,7 @@ the current state plus Gaussian noise (mean 0 and variance 2 in this example)
 and the output is given by the current state plus Gaussian noise (mean
 0 and variance 1 in this example). 
 This example can be considered as modeling a random walk of a single continuous 
-state variable with a noisy observation. 
+state variable with noisy observations. 
 Given that at time 0 the value 2.5 was
 observed, what is the distribution of the state at time 1 (filtering problem)?
 The distribution of the state is plotted in the case of having (posterior) or 
