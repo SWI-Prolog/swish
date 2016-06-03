@@ -103,6 +103,10 @@ preferences.setDefault("emacs-keybinding", false);
       	"Help on cplint...": function() {
       	  menuBroadcast("help", {file:"help-cplint.html"});
       	},
+	"Pldoc on cplint...": function() {
+	  var win = window.open("http://cplint.lamping.unife.it/pldoc/doc/home/trill/lib/swipl/pack/cplint/prolog/", '_blank');
+	  win.focus();
+	 },
       	"Runner ...": function() {
       	  menuBroadcast("help", {file:"runner.html"});
       	},
