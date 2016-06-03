@@ -10,7 +10,7 @@ Examples divided by features:
   [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
   [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl)
-  - stochastic logic programs: [slp.pl](example/inference/slp.pl) 
+  - stochastic logic programs: [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl) 
   - likelihood weighting: 
   [kalman_filter.pl](example/inference/kalman_filter.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
@@ -26,7 +26,7 @@ Examples divided by features:
   [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl),
   [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
-  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl)
+  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl), [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl)
   - variable number of objects: 
   [var_objdb.pl](example/inference/var_objdb.pl), [var_obj.pl](example/inference/var_obj.pl)
   - flexible probabilities:
@@ -36,7 +36,7 @@ Examples divided by features:
   [pctl_slep.pl](example/inference/pctl_slep.pl), 
   - infinite number of explanations:
   [pcfglrdb.pl](example/inference/pcfglrdb.pl),
-  [pcfglr.pl](example/inference/pcfglr.pl), [markov_chaindb.pl](example/inference/markov_chaindb.pl),
+  [pcfglr.pl](example/inference/pcfglr.pl), [markov_chaindb.pl](example/inference/markov_chaindb.pl), [slp_pcfg.pl](example/inference/slp_pcfg.pl)
   [markov_chain.pl](example/inference/markov_chain.pl),
   [prefix.pl](example/inference/prefix.pl),
   [var_objdb.pl](example/inference/var_objdb.pl), [var_obj.pl](example/inference/var_obj.pl),
@@ -104,7 +104,7 @@ Examples divided by features:
   [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl),
   [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
-  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl), [slp.pl](example/inference/slp.pl) 
+  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl), [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl)
   - .cpl format: [coin.cpl](example/inference/coin.cpl), [dice.cpl](example/inference/dice.cpl), [epidemic.cpl](example/inference/epidemic.cpl), [earthquake.cpl](example/inference/earthquake.cpl),
   [sneezing.cpl](example/inference/sneezing.cpl), [eruption.cpl](example/inference/eruption.cpl), [mendel.cpl](example/inference/mendel.cpl), [bloodtype.cpl](example/inference/bloodtype.cpl),
   [path.cpl](example/inference/path.cpl), [alarm.cpl](example/inference/alarm.cpl), [hmm.cpl](example/inference/hmm.cpl), [pcfg.cpl](example/inference/pcfg.cpl), 
@@ -120,7 +120,7 @@ Example divided by application domain:
   [pcfglr.pl](example/inference/pcfglr.pl),
   [prefix.pl](example/inference/prefix.pl), 
   [plcg.pl](example/inference/plcg.pl), [pre_plcg.pl](example/inference/pre_plcg.pl),
-  [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl)
+  [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl), [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl)
   - biology: 
   [path.pl](example/inference/path.pl),  [hmm.pl](example/inference/hmm.pl), 
   - puzzles: [monty.pl](example/inference/monty.pl), [jail.pl](example/inference/jail.pl)
@@ -391,10 +391,15 @@ Complete list of examples with description:
   "Inference in probabilistic logic programs with continuous random variables."
   Theory and Practice of Logic Programming 12.4-5 (2012): 505-523.
   http://arxiv.org/pdf/1112.2681v3.pdf
-  - Stochastic logic program [slp.pl](example/inference/slp.pl).
-  Program modeling an SLP defining a distribution over simple sentences with number agreement. The sentences are defined using a definite clause grammars.
-  Recall that in SLPs the probabilities of all rules with the same head predicate sum to one and define a mutually exclusive choice on how to continue a proof.
-  Furthermore, repeated choices are independent, i.e., no stochastic memoizatioan.
+  - Stochastic logic program [slp_pcfg.pl](example/inference/slp_pcfg.pl).
+  Probabilistic contect-free grammar implemented as a Stochastic Logic Program.
+  SLPs define a distribution over arguments of goals.
+  SLPs can be written as an LPAD/ProbLog program by 
+  recalling that in SLPs the probabilities of all rules with the same head predicate sum to one and define a mutually exclusive choice on how to continue a proof.
+  Furthermore, repeated choices are independent, i.e., no stochastic memoization
+is done.
+  - Stochastic logic program [slp_pdcg.pl](example/inference/slp_pdcg.pl).
+  Program modeling an SLP defining a probabilistic definite clause grammar.
   Form https://dtai.cs.kuleuven.be/problog/tutorial/various/06_slp.html#stochastic-logic-programs
 
 </div>
