@@ -10,12 +10,13 @@ Examples divided by features:
   [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
   [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl)
+  - stochastic logic programs: [slp.pl](example/inference/slp.pl) 
   - likelihood weighting: 
   [kalman_filter.pl](example/inference/kalman_filter.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
   [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl)
   - Metropolis-Hastings sampling: 
-  [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), 
+  [slp.pl](example/inference/slp.pl), [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), 
   [widget.pl](example/inference/widget.pl)
   - rejection sampling: [coinmc.pl](example/inference/coinmc.pl),
   [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [widget.pl](example/inference/widget.pl)
@@ -103,7 +104,7 @@ Examples divided by features:
   [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl),
   [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
-  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl)
+  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl), [slp.pl](example/inference/slp.pl) 
   - .cpl format: [coin.cpl](example/inference/coin.cpl), [dice.cpl](example/inference/dice.cpl), [epidemic.cpl](example/inference/epidemic.cpl), [earthquake.cpl](example/inference/earthquake.cpl),
   [sneezing.cpl](example/inference/sneezing.cpl), [eruption.cpl](example/inference/eruption.cpl), [mendel.cpl](example/inference/mendel.cpl), [bloodtype.cpl](example/inference/bloodtype.cpl),
   [path.cpl](example/inference/path.cpl), [alarm.cpl](example/inference/alarm.cpl), [hmm.cpl](example/inference/hmm.cpl), [pcfg.cpl](example/inference/pcfg.cpl), 
@@ -332,11 +333,8 @@ Complete list of examples with description:
   the current state plus Gaussian noise (mean 0 and variance 2 in this example)
   and the output is given by the current state plus Gaussian noise (mean
   0 and variance 1 in this example).
-  This example can be considered as modeling a random walk of a single continuous state variable with a noisy observation.
   Given that at time 0 the value 2.5 was
   observed, what is the distribution of the state at time 1 (filtering problem)?
-  The distribution of the state is plotted in the case of having (posterior) or
-  not having the observation (prior).
   Liklihood weighing is used to condition the distribution on evidence on
   a continuous random variable (evidence with probability 0).
   CLP(R) constraints allow both sampling and weighing samples with the same
@@ -374,8 +372,6 @@ Complete list of examples with description:
   For the mean, we use a Gaussian prior with mean 0 and variance 50^2.
   For the standard deviation, we use a uniform prior between 0 and 25.
   Given the above measurements, what is the posterior distribution of x?
-  What distribution over noise levels do we infer for each of these scientists' 
-  estimates?
   From
   http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=gaussian-posteriors
   - Factory producing widgets
@@ -390,17 +386,16 @@ Complete list of examples with description:
   The widget then is processed by a third machine that adds a random quantity to
   the feature distributed as a Gaussian with mean 0.5 and variance 1.5.
   What is the distribution of the feature?
-  What is the distribution of the feature given that the widget was procuded
-  by machine a?
-  What is the distribution of the feature given that the third machine added a
-  quantity greater than 0.2?
-  What is the distribution of the feature given that the third machine added
-  a quantity of 2.0?
   Adapted from
   Islam, Muhammad Asiful, C. R. Ramakrishnan, and I. V. Ramakrishnan.
   "Inference in probabilistic logic programs with continuous random variables."
   Theory and Practice of Logic Programming 12.4-5 (2012): 505-523.
   http://arxiv.org/pdf/1112.2681v3.pdf
+  - Stochastic logic program [slp.pl](example/inference/slp.pl).
+  Program modeling an SLP defining a distribution over simple sentences with number agreement. The sentences are defined using a definite clause grammars.
+  Recall that in SLPs the probabilities of all rules with the same head predicate sum to one and define a mutually exclusive choice on how to continue a proof.
+  Furthermore, repeated choices are independent, i.e., no stochastic memoizatioan.
+  Form https://dtai.cs.kuleuven.be/problog/tutorial/various/06_slp.html#stochastic-logic-programs
 
 </div>
 </div>
