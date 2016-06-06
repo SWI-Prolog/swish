@@ -11,13 +11,15 @@ Examples divided by features:
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
   [seven_scientists.pl](example/inference/seven_scientists.pl), 
   [widget.pl](example/inference/widget.pl), 
-  [indian_gpa.pl](example/inference/indian_gpa.pl)
+  [indian_gpa.pl](example/inference/indian_gpa.pl),
+  [nballs.pl](example/inference/nballs.pl)
   - stochastic logic programs: [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl) 
   - likelihood weighting: 
   [kalman_filter.pl](example/inference/kalman_filter.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
   [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl),
-  [indian_gpa.pl](example/inference/indian_gpa.pl)
+  [indian_gpa.pl](example/inference/indian_gpa.pl),
+  [nballs.pl](example/inference/nballs.pl)
   - Metropolis-Hastings sampling: 
   [slp.pl](example/inference/slp.pl), [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), 
   [widget.pl](example/inference/widget.pl)
@@ -108,7 +110,8 @@ Examples divided by features:
   [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
   [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl), [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl),
-  [indian_gpa.pl](example/inference/indian_gpa.pl)
+  [indian_gpa.pl](example/inference/indian_gpa.pl),
+  [nballs.pl](example/inference/nballs.pl)
   - .cpl format: [coin.cpl](example/inference/coin.cpl), [dice.cpl](example/inference/dice.cpl), [epidemic.cpl](example/inference/epidemic.cpl), [earthquake.cpl](example/inference/earthquake.cpl),
   [sneezing.cpl](example/inference/sneezing.cpl), [eruption.cpl](example/inference/eruption.cpl), [mendel.cpl](example/inference/mendel.cpl), [bloodtype.cpl](example/inference/bloodtype.cpl),
   [path.cpl](example/inference/path.cpl), [alarm.cpl](example/inference/alarm.cpl), [hmm.cpl](example/inference/hmm.cpl), [pcfg.cpl](example/inference/pcfg.cpl), 
@@ -406,7 +409,7 @@ is done.
   - Stochastic logic program [slp_pdcg.pl](example/inference/slp_pdcg.pl).
   Program modeling an SLP defining a probabilistic definite clause grammar.
   Form https://dtai.cs.kuleuven.be/problog/tutorial/various/06_slp.html#stochastic-logic-programs
- - The Indian GPA Problem. 
+  - The Indian GPA Problem. 
   ([indian_gpa.pl](example/inference/indian_gpa.pl)). From
   http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=indian-gpa 
   "This example was inspired by Stuart Russell...the problem is: if you observe 
@@ -419,6 +422,14 @@ is done.
   (i.e. zero probability that the student is from India)."
   Probabilistic logic program from 
   https://github.com/davidenitti/DC/blob/master/examples/indian-gpa.pl
-
+  - Distributional Clauses example.
+  From Example 4 of
+  Davide Nitti, Tinne De Laet, and Luc De Raedt. Probabilistic logic programming for hybrid relational domains. Machine Learning 103(3), 407-449, 2016.
+  http://link.springer.com/article/10.1007/s10994-016-5558-8/fulltext.html
+  "We have an urn, where the number of balls n is a random variable and each ball X has a color, material, and size with a known distribution.
+  The i-th ball drawn with replacement from the
+  urn is named drawn(i)."
+  See also
+  https://github.com/davidenitti/DC/blob/master/examples/tutorial.pl
 </div>
 </div>
