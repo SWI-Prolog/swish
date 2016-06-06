@@ -3,18 +3,21 @@
 <div class="nb-cell markdown">
 # Welcome to cplint on SWISH
 
-This notebook gives an overview of example programs for inference.
+This notebook gives an overview of example programs for inference:
 
 Examples divided by features:
   - continuous random variables: 
   [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
-  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl)
+  [seven_scientists.pl](example/inference/seven_scientists.pl), 
+  [widget.pl](example/inference/widget.pl), 
+  [indian_gpa.pl](example/inference/indian_gpa.pl)
   - stochastic logic programs: [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl) 
   - likelihood weighting: 
   [kalman_filter.pl](example/inference/kalman_filter.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
-  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl)
+  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl),
+  [indian_gpa.pl](example/inference/indian_gpa.pl)
   - Metropolis-Hastings sampling: 
   [slp.pl](example/inference/slp.pl), [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), 
   [widget.pl](example/inference/widget.pl)
@@ -104,7 +107,8 @@ Examples divided by features:
   [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl),
   [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
-  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl), [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl)
+  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl), [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl),
+  [indian_gpa.pl](example/inference/indian_gpa.pl)
   - .cpl format: [coin.cpl](example/inference/coin.cpl), [dice.cpl](example/inference/dice.cpl), [epidemic.cpl](example/inference/epidemic.cpl), [earthquake.cpl](example/inference/earthquake.cpl),
   [sneezing.cpl](example/inference/sneezing.cpl), [eruption.cpl](example/inference/eruption.cpl), [mendel.cpl](example/inference/mendel.cpl), [bloodtype.cpl](example/inference/bloodtype.cpl),
   [path.cpl](example/inference/path.cpl), [alarm.cpl](example/inference/alarm.cpl), [hmm.cpl](example/inference/hmm.cpl), [pcfg.cpl](example/inference/pcfg.cpl), 
@@ -112,7 +116,7 @@ Examples divided by features:
   [monty.cpl](example/inference/monty.cpl), [jail.cpl](example/inference/jail.cpl), [trigger.cpl](example/inference/trigger.cpl), [light.cpl](example/inference/light.cpl), [coin2.cpl](example/inference/coin2.cpl), [threesideddice.cpl](example/inference/threesideddice.cpl),
   [mendelc.cpl](example/inference/mendelc.cpl), [meta.cpl](example/inference/meta.cpl)
 
-Example divided by application domain:
+<a name="#app">Examples divided by application domain:</a>
   - natural language:
   [pcfg.pl](example/inference/pcfg.pl),
   [cora.pl](example/inference/cora.pl),
@@ -123,7 +127,8 @@ Example divided by application domain:
   [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl), [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl)
   - biology: 
   [path.pl](example/inference/path.pl),  [hmm.pl](example/inference/hmm.pl), 
-  - puzzles: [monty.pl](example/inference/monty.pl), [jail.pl](example/inference/jail.pl)
+  - puzzles: [monty.pl](example/inference/monty.pl), [jail.pl](example/inference/jail.pl),
+  [indian_gpa.pl](example/inference/indian_gpa.pl)
   - genetics: [mendel.pl](example/inference/mendel.pl), [bloodtype.pl](example/inference/bloodtype.pl), [mendelc.pl](example/inference/mendelc.pl),
   - model checking:
   [markov_chaindb.pl](example/inference/markov_chaindb.pl),
@@ -150,7 +155,7 @@ Example divided by application domain:
   [var_objdb.pl](example/inference/var_objdb.pl), [var_obj.pl](example/inference/var_obj.pl),
   [arithm.pl](example/inference/arithm.pl).
 
-Complete list of examples with description:
+<a name="#list">Complete list of examples with description:</a>
   - Coin ([coin.cpl](example/inference/coin.cpl),
    [coin.pl](example/inference/coin.pl)) 
    Throwing a coin with uncertainty on its fairness, 
@@ -401,6 +406,19 @@ is done.
   - Stochastic logic program [slp_pdcg.pl](example/inference/slp_pdcg.pl).
   Program modeling an SLP defining a probabilistic definite clause grammar.
   Form https://dtai.cs.kuleuven.be/problog/tutorial/various/06_slp.html#stochastic-logic-programs
+ - The Indian GPA Problem. 
+  ([indian_gpa.pl](example/inference/indian_gpa.pl)). From
+  http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=indian-gpa 
+  "This example was inspired by Stuart Russell...the problem is: if you observe 
+  that a student GPA is exactly 4.04.0 in a model of transcripts of students 
+  from the USA (GPA's from 0.00.0 to 4.04.0 and India (GPA's from 0.00.0 to 
+  10.010.0) what is the probability that the student is from India?... 
+  As we know from statistics, given the mixture distribution and given the 
+  fact that his/her GPA is exactly 4.04.0, the probability that the student 
+  is American must be 1.01.0 
+  (i.e. zero probability that the student is from India)."
+  Probabilistic logic program from 
+  https://github.com/davidenitti/DC/blob/master/examples/indian-gpa.pl
 
 </div>
 </div>
