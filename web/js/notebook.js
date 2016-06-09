@@ -81,9 +81,9 @@ var cellTypes = {
 	    glyphButton("plus", "insertBelow", "Insert cell below", "primary"),
 	    glyphButton("fullscreen", "fullscreen", "Full screen", "default")
 	    ));
+	elem.append(notebookMenu());
 	elem.append($.el.div({class:"nb-view", tabIndex:"-1"},
 			     content=$.el.div({class:"nb-content"}),
-			     notebookMenu(),
 			     $.el.div({class:"nb-bottom"})));
 
 	$(toolbar).on("click", "a.btn", function(ev) {
