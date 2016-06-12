@@ -21,7 +21,7 @@ Theory and Practice of Logic Programming 12.4-5 (2012): 505-523.
 http://arxiv.org/pdf/1112.2681v3.pdf
 Russell, S. and Norvig, P. 2010. Arficial Intelligence: A Modern Approach. 
 Third Edition, Prentice Hall, Figure 15.10 page 587
-
+PRISM syntax.
 */
 :- use_module(library(mcintyre)).
 :- use_module(library(clpr)).

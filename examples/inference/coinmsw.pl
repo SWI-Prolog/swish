@@ -3,6 +3,7 @@ Throwing a coin with uncertainty on its fairness, from
 J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated 
 disjunctions. In International Conference on Logic Programming, 
 volume 3131 of LNCS, pages 195-209. Springer, 2004.
+PRISM syntax.
 */
 :- use_module(library(pita)).
 
@@ -20,14 +21,8 @@ values(fairness,[fair,biased]).
 :- set_sw(fairness,[0.9,0.1]).
 
 res(Coin,R):- toss(Coin),fairness(Coin,Fairness),msw(throw(Fairness),R).
-% if we toss a Coin that is not biased then it lands heads with probability 1/2
-% and tails with probability 1/2
-% if we toss a Coin that is biased then it lands heads with probability 0.6
-% % and tails with probability 0.4
 fairness(_Coin,Fairness):-msw(fairness,Fairness).
-% a Coin is fair with probability 0.9 and biased with probability 0.1
 toss(coin).
-% coin is certainly tossed
 
 :- end_lpad.
 

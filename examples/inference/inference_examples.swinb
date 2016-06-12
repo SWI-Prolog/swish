@@ -8,30 +8,44 @@ This notebook gives an overview of example programs for inference:
 Examples divided by features:
   - continuous random variables: 
   [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
+  [kalman_filtermsw.pl](example/inference/kalman_filtermsw.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
   [seven_scientists.pl](example/inference/seven_scientists.pl), 
   [widget.pl](example/inference/widget.pl), 
+  [widgetmsw.pl](example/inference/widgetmsw.pl),
   [indian_gpa.pl](example/inference/indian_gpa.pl),
-  [nballs.pl](example/inference/nballs.pl)
+  [indian_gpadc.pl](example/inference/indian_gpadc.pl),
+  [nballs.pl](example/inference/nballs.pl),
+  [nballsdc.pl](example/inference/nballsdc.pl)
   - stochastic logic programs: [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl) 
   - likelihood weighting: 
   [kalman_filter.pl](example/inference/kalman_filter.pl),
+  [kalman_filtermsw.pl](example/inference/kalman_filtermsw.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
   [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl),
+  [widgetmsw.pl](example/inference/widgetmsw.pl),
   [indian_gpa.pl](example/inference/indian_gpa.pl),
-  [nballs.pl](example/inference/nballs.pl)
+  [indian_gpadc.pl](example/inference/indian_gpadc.pl),
+  [nballs.pl](example/inference/nballs.pl),
+  [nballsdc.pl](example/inference/nballsdc.pl)
   - Metropolis-Hastings sampling: 
   [slp.pl](example/inference/slp.pl), [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), 
   [widget.pl](example/inference/widget.pl)
+  [widgetmsw.pl](example/inference/widgetmsw.pl),
   - rejection sampling: [coinmc.pl](example/inference/coinmc.pl),
-  [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [widget.pl](example/inference/widget.pl)
+  [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [widget.pl](example/inference/widget.pl),
+  [widgetmsw.pl](example/inference/widgetmsw.pl)
   - argument sampling: 
   [markov_chain.pl](example/inference/markov_chain.pl),
   [plcg.pl](example/inference/plcg.pl),
   [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl),
   [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
+  [kalman_filtermsw.pl](example/inference/kalman_filtermsw.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
-  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl), [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl)
+  [seven_scientists.pl](example/inference/seven_scientists.pl), 
+  [widget.pl](example/inference/widget.pl), 
+  [widgetmsw.pl](example/inference/widgetmsw.pl),
+  [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl)
   - variable number of objects: 
   [var_objdb.pl](example/inference/var_objdb.pl), [var_obj.pl](example/inference/var_obj.pl)
   - flexible probabilities:
@@ -59,9 +73,11 @@ Examples divided by features:
   [hmmpos.pl](example/inference/hmmpos.pl),
   [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), 
   [kalman_filter.pl](example/inference/kalman_filter.pl),
+  [kalman_filtermsw.pl](example/inference/kalman_filtermsw.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
   [seven_scientists.pl](example/inference/seven_scientists.pl), 
-  [widget.pl](example/inference/widget.pl)
+  [widget.pl](example/inference/widget.pl),
+  [widgetmsw.pl](example/inference/widgetmsw.pl)
   - Monte Carlo unconditional inference: [coinmc.pl](example/inference/coinmc.pl), 
   [pcfglr.pl](example/inference/pcfglr.pl), 
   [markov_chain.pl](example/inference/markov_chain.pl),
@@ -73,8 +89,10 @@ Examples divided by features:
   [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl),
   - conditional inference: [threesideddice.pl](example/inference/threesideddice.pl),
   [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
+  [kalman_filtermsw.pl](example/inference/kalman_filtermsw.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
-  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl)
+  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl),
+  [widgetmsw.pl](example/inference/widgetmsw.pl)
   - unconditional inference: [coin.pl](example/inference/coin.pl), [coinmc.pl](example/inference/coinmc.pl), [dice.pl](example/inference/dice.pl), [epidemic.pl](example/inference/epidemic.pl), [earthquake.pl](example/inference/earthquake.pl),
   [sneezing.pl](example/inference/sneezing.pl), [eruption.pl](example/inference/eruption.pl), [mendel.pl](example/inference/mendel.pl), [bloodtype.pl](example/inference/bloodtype.pl),
   [path.pl](example/inference/path.pl), [alarm.pl](example/inference/alarm.pl), [hmm.pl](example/inference/hmm.pl), [pcfg.pl](example/inference/pcfg.pl),
@@ -91,7 +109,17 @@ Examples divided by features:
   [gpl.pl](example/inference/gpl.pl), [rmc.pl](example/inference/rmc.pl),
   [hmmpos.pl](example/inference/hmmpos.pl), 
   [hmmpos2.pl](example/inference/hmmpos2.pl)
-  - .pl format: [coin.pl](example/inference/coin.pl), [coinmc.pl](example/inference/coinmc.pl), [dice.pl](example/inference/dice.pl), [epidemic.pl](example/inference/epidemic.pl), [earthquake.pl](example/inference/earthquake.pl),
+  - PRISM syntax: 
+ [coinmsw.pl](example/inference/coinmws.pl),
+ [widgetmsw.pl](example/inference/widgetmsw.pl),
+ [kalman_filtermsw.pl](example/inference/kalman_filtermsw.pl)
+  - Distributional clauses syntax:
+  [indian_gpadc.pl](example/inference/indian_gpadc.pl),
+  [nballsdc.pl](example/inference/nballsdc.pl)
+  - .pl format: [coin.pl](example/inference/coin.pl), 
+  [coinmc.pl](example/inference/coinmc.pl), 
+  [coinmsw.pl](example/inference/coinmws.pl),
+  [dice.pl](example/inference/dice.pl), [epidemic.pl](example/inference/epidemic.pl), [earthquake.pl](example/inference/earthquake.pl),
   [sneezing.pl](example/inference/sneezing.pl), [eruption.pl](example/inference/eruption.pl), [mendel.pl](example/inference/mendel.pl), [bloodtype.pl](example/inference/bloodtype.pl),
   [path.pl](example/inference/path.pl), [alarm.pl](example/inference/alarm.pl), [hmm.pl](example/inference/hmm.pl), [pcfg.pl](example/inference/pcfg.pl),
   [uwcse.pl](example/inference/uwcse.pl), [cora.pl](example/inference/cora.pl),
@@ -108,10 +136,15 @@ Examples divided by features:
   [gpl.pl](example/inference/gpl.pl), [rmc.pl](example/inference/rmc.pl),
   [hmmpos.pl](example/inference/hmmpos.pl), [hmmpos2.pl](example/inference/hmmpos2.pl),
   [arithm.pl](example/inference/arithm.pl), [gaussian_mixture.pl](example/inference/gaussian_mixture.pl), [kalman_filter.pl](example/inference/kalman_filter.pl),
+  [kalman_filtermsw.pl](example/inference/kalman_filtermsw.pl),
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
-  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl), [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl),
+  [seven_scientists.pl](example/inference/seven_scientists.pl), [widget.pl](example/inference/widget.pl),
+  [widgetmsw.pl](example/inference/widgetmsw.pl),
+  [slp_pcfg.pl](example/inference/slp_pcfg.pl), [slp_pdcg.pl](example/inference/slp_pdcg.pl),
   [indian_gpa.pl](example/inference/indian_gpa.pl),
-  [nballs.pl](example/inference/nballs.pl)
+  [indian_gpadc.pl](example/inference/indian_gpadc.pl),
+  [nballs.pl](example/inference/nballs.pl),
+  [nballsdc.pl](example/inference/nballsdc.pl)
   - .cpl format: [coin.cpl](example/inference/coin.cpl), [dice.cpl](example/inference/dice.cpl), [epidemic.cpl](example/inference/epidemic.cpl), [earthquake.cpl](example/inference/earthquake.cpl),
   [sneezing.cpl](example/inference/sneezing.cpl), [eruption.cpl](example/inference/eruption.cpl), [mendel.cpl](example/inference/mendel.cpl), [bloodtype.cpl](example/inference/bloodtype.cpl),
   [path.cpl](example/inference/path.cpl), [alarm.cpl](example/inference/alarm.cpl), [hmm.cpl](example/inference/hmm.cpl), [pcfg.cpl](example/inference/pcfg.cpl), 
@@ -131,7 +164,8 @@ Examples divided by features:
   - biology: 
   [path.pl](example/inference/path.pl),  [hmm.pl](example/inference/hmm.pl), 
   - puzzles: [monty.pl](example/inference/monty.pl), [jail.pl](example/inference/jail.pl),
-  [indian_gpa.pl](example/inference/indian_gpa.pl)
+  [indian_gpa.pl](example/inference/indian_gpa.pl),
+  [indian_gpadc.pl](example/inference/indian_gpadc.pl)
   - genetics: [mendel.pl](example/inference/mendel.pl), [bloodtype.pl](example/inference/bloodtype.pl), [mendelc.pl](example/inference/mendelc.pl),
   - model checking:
   [markov_chaindb.pl](example/inference/markov_chaindb.pl),
@@ -143,7 +177,8 @@ Examples divided by features:
   - games: [coin.pl](example/inference/coin.pl), [coinmc.pl](example/inference/coinmc.pl), [dice.pl](example/inference/dice.pl), [trigger.pl](example/inference/trigger.pl), [coin2.pl](example/inference/coin2.pl), [threesideddice.pl](example/inference/threesideddice.pl)
   - social networks:
   [uwcse.pl](example/inference/uwcse.pl)
-  - filtering: [kalman_filter.pl](example/inference/kalman_filter.pl)
+  - filtering: [kalman_filter.pl](example/inference/kalman_filter.pl),
+  [kalman_filtermsw.pl](example/inference/kalman_filtermsw.pl),
   - Bayesian estimation: 
   [gaussian_mean_est.pl](example/inference/gauss_mean_est.pl),
   [seven_scientists.pl](example/inference/seven_scientists.pl)
@@ -167,6 +202,7 @@ Examples divided by features:
    In International Conference on Logic Programming, 
    volume 3131 of LNCS, pages 195-209. Springer, 2004. 
    [coinmc.pl](example/inference/coinmc.pl) is a version for inference with MCINTYRE (Monte Carlo sampling).
+ [coinmsw.pl](example/inference/coinmws.pl) is a version that models the problem with PRISM syntax.
   - Dice ([dice.cpl](example/inference/dice.cpl), 
   [dice.pl](example/inference/dice.pl)) 
   A six-sided die is repeatedly thrown until the outcome is six. 
@@ -335,7 +371,8 @@ Examples divided by features:
   illustrates the use of the predicate histogram/3 for graphing the
   probability density function of continuous random variables.
   - One-dimensional  Kalman filter
-  ([kalman_filter.pl](example/inference/kalman_filter.pl)).
+  ([kalman_filter.pl](example/inference/kalman_filter.pl), PRISM syntax
+  [kalman_filtermsw.pl](example/inference/kalman_filtermsw.pl)).
   Hidden Markov model with a real
   value as state and a real value as output. The next state is given by
   the current state plus Gaussian noise (mean 0 and variance 2 in this example)
@@ -383,7 +420,7 @@ Examples divided by features:
   From
   http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=gaussian-posteriors
   - Factory producing widgets
-  ([widget.pl](example/inference/widget.pl)).
+  ([widget.pl](example/inference/widget.pl), PRISM syntax [widgetmsw.pl](example/inference/widgetmsw.pl)).
   Consider a factory with two machines a and b. Each machine produces a widget
   with a continuous feature. A widget is produced by machine a with probability
   0.7 and by machine b with probability b.
@@ -410,8 +447,9 @@ is done.
   Program modeling an SLP defining a probabilistic definite clause grammar.
   Form https://dtai.cs.kuleuven.be/problog/tutorial/various/06_slp.html#stochastic-logic-programs
   - The Indian GPA Problem. 
-  ([indian_gpa.pl](example/inference/indian_gpa.pl)). From
-  http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=indian-gpa 
+  ([indian_gpa.pl](example/inference/indian_gpa.pl), distributional clauses
+  version [indian_gpadc.pl](example/inference/indian_gpadc.pl)). From
+    http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=indian-gpa 
   "This example was inspired by Stuart Russell...the problem is: if you observe 
   that a student GPA is exactly 4.04.0 in a model of transcripts of students 
   from the USA (GPA's from 0.00.0 to 4.04.0 and India (GPA's from 0.00.0 to 
@@ -422,7 +460,8 @@ is done.
   (i.e. zero probability that the student is from India)."
   Probabilistic logic program from 
   https://github.com/davidenitti/DC/blob/master/examples/indian-gpa.pl
-  - Distributional Clauses example.
+  - Urn and balls, distributional Clauses example.
+  ([nballs.pl](example/inference/nballs.pl), distributional clauses syntax [nballsdc.pl](example/inference/nballsdc.pl)).
   From Example 4 of
   Davide Nitti, Tinne De Laet, and Luc De Raedt. Probabilistic logic programming for hybrid relational domains. Machine Learning 103(3), 407-449, 2016.
   http://link.springer.com/article/10.1007/s10994-016-5558-8/fulltext.html
