@@ -109,10 +109,9 @@ Examples divided by features:
   [gpl.pl](example/inference/gpl.pl), [rmc.pl](example/inference/rmc.pl),
   [hmmpos.pl](example/inference/hmmpos.pl), 
   [hmmpos2.pl](example/inference/hmmpos2.pl)
-  - PRISM syntax: 
- [coinmsw.pl](example/inference/coinmws.pl),
- [widgetmsw.pl](example/inference/widgetmsw.pl),
- [kalman_filtermsw.pl](example/inference/kalman_filtermsw.pl)
+  - PRISM syntax: [coinmsw.pl](example/inference/coinmws.pl),
+  [widgetmsw.pl](example/inference/widgetmsw.pl),
+  [kalman_filtermsw.pl](example/inference/kalman_filtermsw.pl)
   - Distributional clauses syntax:
   [indian_gpadc.pl](example/inference/indian_gpadc.pl),
   [nballsdc.pl](example/inference/nballsdc.pl)
