@@ -63,7 +63,6 @@ _not_ see exactly the same UI for cooperation.  What about
 	  - Save, clearing name.
     - Indicate branch points in history?
       - Requires complete graph in memory.
-  - Indicate modified tabs
   - Re-map Control-S (google-docs ignores save)
 
 ## Login
@@ -90,7 +89,6 @@ _not_ see exactly the same UI for cooperation.  What about
   - Debug (trace) through included files
     - Works, except for following the source.
   - Deal with files/line numbers over multiple files
-  - Jump to source for goals.
   - Staging
     Control-S (whatever) saves data to `staging area'.
     - In addition to HEAD, introduce STAGE (gitty solution)?

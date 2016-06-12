@@ -27,6 +27,11 @@
     binding Prolog variables in the query to specified values.
     </dd><dt>.swish(options)</dt><dd>Wrapper around <code>new Pengine()</code> that fetches the sources
     using the same algorithm as a query cell and sets the <code>application</code> to <code>swish</code>.
+    </dd><dt>.submit(form, options)</dt><dd>Submit a (Bootstrap) form to a predicate.  This provides a
+    wrapper around <code>.swish</code> that collects the content of the indicated <code>form</code> (a
+    jQuery selector), calls <code>options.predicate</code> with a single argument that is a dict that
+    contains the fields of the form.  On success, <code>options.onsuccess</code> is called.  If an
+    error occurs, this is displayed.
   </dd></dl>
 </div>
 

@@ -583,8 +583,11 @@ define([ "cm/lib/codemirror",
      * storage
      */
     setIsClean: function() {
-      var data = this.data(pluginName);
-      data.cleanGeneration = data.cm.changeGeneration();
+      return this.each(function() {
+	var elem = $(this);
+	var data = elem.data(pluginName);
+	data.cleanGeneration = data.cm.changeGeneration();
+      });
     },
 
     /**

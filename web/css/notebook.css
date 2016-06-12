@@ -38,7 +38,7 @@ div.notebook-menu {
   display: block;
   position: absolute;
   top: 3px;
-  right: 5px;
+  right: 1em;
   z-index: 2000;
 }
 

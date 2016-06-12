@@ -29,7 +29,9 @@
 
 :- module(swish_authenticate,
 	  [ swish_add_user/3,		% +User, +Passwd, +Fields
-	    swish_add_user/0
+	    swish_add_user/1,		% +Dict
+	    swish_add_user/0,
+	    swish_current_user/2	% ?User, ?Data
 	  ]).
 :- use_module(library(pengines), []).
 :- use_module(library(lists)).
@@ -38,6 +40,7 @@
 :- use_module(library(http/http_authenticate)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
+:- use_module(form).
 
 :- use_module(config).
 :- use_module(page, []).
@@ -186,6 +189,15 @@ is_sha1(Hash) :-
 	forall(sub_atom(Hash, _, 1, _, Char),
 	       char_type(Char, xdigit(_))).
 
+%%	swish_current_user(?User, -Dict) is nondet.
+%
+%	True if User is a user with properties.
+
+swish_current_user(User,
+		   u{user:User, group:Group, realname:RealName, email:Email}) :-
+	password_file(File),
+	http_current_user(File, User, [_Hash,Group,RealName,Email]).
+
 %%	swish_add_user(+User, +Passwd, +Fields) is det.
 %
 %	Add a new user to the SWISH   password  file. Defined Fields are
@@ -278,6 +290,36 @@ read_pwd(21, _, P) :-			% Control-U
 read_pwd(C, P0, P) :-
 	append(P0, [C], P1),
 	read_pwd(P1, P).
+
+
+%%	swish_add_user(+Data:dict) is det.
+%
+%	Add a user from Data.
+
+swish_add_user(Data) :-
+	Groups = [user,administrator],
+	validate_form(
+	    Data,
+	    [ field(user,     User,     [alnum, atom, length >= 2]),
+	      field(realname, RealName, [strip, alnum_and_spaces]),
+	      field(email,    Email,    [email]),
+	      field(group,    Group,    [downcase, atom,oneof(Groups)]),
+	      field(pwd1,     Pwd1,     [password]),
+	      field(pwd2,     Pwd2,     [password])
+	    ]),
+	new_user(User),
+	(   Pwd1 == Pwd2
+	->  true
+	;   input_error(pwd2, matching_password)
+	),
+	swish_add_user(User, Pwd1, [Group,RealName,Email]).
+
+new_user(User) :-
+	writeable_passwd_file(File),
+	exists_file(File),
+	http_current_user(File, User, _Fields), !,
+	input_error(user, new_user).
+new_user(_).
 
 
 		 /*******************************

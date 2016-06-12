@@ -382,6 +382,14 @@ var tabbed = {
      */
     title: function(title, type) {
       var tab    = this.closest(".tab-pane");
+
+      /* if no tab, we might be in fullscreen mode */
+      if ( tab.length == 0 ) {
+	fsorg = this.data("fullscreen_origin");
+	if ( fsorg )
+	  tab = $(fsorg).closest(".tab-pane");
+      }
+
       var tabbed = tab.closest(".tabbed");
       var id     = tab.attr("id");
       var ul	 = tabbed.tabbed('navTabs');
