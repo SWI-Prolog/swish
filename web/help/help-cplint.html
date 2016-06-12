@@ -39,15 +39,15 @@
 <p><code>cplint</code> permits the definition of discrete probability distributions and continuous probaility densities.</p>
 <h2 id="discrete">Discrete Probability Distributions</h2>
 <p>LPAD and CP-logic programs consist of a set of annotated disjunctive clauses. Disjunction in the head is represented with a semicolon and atoms in the head are separated from probabilities by a colon. For the rest, the usual syntax of Prolog is used. A general CP-logic clause has the form</p>
-<pre><code>h1:p1 ; ... ; hn:pn :- b1,...,bm,\+ c1,....,\+ cl</code></pre>
-<p>No parentheses are necessary. The <code>pi</code> are numeric expressions. It is up to the user to ensure that the numeric expressions are legal, i.e. that they sum up to less than one.</p>
+<pre><code>h1:p1 ; ... ; hn:pn :- Body.</code></pre>
+<p>where <code>Body</code> is a conjunction of goals as in Prolog. No parentheses are necessary. The <code>pi</code> are numeric expressions. It is up to the user to ensure that the numeric expressions are legal, i.e. that they sum up to less than one.</p>
 <p>If the clause has an empty body, it can be represented like this</p>
 <pre><code>h1:p1 ; ... ; hn:pn.</code></pre>
 <p>If the clause has a single head with probability 1, the annotation can be omitted and the clause takes the form of a normal prolog clause, i.e.</p>
-<pre><code>h1 :- b1,...,bm,\+ c1,...,\+ cl.</code></pre>
+<pre><code>h1 :- Body.</code></pre>
 <p>stands for</p>
-<pre><code>h1:1 :- b1,...,bm,\+ c1,...,\+ cl.</code></pre>
-<p>The coin example of <span class="citation">[<a href="#ref-VenVer04-ICLP04-IC">16</a>]</span> is represented as (file <a href="http://cplint.lamping.unife.it/example/inference/coin.cpl"><code>coin.cpl</code></a>)</p>
+<pre><code>h1:1 :- Body.</code></pre>
+<p>The coin example of <span class="citation">[<a href="#ref-VenVer04-ICLP04-IC">19</a>]</span> is represented as (file <a href="http://cplint.lamping.unife.it/example/inference/coin.cpl"><code>coin.cpl</code></a>)</p>
 <pre><code>heads(Coin):1/2 ; tails(Coin):1/2 :- 
   toss(Coin),\+biased(Coin).
 
@@ -58,17 +58,7 @@ fair(Coin):0.9 ; biased(Coin):0.1.
 
 toss(coin).</code></pre>
 <p>The first clause states that if we toss a coin that is not biased it has equal probability of landing heads and tails. The second states that if the coin is biased it has a slightly higher probability of landing heads. The third states that the coin is fair with probability 0.9 and biased with probability 0.1 and the last clause states that we toss a coin with certainty.</p>
-<p>Moreover, the bodies of rules may contain the built-in predicates:</p>
-<pre><code>is/2, &gt;/2, &lt;/2, &gt;=/2 ,=&lt;/2,
-=:=/2, =\=/2, true/0, false/0,
-=/2, ==/2, \=/2 ,\==/2, !/0, length/2</code></pre>
-<p>The bodies may also contain the following library predicates:</p>
-<pre><code>member/2, max_list/2, min_list/2
-nth0/3, nth/3, name/2, float/1,
-integer/1, var/1, @&gt;/2, 
-memberchk/2, select/3, dif/2,
-between/3</code></pre>
-<p>plus the predicate</p>
+<p>Moreover, the bodies of rules may contain built-in predicates, predicates from the libraries <code>lists</code>, <code>apply</code> and <code>clpr/nf_r</code> plus the predicate</p>
 <pre><code>average/2</code></pre>
 <p>that, given a list of numbers, computes its arithmetic mean.</p>
 <p>The body of rules may also contain the predicate <code>prob/2</code> that computes the probability of an atom, thus allowing nested probability computations. For example (<a href="http://cplint.lamping.unife.it/example/inference/meta.pl"><code>meta.pl</code></a>)</p>
@@ -83,71 +73,140 @@ draw_red(R, G):-
   Prob is R/(R + G),
   red(Prob).</code></pre>
 <p>Variables in probabilistic annotations must be ground when resolution reaches the end of the body, otherwise an exception is raised.</p>
-<p>Facts of the form</p>
-<pre><code>A:discrete(Var,D).</code></pre>
-<p>where <code>A</code> is an atom containg variable <code>Var</code> and <code>D</code> is a list of couples <code>Value:Prob</code> assigning probability <code>Prob</code> to <code>Value</code>.</p>
+<p>Alternative ways of specifying probability distribution include</p>
+<pre><code>A:discrete(Var,D):-Body.</code></pre>
+<p>or</p>
+<pre><code>A:finite(Var,D):-Body.</code></pre>
+<p>where <code>A</code> is an atom containg variable <code>Var</code> and <code>D</code> is a list of couples <code>Value:Prob</code> assigning probability <code>Prob</code> to <code>Value</code>. Moreover, you can use</p>
+<pre><code>A:uniform(Var,D):-Body.</code></pre>
+<p>where <code>A</code> is an atom containg variable <code>Var</code> and <code>D</code> is a list of values each taking the same probability (1 over the length of <code>D</code>).</p>
+<h3 id="problog-syntax">ProbLog Syntax</h3>
+<p>You can also use ProbLog <span class="citation">[<a href="#ref-DBLP:conf/ijcai/RaedtKT07">7</a>]</span> syntax, so a general clause takes the form</p>
+<pre><code>p1::h1 ; ... ; pn::hn :- Body</code></pre>
+<p>where the <code>pi</code> are numeric expressions.</p>
+<h3 id="prism-syntax">PRISM Syntax</h3>
+<p>You can also use PRISM <span class="citation">[<a href="#ref-DBLP:conf/ijcai/SatoK97">17</a>]</span> syntax, so a program is composed of a set of regular Prolog rules whose body may contain calls to the <code>msw/2</code> predicate (multi-ary switch). A call <code>msw(term,value)</code> means that a random variable associated to <code>term</code> assumes value <code>value</code>. The admissible values for a discrete random variable are specified using facts for the <code>values/2</code> predicate of the form</p>
+<pre><code>values(T,L).</code></pre>
+<p>where <code>T</code> is a term (possibly containing variables) and <code>L</code> is a list of values. The distribution over values is specified using directives for <code>set_sw/2</code> of the form</p>
+<pre><code>:- set_sw(T,LP).</code></pre>
+<p>where <code>T</code> is a term (possibly containing variables) and <code>LP</code> is a list of probability values. Remember that in PRISM each call to <code>msw/2</code> refers to a different random variable, i.e., no memoing is performed, differently from the case of LPAD/CP-Logic/ProbLog.</p>
+<p>For example, the coin example above in PRISM syntax becomes (<a href="http://cplint.lamping.unife.it/example/inference/coinmsw.pl"><code>coinmsw.pl</code></a>)</p>
+<pre><code>values(throw(_),[heads,tails]).
+:- set_sw(throw(fair),[0.5,0.5]).
+:- set_sw(throw(biased),[0.6,0.4]).
+values(fairness,[fair,biased]).
+:- set_sw(fairness,[0.9,0.1]).
+res(Coin,R):- toss(Coin),fairness(Coin,Fairness),msw(throw(Fairness),R).
+fairness(_Coin,Fairness) :- msw(fairness,Fairness).
+toss(coin).</code></pre>
 <h2 id="cont">Continuous Probability Densities</h2>
-<p><code>cplint</code> handles continuous random variables as well with its sampling inference module. To specify a probability density on an argument <code>Var</code> of an atom <code>A</code> you can used a fact of the form</p>
-<pre><code>A:Density.</code></pre>
-<p>where <code>Density</code> is a special atom identifying a probability density on variable <code>Var</code>. Allows <code>Density</code> atoms are</p>
+<p><code>cplint</code> handles continuous random variables as well with its sampling inference module. To specify a probability density on an argument <code>Var</code> of an atom <code>A</code> you can used rules of the form</p>
+<pre><code>A:Density:- Body</code></pre>
+<p>where <code>Density</code> is a special atom identifying a probability density on variable <code>Var</code> and <code>Body</code> (optional) is a regular clause body. Allowed <code>Density</code> atoms are</p>
 <ul>
 <li><p><code>uniform(Var,L,U)</code>: <code>Var</code> is uniformly distributed in <span class="math inline">\([L,U]\)</span></p></li>
 <li><p><code>gaussian(Var,Mean,Variance)</code>: <code>Var</code> follows a Gaussian distribution with mean <code>Mean</code> and variance <code>Variance</code></p></li>
 <li><p><code>dirichlet(Var,Par)</code>: <code>Var</code> is a list of real numbers following a Dirichlet distribution with <span class="math inline">\(\alpha\)</span> parameters specified by the list <code>Par</code></p></li>
 <li><p><code>gamma(Var,Shape,Scale)</code> <code>Var</code> follows a gamma distribution with shape parameter <code>Shape</code> and scale parameter <code>Scale</code>.</p></li>
+<li><p><code>beta(Var,Alpha,Beta)</code> <code>Var</code> follows a beta distribution with parameters <code>Alpha</code> and <code>Beta</code>.</p></li>
+<li><p><code>poisson(Var,Lambda)</code> <code>Var</code> follows a Poisson distribution with parameter <code>Lambda</code>.</p></li>
 </ul>
 <p>For example</p>
 <pre><code>g(X): gaussian(X,0, 1).</code></pre>
 <p>states that argument <code>X</code> of <code>g(X)</code> follows a Gaussian distribution with mean 0 and variance 1.</p>
-<p>For example, (<a href="http://cplint.lamping.unife.it/example/inference/gaussian_mixture.pl"><code>gaussian_mixture.pl</code></a>)) defines a mixture of two Gaussians:</p>
+<p>For example, <a href="http://cplint.lamping.unife.it/example/inference/gaussian_mixture.pl"><code>gaussian_mixture.pl</code></a> defines a mixture of two Gaussians:</p>
 <pre><code>heads:0.6;tails:0.4.
 g(X): gaussian(X,0, 1).
 h(X): gaussian(X,5, 2).
 mix(X) :- heads, g(X).
 mix(X) :- tails, h(X).</code></pre>
 <p>The argument <code>X</code> of <code>mix(X)</code> follows a distribution that is a mixture of two Gaussian, one with mean 0 and variance 1 with probability 0.6 and one with mean 5 and variance 2 with probability 0.4.</p>
-<p>The parameters of the distribution atoms can be taken from the probabilistic atom, the example (<a href="http://cplint.lamping.unife.it/example/inference/gauss_mean_est.pl"><code>gauss_mean_est.pl</code></a>))</p>
+<p>The parameters of the distribution atoms can be taken from the probabilistic atom, the example <a href="http://cplint.lamping.unife.it/example/inference/gauss_mean_est.pl"><code>gauss_mean_est.pl</code></a></p>
 <pre><code>value(I,X) :-
   mean(M),
   value(I,M,X).
 mean(M): gaussian(M,1.0, 5.0).
 value(_,M,X): gaussian(X,M, 2.0).</code></pre>
-<p>states that for an index <code>I</code> the continuous variable <code>X</code> is sampled from a Gaussian whose mean is sampled from a Guassian with mean 1 and variance 5 and whose variance is 2.</p>
-<p>Any operation is allowed on continuous random variables. For example <a href="http://cplint.lamping.unife.it/example/inference/kalman_filter.pl"><code>kalman_filter.pl</code></a></p>
+<p>states that for an index <code>I</code> the continuous variable <code>X</code> is sampled from a Gaussian whose variance is 2 and whose mean is sampled from a Guassian with mean 1 and variance 5.</p>
+<p>Any operation is allowed on continuous random variables. The example below (<a href="http://cplint.lamping.unife.it/example/inference/kalman_filter.pl"><code>kalman_filter.pl</code></a>) encodes a Kalman filter:</p>
 <pre><code>kf(N,O, T) :-
   init(S),
   kf_part(0, N, S,O,T).
-
 kf_part(I, N, S,[V|RO], T) :-
   I &lt; N,
   NextI is I+1,
   trans(S,I,NextS),
   emit(NextS,I,V),
   kf_part(NextI, N, NextS,RO, T).
-
 kf_part(N, N, S, [],S).
-
 trans(S,I,NextS) :-
   {NextS =:= E + S},
   trans_err(I,E).
-
 emit(NextS,I,V) :-
   {NextS =:= V+X},
   obs_err(I,X).
-
 init(S):gaussian(S,0,1).
-
 trans_err(_,E):gaussian(E,0,2).
-
 obs_err(_,E):gaussian(E,0,1).</code></pre>
-<p>encodes a Kalman filter. Continuous random variables are involved in arithmetic expressions (in <code>trans/3</code> and <code>emit/3</code>). It is often convenient, as in this case, to use CLP(R) constraints (by including the directive <code>:- use_module(library(clpr)).</code>) as in this way the expressions can be used in multiple directions and the same program can be used to evaluate both to sample and the weight the sample on the basis of evidence, otherwise two different programs have to be written. In case random variables are not sufficiently instantiated to exploit expressions for inferring the values of other variables, inference will return an error.</p>
+<p>Continuous random variables are involved in arithmetic expressions (in <code>trans/3</code> and <code>emit/3</code>). It is often convenient, as in this case, to use CLP(R) constraints (by including the directive <code>:- use_module(library(clpr)).</code>) as in this way the expressions can be used in multiple directions and the same clauses can be used both to sample and to evaluate the weight the sample on the basis of evidence, otherwise different clauses have to be written. In case random variables are not sufficiently instantiated to exploit expressions for inferring the values of other variables, inference will return an error.</p>
+<h3 id="dc">Distributional Clauses Syntax</h3>
+<p>You can also use the syntax of Distributional Clauses (DC) <span class="citation">[<a href="#ref-Nitti2016">12</a>]</span>. Continuous random variables are represented in this case by term whose distribution can be specified with density atoms as in</p>
+<pre><code>T~Density&#39; := Body.</code></pre>
+<p>Here <code>:=</code> replaces the implication symbol, <code>T</code> is a term and <code>Density'</code> is one of the density atoms above witthout the <code>Var</code> argument, because <code>T</code> itself represents a random variables. In the body of clauses you can use the infix operator <code>~=</code> to equate a term representing a random variable with a logical variable or a constant as in <code>T ~= X</code>. Internally <code>cplint</code> transforms the terms representing random variables into atoms with an extra argument for holding the variable. DC can be used to represent also discrete distributions using</p>
+<pre><code>T~uniform(L) := Body.
+T~finite(D) := Body.</code></pre>
+<p>where <code>L</code> is a list of values and <code>D</code> is a list of couples <code>P:V</code> with <code>P</code> a probability and <code>V</code> a value. If <code>Body</code> is empty, as in regular Prolog, the implication symbol <code>:=</code> can be omitted.</p>
+<p>The Indian GPA problem from <a href="http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=indian-gpa" class="uri">http://www.robots.ox.ac.uk/~fwood/anglican/examples/viewer/?worksheet=indian-gpa</a>in distributional clauses syntax (<a href="https://github.com/davidenitti/DC/blob/master/examples/indian-gpa.pl" class="uri">https://github.com/davidenitti/DC/blob/master/examples/indian-gpa.pl</a>) takes the form (<a href="http://cplint.lamping.unife.it/example/inference/indian_gpadc.pl"><code>indian_gpadc.pl</code></a>):</p>
+<pre><code>is_density_A:0.95;is_discrete_A:0.05.
+% the probability distribution of GPA scores for American students is
+% continuous with probability 0.95 and discrete with probability 0.05
+
+agpa(A): beta(A,8,2) :- is_density_A.
+% the GPA of American students follows a beta distribution if the
+% distribution is continuous
+
+american_gpa(G) : finite(G,[4.0:0.85,0.0:0.15]) :- is_discrete_A.
+% the GPA of American students is 4.0 with probability 0.85 and 0.0
+% with 
+% probability 0.15 if the
+% distribution is discrete
+american_gpa(A):- agpa(A0), A is A0*4.0.
+% the GPA of American students is obtained by rescaling the value of
+% agpa
+% to the (0.0,4.0) interval
+is_density_I : 0.99; is_discrete_I:0.01.
+% the probability distribution of GPA scores for Indian students is
+% continuous with probability 0.99 and discrete with probability 
+% 0.01
+igpa(I): beta(I,5,5) :- is_density_I.
+% the GPA of Indian students follows a beta distribution if the
+% distribution is continuous
+indian_gpa(I): finite(I,[0.0:0.1,10.0:0.9]):-  is_discrete_I.
+% the GPA of Indian students is 10.0 with probability 0.9 and 0.0
+% with
+% probability 0.1 if the
+% distribution is discrete
+indian_gpa(I) :- igpa(I0), I is I0*10.0.
+% the GPA of Indian students is obtained by rescaling the value 
+% of igpa
+% to the (0.0,4.0) interval
+nation(N) : finite(N,[a:0.25,i:0.75]).
+% the nation is America with probability 0.25 and India with 
+% probability 0.75
+student_gpa(G):- nation(a),american_gpa(G).
+% the GPA of the student is given by american_gpa if the nation is 
+% America
+student_gpa(G) :- nation(i),indian_gpa(G).
+% the GPA of the student is given by indian_gpa if the nation 
+%is India</code></pre>
+<p>See</p>
 <h1 id="semantics">Semantics</h1>
 <p>The semantics of LPADs for the case of programs without functions symbols can be given as follows. An LPAD defines a probability distribution over normal logic programs called <em>worlds</em>. A world is obtained from an LPAD by first grounding it, by selecting a single head atom for each ground clause and by including in the world the clause with the selected head atom and the body. The probability of a world is the product of the probabilities associated to the heads selected. The probability of a ground atom (the query) is given by the sum of the probabilities of the worlds where the query is true.</p>
-<p>If the LPAD contains function symbols, the definition is more complex, see <span class="citation">[<a href="#ref-DBLP:journals/ai/Poole97">11</a>,<a href="#ref-Rig15-PLP-IW">14</a>,<a href="#ref-DBLP:journals/jair/SatoK01">15</a>]</span>.</p>
-<p>For the semantics of programs with continuous random variables, see <span class="citation">[<a href="#ref-Nitti2016">10</a>]</span> that defines distributional clauses. <code>cplint</code> allows more freedom in the use of continuous random variables in expressions, for example <a href="http://cplint.lamping.unife.it/example/inference/kalman_filter.pl"><code>kalman_filter.pl</code></a> would not be allowed by distributional clauses.</p>
+<p>If the LPAD contains function symbols, the definition is more complex, see <span class="citation">[<a href="#ref-DBLP:journals/ai/Poole97">13</a>,<a href="#ref-Rig15-PLP-IW">16</a>,<a href="#ref-DBLP:journals/jair/SatoK01">18</a>]</span>.</p>
+<p>For the semantics of programs with continuous random variables, see <span class="citation">[<a href="#ref-TLP:8688161">9</a>]</span> that defines the probability space for <span class="math inline">\(N\)</span> continuous random variables by considering the Borel <span class="math inline">\(\sigma\)</span>-algebra over <span class="math inline">\(\mathbb{R}^N\)</span> and defines a Lebesgue measure on this set as the probability measure. The probability space is lifted to cover the entire program using the least model semantics of constraint logic programs. Alternatively, <span class="citation">[<a href="#ref-Nitti2016">12</a>]</span> defines the semantics of distributional clauses by resorting to a stochastic <span class="math inline">\(Tp\)</span> operator. <code>cplint</code> allows more freedom than distributional clauses in the use of continuous random variables in expressions, for example <a href="http://cplint.lamping.unife.it/example/inference/kalman_filter.pl"><code>kalman_filter.pl</code></a> would not be allowed by distributional clauses.</p>
 <h1 id="inf">Inference</h1>
-<p><code>cplint</code> answers queries using the module <code>pita</code> or <code>mcintyre</code>. The first performs the program transformation technique of <span class="citation">[<a href="#ref-RigSwi10-ICLP10-IC">12</a>]</span>. Differently from that work, techniques alternative to tabling and answer subsumption are used. The latter performs approximate inference by sampling using a different program transformation technique and is described in <span class="citation">[<a href="#ref-Rig13-FI-IJ">13</a>]</span>. Only <code>mcintyre</code> is able to handle continuous random variables.</p>
-<p>For answering queries, you have to prepare a Prolog file where you first load the inference module (for example <code>pita</code>), initialize it with a directive (for example <code>:- pita</code>) and then enclose the LPAD clauses in <code>:-begin_lpad.</code> and <code>:-end_lpad.</code> For example, the coin program above can be stored in <a href="http://cplint.lamping.unife.it/example/inference/coin.pl"><code>coin.pl</code></a> for performing inference with <code>pita</code> as follows</p>
+<p><code>cplint</code> answers queries using the module <code>pita</code> or <code>mcintyre</code>. The first performs the program transformation technique of <span class="citation">[<a href="#ref-RigSwi10-ICLP10-IC">14</a>]</span>. Differently from that work, techniques alternative to tabling and answer subsumption are used. The latter performs approximate inference by sampling using a different program transformation technique and is described in <span class="citation">[<a href="#ref-Rig13-FI-IJ">15</a>]</span>. Only <code>mcintyre</code> is able to handle continuous random variables.</p>
+<p>For answering queries, you have to prepare a Prolog file where you first load the inference module (for example <code>pita</code>), initialize it with a directive (for example <code>:- pita</code>) and then enclose the LPAD clauses in <code>:-begin_lpad.</code> or <code>:-begin_plp.</code> and <code>:-end_lpad.</code> or <code>:-end_plp.</code> For example, the coin program above can be stored in <a href="http://cplint.lamping.unife.it/example/inference/coin.pl"><code>coin.pl</code></a> for performing inference with <code>pita</code> as follows</p>
 <pre><code>:- use_module(library(pita)).
 :- pita.
 :- begin_lpad.
@@ -208,7 +267,7 @@ female(cathy).</code></pre>
 <pre><code>?- heads(coin).</code></pre>
 <p>In Prolog programs, you have to enter the program above (<code>coin.pl</code>).</p>
 <h2 id="uncondq">Unconditional Queries</h2>
-<p>You can ask the unconditional probability of an atom using <code>pita</code> with the predicate</p>
+<p>The unconditional probability of an atom can be asked using <code>pita</code> with the predicate</p>
 <pre><code>prob(:Query:atom,-Probability:float).</code></pre>
 <p>as in</p>
 <pre><code>?- prob(heads(coin),P).</code></pre>
@@ -231,7 +290,7 @@ female(cathy).</code></pre>
 <p>that samples <code>heads(coin)</code> 1000 times and returns the estimated probability that a sample is true (i.e., that a sample succeeds).</p>
 <p>Moreover, you can sample arguments of queries with</p>
 <pre><code>mc_sample_arg(:Query:atom,+Samples:int,?Arg:var,-Values:list).</code></pre>
-<p>The predicate samples <code>Query</code> a number of <code>Samples</code> times. <code>Arg</code> should be a variable in <code>Query</code>. The predicate returns in <code>Values</code> a list of couples <code>L-N</code> where <code>L</code> is the list of values of <code>Arg</code> for which <code>Query</code> succeeds in a world sampled at random and <code>N</code> is the number of samples returning that list of values. If <code>L</code> is the empty list, it means that for that sample the query failed. If <code>L</code> is a list with a single element, it means that for that sample the query is determinate. If, in all couples <code>L-N</code>, <code>L</code> is a list with a single element, it means that the clauses in the program are mutually exclusive, i.e., that in every sample, only one clause for each subgoal has the body true. This is one of the assumptions taken for programs of the PRISM system <span class="citation">[<a href="#ref-DBLP:journals/jair/SatoK01">15</a>]</span>. For example <a href="http://cplint.lamping.unife.it/example/inference/pfcglr.pl"><code>pfcglr.pl</code></a> and <a href="http://cplint.lamping.unife.it/example/inference/plcg.pl"><code>plcg.pl</code></a> satisfy this constraint while <a href="http://cplint.lamping.unife.it/example/inference/markov_chain.pl"><code>markov_chain.pl</code></a> and <a href="http://cplint.lamping.unife.it/example/inference/var_obj.pl"><code>var_obj.pl</code></a> don’t.</p>
+<p>The predicate samples <code>Query</code> a number of <code>Samples</code> times. <code>Arg</code> should be a variable in <code>Query</code>. The predicate returns in <code>Values</code> a list of couples <code>L-N</code> where <code>L</code> is the list of values of <code>Arg</code> for which <code>Query</code> succeeds in a world sampled at random and <code>N</code> is the number of samples returning that list of values. If <code>L</code> is the empty list, it means that for that sample the query failed. If <code>L</code> is a list with a single element, it means that for that sample the query is determinate. If, in all couples <code>L-N</code>, <code>L</code> is a list with a single element, it means that the clauses in the program are mutually exclusive, i.e., that in every sample, only one clause for each subgoal has the body true. This is one of the assumptions taken for programs of the PRISM system <span class="citation">[<a href="#ref-DBLP:journals/jair/SatoK01">18</a>]</span>. For example <a href="http://cplint.lamping.unife.it/example/inference/pfcglr.pl"><code>pfcglr.pl</code></a> and <a href="http://cplint.lamping.unife.it/example/inference/plcg.pl"><code>plcg.pl</code></a> satisfy this constraint while <a href="http://cplint.lamping.unife.it/example/inference/markov_chain.pl"><code>markov_chain.pl</code></a> and <a href="http://cplint.lamping.unife.it/example/inference/var_obj.pl"><code>var_obj.pl</code></a> don’t.</p>
 <p>An example of use of the above predicate is</p>
 <pre><code>?- mc_sample_arg(reach(s0,0,S),50,S,Values). </code></pre>
 <p>of <a href="http://cplint.lamping.unife.it/example/inference/markov_chain.pl"><code>markov_chain.pl</code></a> that takes 50 samples of <code>L</code> in <code>findall(S,(reach(s0,0,S),L)</code>.</p>
@@ -245,18 +304,17 @@ female(cathy).</code></pre>
 <pre><code>?- mc_expectation(eventually(elect,T),1000,T,E).</code></pre>
 <p>of <a href="http://cplint.lamping.unife.it/example/inference/pctl_slep.pl"><code>pctl_slep.pl</code></a> that returns in <code>E</code> the expected value of <code>T</code> by taking 1000 samples.</p>
 <h2 id="condq">Conditional Queries on Discrete Variables</h2>
-<p>You can ask the conditional probability of an atom given another atom using <code>pita</code> with the predicate</p>
+<p>The conditional probability of an atom query given another atom evidence can be asked using <code>pita</code> with the predicate</p>
 <pre><code>prob(:Query:atom,:Evidence:atom,-Probability:float).</code></pre>
 <p>as in</p>
 <pre><code>?- prob(heads(coin),biased(coin),P).</code></pre>
 <p>If the query/evidence are non-ground, <code>prob/3</code> returns in backtracking ground instantiations together with their probability.</p>
-<p>If the evidence is composed of more than one atom, add a clause of the form</p>
+<p>If the evidence is composed of more than one atom, a clause of the form</p>
 <pre><code>evidence:- e1,...,en.</code></pre>
-<p>to the program, where <code>e1,...,en</code> are the evidence atoms, and use the query</p>
-<pre><code>?- prob(goal,evidence,P).</code></pre>
-<p>When using <code>mcintyre</code>, you can ask conditional queries with rejection sampling or with Metropolis-Hastings Markov Chain Monte Carlo. In rejection sampling <span class="citation">[<a href="#ref-von195113">17</a>]</span>, you first query the evidence and, if the query is successful, query the goal in the same sample, otherwise the sample is discarded. In Metropolis-Hastings MCMC, <code>mcintyre</code> follows the algorithm proposed in <span class="citation">[<a href="#ref-nampally2014adaptive">9</a>]</span> (the non adaptive version). A Markov chain is built by building an initial sample and by generating successor samples.</p>
+<p>should be added to the program, where <code>e1,...,en</code> are the evidence atoms, and the query <code>prob(goal,evidence,P).</code> should be asked.</p>
+<p>When using <code>mcintyre</code>, you can ask conditional queries with rejection sampling or with Metropolis-Hastings Markov Chain Monte Carlo. In rejection sampling <span class="citation">[<a href="#ref-von195113">20</a>]</span>, you first query the evidence and, if the query is successful, query the goal in the same sample, otherwise the sample is discarded. In Metropolis-Hastings MCMC, <code>mcintyre</code> follows the algorithm proposed in <span class="citation">[<a href="#ref-nampally2014adaptive">11</a>]</span> (the non adaptive version). A Markov chain is built by building an initial sample and by generating successor samples.</p>
 <p>The initial sample is built by randomly sampling choices so that the evidence is true. This is done with a backtracking meta-interpreter that starts with the goal and randomizes the order in which clauses are selected during the search so that the initial sample is unbiased. Each time the meta-interpreter encounters a probabilistic choice, it first checks whether a value has already been sampled, if not, it takes a sample and records it. If a failure is obtained, the meta-interpreter backtracks to other clauses but without deleting samples. Then the goal is queries using regular MCINTYRE.</p>
-<p>A successor sample is obtained by deleting a fixed number (parameter <code>Lag</code>) of sampled probabilistic choices. Then the evidence is queried using regular MCINTYRE starting with the undeleted choices. If the query succeeds, the goal is queried using regular MCINTYRE. The sample is accepted with a probability of <span class="math inline">\(\min\{1,\frac{N_0}{N_1}\}\)</span> where <span class="math inline">\(N_0\)</span> is the number of choices sampled in the previous sample and <span class="math inline">\(N_1\)</span> is the number of choices sampled in the current sample. In <span class="citation">[<a href="#ref-nampally2014adaptive">9</a>]</span> the lag is always 1 but the proof in <span class="citation">[<a href="#ref-nampally2014adaptive">9</a>]</span> that the above acceptance probability yields a valid Metropolis-Hastings algorithm holds also when forgetting more than one sampled choice, so the lag is user defined in <code>cplint</code>.</p>
+<p>A successor sample is obtained by deleting a fixed number (parameter <code>Lag</code>) of sampled probabilistic choices. Then the evidence is queried using regular MCINTYRE starting with the undeleted choices. If the query succeeds, the goal is queried using regular MCINTYRE. The sample is accepted with a probability of <span class="math inline">\(\min\{1,\frac{N_0}{N_1}\}\)</span> where <span class="math inline">\(N_0\)</span> is the number of choices sampled in the previous sample and <span class="math inline">\(N_1\)</span> is the number of choices sampled in the current sample. In <span class="citation">[<a href="#ref-nampally2014adaptive">11</a>]</span> the lag is always 1 but the proof in <span class="citation">[<a href="#ref-nampally2014adaptive">11</a>]</span> that the above acceptance probability yields a valid Metropolis-Hastings algorithm holds also when forgetting more than one sampled choice, so the lag is user defined in <code>cplint</code>.</p>
 <p>Then the number of successes of the query is increased by 1 if the query succeeded in the last accepted sample. The final probability is given by the number of successes over the total number of samples.</p>
 <p>You can take a given number of sample with rejection sampling using</p>
 <pre><code>mc_rejection_sample(:Query:atom,:Evidence:atom,+Samples:int,
@@ -297,9 +355,14 @@ mc_mh_sample_arg(:Query:atom,:Evidence:atom,
 <p>For example</p>
 <pre><code>?- mc_sample_arg(value(0,X),1000,X,L).</code></pre>
 <p>from (<a href="http://cplint.lamping.unife.it/example/inference/gauss_mean_est.pl"><code>gauss_mean_est.pl</code></a>)) samples 1000 values for <code>X</code> in <code>value(0,X)</code> and returns them in <code>L</code>.</p>
-<p>When you have evidence on ground atoms that have continuous values as arguments, you cannot use rejection sampling or Metropolis-Hastings, as the probability of the evidence is 0. For example, the probability of sampling a specific value from a Gaussian is 0. Continuous variables have probability densities instead of distributions as discrete variables. In this case, you can use likelihood weighting <span class="citation">[<a href="#ref-fung1990weighing">7</a>,<a href="#ref-koller2009probabilistic">8</a>,<a href="#ref-Nitti2016">10</a>]</span> to obtain samples of continuous arguments of a goal.</p>
+<p>When you have evidence on ground atoms that have continuous values as arguments, you cannot use rejection sampling or Metropolis-Hastings, as the probability of the evidence is 0. For example, the probability of sampling a specific value from a Gaussian is 0. Continuous variables have probability densities instead of distributions as discrete variables. In this case, you can use likelihood weighting <span class="citation">[<a href="#ref-fung1990weighing">8</a>,<a href="#ref-koller2009probabilistic">10</a>,<a href="#ref-Nitti2016">12</a>]</span> to obtain samples of continuous arguments of a goal.</p>
 <p>For each sample to be taken, likelihood weighting uses a meta-interpreter to find a sample where the goal is true, randomizing the choice of clauses when more than one resolves with the goal in order to obtain an unbiased sample. This meta-interpreter is similar to the one used to generate the first sample in Metropolis-Hastings.</p>
 <p>Then a different meta-interpreter is used to evaluate the weight of the sample. This meta-interpreter starts with the evidence as the query and a weight of 1. Each time the meta-interpreter encounters a probabilistic choice over a continuous variable, it first checks whether a value has already been sampled. If so, it computes the probability density of the sampled value and multiplies the weight by it. If the value has not been sampled, it takes a sample and records it, leaving the weight unchanged. In this way, each sample in the result has a weight that is 1 for the prior distribution and that may be different from the posterior distribution, reflecting the influence of evidence.</p>
+<p>The predicate</p>
+<pre><code>mc_lw_sample(:Query:atom,:Evidence:atom,+Samples:int,-Prob:floar) is det</code></pre>
+<p>samples <code>Query</code> a number of <code>Samples</code> times given that <code>Evidence</code> (a conjunction of atoms is allowed here). is true. The predicate returns in <code>Prob</code> the probability that the query is true. It performs likelihood weighting: each sample is weighted by the likelihood of evidence in the sample. For example</p>
+<pre><code>?- mc_lw_sample(nation(a),student_gpa(4.0),1000,PPost).</code></pre>
+<p>from <a href="http://cplint.lamping.unife.it/example/inference/indian_gpa.pl"><code>indian_gpa.pl</code></a> samples 1000 the query <code>nation(a)</code> given that <code>student_gpa(4.0)</code> has been observed.</p>
 <p>The predicate</p>
 <pre><code>mc_lw_sample_arg(:Query:atom,:Evidence:atom,+N:int,?Arg:var,-ValList)</code></pre>
 <p>returns in <code>ValList</code> a list of couples <code>V-W</code> where <code>V</code> is a value of <code>Arg</code> for which <code>Query</code> succeeds and <code>W</code> is the weight computed by likelihood weighting according to <code>Evidence</code> (a conjunction of atoms is allowed here). For example</p>
@@ -670,38 +733,47 @@ fold(test,[490,491,...]).</code></pre>
 <div id="ref-RaeLae95-ALT95">
 <p>6. L. De Raedt and W. Van Laer. 1995. Inductive constraint logic. <em>Proceedings of the 6th conference on algorithmic learning theory (aLT 1995)</em>, Springer, 80–94.</p>
 </div>
+<div id="ref-DBLP:conf/ijcai/RaedtKT07">
+<p>7. L. De Raedt, A. Kimmig, and H. Toivonen. 2007. ProbLog: A probabilistic Prolog and its application in link discovery. <em>International joint conference on artificial intelligence</em>, 2462–2467.</p>
+</div>
 <div id="ref-fung1990weighing">
-<p>7. Robert M Fung and Kuo-Chu Chang. 1990. Weighing and integrating evidence for stochastic simulation in bayesian networks. <em>Fifth annual conference on uncertainty in artificial intelligence</em>, North-Holland Publishing Co., 209–220.</p>
+<p>8. Robert M Fung and Kuo-Chu Chang. 1990. Weighing and integrating evidence for stochastic simulation in bayesian networks. <em>Fifth annual conference on uncertainty in artificial intelligence</em>, North-Holland Publishing Co., 209–220.</p>
+</div>
+<div id="ref-TLP:8688161">
+<p>9. Muhammad Asiful Islam, CR Ramakrishnan, and IV Ramakrishnan. 2012. Inference in probabilistic logic programs with continuous random variables. <em>tplp_j</em> 12, Special Issue 4-5: 505–523. <a href="http://doi.org/10.1017/S1471068412000154" class="uri">http://doi.org/10.1017/S1471068412000154</a></p>
 </div>
 <div id="ref-koller2009probabilistic">
-<p>8. D. Koller and N. Friedman. 2009. <em>Probabilistic graphical models: Principles and techniques</em>. MIT Press, Cambridge, MA.</p>
+<p>10. D. Koller and N. Friedman. 2009. <em>Probabilistic graphical models: Principles and techniques</em>. MIT Press, Cambridge, MA.</p>
 </div>
 <div id="ref-nampally2014adaptive">
-<p>9. Arun Nampally and CR Ramakrishnan. 2014. Adaptive mCMC-based inference in probabilistic logic programs. <em>arXiv preprint arXiv:1403.6036</em>. Retrieved from <a href="http://arxiv.org/pdf/1403.6036.pdf" class="uri">http://arxiv.org/pdf/1403.6036.pdf</a></p>
+<p>11. Arun Nampally and CR Ramakrishnan. 2014. Adaptive mCMC-based inference in probabilistic logic programs. <em>arXiv preprint arXiv:1403.6036</em>. Retrieved from <a href="http://arxiv.org/pdf/1403.6036.pdf" class="uri">http://arxiv.org/pdf/1403.6036.pdf</a></p>
 </div>
 <div id="ref-Nitti2016">
-<p>10. Davide Nitti, Tinne De Laet, and Luc De Raedt. 2016. Probabilistic logic programming for hybrid relational domains. <em>Mach. Learn.</em> 103, 3: 407–449. <a href="http://doi.org/10.1007/s10994-016-5558-8" class="uri">http://doi.org/10.1007/s10994-016-5558-8</a></p>
+<p>12. Davide Nitti, Tinne De Laet, and Luc De Raedt. 2016. Probabilistic logic programming for hybrid relational domains. <em>Mach. Learn.</em> 103, 3: 407–449. <a href="http://doi.org/10.1007/s10994-016-5558-8" class="uri">http://doi.org/10.1007/s10994-016-5558-8</a></p>
 </div>
 <div id="ref-DBLP:journals/ai/Poole97">
-<p>11. David Poole. 1997. The independent choice logic for modelling multiple agents under uncertainty. <em>Artificial Intelligence</em> 94, 1-2: 7–56.</p>
+<p>13. David Poole. 1997. The independent choice logic for modelling multiple agents under uncertainty. <em>Artificial Intelligence</em> 94, 1-2: 7–56.</p>
 </div>
 <div id="ref-RigSwi10-ICLP10-IC">
-<p>12. Fabrizio Riguzzi and Terrance Swift. 2010. Tabling and Answer Subsumption for Reasoning on Logic Programs with Annotated Disjunctions. <em>Technical communications of the international conference on logic programming</em>, Schloss Dagstuhl–Leibniz-Zentrum fuer Informatik, 162–171. <a href="http://doi.org/10.4230/LIPIcs.ICLP.2010.162" class="uri">http://doi.org/10.4230/LIPIcs.ICLP.2010.162</a></p>
+<p>14. Fabrizio Riguzzi and Terrance Swift. 2010. Tabling and Answer Subsumption for Reasoning on Logic Programs with Annotated Disjunctions. <em>Technical communications of the international conference on logic programming</em>, Schloss Dagstuhl–Leibniz-Zentrum fuer Informatik, 162–171. <a href="http://doi.org/10.4230/LIPIcs.ICLP.2010.162" class="uri">http://doi.org/10.4230/LIPIcs.ICLP.2010.162</a></p>
 </div>
 <div id="ref-Rig13-FI-IJ">
-<p>13. Fabrizio Riguzzi. 2013. MCINTYRE: A Monte Carlo system for probabilistic logic programming. <em>Fundamenta Informaticae</em> 124, 4: 521–541. Retrieved from <a href="http://ds.ing.unife.it/~friguzzi/Papers/Rig13-FI-IJ.pdf" class="uri">http://ds.ing.unife.it/~friguzzi/Papers/Rig13-FI-IJ.pdf</a></p>
+<p>15. Fabrizio Riguzzi. 2013. MCINTYRE: A Monte Carlo system for probabilistic logic programming. <em>Fundamenta Informaticae</em> 124, 4: 521–541. Retrieved from <a href="http://ds.ing.unife.it/~friguzzi/Papers/Rig13-FI-IJ.pdf" class="uri">http://ds.ing.unife.it/~friguzzi/Papers/Rig13-FI-IJ.pdf</a></p>
 </div>
 <div id="ref-Rig15-PLP-IW">
-<p>14. Fabrizio Riguzzi. 2015. The distribution semantics is well-defined for all normal programs. <em>Proceedings of the 2nd international workshop on probabilistic logic programming (pLP)</em>, Sun SITE Central Europe, 69–84. Retrieved from <a href="http://ceur-ws.org/Vol-1413/#paper-06" class="uri">http://ceur-ws.org/Vol-1413/#paper-06</a></p>
+<p>16. Fabrizio Riguzzi. 2015. The distribution semantics is well-defined for all normal programs. <em>Proceedings of the 2nd international workshop on probabilistic logic programming (pLP)</em>, Sun SITE Central Europe, 69–84. Retrieved from <a href="http://ceur-ws.org/Vol-1413/#paper-06" class="uri">http://ceur-ws.org/Vol-1413/#paper-06</a></p>
+</div>
+<div id="ref-DBLP:conf/ijcai/SatoK97">
+<p>17. Taisuke Sato and Yoshitaka Kameya. 1997. PRISM: A language for symbolic-statistical modeling. <em>International joint conference on artificial intelligence</em>, 1330–1339.</p>
 </div>
 <div id="ref-DBLP:journals/jair/SatoK01">
-<p>15. Taisuke Sato and Yoshitaka Kameya. 2001. Parameter learning of logic programs for symbolic-statistical modeling. <em>J. Artif. Intell. Res.</em> 15: 391–454.</p>
+<p>18. Taisuke Sato and Yoshitaka Kameya. 2001. Parameter learning of logic programs for symbolic-statistical modeling. <em>J. Artif. Intell. Res.</em> 15: 391–454.</p>
 </div>
 <div id="ref-VenVer04-ICLP04-IC">
-<p>16. J. Vennekens, S. Verbaeten, and M. Bruynooghe. 2004. Logic programs with annotated disjunctions. <em>International conference on logic programming</em>, Springer, 195–209.</p>
+<p>19. J. Vennekens, S. Verbaeten, and M. Bruynooghe. 2004. Logic programs with annotated disjunctions. <em>International conference on logic programming</em>, Springer, 195–209.</p>
 </div>
 <div id="ref-von195113">
-<p>17. John Von Neumann. 1951. Various techniques used in connection with random digits. <em>Nat. Bureau Stand. Appl. Math. Ser.</em> 12: 36–38.</p>
+<p>20. John Von Neumann. 1951. Various techniques used in connection with random digits. <em>Nat. Bureau Stand. Appl. Math. Ser.</em> 12: 36–38.</p>
 </div>
 </div>
 </body>
