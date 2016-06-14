@@ -90,7 +90,7 @@ user:file_search_path(render, swish('lib/render')).
 %
 %	@see use_rendering/2.
 
-:- multifile user:term_expansion/2.
+:- multifile system:term_expansion/2.
 
 use_rendering(Rendering) :-
 	use_rendering(Rendering, []).
@@ -111,9 +111,9 @@ use_rendering(Rendering, Options) :-
 	retractall(Into:'swish renderer'(Renderer, _)),
 	assertz(Into:'swish renderer'(Renderer, Options)).
 
-user:term_expansion((:- use_rendering(Renderer)), Expanded) :-
+system:term_expansion((:- use_rendering(Renderer)), Expanded) :-
 	expand_rendering(Renderer, [], Expanded).
-user:term_expansion((:- use_rendering(Renderer, Options)), Expanded) :-
+system:term_expansion((:- use_rendering(Renderer, Options)), Expanded) :-
 	expand_rendering(Renderer, Options, Expanded).
 
 expand_rendering(Module:Renderer, Options,
@@ -224,6 +224,6 @@ register_renderer(Name, Comment) :-
 	throw(error(context_error(nodirective, register_renderer(Name, Comment)),
 		    _)).
 
-user:term_expansion((:- register_renderer(Name, Comment)),
+system:term_expansion((:- register_renderer(Name, Comment)),
 		    swish_render:renderer(Name, Module, Comment)) :-
 	prolog_load_context(module, Module).
