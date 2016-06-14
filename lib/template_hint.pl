@@ -441,8 +441,8 @@ file_type(Path, _, Type) :-
 	Type = directory.
 file_type(_, Name, Type) :-
 	file_name_extension(_, Ext, Name),
-	prolog_file_type(Ext, prolog),
-	\+ prolog_file_type(Ext, qlf),
+	user:prolog_file_type(Ext, prolog),
+	\+ user:prolog_file_type(Ext, qlf),
 	Type = prolog.
 
 %%	library_template_from(+From:list, -Template) is det.
