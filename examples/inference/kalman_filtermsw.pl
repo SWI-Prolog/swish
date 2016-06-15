@@ -76,7 +76,7 @@ hist(Samples,NBins,Chart):-
 % Observation as in Russel and Norvig 2010, Fig 15.10
 
 /** <examples>
-?- dens(1000,40,G).
+?- hist(1000,40,G).
 % plot the density of the state at time 1 in case of no observation
 % by taking 1000 samples and dividing the domain
 % in 40 bins
