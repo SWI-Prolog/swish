@@ -6,7 +6,11 @@ Given a synchronous ring of N processes the protocol is used
 to elect a leader (a uniquely designated processor) by sending messages around 
 the ring.
 
-The protocol proceeds in rounds and is parametrised by a constant K. Each round begins by all processors (independently) choosing a random number (uniformly) from {1,...,K} as an id. The processors then pass their ids around the ring. If there is a unique id, then the processor with the maximum unique id is elected the leader, and otherwise the processors begin a new round.
+The protocol proceeds in rounds and is parametrised by a constant K. Each round 
+begins by all processors (independently) choosing a random number (uniformly) 
+from {1,...,K} as an id. The processors then pass their ids around the ring. 
+If there is a unique id, then the processor with the maximum unique id is 
+elected the leader, and otherwise the processors begin a new round.
 
 With this program you can 
 - check that the probability of eventually electing a leader is 1
