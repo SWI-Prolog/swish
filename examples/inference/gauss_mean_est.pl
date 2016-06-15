@@ -57,6 +57,10 @@ dens_lw(Samples,NBins,Chart):-
 ?- hist_uncond(10000,40,G).
 % plot an histogram of the density of the random variable before any
 % observations
+?-  mc_lw_expectation(value(0,X),(value(1,9),value(2,8)),1000,X,E).
+% E = 7.166960047178755
+?- mc_expectation(value(0,X),10000,X,E).
+% E = 0.9698875384639362.
 
 */
  
