@@ -49,7 +49,7 @@ trans(S,I,NextS) :-
   trans_err(I,E).
 
 emit(NextS,I,V) :-
-  {NextS =:= V+X},
+  {V =:= NextS +X},
   obs_err(I,X).
 
 init(S):gaussian(S,0,1).

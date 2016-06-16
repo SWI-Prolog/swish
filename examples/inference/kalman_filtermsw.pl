@@ -49,7 +49,7 @@ trans(S,_I,NextS) :-
   msw(trans_err,E).
 
 emit(NextS,_I,V) :-
-  {NextS =:= V+X},
+  {V =:= NextS +X},
   msw(obs_err,X).
 
 values(init,real).
