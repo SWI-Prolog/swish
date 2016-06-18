@@ -6,6 +6,8 @@ or at the sky (deliberate miss). The truelist have these probabilities of
 hitting the target (if they are not aiming at the sky): a 1/3, b 2/3 and c 1.
 The question is: what should a do to maximize his probability of living? 
 Aim at b, c or the sky?
+Note that the best strategy for the other truelists and situations is
+easy to find intuitively and corresponds to aim at the best shooter.
 See https://en.wikipedia.org/wiki/Truel
 Martin Shubik, Game Theory and Related Approaches to Social Behavior, 1964, page 43
 
@@ -36,36 +38,6 @@ Martin Shubik, Game Theory and Related Approaches to Social Behavior, 1964, page
 
 
 :- begin_lpad.
-/** 
- * survives(+List:list,+Individual:atom,Round:term).
- * 
- * Individual survives the truel with List starting at Round
- *
- */
-survives([A],A,_):-!.
-
-survives(L,A,T):-
-    survives_round(L,L,A,T).
-/**
- * survives_round(+Rest:list,+List:list,+Individual:atom,+Round:term)
- *
- * Individual survives the truel Round with Rest still to shoot and 
- * List truelist still alive
- */
-survives_round(_,[A],A,_,[A]):-!.
-
-survives_round(_,[_],_,_,_):-!,fail.
-
-survives_round([],L,A,T):-
-  survives(L,A,s(T)).
-
-survives_round([H|Rest],L0,A,T):-
-    best_strategy_base(H,Rest,L0,S),
-    shoot(H,S,Rest,L0,T,Rest1,L1),
-    member(A,L1),
-    survives_round(Rest1,L1,A,T).
-
-
 /**
  * best_strategy(+A:atom,+Rest:list,+L:list,-S:atom).
  *
@@ -130,7 +102,37 @@ hit(_,b):2/3.
 hit(_,c):1.
 
 /** 
- * best_strategy_base(+A:atom,+Rest:list,+T:list,-S:atom).
+ * survives(+List:list,+Individual:atom,Round:term).
+ * 
+ * Individual survives the truel with List starting at Round
+ *
+ */
+survives([A],A,_):-!.
+
+survives(L,A,T):-
+    survives_round(L,L,A,T).
+/**
+ * survives_round(+Rest:list,+List:list,+Individual:atom,+Round:term)
+ *
+ * Individual survives the truel Round with Rest still to shoot and 
+ * List truelist still alive
+ */
+survives_round(_,[A],A,_,[A]):-!.
+
+survives_round(_,[_],_,_,_):-!,fail.
+
+survives_round([],L,A,T):-
+  survives(L,A,s(T)).
+
+survives_round([H|Rest],L0,A,T):-
+    base_best_strategy(H,Rest,L0,S),
+    shoot(H,S,Rest,L0,T,Rest1,L1),
+    member(A,L1),
+    survives_round(Rest1,L1,A,T).
+
+
+/** 
+ * base_best_strategy(+A:atom,+Rest:list,+T:list,-S:atom).
  *  
  *  the best action for A when Rest follow him in the round and
  *  T is the list of surviving truelist, is S (with '$' for the sky)
@@ -138,14 +140,14 @@ hit(_,c):1.
  *  These are the strategies that are easy to find (most intuitive)
  *
  */
-best_strategy_base(b,[c],[b,c],c).
-best_strategy_base(c,[],[b,c],b).
-best_strategy_base(a,[c],[a,c],c).
-best_strategy_base(c,[],[a,c],a).
-best_strategy_base(a,[b],[a,b],b).
-best_strategy_base(b,[],[a,b],a).
-best_strategy_base(b,[c],[a,b,c],c).
-best_strategy_base(c,[],[a,b,c],b).
+base_best_strategy(b,[c],[b,c],c).
+base_best_strategy(c,[],[b,c],b).
+base_best_strategy(a,[c],[a,c],c).
+base_best_strategy(c,[],[a,c],a).
+base_best_strategy(a,[b],[a,b],b).
+base_best_strategy(b,[],[a,b],a).
+base_best_strategy(b,[c],[a,b,c],c).
+base_best_strategy(c,[],[a,b,c],b).
  
 
 :- end_lpad.
