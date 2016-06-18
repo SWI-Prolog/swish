@@ -37,7 +37,7 @@ Martin Shubik, Game Theory and Related Approaches to Social Behavior, 1964, page
 
 :- begin_lpad.
 /** 
- * survives(List,Individual,Round).
+ * survives(+List:list,+Individual:atom,Round:term).
  * 
  * Individual survives the truel with List starting at Round
  *
@@ -47,7 +47,8 @@ survives([A],A,_):-!.
 survives(L,A,T):-
     survives_round(L,L,A,T).
 /**
- * survives_round(Rest,List,Individual,Round)
+ * survives_round(+Rest:list,+List:list,+Individual:atom,+Round:term)
+ *
  * Individual survives the truel Round with Rest still to shoot and 
  * List truelist still alive
  */
@@ -66,7 +67,7 @@ survives_round([H|Rest],L0,A,T):-
 
 
 /**
- * best_strategy(A,Rest,L,S).
+ * best_strategy(+A:atom,+Rest:list,+L:list,-S:atom).
  *
  * The best strategy for truelist A with Rest remaining to shoot and
  * L still alive is to aim at S (with '$' for the sky).
@@ -81,17 +82,17 @@ best_strategy(A,Rest,L,S):-
 
 
 /**
- * ev_action(A,Rest,L,S,P-S).
+ * ev_action(+A:atom,+Rest:list,+L:list,+S:atom,-C:couple).
  *
  * Tuelist A with Rest to shoot, L still alive performing action S survives
- * with probability P
+ * with probability P in C=P-S.
  *
  */
 ev_action(A,Rest,L,S,P-S):-
     mc_sample(survives_action(A,Rest,0,L,S),1000,P).
 
 /**
- * survives_action(A,Rest0,T,L0,S)
+ * survives_action(+A:atom,+Rest0:list,+T:term,+L0:list,+S:atom)
  *
  * A survives truel performing action S at round T with Rest0 to shoot in
  * the round and L0 still alive
@@ -101,7 +102,7 @@ survives_action(A,Rest0,T,L0,S):-
     shoot(A,S,Rest0,L0,T,Rest,L1),
     survives_round(Rest,L1,A,T).
 /**
- * shoot(H,S,Rest0,L0,T,Rest,L).
+ * shoot(+H:atom,+S:atom,+Rest0:list,+L0:list,+T:term,-Rest:list,-L:list).
  *
  * When H shoots at S with Rest0 to shoot in round T and L0 still alive,
  * the truelist to shoot in the round become Rest and the truelist still
@@ -129,7 +130,7 @@ hit(_,b):2/3.
 hit(_,c):1.
 
 /** 
- * best_strategy_base(A,Rest,T,S).
+ * best_strategy_base(+A:atom,+Rest:list,+T:list,-S:atom).
  *  
  *  the best action for A when Rest follow him in the round and
  *  T is the list of surviving truelist, is S (with '$' for the sky)
