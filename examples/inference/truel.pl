@@ -23,10 +23,16 @@ Martin Shubik, Game Theory and Related Approaches to Social Behavior, 1964, page
 % P = 0.267
 ?- mc_sample(survives_action(a,[a,b,c],0,c),1000,P).
 % What is the probability that a survives if it aims at c?
-% P =  0.312 
+% P = 59/189=0.31216931216
 ?- mc_sample(survives_action(a,[a,b,c],0,sky),1000,P).
 % What is the probability that a survives if it aims at the sky?
-% P = 0.39682539682
+% P =25/63= 0.39682539682
+?- mc_sample(survives([a,c],a,0),1000,P).
+% P =1/3
+?- mc_sample(survives([a,b],a,0),1000,P).
+% P=3/7=0.42857142857
+?- mc_sample(survives_round([b],[a,b],a,0),1000,P).
+%P=1/7=0.14285714285
 */
 :- use_module(library(mcintyre)).
 
