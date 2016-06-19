@@ -313,7 +313,7 @@ swish_navbar(Options) -->
         a([id('dismisslink'),href('')],['Dismiss']),
 	p([span([style('color:red')],['New']),': ',
 	a([href('/example/inference/truel.pl')],
-	['truel example']),', and ',
+	['truel example']),', ',
 	a([href('/help/help-cplint.html#cont'),target('_blank')],
 	['continuous random variables']),' and ',
 	a([href('/help/help-cplint.html#condqcont'),target('_blank')],
