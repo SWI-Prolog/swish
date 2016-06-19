@@ -63,6 +63,7 @@ Examples divided by features:
   [pctl_slep.pl](example/inference/pctl_slep.pl), 
   [gpl.pl](example/inference/gpl.pl), [rmc.pl](example/inference/rmc.pl),
   [arithm.pl](example/inference/arithm.pl), 
+  [truel.pl](example/inference/truel.pl)
   - meta probabilities:
   [meta.pl](example/inference/meta.pl)
   [metacomb.pl](example/inference/metacomb.pl)
@@ -108,7 +109,8 @@ Examples divided by features:
   [pctl_slep.pl](example/inference/pctl_slep.pl), 
   [gpl.pl](example/inference/gpl.pl), [rmc.pl](example/inference/rmc.pl),
   [hmmpos.pl](example/inference/hmmpos.pl), 
-  [hmmpos2.pl](example/inference/hmmpos2.pl)
+  [hmmpos2.pl](example/inference/hmmpos2.pl),
+  [truel.pl](example/inference/truel.pl)
   - PRISM syntax: [coinmsw.pl](example/inference/coinmsw.pl),
   [widgetmsw.pl](example/inference/widgetmsw.pl),
   [kalman_filtermsw.pl](example/inference/kalman_filtermsw.pl)
@@ -143,7 +145,8 @@ Examples divided by features:
   [indian_gpa.pl](example/inference/indian_gpa.pl),
   [indian_gpadc.pl](example/inference/indian_gpadc.pl),
   [nballs.pl](example/inference/nballs.pl),
-  [nballsdc.pl](example/inference/nballsdc.pl)
+  [nballsdc.pl](example/inference/nballsdc.pl),
+  [truel.pl](example/inference/truel.pl)
   - .cpl format: [coin.cpl](example/inference/coin.cpl), [dice.cpl](example/inference/dice.cpl), [epidemic.cpl](example/inference/epidemic.cpl), [earthquake.cpl](example/inference/earthquake.cpl),
   [sneezing.cpl](example/inference/sneezing.cpl), [eruption.cpl](example/inference/eruption.cpl), [mendel.cpl](example/inference/mendel.cpl), [bloodtype.cpl](example/inference/bloodtype.cpl),
   [path.cpl](example/inference/path.cpl), [alarm.cpl](example/inference/alarm.cpl), [hmm.cpl](example/inference/hmm.cpl), [pcfg.cpl](example/inference/pcfg.cpl), 
@@ -173,7 +176,8 @@ Examples divided by features:
   [gpl.pl](example/inference/gpl.pl), [rmc.pl](example/inference/rmc.pl),
   - medicine: [epidemic.pl](example/inference/epidemic.pl),
   [sneezing.pl](example/inference/sneezing.pl),
-  - games: [coin.pl](example/inference/coin.pl), [coinmc.pl](example/inference/coinmc.pl), [dice.pl](example/inference/dice.pl), [trigger.pl](example/inference/trigger.pl), [coin2.pl](example/inference/coin2.pl), [threesideddice.pl](example/inference/threesideddice.pl)
+  - games: [coin.pl](example/inference/coin.pl), [coinmc.pl](example/inference/coinmc.pl), [dice.pl](example/inference/dice.pl), [trigger.pl](example/inference/trigger.pl), [coin2.pl](example/inference/coin2.pl), [threesideddice.pl](example/inference/threesideddice.pl),
+  [truel.pl](example/inference/truel.pl)
   - social networks:
   [uwcse.pl](example/inference/uwcse.pl)
   - filtering: [kalman_filter.pl](example/inference/kalman_filter.pl),
@@ -469,5 +473,8 @@ is done.
   urn is named drawn(i)."
   See also
   https://github.com/davidenitti/DC/blob/master/examples/tutorial.pl
+  - Truel, or duel among three opponents  
+  ([truel.pl](example/inference/truel.pl).
+  See https://en.wikipedia.org/wiki/Truel
 </div>
 </div>
