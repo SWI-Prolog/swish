@@ -1,6 +1,6 @@
 /*
 Truel, or duel among three opponents. 
-There are three truelist, a, b and c, that take turns in shooting with a gun.
+There are three truelists, a, b and c, that take turns in shooting with a gun.
 The firing order is a, b and c. Each truelist can shoot at another truelist
 or at the sky (deliberate miss). The truelist have these probabilities of 
 hitting the target (if they are not aiming at the sky): a 1/3, b 2/3 and c 1.
@@ -20,7 +20,7 @@ Martin Shubik, Game Theory and Related Approaches to Social Behavior, 1964, page
 % S= sky
 ?- mc_sample(survives_action(a,[a,b,c],0,b),1000,P).
 % What is the probability that a survives if it aims at b?
-% P = 0.267
+% P = 50/189=0.26455026455
 ?- mc_sample(survives_action(a,[a,b,c],0,c),1000,P).
 % What is the probability that a survives if it aims at c?
 % P = 59/189=0.31216931216
@@ -28,10 +28,13 @@ Martin Shubik, Game Theory and Related Approaches to Social Behavior, 1964, page
 % What is the probability that a survives if it aims at the sky?
 % P =25/63= 0.39682539682
 ?- mc_sample(survives([a,c],a,0),1000,P).
+% What is the probability that a survives against c?
 % P =1/3
 ?- mc_sample(survives([a,b],a,0),1000,P).
+% What is the probability that a survives against b?
 % P=3/7=0.42857142857
 ?- mc_sample(survives_round([b],[a,b],a,0),1000,P).
+% What is the probability that a survives against b when it's b's turn?
 %P=1/7=0.14285714285
 */
 :- use_module(library(mcintyre)).
