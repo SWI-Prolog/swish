@@ -322,7 +322,8 @@ swish_navbar(Options) -->
 	['Gaussian mixture']),', ',
 	a([href('/example/inference/kalman_filter.pl')],
 	['Kalman filter']),', ',
-	a([href('/example/inference/seven_scientists.pl')],['Bayesian estimation'])
+	a([href('/example/inference/seven_scientists.pl')],['Bayesian estimation']),', ',
+	a([href('/example/inference/indian_gpa.pl')],['Indian GPA problem'])
         ])])
         ),
 
