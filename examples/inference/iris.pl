@@ -1,8 +1,5 @@
 /*
-Throwing a coin with uncertainty on its fairness, from
-J. Vennekens, S. Verbaeten, and M. Bruynooghe. Logic programs with annotated 
-disjunctions. In International Conference on Logic Programming, 
-volume 3131 of LNCS, pages 195-209. Springer, 2004.
+EM clustering on the iris dataset
 */
 :- use_module(library(real)).
 :- use_module(library(mcintyre)).
@@ -507,8 +504,5 @@ component_weight([A,B,C,D]-W,A-W,B-W,C-W,D-W).
 :- assert_data_means.
 /** <examples>
 ?- em(10,T,P).
-?- sample_clusters(1000,True,Prior,Post).
-?- mc_sample_arg_first(iris(0,X1,X2,X2,X4),10,(X1,X2,X3,X4),V).
-?- pca(P).
 
 */
