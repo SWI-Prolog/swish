@@ -28,7 +28,7 @@
 <li><a href="#uncondq">Unconditional Queries</a></li>
 <li><a href="#condq">Conditional Queries on Discrete Variables</a></li>
 <li><a href="#condqcont">Conditional Queries on Continuous Variables</a></li>
-<li><a href="#condqcont">Graphing the Results</a></li>
+<li><a href="#graphing">Graphing the Results</a></li>
 <li><a href="#parameters">Parameters</a></li>
 </ul></li>
 <li><a href="#learning">Learning</a><ul>
@@ -44,7 +44,7 @@
 </ul></li>
 <li><a href="#parameters-1">Parameters</a></li>
 </ul></li>
-<li><a href="#download-query-results-through-an-api">Download query results through an API</a></li>
+<li><a href="#download-query-results-through-an-api">Download Query Results through an API</a></li>
 <li><a href="#manual-in-pdf">Manual in PDF</a></li>
 <li><a href="#bibliography">Bibliography</a></li>
 </ul>
@@ -382,7 +382,7 @@ mc_mh_sample_arg(:Query:atom,:Evidence:atom,
 <p>returns in <code>ValList</code> a list of couples <code>V-W</code> where <code>V</code> is a value of <code>Arg</code> for which <code>Query</code> succeeds and <code>W</code> is the weight computed by likelihood weighting according to <code>Evidence</code> (a conjunction of atoms is allowed here). For example</p>
 <pre><code>?- mc_lw_sample_arg(value(0,X),(value(1,9),value(2,8)),100,X,L).</code></pre>
 <p>from <a href="http://cplint.lamping.unife.it/example/inference/gauss_mean_est.pl"><code>gauss_mean_est.pl</code></a> samples 100 values for <code>X</code> in <code>value(0,X)</code> given that <code>value(1,9)</code> and <code>value(2,8)</code> have been observed.</p>
-<h2 id="condqcont">Graphing the Results</h2>
+<h2 id="graphing">Graphing the Results</h2>
 <p>in <code>cplint</code> on SWISH you can draw graphs for visualizing the results. There are two types of graphs: those that represent individual probability values with a bar chart and those that visualize the results of sampling arguments.</p>
 <p>You can draw the probability of a query being true and being false as a bar chart with <code>prob_bar(:Query:atom,-Probability:dict)</code> as in</p>
 <pre><code>?- prob_bar(heads(coin),P).</code></pre>
@@ -725,7 +725,7 @@ fold(test,[490,491,...]).</code></pre>
 <li><p><code>neg_ex</code> (values: <code>given</code>, <code>cw</code>, default value: <code>cw</code>): if set to <code>given</code>, the negative examples in testing are taken from the test folds interpretations, i.e., those examples <code>ex</code> stored as <code>neg(ex)</code>; if set to <code>cw</code>, the negative examples are generated according to the closed world assumption, i.e., all atoms for target predicates that are not positive examples. The set of all atoms is obtained by collecting the set of constants for each type of the arguments of the target predicate.</p></li>
 <li><p><code>verbosity</code> (values: integer in [1,3], default value: 1): level of verbosity of the algorithms</p></li>
 </ul>
-<h1 id="download-query-results-through-an-api">Download query results through an API</h1>
+<h1 id="download-query-results-through-an-api">Download Query Results through an API</h1>
 <p>The results of queries can also be downloaded programmatically by directly approaching the Pengine API. Example client code is <a href="https://github.com/friguzzi/swish/tree/master/client">available</a>. For example, the ‘</p>
 <pre><code>$ bash swish-ask.sh --server=http://cplint.lamping.unife.it \   
   examples/inference/coin.pl Prob &quot;prob(heads(coin),Prob)&quot;</code></pre>
