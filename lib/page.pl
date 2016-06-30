@@ -254,7 +254,7 @@ source_metadata(Path, _Code, modified_since_loaded, true) :-
 	ModifiedWhenLoaded \== Modified.
 source_metadata(Path, _Code, module, Module) :-
 	file_name_extension(_, Ext, Path),
-	prolog_file_type(Ext, prolog),
+	user:prolog_file_type(Ext, prolog),
 	xref_public_list(Path, _, [module(Module)]).
 
 confirm_access(Path, Options) :-

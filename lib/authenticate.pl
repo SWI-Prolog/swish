@@ -31,6 +31,7 @@
 	  [ swish_add_user/3,		% +User, +Passwd, +Fields
 	    swish_add_user/1,		% +Dict
 	    swish_add_user/0,
+	    swish_logged_in/3,		% +Request, -User, -Data
 	    swish_current_user/2	% ?User, ?Data
 	  ]).
 :- use_module(library(pengines), []).
@@ -197,6 +198,15 @@ swish_current_user(User,
 		   u{user:User, group:Group, realname:RealName, email:Email}) :-
 	password_file(File),
 	http_current_user(File, User, [_Hash,Group,RealName,Email]).
+
+%%	swish_logged_in(+Request, -User, -UserData) is det.
+%
+%	True when Request is associated with User.
+
+swish_logged_in(Request, User, UserData) :-
+	logged_in(Request, User),
+	swish_current_user(User, UserData).
+
 
 %%	swish_add_user(+User, +Passwd, +Fields) is det.
 %
