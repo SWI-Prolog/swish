@@ -312,6 +312,8 @@ swish_navbar(Options) -->
         &(nbsp), &(nbsp),
         a([id('dismisslink'),href('')],['Dismiss']),
 	p([span([style('color:red')],['New']),': ',
+	a([href('/help/help-cplint.html#download-query-results-through-an-api'),target('_blank')],
+	['API']),', ',
 	a([href('/example/inference/truel.pl')],
 	['truel example']),', ',
 	a([href('/help/help-cplint.html#cont'),target('_blank')],
