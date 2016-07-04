@@ -726,7 +726,7 @@ fold(test,[490,491,...]).</code></pre>
 <li><p><code>verbosity</code> (values: integer in [1,3], default value: 1): level of verbosity of the algorithms</p></li>
 </ul>
 <h1 id="download-query-results-through-an-api">Download Query Results through an API</h1>
-<p>The results of queries can also be downloaded programmatically by directly approaching the Pengine API. Example client code is <a href="https://github.com/friguzzi/swish/tree/master/client">available</a>. For example, the ‘</p>
+<p>The results of queries can also be downloaded programmatically by directly approaching the Pengine API. Example client code is <a href="https://github.com/friguzzi/swish/tree/master/client">available</a>. For example, the <code>swish-ask.sh</code> client can be used with bash to download the results for a query in CSV. The call below downloads a CSV file for the coin example.</p>
 <pre><code>$ bash swish-ask.sh --server=http://cplint.lamping.unife.it \   
   examples/inference/coin.pl Prob &quot;prob(heads(coin),Prob)&quot;</code></pre>
 <p>The script can ask queries against Prolog scripts stored in <a href="http://cplint.lamping.unife.it" class="uri">http://cplint.lamping.unife.it</a> by specifying the script on the commandline. User defined files stored in <code>cplint</code> on SWISH (locations of type <a href="http://cplint.lamping.unife.it/p/coin_user.pl" class="uri">http://cplint.lamping.unife.it/p/coin_user.pl</a>) can be directly used, for example:</p>
