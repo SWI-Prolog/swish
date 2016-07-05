@@ -90,6 +90,10 @@ swish :-
 swish(Port) :-
 	http_server_property(Port, goal(swish_ide:http_dispatch)), !,
 	open_browser(Port).
+swish(_:Port) :-
+	integer(Port),
+	http_server_property(Port, goal(swish_ide:http_dispatch)), !,
+	open_browser(Port).
 swish(Port) :-
 	http_server(http_dispatch,
 		    [ port(Port),
@@ -99,7 +103,7 @@ swish(Port) :-
 
 open_browser(Address) :-
 	host_port(Address, Host, Port),
-	http_server_property(Address, scheme(Scheme)),
+	http_server_property(Port, scheme(Scheme)),
 	http_absolute_location(root(.), Path, []),
 	format(atom(URL), '~w://~w:~w~w', [Scheme, Host, Port, Path]),
 	www_open_url(URL).
