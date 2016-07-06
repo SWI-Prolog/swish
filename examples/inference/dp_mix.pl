@@ -41,9 +41,19 @@ dp_n_values(N0,N,Alpha,[[V]-1|Vs]):-
   
 dp_value(NV,Alpha,V):-
   dp_stick_index(NV,Alpha,I),
-  dp_pick_value(I,V).
+  dp_pick_value(I,NV,V).
 
-dp_pick_value(_,V):gaussian(V,0,2).
+dp_pick_value(I,NV,V):-
+  ivar(I,IV),
+  Var is 1.0/IV,
+  mean(I,Var,M),
+  value(I,NV,M,Var,V).
+
+ivar(_,IV):gamma(IV,1,0.1).
+
+mean(_,V0,M):gaussian(M,0,V):-V is V0*30.
+
+value(_,_,M,V,Val):gaussian(Val,M,V).
 
 dp_stick_index(NV,Alpha,I):-
   dp_stick_index(1,NV,Alpha,I).
@@ -125,10 +135,10 @@ to_val(V,[V]-1).
 % Observation as in Russel and Norvig 2010, Fig 15.10
 
 /** <examples>
-?- dens_lw(1000,40,G).
 % plot the density of the state at time 1 in case of no observation (prior)
 % and in case of observing 2.5 by taking 1000 samples and dividing the domain
 % in 40 bins
+?- prior(100,40,G).
 ?- post(100,40,G).
 ?- hist(100,40,G).
 ?- hist_val(100,40,G).
@@ -137,6 +147,7 @@ to_val(V,[V]-1).
 % by taking 1000 samples and dividing the domain
 % in 40 bins
 
+?- dens_lw(1000,40,G).
 
 */
  
