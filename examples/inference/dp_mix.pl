@@ -81,6 +81,11 @@ obs0([
 -1,-1,-1,-1]).
 
 
+obs1([
+-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]).
+
 obs([
 -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
@@ -118,18 +123,21 @@ post(Samples,NBins,Chart):-
   obs(O),
   maplist(to_val,O,O1),
   length(O1,N),
-  mc_lw_sample_arg(dp_n_values(0,N,10.0,T),dp_n_values(0,N,10.0,O1),Samples,T,L),
-  maplist(to_list,L,L1),
-  append(L1,Vs),
+%  mc_sample_arg(dp_value(0,10.0,T),Samples,T,L0),
+  mc_lw_sample_arg(dp_value(0,10.0,T),dp_n_values(0,N,10.0,O1),Samples,T,L),
+%  maplist(to_list,L,L1),
+%  append(L1,Vs),
 %  L=[Vs-_],
-  histogram(Vs,NBins,Chart).
-%   densities(L0,L,NBins,Chart).
+  density(L,-8,15,NBins,Chart).
 
+exp(L-W,L-W1):- W1 is exp(W).
 to_list(L-W,L1):-
   maplist(app_w(W),L,L1).
 
 app_w(W,V-_,V-W).
 to_val(V,[V]-1).
+
+
 % plot the density of the state at time 1 in case of no observation (prior)
 % and in case of observing 2.5.
 % Observation as in Russel and Norvig 2010, Fig 15.10

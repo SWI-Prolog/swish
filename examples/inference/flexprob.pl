@@ -13,7 +13,7 @@ De Raedt, Luc, and Angelika Kimmig. "Probabilistic (logic) programming concepts.
 
 :- begin_lpad.
 
-red(Prob):Prob .
+red(Prob):Prob.
 
 draw_red(R, G):-
   Prob is R/(R + G),
