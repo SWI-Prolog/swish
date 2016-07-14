@@ -963,13 +963,17 @@ define([ "jquery", "config", "preferences",
   function handleOutput() {
     var elem = this.pengine.options.runner;
 
-    this.data = this.data.replace(new RegExp("'[-0-9a-f]{36}':", 'g'), "")
-    if ( this.location ) {
-      this.data = this.data.replace(/pengine:\/\/[-0-9a-f]*\//, "");
-      $(".swish-event-receiver").trigger("source-error", this);
-    }
+    if ( typeof(this.data) == 'string' ) {
+      this.data = this.data.replace(new RegExp("'[-0-9a-f]{36}':", 'g'), "")
+      if ( this.location ) {
+	this.data = this.data.replace(/pengine:\/\/[-0-9a-f]*\//, "");
+	$(".swish-event-receiver").trigger("source-error", this);
+      }
 
-    elem.prologRunner('outputHTML', this.data);
+      elem.prologRunner('outputHTML', this.data);
+    } else {
+      console.log(this.data);
+    }
     RS(elem).prologRunners('scrollToBottom');
   }
 
