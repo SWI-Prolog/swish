@@ -28,7 +28,8 @@
 */
 
 :- module(swish_render_graphviz,
-	  [ term_rendering//3			% +Term, +Vars, +Options
+	  [ term_rendering//3,			% +Term, +Vars, +Options
+	    svg//2				% +String, +Options
 	  ]).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
@@ -147,8 +148,19 @@ render_dot(DOTString, Program, _Options) -->	% <svg> rendering
 	->  html(div([ class(['render-graphviz', 'reactive-size']),
 		       'data-render'('As Graphviz graph')
 		     ],
-		     [ \[SVG],
-		       \js_script({|javascript||
+		     \svg(SVG, [])))
+	;   html(div(style('color:red;'),
+		     [ '~w'-[Program], ': ', Error]))
+	).
+
+%%	svg(+SVG:string, +Options:list)//
+%
+%	Include SVG as pan/zoom image. Must be  embedded in a <div> with
+%	class 'reactive-size'.
+
+svg(SVG, _Options) -->
+	html([ \[SVG],
+	       \js_script({|javascript||
 (function() {
    if ( $.ajaxScript ) {
      var div  = $.ajaxScript.parent();
@@ -191,10 +203,8 @@ render_dot(DOTString, Program, _Options) -->	% <svg> rendering
    }
  })();
 		      |})
-		     ]))
-	;   html(div(style('color:red;'),
-		     [ '~w'-[Program], ': ', Error]))
-	).
+	     ]).
+
 
 %%	data_to_graphviz_string(+Data, -DOTString, -Program) is semidet.
 %
