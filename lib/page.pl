@@ -72,6 +72,8 @@ swish or parts of swish easily into a page.
 http:location(pldoc, swish(pldoc), [priority(100)]).
 
 :- http_handler(swish(.), swish_reply([]), [id(swish), prefix]).
+:- http_handler('/sitemap.xml', http_reply_file('sitemap.xml', []),[]).
+:- http_handler('/robots.txt', http_reply_file('robots.txt', []),[]).
 
 :- multifile
 	swish_config:source_alias/2,
@@ -136,13 +138,15 @@ swish_reply3(_, Options) :-
 swish_reply3(_, Options) :-
 	reply_html_page(
 	    swish(main),
-	    [ title('SWISH -- SWI-Prolog for SHaring'),
+	    [ title('cplint on SWISH -- Probabilistic Logic Programming'),
 	      link([ rel('shortcut icon'),
 		     href('/icons/favicon.ico')
 		   ]),
 	      link([ rel('apple-touch-icon'),
-		     href('/icons/swish-touch-icon.png')
-		   ])
+		     href('/icons/cplint-touch-icon.png')
+		   ]),  
+              meta([name('msvalidate.01'), 
+                content('A9C78799EC9EDC7CE041CB7CD8E2D76E')])
 	    ],
 	    \swish_page(Options)).
 
@@ -293,6 +297,38 @@ swish_page(Options) -->
 
 swish_navbar(Options) -->
 	swish_resources,
+	html(div([id('navbarhelp'),style('height:40px;margin: 10px 5px;text-align:center;')],
+        [span([style('color:maroon')],['cplint on ']),
+        span([style('color:darkblue')],['SWI']),
+        span([style('color:maroon')],['SH']),
+        ' is a web application for probabilistic logic programming',
+        ' with a Javascript-enabled browser.',
+        &(nbsp), &(nbsp),
+        a([href('/help/about.html'),target('_blank')],['About']),
+        &(nbsp), &(nbsp),
+        a([href('/help/help-cplint.html'),target('_blank')],['Help']),
+        &(nbsp), &(nbsp),
+        a([href('/help/credits.html'),target('_blank')],['Credits']),
+        &(nbsp), &(nbsp),
+        a([id('dismisslink'),href('')],['Dismiss']),
+	p([span([style('color:red')],['New']),': ',
+	a([href('/help/help-cplint.html#download-query-results-through-an-api'),target('_blank')],
+	['API']),', ',
+	a([href('/example/inference/truel.pl')],
+	['truel example']),', ',
+	a([href('/help/help-cplint.html#cont'),target('_blank')],
+	['continuous random variables']),' and ',
+	a([href('/help/help-cplint.html#condqcont'),target('_blank')],
+	['likelihood weighting']),': ',
+	a([href('/example/inference/gaussian_mixture.pl')],
+	['Gaussian mixture']),', ',
+	a([href('/example/inference/kalman_filter.pl')],
+	['Kalman filter']),', ',
+	a([href('/example/inference/seven_scientists.pl')],['Bayesian estimation']),', ',
+	a([href('/example/inference/indian_gpa.pl')],['Indian GPA problem'])
+        ])])
+        ),
+
 	html(nav([ class([navbar, 'navbar-default']),
 		   role(navigation)
 		 ],
@@ -589,7 +625,15 @@ swish_js  --> html_post(head, \include_swish_js).
 swish_css --> html_post(head, \include_swish_css).
 
 include_swish_js -->
-	{ swish_resource(js, JS),
+	html(script([],[
+      '(function(i,s,o,g,r,a,m){i[''GoogleAnalyticsObject'']=r;i[r]=i[r]||function(){
+       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,''script'',''//www.google-analytics.com/analytics.js'',''ga'');
+
+        ga(''create'', ''UA-16202613-9'', ''auto'');
+        ga(''send'', ''pageview'');'])),
+        { swish_resource(js, JS),
 	  swish_resource(rjs, RJS),
 	  http_absolute_location(swish(js/JS), SwishJS, []),
 	  http_absolute_location(swish(RJS),   SwishRJS, [])

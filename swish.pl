@@ -46,6 +46,7 @@
 :- use_module(lib/highlight).
 :- use_module(lib/markdown).
 :- use_module(lib/template_hint, []).
+:- use_module(lib/tutorial).
 
 
 		 /*******************************
@@ -123,7 +124,8 @@ http:location(swish, root(.), [priority(-100)]).
 term_expansion(swish_config:config(Config, _Value), []) :-
 	clause(swish_config:config(Config, _), _).
 
-swish_config:config(show_beware,        true).
+
+swish_config:config(show_beware,        false).
 swish_config:config(tabled_results,     false).
 swish_config:config(application,        swish).
 swish_config:config(csv_formats,        [prolog]).
@@ -165,9 +167,10 @@ swish_config:config(notebook,		_{eval_script: true}).
 
 pengines:prepare_module(Module, swish, _Options) :-
 	pengines_io:pengine_bind_io_to_html(Module).
-
+%:- set_setting(swish:time_limit, 3600).
 % Additional sandboxing rules.
 :- use_module(lib/flags).
+:- use_module(lib/logging).
 
 % Libraries that are nice to have in SWISH, but cannot be loaded
 % because they use directives that are considered unsafe.  We load
@@ -187,4 +190,19 @@ pengines:prepare_module(Module, swish, _Options) :-
 :- use_module(swish(lib/render/graphviz), []).
 :- use_module(swish(lib/render/c3),	  []).
 :- use_module(swish(lib/render/url),	  []).
+:- use_module(swish(lib/render/lpad),	  []).
+
+%:- use_module(lib/pita).
+:- use_module(library(pita)).
+:- use_module(library(mcintyre)).
+:- use_module(library(slipcover)).
+:- use_module(library(auc)).
+:- use_module(library(clpr)).
+:- use_module(library(real)).
+:- multifile sandbox:safe_primitive/1.
+
+sandbox:safe_primitive(nf_r:{_}).
+sandbox:safe_primitive(real:(_ <- _)).
+
+
 :- use_module(swish(lib/render/bdd),	  []).

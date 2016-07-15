@@ -1,0 +1,29 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Tutorial
+- *Theoretical preliminaries*
+  - [Logic Program with Annotated Disjunctions (LPAD)](tutorial/lpad.swinb)
+- *Basic examples with exact inference*
+  - [Coin](tutorial/inference/coin.swinb). Simple unconditional inference.
+  - [Dice](tutorial/inference/dice.swinb). Conditional inference and inference with graphical results.
+  - [Epidemic](tutorial/inference/epidemic.swinb). LPAD with implicit _null_ atom in the clauses, noisy or between rule groundings.
+  - [Earthquake](tutorial/inference/earthquake.swinb) noisy or between different rules.
+  - [Medical symptoms](tutorial/inference/sneezing.swinb) noisy or between different rules.
+- *Examples with approximate inference (Monte Carlo sampling)*
+  - [Coin (variant)](tutorial/inference/coinmc.swinb). Approximate inference variant of [Coin](tutorial/inference/coin.swinb).
+  - [Markov chain](tutorial/inference/markov_chain.swinb) Approximate inference.
+  - [Probabilistic Computation Tree Logic](tutorial/inference/pctl_slep.swinb) Approximate inference for computing expectations, mixing LPADs and Prolog.
+  - [Random arithmetic functions](tutorial/inference/arithm.swinb) Conditional approximate inference with 
+  rejection sampling and Metropolis-Hastings
+- *Examples with structure and parameter learning*
+  - [Machines](tutorial/learning/mach.swinb). Parameter learning.
+  - [Registration](tutorial/learning/registration.swinb). Structure learning.
+  - [Bongard](tutorial/learning/bongard.swinb). Test the learned program with graphical results.
+- *More Examples with inference*
+  - see [cplint inference example programs](example/inference_examples.swinb)
+- *More Examples with structure and parameter learning*
+  - see [cplint learning example programs](example/learning_examples.swinb)
+</div>
+
+</div>

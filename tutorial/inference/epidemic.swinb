@@ -1,0 +1,88 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Epidemic
+
+In this section we consider a program which models the fact that if somebody has the flu and the climate is cold, there is the possibility that an epidemic or a pandemic arises. We are uncertain about whether the climate is cold but we know for sure that David and Robert have the flu.
+
+### Writing the program step by step
+The rule that we want to write is the one which  states that, if somebody has the flu and the climate is cold, an epidemic arises with 60% probability, a pandemic arises with 30% probability, whereas we have a 10% probability that neither an epidemic nor a pandemic arises. We can write
+==
+epidemic : 0.6; pandemic : 0.3; null: 0.1 :- flu(_), cold.
+==
+As we said in Section [Logic Program with Annotated Disjunction](tutorial/lpad.swinb), the =|null|= atom can be implicit. 
+Therefore the previous rule, without changing its meaning, can be written
+==
+epidemic : 0.6; pandemic : 0.3 :- flu(_), cold.
+==
+The following probabilistic fact says that the weather is cold with a 70% probability. Note that the =|null|= atom is implicit here as well.
+==
+cold : 0.7.
+==
+Now we assert that David and Robert have the flu.
+==
+flu(david).
+flu(robert).
+==
+</div>
+
+<div class="nb-cell markdown">
+### Full program with the Prolog editor
+
+The full program of the example is show below.
+</div>
+
+<div class="nb-cell program prolog">
+% load the 'pita' library to perform inference
+:- use_module(library(pita)).
+:- pita.
+% allows to create graphical results
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+% to be written before the program
+:- begin_lpad.
+
+epidemic : 0.6; pandemic : 0.3 :- flu(_), cold.
+cold : 0.7.
+flu(david).
+flu(robert).
+% to be written after the program
+:- end_lpad.
+</div>
+
+<div class="nb-cell markdown">
+What is the probability that an epidemic arises? To know it we just have to submit the following query.
+</div>
+
+<div class="nb-cell query">
+prob(epidemic, P).
+</div>
+
+<div class="nb-cell markdown">
+Let us see the histogram of the previous query
+</div>
+
+<div class="nb-cell query">
+prob_bar(epidemic, P).
+</div>
+
+<div class="nb-cell markdown">
+This example shows that conclusions from different groundings of a rule are combined with a noisy or rule: the probability of an epidemic is obtained by combining with noisy or the conclusions of the two groundings of the rule where the only variable is replaced by David or Robert. So the probability of an epidemic if =cold= is true is 0.6+0.6-0.6*0.6=84. Since =cold= is also uncertain, the overall probability is 0.84*0.7=0.588.
+
+--
+Complete example: [epidemic.pl](example/inference/epidemic.pl)
+
+--
+Complete example with the LPAD editor: [epidemic.cpl](example/inference/epidemic.cpl)
+
+--
+- Reference: E. Bellodi and F. Riguzzi. _Expectation Maximization over binary decision diagrams for probabilistic logic programs_. Intelligent Data Analysis, 17(2):343-363, 2013.
+</div>
+
+<div class="nb-cell markdown">
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
+</div>
+
+</div>

@@ -27,7 +27,7 @@ Dicts define two operators for _partial_ unification: :&lt;/2 and &gt;:&lt;/2.  
 dict.  Consider this program:
 </div>
 
-<div class="nb-cell program">
+<div class="nb-cell program prolog">
 process(Dict) :-
     person{name:Name, age:Age} :&lt; Dict, !,
     format('~w is ~w years old~n', [Name, Age]).
@@ -41,7 +41,7 @@ process(person{name:'Bob', age:31}).
 The `A &gt;:&lt; B` operator says that the two dicts do not contradict.  This implies their tags unify and all values from the _intersection_ of their key-sets unify.  This can be used to combine two dicts if they do not contradict:
 </div>
 
-<div class="nb-cell program">
+<div class="nb-cell program prolog">
 join_dicts(D1, D2, D3) :-
     D1 &gt;:&lt; D2,
     put_dict(D1, D2, D3).
@@ -66,7 +66,7 @@ SWI-Prolog version 7 offers a limited form of _functional notation_, which allow
 Note that the date/time API does not yet support dicts.
 </div>
 
-<div class="nb-cell program">
+<div class="nb-cell program prolog">
 born(Person, Year) :-
     get_time(Now),
     stamp_date_time(Now, DateTime, local),
@@ -110,7 +110,7 @@ A = person{name:'Bob', age:31}.put(_{gender:male}).
 The predicate sort/4 can be used to sort dicts on a key.  We illustrate this using a simple database.
 </div>
 
-<div class="nb-cell program">
+<div class="nb-cell program prolog">
 person(1, person{name:'Bob', age:31}).
 person(2, person{name:'Jane', age:30, gender:female}).
 person(3, person{name:'Mary', age:25}).

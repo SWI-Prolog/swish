@@ -1,0 +1,97 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Coin (approximate inference variant)
+
+The LPAD of this example is the same of the one shown [here](tutorial/inference/coin.swinb), the only difference is the inference approach. In this example we will show how to perform an approximate inference with Monte Carlo sampling.
+
+Let us suppose that we have one coin that we are not sure if it is biased. Now, if we toss the coin, what is the probability that it will land on head?
+</div>
+
+<div class="nb-cell markdown">
+## Perfom approximate inference
+To perform approximate we just need to load the library =mcintyre= instead of =pita= and to initialize it we need to write down the goal =|:- mc.|=. Except for query commands the rest is the same as we are performing exact inference.
+</div>
+
+<div class="nb-cell markdown">
+## Full program
+Below the full LPAD of the example
+</div>
+
+<div class="nb-cell program prolog">
+% load the library 'mcintyre' to perform approximate inference
+:- use_module(library(mcintyre)).
+% initialize the library 'mcintyre'
+:- mc.
+% load the renderer 'c3' for graphical results
+:- use_rendering(c3).
+% to be written before the program
+:- begin_lpad.
+% Rules
+heads(Coin): 1/2; tails(Coin) : 1/2 :- toss(Coin),\+biased(Coin).
+heads(Coin): 0.6 ; tails(Coin) : 0.4 :- toss(Coin),biased(Coin).
+% Facts
+fair(Coin): 0.9 ; biased(Coin): 0.1.
+toss(coin).
+% to be written after the program
+:- end_lpad.
+</div>
+
+<div class="nb-cell markdown">
+To execute queries we must use the predicates mc_prob/2 for approximate inference and mc_prob_bar/2 for approximate inference with graphical results. For example if we want to ask for the probability that the coin will land on heads
+</div>
+
+<div class="nb-cell query">
+mc_prob(heads(coin),P).
+</div>
+
+<div class="nb-cell markdown">
+and for graphical results
+</div>
+
+<div class="nb-cell query">
+mc_prob_bar(heads(coin),P).
+</div>
+
+<div class="nb-cell markdown">
+With MCINTYRE, you can also take a given number of sample with
+==
+mc_sample(:Query:atom,+Samples:int,-Successes:int,-Failures:int,-Probability:float).
+==
+For example this query
+</div>
+
+<div class="nb-cell query">
+mc_sample(heads(coin),1000,S,F,P).
+</div>
+
+<div class="nb-cell markdown">
+samples heads(coin) 1000 times and returns in T the number of successes, in F the number of failures and in P the estimated probability (T/1000).
+
+We can obtain a bar chart of the samples with the predicate mc_sample_bar/3 (*note:* remember to load the renderer =c3=)
+==
+mc_sample_bar(:Query:atom,+Samples:int,-Chart:dict).
+==
+In our example
+</div>
+
+<div class="nb-cell query">
+mc_sample_bar(heads(coin),1000,Chart).
+</div>
+
+<div class="nb-cell markdown">
+Differently from exact inference, in approximate inference the query can be a conjunction of atoms.
+
+--
+Complete example: [coinmc.pl](example/inference/coinmc.pl)
+
+--
+- Reference: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctions_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004.
+</div>
+
+<div class="nb-cell markdown">
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
+</div>
+
+</div>

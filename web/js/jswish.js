@@ -30,7 +30,7 @@ define([ "jquery",
 	 "svg-pan-zoom"
        ], function($, config, preferences, history, modal) {
 
-preferences.setDefault("semantic-highlighting", true);
+preferences.setDefault("semantic-highlighting", false);
 preferences.setDefault("emacs-keybinding", false);
 
 (function($) {
@@ -65,58 +65,77 @@ preferences.setDefault("emacs-keybinding", false);
 	}
       },
       "Edit":
-      { "Clear messages": function() {
-	  menuBroadcast("clearMessages");
-	},
-	"Changes": "--",
-	"View changes": function() {
-	  menuBroadcast("diff");
-	},
-	"Options": "--",
-	"Semantic highlighting": {
-	  preference: "semantic-highlighting",
-	  type: "checkbox"
-	},
-	"Emacs Keybinding": {
-	  preference: "emacs-keybinding",
-	  type: "checkbox",
-	  value: "false"
-	}
+        { "Clear messages": function() {
+      	  menuBroadcast("clearMessages");
+      	},
+      	"Changes": "--",
+      	"View changes": function() {
+      	  menuBroadcast("diff");
+      	},
+      	"Revert changes": function() {
+      	  menuBroadcast("revert");
+      	},
+      	"Options": "--",
+      	"Semantic highlighting": {
+      	  preference: "semantic-highlighting",
+      	  type: "checkbox"
+      	},
+      	"Emacs Keybinding": {
+      	  preference: "emacs-keybinding",
+      	  type: "checkbox",
+      	  value: "false"
+      	}
       },
       "Examples": function(navbar, dropdown) {
-	$("body").swish('populateExamples', navbar, dropdown);
+	     $("body").swish('populateExamples', navbar, dropdown);
       },
       "Help":
       { "About ...": function() {
-	  menuBroadcast("help", {file:"about.html"});
-	},
-	"Topics": "--",
-	"Help ...": function() {
-	  menuBroadcast("help", {file:"help.html"});
-	},
-	"Runner ...": function() {
-	  menuBroadcast("help", {file:"runner.html"});
-	},
-	"Debugging ...": function() {
-	  menuBroadcast("help", {file:"debug.html"});
-	},
-	"Notebook ...": function() {
-	  menuBroadcast("help", {file:"notebook.html"});
-	},
-	"Editor ...": function() {
-	  menuBroadcast("help", {file:"editor.html"});
-	},
-	"Background": "--",
-	"Limitations ...": function() {
-	  menuBroadcast("help", {file:"beware.html"});
-	},
-	"Caveats ...": function() {
-	  menuBroadcast("help", {file:"caveats.html"});
-	},
-	"Background ...": function() {
-	  menuBroadcast("help", {file:"background.html"});
-	},
-      }
+      	  menuBroadcast("help", {file:"about.html"});
+      	},
+        "Credits ...": function() {
+      	  menuBroadcast("help", {file:"credits.html"});
+      	},
+      	"Topics": "--",
+      	"Help ...": function() {
+      	  menuBroadcast("help", {file:"help.html"});
+      	},
+      	"Help on cplint...": function() {
+      	  menuBroadcast("help", {file:"help-cplint.html"});
+      	},
+	"Pldoc on cplint...": function() {
+	  var win = window.open("http://cplint.lamping.unife.it/pldoc/doc/home/trill/lib/swipl/pack/cplint/prolog/", '_blank');
+	  win.focus();
+	 },
+      	"Runner ...": function() {
+      	  menuBroadcast("help", {file:"runner.html"});
+      	},
+      	"Debugging ...": function() {
+      	  menuBroadcast("help", {file:"debug.html"});
+      	},
+      	"Notebook ...": function() {
+      	  menuBroadcast("help", {file:"notebook.html"});
+      	},
+      	"Background": "--",
+      	"Limitations ...": function() {
+      	  menuBroadcast("help", {file:"beware.html"});
+      	},
+      	"Caveats ...": function() {
+      	  menuBroadcast("help", {file:"caveats.html"});
+      	},
+      	"Background ...": function() {
+      	  menuBroadcast("help", {file:"background.html"});
+	      },
+      }/*,
+      "Tutorial":  {
+          type: "active",
+          action: function() {
+            console.log("click on tutorial");
+            methods.playURL.call($("body"), {url:"/tutorial/tutorial.swinb"});
+          }
+
+        }*/
+
     }
   }; // defaults;
 
@@ -209,9 +228,9 @@ preferences.setDefault("emacs-keybinding", false);
     playFile: function(options) {
       var elem = this;
       if ( typeof(options) == "string" )
-	options = {file:options};
+	     options = {file:options};
 
-      var existing = this.find(".storage").storage('match', options);
+      /*var existing = this.find(".storage").storage('match', options);
       if ( existing && existing.storage('expose', "Already open") )
 	return this;				/* FIXME: go to line */
 
@@ -298,6 +317,7 @@ preferences.setDefault("emacs-keybinding", false);
 			   ]);
 
 		 elem.swish('setSource', msg);
+
 	       },
 	       error: function(jqXHR) {
 		 modal.ajaxError(jqXHR);
@@ -329,16 +349,23 @@ preferences.setDefault("emacs-keybinding", false);
      */
     openExampleFunction: function(ex) {
       var swish = this;
-
+      console.log("openExampleFunction");
+      console.log(ex);
       if ( ex.type == "divider" ) {
 	return "--";
       } else if ( ex.type == "store" ) {
 	return function() {
+    console.log("openExampleFunction methods");
+    console.log(methods);
+    console.log("faccio playFile");
 	  methods.playFile.call(swish, ex.file);
 	};
       } else {
 	return function() {
-	  methods.playURL.call(swish, {url:ex.href});
+    console.log("openExampleFunction methods");
+    console.log(methods);
+    console.log("faccio playURL");
+    methods.playURL.call(swish, {url:ex.href});
 	};
       }
     },
@@ -372,12 +399,17 @@ preferences.setDefault("emacs-keybinding", false);
 		     var name = ex.file || ex.href;
 		     title = ex.title;
 		     options = that.swish('openExampleFunction', ex);
+         console.log("populateExamples after openExampleFunction");
+         console.log(options);
 		     if ( name )
 		       options.typeIcon = name.split('.').pop();
 		   }
 
 		   $("#navbar").navbar('extendDropdown', dropdown,
 				       title, options);
+       console.log(dropdown);
+       console.log(title);
+       console.log(options);
 		 }
 	       }
 	     });
@@ -399,7 +431,7 @@ preferences.setDefault("emacs-keybinding", false);
 
       if ( (src=$(".prolog-editor").prologEditor('getSource', "source")) )
 	list.push(src);
-      if ( (src=$(".background.prolog.source").text()) )
+      if ( (src=$(".background.prolog.source").text()) ) 
 	list.push(src);
 
       return list.join("\n\n");
@@ -510,6 +542,11 @@ preferences.setDefault("emacs-keybinding", false);
    * interested.
    */
   function menuBroadcast(event, data) {
+    console.log("menuBroadcast");
+    console.log(event);
+    console.log(data);
+    console.log($(".swish-event-receiver"));
+    console.log(jQuery._data($(".swish-event-receiver"), "events"));
     $(".swish-event-receiver").trigger(event, data);
   }
 
@@ -518,7 +555,8 @@ preferences.setDefault("emacs-keybinding", false);
    */
   function swishLogo() {
     $(".swish-logo")
-      .append($.el.b($.el.span({style:"color:darkblue"}, "SWI"),
+      .append($.el.b($.el.span({style:"color:maroon"}, "cplint on "),
+      		     $.el.span({style:"color:darkblue"}, "SWI"),
 		     $.el.span({style:"color:maroon"}, "SH")))
       .css("margin-left", "30px")
       .css("font-size", "24px")

@@ -1,0 +1,20 @@
+/*
+Probabilities computation in the body of probabilistic clauses.
+*/
+
+a:0.2:-
+  prob(b,P),
+  P>0.2.
+
+b:0.5:-
+  c.
+
+c.
+
+:- end_cplint.
+
+/** <examples>
+
+?- a.
+% expected result 0.2
+*/

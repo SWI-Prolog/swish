@@ -22,7 +22,7 @@ For example:
 
 ```{prolog}
 ?- [library(pengines)].
-?- pengine_rpc('http://swish.swi-prolog.org',
+?- pengine_rpc('http://cplint.lamping.unife.it',
 	       sin_table(X,Y),
 	       [ src_text(':- include(sin_table).'),
 		 application(swish)

@@ -55,6 +55,13 @@ span.tab-dirty {
   text-align: center;
 }
 
+/*
+.tabbed-create label {
+  margin-left: 1em;
+  margin-right: 1em;
+}
+*/
+
 label.tabbed-left {
   text-align: right;
   margin-right: 0.6em;

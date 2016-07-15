@@ -1,0 +1,287 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Bongard
+In this tutorial section we will see how to execute a test on a program. We take into account the Bongard dataset (see reference).
+
+## How to test a program
+A program can also be tested on a test set with a query of the form
+==
+?- test(&lt;program&gt;,&lt;list of folds&gt;,LL,AUCROC,ROC,AUCPR,PR).
+==
+where =|&lt;program&gt;|= is a list of terms representing clauses and =|&lt;list of folds&gt;|= is a list of folds. This returns the log likelihood of the test examples in =LL=, the Area Under the ROC curve in =AUCROC=, a dictionary containing the list of points (in the form of Prolog pairs x-y) of the ROC curve in =ROC=, the Area Under the PR curve in AUCPR, a dictionary containing the list of points of the PR curve in =PR=.
+
+Let us suppose now that we have two disjunt folds of examples named =|train|= and =|test|=. We will now see how to test a (learned) program.
+
+### How to test the initial program
+we can test the input program on the fold test with a query of the form
+==
+?- in(P), test(P,[test],LL,AUCROC,ROC,AUCPR,PR).
+==
+
+### How to test a program after parameter learning
+Suppose we want to perform parameter learning on the initial program by using the =train= fold and then test the resulting program by using the =test= fold. Then we have just to run the query
+==
+?- induce_par([train],P), test(P,[test],LL,AUCROC,ROC,AUCPR,PR).
+==
+
+### How to test the learned program
+Suppose we want to learn new clauses (i.e. we perform structure learning) by using the =train= fold and then test the resulting program by using the =test= fold. Then we have just to run the query
+==
+?- induce([train],P), test(P,[test],LL,AUCROC,ROC,AUCPR,PR).
+==
+
+## Adding renderers
+It is possible to see the curves AUCROC, ROC and PR as graphs by including the renderer =c3= before =|:- sc.|=. Morover we include the renderer =lpad= to have the output program pretty printed. Therefore we add the following commands in the preamble before =|:- sc.|=.
+==
+:- use_rendering(c3).
+:- use_rendering(lpad).
+==
+</div>
+
+<div class="nb-cell markdown">
+## Dynamic folds
+We can intensionally create the fold containing all the example with
+==
+fold(all,F):- findall(I,int(I),F).
+==
+We can dinamically create the folds =|train|= and =|test|= with the following command
+==
+:- fold(all,F),
+   sample(4,F,FTr,FTe),
+   assert(fold(train,FTr)),
+   assert(fold(test,FTe)).
+==
+
+This last command should however be inserted after the input interpretations. As can be seen, it uses =|sample(N,List,Sampled,Rest)|= exported from the library =slipcover= that samples =N= elements from =List= and returns the sampled elements in =Sampled= and the rest in =Rest=. If =Lilst= has =N= elements or less, =Sampled= is equal to =List= and =Rest= is empty.
+</div>
+
+<div class="nb-cell markdown">
+## Full dataset
+Below the complete Bongard dataset is reported.
+</div>
+
+<div class="nb-cell program prolog">
+%%%%%%%%%%%%
+% PREAMBLE %
+%%%%%%%%%%%%
+:-use_module(library(slipcover)).
+
+:- use_rendering(c3).
+:- use_rendering(lpad).
+
+:-sc.
+
+:- set_sc(megaex_bottom,20).
+:- set_sc(max_iter,3).
+:- set_sc(max_iter_structure,10).
+:- set_sc(maxdepth_var,4).
+:- set_sc(verbosity,1).
+%%%%%%%%%%%%%%%%%%%%%%%%
+% BACKGROUND KNOWLEDGE %
+%%%%%%%%%%%%%%%%%%%%%%%%
+bg([]).
+%%%%%%%%%%%%%%%%%%%
+% INITIAL PROGRAM %
+%%%%%%%%%%%%%%%%%%%
+in([
+(
+ pos:0.5 :-
+	circle(A),
+	in(B,A)
+),
+( 
+ pos:0.5 :-
+	circle(A),
+	triangle(B)
+)]).
+%%%%%%%%%%%%%%%%%
+% LANGUAGE BIAS %
+%%%%%%%%%%%%%%%%%
+% output predicates
+output(pos/0).
+% input closed world predicates
+input_cw(triangle/1).
+input_cw(square/1).
+input_cw(circle/1).
+input_cw(in/2).
+input_cw(config/2).
+% mode declarations
+modeh(*,pos).
+modeb(*,triangle(-obj)).
+modeb(*,square(-obj)).
+modeb(*,circle(-obj)).
+modeb(*,in(+obj,-obj)).
+modeb(*,in(-obj,+obj)).
+modeb(*,config(+obj,-#dir)).
+
+determination(pos/0,triangle/1).
+determination(pos/0,square/1).
+determination(pos/0,circle/1).
+determination(pos/0,in/2).
+determination(pos/0,config/2).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EXAMPLES (interpretations) %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+begin(model(1)).
+pos.
+triangle(o5).
+config(o5,up).
+square(o4).
+in(o4,o5).
+circle(o3).
+triangle(o2).
+config(o2,up).
+in(o2,o3).
+triangle(o1).
+config(o1,up).
+end(model(1)).
+
+begin(model(2)).
+neg(pos).
+circle(o4).
+circle(o3).
+in(o3,o4).
+square(o2).
+circle(o1).
+in(o1,o2).
+end(model(2)).
+
+begin(model(3)).
+neg(pos).
+square(o3).
+square(o2).
+in(o2,o3).
+square(o1).
+end(model(3)).
+
+begin(model(4)).
+pos.
+triangle(o5).
+config(o5,down).
+triangle(o4).
+config(o4,up).
+in(o4,o5).
+circle(o3).
+square(o2).
+in(o2,o3).
+triangle(o1).
+config(o1,up).
+end(model(4)).
+
+begin(model(5)).
+pos.
+circle(o4).
+triangle(o3).
+config(o3,up).
+in(o3,o4).
+triangle(o2).
+config(o2,down).
+square(o1).
+in(o1,o2).
+end(model(5)).
+
+begin(model(6)).
+neg(pos).
+triangle(o5).
+config(o5,down).
+square(o4).
+in(o4,o5).
+circle(o3).
+circle(o2).
+in(o2,o3).
+triangle(o1).
+config(o1,down).
+end(model(6)).
+
+begin(model(7)).
+neg(pos).
+triangle(o3).
+config(o3,down).
+circle(o2).
+in(o2,o3).
+triangle(o1).
+config(o1,down).
+end(model(7)).
+
+begin(model(8)).
+neg(pos).
+triangle(o4).
+config(o4,down).
+circle(o3).
+in(o3,o4).
+triangle(o2).
+config(o2,up).
+circle(o1).
+in(o1,o2).
+end(model(8)).
+
+begin(model(9)).
+pos.
+triangle(o2).
+config(o2,down).
+triangle(o1).
+config(o1,down).
+in(o1,o2).
+end(model(9)).
+
+begin(model(10)).
+pos.
+triangle(o6).
+config(o6,up).
+triangle(o5).
+config(o5,up).
+in(o5,o6).
+square(o4).
+triangle(o3).
+config(o3,up).
+in(o3,o4).
+square(o2).
+triangle(o1).
+config(o1,up).
+in(o1,o2).
+end(model(10)).
+% fold division
+fold(all,F):- findall(I,int(I),F).
+
+:- fold(all,F),
+   sample(4,F,FTr,FTe),
+   assert(fold(train,FTr)),
+   assert(fold(test,FTe)).
+</div>
+
+<div class="nb-cell markdown">
+### Execute parameter learning and test
+If we want to learn the parameters of the initial program and then test the resulting program, we can use the following query
+</div>
+
+<div class="nb-cell query">
+induce_par([train],P), test(P,[test],LL,AUCROC,ROC,AUCPR,PR).
+</div>
+
+<div class="nb-cell markdown">
+### Execute structure learning and test
+If we want to learn a program and then test it, we can use the following query
+</div>
+
+<div class="nb-cell query">
+induce([train],P), test(P,[test],LL,AUCROC,ROC,AUCPR,PR).
+</div>
+
+<div class="nb-cell markdown">
+--
+Complete example: [bongard.pl](example/learning/bongard.pl)
+
+--
+- Reference: L. De Raedt and W. Van Laer. Inductive constraint logic. In Klaus P. Jantke, Takeshi Shinohara, and Thomas Zeugmann, editors, Proceedings of the Sixth International Workshop on Algorithmic Learning Theory, volume 997 of Lecture Notes in Artificial Intelligence, pages 80-94. SpringerVerlag, 1995.
+</div>
+
+<div class="nb-cell markdown">
+--
+For more information about how to perform learning see the [manual](http://cplint.lamping.unife.it/help/help-cplint.html) (or [PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)). 
+
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
+</div>
+
+</div>

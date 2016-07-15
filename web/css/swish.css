@@ -76,3 +76,13 @@ iframe.swish-embedded-manual {
   width: 100%;
   border: 0px;
 }
+
+.navbar-default .navbar-nav  .active  a {
+  background-color: #f8f8f8;
+  color: #777;
+}
+
+.navbar-default .navbar-nav  .active  a:hover {
+  background-color: #e7e7e7;
+  color: #333;
+}

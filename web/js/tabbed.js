@@ -152,9 +152,12 @@ var tabbed = {
 	  dom = data.newTab();
 	} else {
 	  dom = this.tabbed('tabSelect');
+	  $(dom).append(this.tabbed('searchForm'));
+/*
 	  $(dom).append(this.tabbed('profileForm'),
 			$.el.hr(),
 			this.tabbed('searchForm'));
+*/
 	}
       }
 
@@ -442,8 +445,8 @@ var tabbed = {
 	var tab     = $(ev.target).closest(".tab-pane");
 	var content = $.el.div();
 	var options = $.extend({}, tabbed.tabTypes[type]);
-	var profile = tab.find("label.active > input[name=profile]").val();
-
+/*	
+ 	var profile = tab.find("label.active > input[name=profile]").val();
 	if ( profile ) {
 	  options.profile = profile;
 	  options.value   = tab.tabbed('profileValue', profile,
@@ -451,6 +454,7 @@ var tabbed = {
 	  if ( options.value != undefined )
 	    preferences.setVal("default-profile", profile);
 	}
+*/
 
 	tab.html("");
 	tab.tabbed('title', options.label, options.dataType);
@@ -471,12 +475,21 @@ var tabbed = {
 	  ev.stopPropagation();
 	}
       });
+      $(g).on("source", function(ev, src) {
+	var tab = $(ev.target).closest(".tab-pane");
+	ev.stopPropagation();
+	if ( tab.is(":visible") )
+	  tab.closest(".tabbed").tabbed('setSource', tab, src);
+	return false;
+      });
+/*
       $(g).on("profile-selected", function(ev, profile) {
 	$(ev.target).find("button").each(function() {
 	  $(this).prop('disabled',
 		       profile.type.indexOf($(this).data('ext')) < 0);
 	});
       });
+*/
 
       return dom;
     },
@@ -505,6 +518,7 @@ var tabbed = {
       return sform;
     },
 
+/*
     profileForm: function() {
       if ( config.swish.profiles && config.swish.profiles.length > 0 ) {
 	var def;
@@ -554,6 +568,7 @@ var tabbed = {
       }).responseText;
     },
 
+*/
     /**
      * Get the UL list that represents the nav tabs
      */
@@ -603,6 +618,7 @@ var tabbed = {
   { return "tabbed-tab-"+tabid++;
   }
 
+/*
   function profileObject(name) {
     if ( config.swish.profiles ) {
       for(var i=0; i<config.swish.profiles.length; i++) {
@@ -611,6 +627,7 @@ var tabbed = {
       }
     }
   }
+*/
 
   /**
    * <Class description>

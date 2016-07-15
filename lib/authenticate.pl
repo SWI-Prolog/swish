@@ -140,8 +140,8 @@ swish_config:config(user, Dict, Options) :-
 %	Is called from the  /pengine/create   request  to  establish the
 %	logged in user.
 
-pengines:authentication_hook(Request, _Application, User) :-
-	logged_in(Request, User), !.
+pengines:authentication_hook(_Request, _Application, anonymous) :- !.
+	%logged_in(Request, User), !.
 
 pengines:not_sandboxed(_User, _Application).
 

@@ -1,0 +1,161 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Random arithmetic functions
+
+In this example we want to show how to perform conditional inference in
+an approximate way using sampling. In particular, we will show how to
+use rejection sampling and Metropolis-Hastings.
+
+This example generatively defines a random arithmetic function.
+The problem is to predict the value returned by the function given one or
+two couples of input-output, i.e., to compute a conditional probability.
+This program is translated from the example 
+http://forestdb.org/models/arithmetic.html in the Church functional probabilistic programming language.
+Sampling is necessary as queries have an infinite number of explanations.
+
+## Full program
+The full program of this example is 
+</div>
+
+<div class="nb-cell program prolog" data-singleline="true">
+:- use_module(library(mcintyre)).
+
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+
+:- mc.
+
+:- begin_lpad.
+
+eval(X,Y):-
+  random_fn(X,0,F),
+  Y is F.
+
+op(+):0.5;op(-):0.5.
+
+
+
+random_fn(X,L,F):-
+  comb(L),
+  random_fn(X,l(L),F1),
+  random_fn(X,r(L),F2),
+  op(Op),
+  F=..[Op,F1,F2].
+
+random_fn(X,L,F):-
+  \+ comb(L),
+  base_random_fn(X,L,F).
+
+comb(_):0.3.
+
+base_random_fn(X,L,X):-
+  identity(L).
+
+base_random_fn(_X,L,C):-
+  \+ identity(L),
+  random_const(L,C).
+
+identity(_):0.5.
+
+
+random_const(L,0):0.1;random_const(L,1):0.1;random_const(L,2):0.1;
+random_const(L,3):0.1;random_const(L,4):0.1;random_const(L,5):0.1;
+random_const(L,6):0.1;random_const(L,7):0.1;random_const(L,8):0.1;
+random_const(L,9):0.1.
+
+
+:- end_lpad.
+</div>
+
+<div class="nb-cell markdown">
+We know that the random function return 3 for input 1 and we want to
+compute the probability that it returns 4 for input 2. 
+We thus need to ask a conditional query and sampling is necessary as queries have an infinite number of explanations.
+
+The simplest approach is to use rejection sampling:  you first query the evidence and, if the query is successful, query the goal in the same sample, otherwise
+the sample is discarded.
+
+This can be done with
+
+==
+mc_rejection_sample(:Query:atom,:Evidence:atom,+Samples:int,
+  -Successes:int,-Failures:int,-Probability:float).
+==
+that takes =Samples= samples of =Query= given that =Evidence= is true.
+
+An example of use of the above predicate is
+</div>
+
+<div class="nb-cell query">
+mc_rejection_sample(eval(2,4),eval(1,3),1000,T,F,P).
+</div>
+<div class="nb-cell markdown">
+that perform rejection sampling of eval(2,4) given that eval(1,3) is true.
+
+Differently from exact inference, in approximate inference the evidence can be a conjunction of atoms, so if you also know that eval(0,2) is true, you can use
+</div>
+<div class="nb-cell query">
+mc_rejection_sample(eval(2,4),(eval(0,2),eval(1,3)),1000,T,F,P).
+</div>
+
+<div class="nb-cell markdown">
+and, as you can see, the query with more evidence is now almost certainly true.
+
+In Metropolis-Hastings MCMC, a Markov chain is produced using the algorithm
+of [Nampally, Ramakrishnan, 2014]:
+after a sample, a number of sampled probabilistic choices are deleted and the others are retained for the next sample.
+The sample is accepted with a probability of min{1,N0/N1} where N0 is the number of choices sampled
+in the previous sample and N1 is the number of choices sampled in the current sample. Metropolis-Hastings is usually much faster than rejection sampling
+because less samples are discarded.
+
+To use Metropolis-Hastings, the following predicate is available
+==
+mc_mh_sample(:Query:atom,:Evidence:atom,+Samples:int,+Lag:int,
+  -Successes:int,-Failures:int,-Probability:float).
+==
+where =Lag= is the number of sampled choices to forget before taking a new sample.
+For example 
+</div>
+<div class="nb-cell query">
+mc_mh_sample(eval(2,4),eval(1,3),10000,1,T,F,P).
+</div>
+
+<div class="nb-cell markdown">
+takes 10000 accepted samples and returns in =T= the number of samples where 
+eval(2,4) is true, in =F= the number of samples where eval(2,4) is false and in =P= the
+estimated probability (=T/10000=).
+
+You can also compute conditional expectations with
+==
+mc_mh_expectation(:Query:atom,:Evidence:atom,+N:int,+Lag:int,?Arg:var,-Exp:float).
+==
+as in
+</div>
+<div class="nb-cell query">
+mc_mh_expectation(eval(2,Y),eval(1,3),1000,1,Y,E).
+</div>
+
+<div class="nb-cell markdown">
+that computes the expectation of argument =Y= of eval(2,Y) given that 
+eval(1,3) is true by taking 1000 samples using Metropolis-Hastings MCMC.
+</div>
+
+<div class="nb-cell markdown">
+--
+Complete example: [arithm.pl](example/inference/arithm.pl)
+
+--
+- References: 
+  - Nampally, Arun, and C. R. Ramakrishnan. _Adaptive MCMC-Based Inference in Probabilistic Logic Programs_. arXiv preprint arXiv:1403.6036 (2014).
+  - http://forestdb.org/models/arithmetic.html
+
+</div>
+
+<div class="nb-cell markdown">
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
+</div>
+
+</div>

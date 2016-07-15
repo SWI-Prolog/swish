@@ -28,7 +28,11 @@
 */
 
 :- module(swish_trace,
+/**/
+	  [ '$swish wrapper'/1		% +Goal
+/*
 	  [ '$swish wrapper'/2		% +Goal, -Residuals
+*/
 	  ]).
 :- use_module(library(debug)).
 :- use_module(library(settings)).
@@ -54,7 +58,11 @@
 :- set_prolog_flag(generate_debug_info, false).
 
 :- meta_predicate
+/**/
+	'$swish wrapper'(0).
+/*
 	'$swish wrapper'(0, -).
+*/
 
 /** <module>
 
@@ -177,7 +185,11 @@ strip_stack(error(Error, context(prolog_stack(S), Msg)),
 	nonvar(S).
 strip_stack(Error, Error).
 
+/*
 %%	'$swish wrapper'(:Goal, -Residuals)
+*/
+
+%%	'$swish wrapper'(:Goal)
 %
 %	Wrap a SWISH goal in '$swish  wrapper'. This has two advantages:
 %	we can detect that the tracer is   operating  on a SWISH goal by
@@ -186,11 +198,17 @@ strip_stack(Error, Error).
 
 :- meta_predicate swish_call(0).
 
+/**/
+'$swish wrapper'(Goal) :-
+	catch(swish_call(Goal), E, throw(E)),
+	deterministic(Det),
+/*
 '$swish wrapper'(Goal, '$residuals'(Residuals)) :-
 	catch(swish_call(Goal), E, throw(E)),
 	deterministic(Det),
 	Goal = M:_,
 	residuals(M, Residuals),
+*/
 	(   tracing,
 	    Det == false
 	->  (   notrace,
@@ -212,6 +230,7 @@ no_lco.
 :- '$hide'(no_lco/0).
 
 
+/*
 %%	residuals(+PengineModule, -Goals:list(callable)) is det.
 %
 %	Find residual goals  that  are  not   bound  to  the  projection
@@ -236,6 +255,7 @@ residuals(_, []).
 :- endif.
 
 
+*/
 		 /*******************************
 		 *	  SOURCE LOCATION	*
 		 *******************************/
@@ -623,7 +643,9 @@ sandbox:safe_primitive(system:notrace).
 sandbox:safe_primitive(system:tracing).
 sandbox:safe_primitive(edinburgh:debug).
 sandbox:safe_primitive(system:deterministic(_)).
+/*
 sandbox:safe_primitive(swish_trace:residuals(_,_)).
+*/
 
 
 		 /*******************************

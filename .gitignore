@@ -5,3 +5,4 @@ storage
 log
 *.log
 *~
+*.swp

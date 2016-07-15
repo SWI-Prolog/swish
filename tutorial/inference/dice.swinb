@@ -1,0 +1,159 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Dice
+
+In this section we illustrate an example that models a game with a six-sided dice. The dice is repeatedly thrown until the outcome is six. When the outcome is six, the game stops. 
+We will show how to perform a simple query, how to perform a conditional query and how to execute a query whose results are graphically represented by a histogram.
+
+### Writing the program step by step
+First of all we want to write a fact which states that at time 0 the die land on one of its faces with a uniform probability distribution (1/6 for each face). We use the predicate =|on(T,F)|= which means that the die landed on face F at time T.
+==
+on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;
+on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
+==
+The following rule states that at time T the die lands on one of its faces with equal probability if at the previous time point it was thrown and it did not land on face 6.
+==
+on(X,1):1/6;on(X,2):1/6;on(X,3):1/6;
+on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
+  X1 is X-1,X1&gt;=0,on(X1,_),
+  \+ on(X1,6).
+==
+</div>
+
+<div class="nb-cell markdown">
+### Full program with Prolog editor
+Below we can see the full LPAD of the example.
+</div>
+
+<div class="nb-cell program prolog">
+% Load 'pita' library to perform inference
+:- use_module(library(pita)).
+:- pita.
+% to be written before the program
+:- begin_lpad.
+% T = 0
+on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;
+on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
+% T &gt; 0
+on(X,1):1/6;on(X,2):1/6;on(X,3):1/6;
+on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
+  X1 is X-1,X1&gt;=0,on(X1,_),
+  \+ on(X1,6).
+% to be written after the program
+
+evidence:-
+  on(0,1),
+  on(1,1).
+
+:- end_lpad.
+</div>
+
+<div class="nb-cell markdown">
+Now we ask for the probability that the die will land on face 1 at time 0.
+</div>
+
+<div class="nb-cell query">
+prob(on(0,1),P).
+</div>
+
+<div class="nb-cell markdown">
+At this point we ask for the probability that the die will land on face 1 at time 2. If we submit this query, we can note that the probability that the die will land on one of its faces at time T (with T &gt; 0) decreases. This is because it is the probability that the dice will land on one of its faces at time T and that at time T-1 it did not land on face 6.
+</div>
+
+<div class="nb-cell query">
+prob(on(2,1),P).
+</div>
+
+<div class="nb-cell markdown">
+We can ask conditional queries with the predicate
+==
+prob(:Query:atom,:Evidence:atom,-Probability:float).
+==
+For example, we can ask for the probability that the die will land on face 1 at time 2
+given that it landed on face 1 at time 0. 
+</div>
+
+<div class="nb-cell query">
+prob(on(2,1),on(0,1),P).
+</div>
+
+<div class="nb-cell markdown">
+If the evidence is composed of more than one atom, add a clause of the form
+==
+evidence:- e1,...,en.
+==
+to the program, where `e1,...,en` are the evidence atoms, and use the query
+==
+?- prob(goal,evidence,P).
+==
+as for example in
+</div>
+<div class="nb-cell query">
+prob(on(2,1),evidence,P).
+</div>
+
+<div class="nb-cell markdown">
+
+### How to execute a query with graphical results
+*cplint on SWISH* can show the probabilistic results of a query as histograms. What we have to do is to use the predicate prob_bar/2 instead of prob/2. This feature, however, it is only supported if we are using the "Prolog" editor, it is *NOT* supported with the "LPAD" editor.
+
+The syntax is the same as prob/2.
+==
+prob_bar(:Atom,-P).
+==
+Where =Atom= is the query that we want to ask, while =P= is the variable that will contain a bar chart with two bars, one for the probability of the atom of being true and one for the probability of the atom of being false (1- the first). It provides a graphical representation of the difference between the two values.
+
+However, before submitting this kind of query, we need to specify that we want to use the renderer =c3= by adding the following line before the =|:- begin_lpad.|= goal
+==
+:- use_rendering(c3).
+==
+Therefore our program becomes
+</div>
+
+<div class="nb-cell program prolog">
+% load the 'pita' library to perform inference
+:- use_module(library(pita)).
+:- pita.
+% load the graphical renderer
+:- use_rendering(c3).
+% to be written before the program
+:- begin_lpad.
+% Program
+on(0,1):1/6;on(0,2):1/6;on(0,3):1/6;
+on(0,4):1/6;on(0,5):1/6;on(0,6):1/6.
+
+on(X,1):1/6;on(X,2):1/6;on(X,3):1/6;
+on(X,4):1/6;on(X,5):1/6;on(X,6):1/6:-
+  X1 is X-1,X1&gt;=0,on(X1,_),
+  \+ on(X1,6).
+
+% to be written after the program
+:- end_lpad.
+</div>
+
+<div class="nb-cell markdown">
+For istance let us consider again the previous query, this time with a graphical result.
+</div>
+
+<div class="nb-cell query">
+prob_bar(on(2,1), P).
+</div>
+
+<div class="nb-cell markdown">
+--
+Complete example: [dice.pl](example/inference/dice.pl)
+
+--
+Complete example with the LPAD editor: [dice.cpl](example/inference/dice.cpl)
+
+--
+- Reference: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004.
+</div>
+
+<div class="nb-cell markdown">
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
+</div>
+
+</div>

@@ -1,0 +1,144 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Markov Chain
+
+In this example we want to know what is the likelihood that on an execution of a Markov chain from a start state 's', a final state 't' will be reached?
+The chains may be infinite so the query may have an infinite number of explanations and if we want exact inference and use PITA, the inference may not terminate. To ensure termination, we have two solutions. We may either fix a bound on the depth of the derivations of PITA by setting the parameters
+==
+:- set_pita(depth_bound,true).
+:- set_pita(depth,&lt;level of depth (integer)&gt;).
+==
+(see [exact inference variant of this example](example/inference/markov_chaindb.pl)). Alternatively, MCINTYRE can be used. 
+
+Here we will use the latter approach.
+
+## Full program
+Below the full program of this example is shown
+</div>
+
+<div class="nb-cell program prolog">
+% load the library 'mcintyre' to perform approximate inference
+:- use_module(library(mcintyre)).
+% load the renderer 'c3' for graphical results
+:- use_rendering(c3).
+% initialize the library 'mcintyre'
+:- mc.
+% to be written before the program
+:- begin_lpad.
+reach(S, I, T) :-
+  trans(S, I, U),
+  reach(U, next(I), T).
+
+reach(S, _, S).
+trans(s0,S,s0):0.5; trans(s0,S,s1):0.3; trans(s0,S,s2):0.2.
+trans(s1,S,s1):0.4; trans(s1,S,s3):0.1; trans(s1,S,s4):0.5.
+trans(s4,_,s3).
+% to be written after the program
+:- end_lpad.
+</div>
+
+<div class="nb-cell markdown">
+We ask for the probability that starting at state 's0' at instance 0, state 's3' is reachable
+</div>
+
+<div class="nb-cell query">
+mc_prob(reach(s0,0,s3),P).
+</div>
+
+<div class="nb-cell markdown">
+if we want to see the probability histogram
+</div>
+
+<div class="nb-cell query">
+mc_prob_bar(reach(s0,0,s3),P).
+</div>
+
+<div class="nb-cell markdown">
+Then if we want to sample reach(s0,0,s3) 1000 times, we can do it with
+</div>
+
+<div class="nb-cell query">
+mc_sample(reach(s0,0,s3),1000,S,F,P).
+</div>
+
+<div class="nb-cell markdown">
+If we want to see the bar graph of the sampling
+</div>
+
+<div class="nb-cell query">
+mc_sample_bar(reach(s0,0,s3),1000,Chart).
+</div>
+
+<div class="nb-cell markdown">
+We can also sample arguments of queries with the predicate mc_sample_arg/4
+==
+mc_sample_arg(:Query:atom,+Samples:int,?Arg:var,-Values:list).
+==
+The predicate samples =Query= a number of =Samples= times. =Arg= should be a variable in =Query=. 
+The predicate returns in =Values= a list of couples =L-N= where =L= is the list of 
+values of =Arg= for which =Query= succeeds in world sampled at random and 
+=N= is the number of samples. If =L= is the empty list, it means that for that sample the query failed. 
+If =L= is a list with a 
+single element, it means that for that sample the query is 
+determinate. 
+If, in all couples =L-N=, =L= 
+is a list with a 
+single element, it means that the clauses in the program 
+are mutually exclusive, i.e., that in every sample, 
+only one clause for each subgoal has the body true.
+
+So for example we may sample the argument =S= of reach(s0,0,S) with
+</div>
+
+<div class="nb-cell query">
+mc_sample_arg(reach(s0,0,S),50,S,Values).
+</div>
+
+<div class="nb-cell markdown">
+If we want to see the bar graph of this sampling we use the predicate mc_sample_arg_bar/4
+==
+mc_sample_arg_bar(:Query:atom,+Samples:int,?Arg:var,-Chart:dict).
+==
+For example
+</div>
+
+<div class="nb-cell query">
+mc_sample_arg_bar(reach(s0,0,S),50,S,Chart).
+</div>
+
+<div class="nb-cell markdown">
+
+Moreover, we can sample arguments of queries with the predicate mc_sample_arg_first/4
+==
+mc_sample_arg_first(:Query:atom,+Samples:int,?Arg:var,-Values:list)
+==
+that returns in =Values= a list of couples =V-N= where 
+=V= is the value of =Arg= returned as the first answer by =Query= in 
+a world sampled at random and =N= is the number of samples
+returning that value.
+=V= is =failure= if the query fails.
+=mc_sample_arg_first/4= differs from =mc_sample_arg/4= because the first just computes the first
+answer of the query for each sampled world.
+
+So for example we may sample 50 times the first answer for =S= in reach(s0,0,S) with
+</div>
+
+<div class="nb-cell query">
+mc_sample_arg_first(reach(s0,0,S),50,S,Values). 
+</div>
+
+<div class="nb-cell markdown">
+--
+Complete example: [markov_chain.pl](example/inference/markov_chain.pl)
+
+--
+- Reference: Gorlin, Andrey, C. R. Ramakrishnan, and Scott A. Smolka. _Model checking with probabilistic tabled logic programming_. Theory and Practice of Logic Programming 12.4-5 (2012).
+</div>
+
+<div class="nb-cell markdown">
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
+</div>
+
+</div>

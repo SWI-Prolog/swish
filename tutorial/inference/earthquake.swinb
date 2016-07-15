@@ -1,0 +1,69 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Earthquake
+
+This program models the occurrence of an earthquake depending on its possible causes. 
+
+### Full program with the Prolog editor
+The first rule states that if there is rupture of a geological fault only, we have a strong earthquake with 30% probability, a moderate earthquake with 50% probability and 20% probability to have no earthquake. The second rule states that if there is a volcanic eruption only, we have a strong earthquake with 20% probability, a moderate earthquake with 60% probability and no earthquake with 20% probability. We also know for sure that we have a fault rupture and a volcanic eruption at Stromboli and a volcanic eruption at Eyjafjallajokull (can you pronounce it? :-) ).
+</div>
+
+<div class="nb-cell program prolog">
+% load the 'pita' library to perform inference
+:- use_module(library(pita)).
+% allows to create graphical results
+:- if(current_predicate(use_rendering/1)).
+:- use_rendering(c3).
+:- endif.
+:- pita.
+% to be written before the program
+:- begin_lpad.
+% Rules
+earthquake(X, strong) : 0.3 ; earthquake(X, moderate) : 0.5 :-
+  fault_rupture(X).
+earthquake(X, strong) : 0.2 ; earthquake(X, moderate) : 0.6 :-
+  volcanic_eruption(X).
+% Facts
+fault_rupture(stromboli).
+volcanic_eruption(stromboli).
+volcanic_eruption(eyjafjallajkull).
+% to be written after the program
+:- end_lpad.
+</div>
+
+<div class="nb-cell markdown">
+We can ask the probability of a moderate earthquake at Stromboli by submitting the query:
+</div>
+
+<div class="nb-cell query">
+prob(earthquake(stromboli,moderate), P).
+</div>
+
+<div class="nb-cell markdown">
+Let us see the histogram of the previous query
+</div>
+
+<div class="nb-cell query">
+prob_bar(earthquake(stromboli,moderate), P).
+</div>
+
+<div class="nb-cell markdown">
+This example shows that conclusions from different rules are combined with a noisy or rule: the probability of a moderate earthquake at Stromboli is obtained by combining with noisy or the grounding of the first rule and the grounding of the second one, where the only variable is replaced by Stromboli. So the probability of an earthquake at Stromboli is 1-(1-0.5)*(1-0.6)=0.8. *Note:* if you submit the query the result will be 0.7999999999999998, this is due to numerical approximations performed during the computation.
+
+--
+Complete example: [earthquake.pl](example/inference/earthquake.pl)
+
+--
+Complete example with the LPAD editor: [earthquake.cpl](example/inference/earthquake.cpl)
+
+--
+- Reference: F. Riguzzi and N. Di Mauro. _Applying the information bottleneck to statistical relational learning_. Machine Learning, 86(1):89-114, 2012.
+</div>
+
+<div class="nb-cell markdown">
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
+</div>
+
+</div>

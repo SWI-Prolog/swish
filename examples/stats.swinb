@@ -19,7 +19,7 @@ The charts below render historical performance characteristics of the server.  P
 program below for a description of chart/3.
 </div>
 
-<div class="nb-cell program" data-singleline="true">
+<div class="nb-cell program prolog" data-singleline="true">
 :- use_rendering(c3).
 
 %%	chart(+Period, +Keys, -Chart) is det.
@@ -126,7 +126,7 @@ chart(hour, [rss_mb,heap_mb,stack_mb,free_mb], Chart).
 The statistics below assesses the number of *Pengines* (actively executing queries from users) and the *highlight states*, the number of server-side mirrors we have from client's source code used to compute the semantically enriched tokens.   If such states are not explicitly invalidated by the client, they are removed after having not been accessed for one hour.  The *stale modules* count refers to temporary modules that are not associated to a Pengine, nor to a highlight state and probably indicate a leak.
 </div>
 
-<div class="nb-cell program" data-singleline="true">
+<div class="nb-cell program prolog" data-singleline="true">
 :- use_rendering(table).
 
 stats([stale_modules-Stale|Pairs]) :-

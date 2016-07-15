@@ -1,0 +1,44 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Logic Program with Annotated Disjunction
+
+### Definition
+A Logic Program with Annotated Disjunction (LPAD) consists of a set of rules of the following form:
+==
+h_1 : a_1 ; ... ; h_n : a_n :- b_1, ..., b_m. 
+==
+where =h_i= are atoms, =b_i= are literals and =a_i= are real numbers between 0 and 1 such that the sum of all =a_i= is 1. The set of elements =|h_i : a_i|= compose the head of a rule, while the set =b_i= is the body. Disjunction in  the  head  is  represented  with  a  semicolon  and  atoms  in  the  head  are  separated  from probabilities by a colon.
+If the head of a rule contains only one element =|h : 1|=, we can simpy write this element as =h=, i.e. the clause takes the form of a normal prolog clause. Therefore
+==
+h : 1 :- b_1, ..., b_m.
+==
+is equivalent to
+==
+h :- b_1, ..., b_m.
+== 
+
+If the clause has an empty body, it can be represented like this:
+==
+h_1 : a_1 ; ... ; h_n : a_n. 
+==
+
+If the sum of all the =a_i= is smaller than 1, an extra disjunct _null_ is assumed with probability _|1 - sum(a_i)|_. Therefore
+==
+h_1 : 0.5 ; h_2 : 0.2 :- b_1, ..., b_m. 
+==
+is equivalent to 
+==
+null : 0.3 ; h_1 : 0.5 ; h_2 : 0.2 :- b_1, ..., b_2.
+==
+
+--
+- Reference: J. Vennekens, S. Verbaeten, and M. Bruynooghe. _Logic programs with annotated disjunctionsi_. In International Conference on Logic Programming, volume 3131 of LNCS, pages 195-209. Springer, 2004.
+</div>
+
+<div class="nb-cell markdown">
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
+</div>
+
+</div>

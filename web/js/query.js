@@ -85,6 +85,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 
 	elem.on("current-program", function(ev, editor) {
 	  elem[pluginName]('setProgramEditor', $(editor));
+	  elem[pluginName]('setAggregates', $(editor));
 	});
 	elem.on("program-loaded", function(ev, editor) {
 	  if ( $(data.editor).data('prologEditor') ==
@@ -95,7 +96,24 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	});
       });
     },
+        
+    setAggregates: function(editor) {
+      var codeType = editor.prologEditor('getCodeType', "source");
+      var but = this.find("button.aggregate");
+      
+      if (codeType == "lpad")
+        but.prop('disabled', true);
+      else
+        but.prop('disabled', false);
+        
+      /*if (codeType == "lpad")
+        but.css("visibility", "hidden");
+      else
+        but.css("visibility", "visible");*/
+      
+    },
 
+    
     /**
      * @param {jQuery} editor has become the new current program
      * editor.  Update the examples and re-run the query highlighting.
@@ -127,8 +145,10 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 
 	    return src;
 	  };
+	  data.codeType = editor.prologEditor('getCodeType', "source");
 	} else {
 	  data.source = "";
+	  data.codeType = "undef";
 	}
 	data.sourceID = function() {
 	  return editor.prologEditor('getSourceID');
@@ -192,6 +212,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	ul.append($.el.li($.el.a(list[i])));
       }
       ul.data('examples', list.slice(0));
+
 
       return this;
     },
@@ -287,6 +308,11 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
       if ( tabled )
 	query.tabled = true;
 
+      console.log("query.run");
+      console.log(data);
+      console.log(query);
+      query.codeType=data.codeType;
+      
       this.queryEditor('addHistory', q);
       data.runner.prologRunners('run', query);
 
@@ -326,7 +352,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
   function examplesButton(options) {
     var el = dropup("examples", "Examples", options);
     var ul = $(el).find("ul");
-
+    
     function updateExamples(options) {
       var list = options.examples();
 
@@ -370,7 +396,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
     var ul;
 
     var dropup = $.el.div(
-      {class:"btn-group dropup"},
+      {class:"btn-group dropup aggregate"},
       $.el.button(
 	{class:"btn btn-default btn-xs dropdown-toggle "+cls,
 	 "data-toggle":"dropdown"},

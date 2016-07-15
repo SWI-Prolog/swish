@@ -1,0 +1,401 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Machines
+In this section we will see how to learn the parameters given a background knowledge and an initial program. We take into account the Machines dataset (see reference).
+
+*Note*: the learning algorithms are available only if you use the Prolog editor.
+
+## Writing the program step by step
+To execute a learning algorithm the input source must be divided in five parts:
+- preamble,
+- background knowledge, i.e., knowledge valid for all interpretations,
+- initial LPAD program for you which you want to learn the parameters (optional),
+- language bias information,
+- example interpretations.
+
+Here we will define a program step by step and then execute the algorithm [EMBLEM](http://cplint.lamping.unife.it/help/about.html#emblem) which learns the parameters of a given initial LPAD program. 
+
+For more information of how to perform learning see the [manual](http://cplint.lamping.unife.it/help/help-cplint.html) ([PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)).
+
+### Preamble
+In order to perform either EMBLEM or SLIPCOVER you need to load the library =slipcover= with the command
+==
+:- use_module(library(slipcover)).
+==
+After that you have to initialize =slipcover= with the command
+==
+:- sc.
+==
+At this point you can start setting parameters for SLIPCOVER with the predicate set_sc/2. For the complete list of the available parameters and their meanings see the [manual](http://cplint.lamping.unife.it/help/help-cplint.html). In our example we will set the following parameters
+==
+:- set_sc(depth_bound,false).
+:- set_sc(neg_ex,given).
+:- set_sc(megaex_bottom,15).
+:- set_sc(max_iter,10).
+:- set_sc(max_iter_structure,50).
+:- set_sc(verbosity,1).
+==
+</div>
+
+<div class="nb-cell markdown">
+### Background knowledge
+We have defined the preamble, now we can specify the background knowledge with a fact of the form
+==
+bg(&lt;list of terms representing clauses&gt;).
+== 
+Alternatively, we can specify a set of clauses by including them in a section between the goals =|:- begin_bg.|= and =|:- end_bg.|=. We will use the latter approach.
+==
+:- begin_bg.
+component(C):-
+  replaceable(C).
+component(C):-
+  not_replaceable(C).
+replaceable(gear).
+replaceable(wheel).
+replaceable(chain).
+not_replaceable(engine).
+not_replaceable(control_unit).
+not_worn(C):-
+  component(C),
+  \+ worn(C).
+one_worn:-
+  worn(_).
+none_worn:-
+  \+ one_worn.
+:- end_bg.
+==
+</div>
+
+<div class="nb-cell markdown">
+### Initial program
+At this point we can define an initial program for which you want to learn the parameters. We can do it with a fact of the form
+==
+in(&lt;list of terms representing clauses&gt;).
+==
+Alternatively, you can specify an input program in a section between =|:- begin_in.|= and =|:- end_in.|=. We will use the latter method. Therefore in our example
+==
+:- begin_in.
+class(sendback):0.5 :-
+  worn(A),
+  not_replaceable(A).
+
+class(fix):0.6 :-
+  worn(A),
+  replaceable(A).
+
+class(ok):0.5 :-
+  not_worn(_A).
+:- end_in.
+==
+</div>
+
+<div class="nb-cell markdown">
+### Language Bias
+The language bias part contains the declarations of the input and output predicates.
+
+The typical input for EMBLEM will be a set of interpretations, i.e. sets of grounds facts. Among the predicates for the input facts the use has to indicate which are the output predicates. Output predicates are declared as 
+==
+output(&lt;predicate&gt;/&lt;arity&gt;).
+==
+In our example
+==
+output(class/1).
+==
+Input predicates are those whose atoms you are not interested in predicting.
+
+You can declare *closed world input predicates* with
+==
+input_cw(&lt;predicate&gt;/&lt;arity&gt;).
+==
+
+For these predicates, the only true atoms are those in the interpretations and those derivable from them using the background knowledge, the clauses in the
+input/hypothesized program are not used to derive atoms for these predicates.
+Moreover, clauses of the background knowledge that define closed world input predicates and that call an output predicate in the body will not be used for deriving examples.
+In our example
+==
+input_cw(replaceable/1).
+input_cw(not_replaceable/1).
+input_cw(worn/1).
+input_cw(not_worn/1).
+input_cw(none_worn/0).
+==
+Besides closed world input predicate we can declare 
+*open world input predicates* with
+==
+input(&lt;predicate&gt;/&lt;arity&gt;).
+==
+
+In our example we do not have open world input predicates.
+</div>
+
+<div class="nb-cell markdown">
+### Example interpretations
+The last part of the file contains the data. You can specify data with two modalities: models and keys.
+
+In the models type, you specify an example model (or interpretation) as a list of Prolog facts initiated by =|begin(model(&lt;name&gt;)).|= and terminated by =|end(model(&lt;name&gt;)).|=.
+
+Alternatively, with the keys modality, you can directly write the facts and the first argument will be interpreted as a model identifier.
+
+The two modalities, models and keys, can be mixed in the same source.
+
+If we use the model modality for the example/interpretation 1
+==
+begin(model(1)).
+class(sendback).
+neg(class(fix)).
+neg(class(ok)).
+worn(gear).
+worn(engine).
+end(model(1)).
+==
+If we use this modality the system asserts a =|int(&lt;name&gt;).|= for each model enclosed in =|begin(model(&lt;name&gt;)).|= and =|end(model(&lt;name&gt;)).|=.
+
+Instead, if we use the key modality, our example will be (note the first argument of each fact)
+==
+class(1,sendback).
+neg(1,class(fix)).
+neg(1,class(ok)).
+worn(1,gear).
+worn(1,engine).
+==
+If we use this modality, facts for int/1 are not asserted for interpretations, but can be explicitily added by the user.
+
+#### Fold division
+After we defined the examples/interpretations we must indicate how the examples are divided in folds with facts of the form: 
+==
+fold(&lt;fold_name&gt;,&lt;list of model identifiers&gt;)
+==
+as for example
+==
+fold(train1,[1,2,3]).
+fold(train2,[4,5,6,7,8,9,10]).
+==
+We can also define intensionally the folds as in
+==
+fold(all,F) :- findall(I,int(I),F).
+==
+</div>
+
+<div class="nb-cell markdown">
+## Full dataset 
+The complete Machines input file is
+</div>
+
+<div class="nb-cell program prolog">
+%%%%%%%%%%%%
+% PREAMBLE %
+%%%%%%%%%%%%
+:- use_module(library(slipcover)).
+% use the renderer 'lpad'. It not mandatory to use it, but it prints the learned clauses in a more readable way
+:- use_rendering(lpad).
+
+:- sc.
+
+:- set_sc(depth_bound,false).
+:- set_sc(neg_ex,given).
+:- set_sc(megaex_bottom,15).
+:- set_sc(max_iter,10).
+:- set_sc(max_iter_structure,50).
+:- set_sc(verbosity,1).
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+% BACKGROUND KNOWLEDGE %
+%%%%%%%%%%%%%%%%%%%%%%%%
+:- begin_bg.
+component(C):-
+  replaceable(C).
+component(C):-
+  not_replaceable(C).
+replaceable(gear).
+replaceable(wheel).
+replaceable(chain).
+not_replaceable(engine).
+not_replaceable(control_unit).
+not_worn(C):-
+  component(C),
+  \+ worn(C).
+one_worn:-
+  worn(_).
+none_worn:-
+  \+ one_worn.
+:- end_bg.
+%%%%%%%%%%%%%%%%%%%
+% INITIAL PROGRAM %
+%%%%%%%%%%%%%%%%%%%
+:- begin_in.
+class(sendback):0.5 :-
+  worn(A),
+  not_replaceable(A).
+
+class(fix):0.6 :-
+  worn(A),
+  replaceable(A).
+
+class(ok):0.5 :-
+  not_worn(_A).
+:- end_in. 
+%%%%%%%%%%%%%%%%%
+% LANGUAGE BIAS %
+%%%%%%%%%%%%%%%%%
+% output predicates
+output(class/1).
+% input closed world predicates
+input_cw(replaceable/1).
+input_cw(not_replaceable/1).
+input_cw(worn/1).
+input_cw(not_worn/1).
+input_cw(none_worn/0).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EXAMPLES (interpretations) %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+begin(model(1)).
+class(sendback).
+neg(class(fix)).
+neg(class(ok)).
+worn(gear).
+worn(engine).
+end(model(1)).
+
+begin(model(2)).
+class(ok).
+neg(class(sendback)).
+neg(class(fix)).
+end(model(2)).
+
+begin(model(3)).
+class(fix).
+neg(class(sendback)).
+neg(class(ok)).
+worn(gear).
+end(model(3)).
+
+begin(model(4)).
+class(sendback).
+neg(class(fix)).
+neg(class(ok)).
+worn(engine).
+end(model(4)).
+
+begin(model(5)).
+class(fix).
+neg(class(sendback)).
+neg(class(ok)).
+worn(gear).
+worn(chain).
+end(model(5)).
+
+begin(model(6)).
+class(fix).
+neg(class(sendback)).
+neg(class(ok)).
+worn(wheel).
+end(model(6)).
+
+begin(model(7)).
+class(sendback).
+neg(class(fix)).
+neg(class(ok)).
+worn(wheel).
+worn(control_unit).
+end(model(7)).
+
+begin(model(8)).
+class(ok).
+neg(class(sendback)).
+neg(class(fix)).
+end(model(8)).
+
+begin(model(9)).
+class(fix).
+neg(class(sendback)).
+neg(class(ok)).
+worn(wheel).
+worn(chain).
+end(model(9)).
+
+begin(model(10)).
+class(sendback).
+neg(class(fix)).
+neg(class(ok)).
+worn(engine).
+worn(chain).
+end(model(10)).
+
+begin(model(11)).
+class(sendback).
+neg(class(fix)).
+neg(class(ok)).
+worn(engine).
+worn(control_unit).
+end(model(11)).
+
+begin(model(12)).
+class(fix).
+neg(class(sendback)).
+neg(class(ok)).
+worn(chain).
+worn(wheel).
+worn(gear).
+end(model(12)).
+
+begin(model(13)).
+class(sendback).
+neg(class(fix)).
+neg(class(ok)).
+worn(chain).
+worn(wheel).
+worn(gear).
+worn(engine).
+end(model(13)).
+
+begin(model(14)).
+class(ok).
+neg(class(sendback)).
+neg(class(fix)).
+end(model(14)).
+
+begin(model(15)).
+class(fix).
+neg(class(sendback)).
+neg(class(ok)).
+worn(wheel).
+worn(gear).
+end(model(15)).
+
+fold(all, F) :- findall(I,int(I),F).
+</div>
+
+<div class="nb-cell markdown">
+### Performing parameter learning
+To execute the parameter learning algorithm EMBLEM, we need to ask a query of the form
+==
+induce_par(&lt;list of folds&gt;,P).
+==
+where =|&lt;list of folds&gt;|= is a list of the folds for training and =P= will contain the
+input program with updated parameters.
+
+In our example we want to learn the parameters by using the fold which contains all the examples (=all=). Therefore
+</div>
+
+<div class="nb-cell query">
+induce_par([all],P).
+</div>
+
+<div class="nb-cell markdown">
+--
+Complete example: [mach.pl](example/learning/mach.pl)
+
+--
+- Reference: The ACE Data Mining System User's Manual https://dtai.cs.kuleuven.be/ACE/doc/ACEuser-1.2.16.pdf
+</div>
+
+<div class="nb-cell markdown">
+--
+For more information about how to perform learning and EMBLEM see the [manual](http://cplint.lamping.unife.it/help/help-cplint.html) (or [PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)) and the references in the [About page](http://cplint.lamping.unife.it/help/about.html#emblem):
+
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
+</div>
+
+</div>

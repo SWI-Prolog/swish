@@ -17,7 +17,8 @@ define([ "jquery", "config", "tabbed", "form",
        function($, config, tabbed, form, preferences, modal, prolog, links) {
 
 var cellTypes = {
-  "program":  { label:"Program" },
+  "prolog":   { label:"Prolog" },
+  "lpad":     { label:"LPAD" },
   "query":    { label:"Query" },
   "markdown": { label:"Markdown" },
   "html":     { label:"HTML" }
@@ -646,7 +647,7 @@ var cellTypes = {
 	elem.attr("tabIndex", -1);
 	elem.attr("id", "nbc"+id++);
 
-	if ( dom instanceof jQuery ) {
+        if ( dom instanceof jQuery ) {
 	  elem.nbCell('restoreDOM', dom);
 	} else {
 	  var close = glyphButton("remove-circle", "close", "Close",
@@ -666,13 +667,17 @@ var cellTypes = {
 	    if ( cellTypes.hasOwnProperty(k) )
 	      $(g).append($.el.button({ type:"button",
 					class:"btn btn-default",
-					"data-type":k
+					"data-type":((k=="prolog" || k=="lpad")?"program" : k),
+					"data-code":k
 				      },
 				      cellTypes[k].label));
 	  }
 
 	  $(g).on("click", ".btn", function(ev) {
-	    elem.nbCell('type', $(ev.target).data('type'));
+	    if ($(ev.target).data('code') == "prolog" || $(ev.target).data('code') == "lpad")
+	    	elem.nbCell('type', $(ev.target).data('type'), $(ev.target).data('code'));
+	    else
+	        elem.nbCell('type', $(ev.target).data('type'));
 	  });
 
 	  elem.append($.el.div({class:"nb-type-more"},
@@ -692,7 +697,7 @@ var cellTypes = {
 
       if ( val ) {
 	this.addClass("active");
-	switch( data.type ) {
+	switch( data.st_type ) {
 	  case "program":
 	    this.find(".editor").prologEditor('makeCurrent');
 	    break;
@@ -705,7 +710,7 @@ var cellTypes = {
 	}
       } else if ( this.length > 0 ) {
 	this.removeClass("active");
-	switch( data.type ) {
+	switch( data.st_type ) {
 	  case "markdown":
 	  case "html":
 	    if ( this.hasClass("runnable") ) {
@@ -717,14 +722,21 @@ var cellTypes = {
     },
 
 
-    type: function(type) {
+    type: function(type, code) {
+      console.log("nbCell type" + type + code);
       var data = this.data(pluginName);
-      if ( data.type != type ) {
-	methods.type[type].apply(this);
-	data.type = type;
-	this.addClass(type);
-      }
-      return this;
+        
+        if ( data.st_type != type ) {
+          if (type == "program"){
+            methods.type[type].apply(this, [{codeType : code}]);
+	  } else {
+	    methods.type[type].apply(this);
+	  }
+	  data.st_type = type;
+	  this.addClass(type);
+        }
+        return this;
+      
     },
 
     /**
@@ -738,7 +750,8 @@ var cellTypes = {
 	if ( cell.hasClass("runnable") ) {
 	  var data = cell.data(pluginName);
 
-	  return methods.run[data.type].apply(cell, args);
+	  return methods.run[data.st_type].apply(cell, arguments);
+	  
 	} else {
 	  console.log("Cell is not runnable: ", cell);
 	}
@@ -898,38 +911,60 @@ var cellTypes = {
     },
 
     isEmpty: function() {
-      return methods.isEmpty[this.data(pluginName).type].call(this);
+      var type = this.data(pluginName).st_type;
+      if (type == "lpad" || type == "prolog")
+        return methods.isEmpty["program"].call(this);
+      else return methods.isEmpty[type].call(this);
     },
 
     saveDOM: function() {
-      return methods.saveDOM[this.data(pluginName).type].call(this);
+      //console.log(this.data(pluginName))
+      var type = this.data(pluginName).st_type;
+      if (type == "lpad" || type == "prolog")
+        return methods.saveDOM["program"].call(this);
+      else return methods.saveDOM[type].call(this);
     },
 
     restoreDOM: function(dom) {
       var data = this.data(pluginName);
-
+      //console.log("restoreDOM nbCell");
       function domCellType(dom) {
 	for(var k in cellTypes) {
-	  if ( cellTypes.hasOwnProperty(k) && dom.hasClass(k) )
+	  if ( cellTypes.hasOwnProperty(k) && dom.hasClass(k) ){
 	    return k;
+	  }
+	}
+	if (dom.hasClass("program")) {
+	  if (dom.hasClass("lpad")) {
+	    return "lpad";
+	  }
+	  return "prolog";
 	}
       }
 
-      data.type = domCellType(dom);
-      methods.restoreDOM[data.type].apply(this, arguments);
-      this.addClass(data.type);
+      data.st_type = domCellType(dom);
+      var type;
+      if (data.st_type == "lpad" || data.st_type == "prolog")
+        type = "program";
+      else type = data.st_type;
+      if (type == undefined) type = "program";
+      methods.restoreDOM[type].apply(this, arguments);
+      this.addClass(type);
     },
 
     /**
      * Compute a state fingerprint for the current cell.
      */
     changeGen: function() {
-      var type = this.data(pluginName).type;
-
-      if ( type )
-	return methods.changeGen[type].call(this);
+      //console.log(this.data(pluginName));
+      var type = this.data(pluginName).st_type;
+      if (type == "lpad" || type == "prolog")
+        return methods.changeGen["program"].call(this);
       else
-	return 0;
+        if( type )
+          return methods.changeGen[type].call(this);
+	else
+	  return 0;
     },
 
     text: function() {
@@ -967,10 +1002,15 @@ var cellTypes = {
 
   methods.type.program = function(options) {	/* program */
     var editor, bg;
-
+    /*if (options && options.codeType == undefined)
+    	options = {};*/
     options = options||{};
+    if (options.codeType)
+    	if(options.codeType == "lpad")
+    	  options.placeholder = "Your LPAD rules and facts go here ...";
+         
     options.autoCurrent = false;
-
+   
     this.html("");
 
     var buttons = $.el.div(
@@ -987,6 +1027,7 @@ var cellTypes = {
     if ( options.singleline )
     { this.nbCell('singleline');
     }
+
     $(editor).prologEditor(options);
   }
 
@@ -1199,6 +1240,7 @@ var cellTypes = {
     var settings = this.nbCell('getSettings');
     var text     = cellText(this);
 
+    //console.log("run query in notebook ");
     options = options||{};
     if ( options.bindings ) {
       var pretext = "";
@@ -1220,7 +1262,8 @@ var cellTypes = {
                   query:  text,
 		  tabled: settings.tabled||false,
 		  chunk:  settings.chunk,
-		  title:  false
+		  title:  false,
+		  codeType: programs.prologEditor('getCodeType')
                 };
     if ( programs[0] )
       query.editor = programs[0];
@@ -1273,7 +1316,8 @@ var cellTypes = {
 
   methods.saveDOM.program = function() {	/* program */
     var cell = this;
-    var dom = $.el.div({class:"nb-cell program"}, cellText(this));
+    var codetype = cellCode(cell);
+    var dom = $.el.div({class:"nb-cell program " + codetype}, cellText(this));
 
     function copyClassAttr(name) {
       if ( cell.hasClass(name) ) {
@@ -1331,6 +1375,9 @@ var cellTypes = {
 
   methods.restoreDOM.program = function(dom) {	/* program */
     var opts = { value:dom.text().trim() };
+    if (dom.hasClass("lpad"))
+        opts.codeType = "lpad";
+        
 
     function getAttr(name) {
       var value;
@@ -1341,7 +1388,6 @@ var cellTypes = {
 
     getAttr("background");
     getAttr("singleline");
-
     methods.type.program.call(this, opts);
   };
 
@@ -1458,6 +1504,10 @@ var cellTypes = {
 
   function cellText(cell) {
     return cell.find(".editor").prologEditor('getSource');
+  }
+  
+  function cellCode(cell) {
+    return cell.find(".editor").prologEditor('getCodeType');
   }
 
   /**

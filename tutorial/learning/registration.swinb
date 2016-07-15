@@ -1,0 +1,363 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Registration
+In this tutorial section we will show how to perform structure learning. We take into account the Registration dataset (see reference).
+
+*Note*: the learning algorithms are available only if you use the Prolog editor.
+
+## Writing the program step by step
+To execute a learning algorithm the input source must be divided in five parts:
+- preamble,
+- background knowledge, i.e., knowledge valid for all interpretations,
+- Initial LPAD (optional),
+- language bias information,
+- example interpretations.
+
+Here we will define a program step by step and then execute the algorithm SLIPCOVER [2] which learns the structure and the parameters given a background knowledge. 
+
+For more information of how to perform learning see the [manual](http://cplint.lamping.unife.it/help/help-cplint.html) ([PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)).
+
+### Preamble 
+We load the library =slipcover=, initialize it and then set some parameters.
+==
+:-use_module(library(slipcover)).
+:-sc.
+
+:- set_sc(depth_bound,false).
+:- set_sc(neg_ex,given).
+:- set_sc(megaex_bottom,7).
+:- set_sc(verbosity,1).
+==
+</div>
+
+<div class="nb-cell markdown">
+### Backgroud knowledge
+Now we write the background knowledge enclosed by =|:- begin_bg.|= and =|:- end_bg.|=.
+==
+:- begin_bg.
+company_info(jvt,commercial).
+company_info(scuf,university).
+company_info(ucro,university).
+course(cso,2,introductory).
+course(erm,3,introductory).
+course(so2,4,introductory).
+course(srw,3,advanced).
+
+job(J):- participant(J, _, _, _).
+company(C):- participant(_, C, _, _).
+
+party_yes :- party(yes).
+party_no :- party(no).
+
+company_type(T):- company(C), company_info(C, T).
+
+not_company_type(commercial):- \+ company_type(commercial).
+
+not_company_type(university):- \+ company_type(university).
+
+course_len(C, L):-
+	course(C, L, _).
+	
+course_type(C, T):-
+	course(C, _, T).
+
+:- end_bg.
+==
+</div>
+
+<div class="nb-cell markdown">
+### Initial program
+You can define an inital LPAD program enclosed by =|:- begin_in.|= and =|:- end_in.|=.
+==
+:- begin_in.
+party(yes):0.5:-
+  company_type(commercial).
+
+party(no):0.5:-
+  subscription(A),
+  course_len(A,4),
+  \+ company_type(commercial).
+:- end_in.
+==
+This LPAD is not used for structure learning. It can be used however for testing the program on the data, see the [Bongard](tutorial/learning/bongard.swinb) example.
+
+### Language Bias
+As in the [previous example](tutorial/mach.swinb) we define the set of output and input predicates
+==
+% output predicates
+output(party/1).
+% input closed world predicates
+input_cw(job/1).
+input_cw(not_company_type/1).
+input_cw(company_type/1).
+input_cw(subscription/1).
+input_cw(course_len/2).
+input_cw(course_type/2).
+input_cw(company/1).
+input_cw(company_info/2).
+input_cw(participant/4).
+input_cw(course/3).
+==
+
+We want to learn new clauses (the structure) for the program, in order to do that we need to add mode declarations in the style of [Progol](http://www.doc.ic.ac.uk/~shm/progol.html).
+
+To specify the atoms that can appear in the head of clauses you must use facts of the form
+==
+modeh(&lt;recall&gt;,&lt;predicate&gt;(&lt;arg1&gt;,...)).
+==
+To specify the atoms that can appear in the body of clauses you must use facts of the form
+==
+modeb(&lt;recall&gt;,&lt;predicate&gt;(&lt;arg1&gt;,...)).
+==
+where =|&lt;recall&gt;|= can be an integer or *. =|&lt;recall&gt;|= indicates how many atoms for the predicate specification are retained in the bottom clause during a saturation step. * stands for all those that are found.
+
+We refer to the [manual](http://cplint.lamping.unife.it/help/help-cplint.html) for further details.
+
+In our example we use the following mode declarations
+==
+modeh(*,party(yes)).
+modeh(*,party(no)).
+
+modeb(*,job(-#job)).
+modeb(*,company_type(-#ctype)).
+modeb(*,not_company_type(-#ctype)).
+modeb(*,subscription(-sub)).
+modeb(*,course_len(+sub,-#cl)).
+modeb(*,course_type(+sub,-#ct)).
+==
+
+SLIPCOVER also requires facts for the determination/2 predicate Aleph-style that indicate which predicates can appear in the body of clauses. For our program we have
+
+==
+determination(party/1,job/1).
+determination(party/1,not_company_type/1).
+determination(party/1,company_type/1).
+determination(party/1,subscription/1).
+determination(party/1,course_len/2).
+determination(party/1,course_type/2).
+==
+
+For example the first determination/2 fact states that the predicate job/1 can appear in the body of hypothesised clauses having party/1 in the head.
+</div>
+
+<div class="nb-cell markdown">
+### Example interpretations
+Now we define the example models (or interpretations, i.e. a set of ground facts) and divide them in folds. You can specify data with two modalities: models and keys.
+
+In the models type, you specify an example model (or interpretation) as a list of Prolog facts initiated by =|begin(model(&lt;name&gt;)).|= and terminated by =|end(model(&lt;name&gt;)).|=.
+
+Alternatively, with the keys modality, you can directly write the facts and the first argument will be interpreted as a model identifier.
+
+The two modalities, models and keys, can be mixed in the same source.
+
+In this example and for the rest of the section we will use the former modality.
+==
+begin(model(adams)).
+participant(researcher,scuf,no,23).
+subscription(erm).
+subscription(so2).
+subscription(srw).
+end(model(adams)).
+==
+We can add background knowledge that is not probabilistic directly to the file writing the clauses taking into account the model argument. In our example
+==
+party(M,P):-
+  participant(M,_, _, P, _).
+==
+
+Here M is the model and participant/4 is defined in the interpretations. You can also define intensionally the negative examples with
+==
+neg(party(M,yes)):- party(M,no).
+neg(party(M,no)):- party(M,yes).
+==
+
+Now we split the example models into fold. In this example we have only one fold which contains all the models.
+
+==
+fold(all,F) :- findall(I,int(I),F).
+==
+</div>
+
+<div class="nb-cell markdown">
+## Full program
+Below there is the complete program
+</div>
+
+<div class="nb-cell program prolog">
+%%%%%%%%%%%%
+% PREAMBLE %
+%%%%%%%%%%%%
+:- use_module(library(slipcover)).
+% use the renderer 'lpad'. It not mandatory to use it, but it prints the learned clauses in a more readable way
+:- use_rendering(lpad).
+:- sc.
+
+:- set_sc(depth_bound,false).
+:- set_sc(neg_ex,given).
+:- set_sc(megaex_bottom,7).
+:- set_sc(verbosity,1).
+%%%%%%%%%%%%%%%%%%%%%%%%
+% BACKGROUND KNOWLEDGE %
+%%%%%%%%%%%%%%%%%%%%%%%%
+:- begin_bg.
+company_info(jvt,commercial).
+company_info(scuf,university).
+company_info(ucro,university).
+course(cso,2,introductory).
+course(erm,3,introductory).
+course(so2,4,introductory).
+course(srw,3,advanced).
+
+job(J):- participant(J, _, _, _).
+company(C):- participant(_, C, _, _).
+
+party_yes :- party(yes).
+party_no :- party(no).
+
+company_type(T):- company(C), company_info(C, T).
+
+not_company_type(commercial):- \+ company_type(commercial).
+
+not_company_type(university):- \+ company_type(university).
+
+course_len(C, L):- course(C, L, _).
+	
+course_type(C, T):-	course(C, _, T).
+:- end_bg.
+%%%%%%%%%%%%%%%%%%%
+% INITIAL PROGRAM %
+%%%%%%%%%%%%%%%%%%%
+:- begin_in.
+party(yes):0.5:-
+  company_type(commercial).
+
+party(no):0.5:-
+  subscription(A),
+  course_len(A,4),
+  \+ company_type(commercial).
+:- end_in.
+%%%%%%%%%%%%%%%%%
+% LANGUAGE BIAS %
+%%%%%%%%%%%%%%%%%
+% output predicates
+output(party/1).
+% input closed world predicates
+input_cw(job/1).
+input_cw(not_company_type/1).
+input_cw(company_type/1).
+input_cw(subscription/1).
+input_cw(course_len/2).
+input_cw(course_type/2).
+input_cw(company/1).
+input_cw(company_info/2).
+input_cw(participant/4).
+input_cw(course/3).
+
+determination(party/1,job/1).
+determination(party/1,not_company_type/1).
+determination(party/1,company_type/1).
+determination(party/1,subscription/1).
+determination(party/1,course_len/2).
+determination(party/1,course_type/2).
+
+modeh(*,party(yes)).
+modeh(*,party(no)).
+
+modeb(*,job(-#job)).
+modeb(*,company_type(-#ctype)).
+modeb(*,not_company_type(-#ctype)).
+modeb(*,subscription(-sub)).
+modeb(*,course_len(+sub,-#cl)).
+modeb(*,course_type(+sub,-#ct)).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EXAMPLES (interpretations) %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+neg(party(M,yes)):- party(M,no).
+neg(party(M,no)):- party(M,yes).
+
+party(M,P):-
+  participant(M,_, _, P, _).
+
+begin(model(adams)).
+participant(researcher,scuf,no,23).
+subscription(erm).
+subscription(so2).
+subscription(srw).
+end(model(adams)).
+
+begin(model(blake)).
+participant(president,jvt,yes,5).
+subscription(cso).
+subscription(erm).
+end(model(blake)).
+
+begin(model(king)).
+participant(manager,ucro,no,78).
+subscription(cso).
+subscription(erm).
+subscription(so2).
+subscription(srw).
+end(model(king)).
+
+begin(model(miller)).
+participant(manager,jvt,yes,14).
+subscription(so2).
+end(model(miller)).
+
+begin(model(scott)).
+participant(researcher,scuf,yes,94).
+subscription(erm).
+subscription(srw).
+end(model(scott)).
+
+begin(model(turner)).
+participant(researcher,ucro,no,81).
+subscription(so2).
+subscription(srw).
+end(model(turner)).
+% fold division
+fold(all,F) :- findall(I,int(I),F).
+</div>
+
+<div class="nb-cell markdown">
+### Execute parameter learning
+In this example we provided an initial program, therefore we can perform parameter learning (we use all the example for training)
+</div>
+
+<div class="nb-cell query">
+induce_par([all], P).
+</div>
+
+<div class="nb-cell markdown">
+### Execute structure learning
+To execute the structure learning algorithm SLIPCOVER (which learns also the parameters of the learned program), we need to execute a query with the form
+==
+induce(&lt;list of folds&gt;,P).
+==
+where =|&lt;list of folds&gt;|= is a list of the folds for training and =P= will contain the learned program.
+
+In our example we want to learn the structure (and the parameters) by using the fold which contains all the examples (=all=). Therefore
+</div>
+
+<div class="nb-cell query">
+induce([all],P).
+</div>
+
+<div class="nb-cell markdown">
+--
+Complete example: [registration.pl](example/learning/registration.pl)
+
+--
+- Reference: L. De Raedt, H. Blockeel, L. Dehaspe, and W. Van Laer. Three companions for data mining in first order logic. In S. Dzeroski and N. Lavrac, editors, Relational Data Mining, pages 105-139.  Springer-Verlag, 2001.
+</div>
+
+<div class="nb-cell markdown">
+--
+For more information about how to perform learning and SLIPCOVER see the [manual](http://cplint.lamping.unife.it/help/help-cplint.html) (or [PDF version](https://github.com/friguzzi/cplint/blob/master/doc/help-cplint.pdf)) and the references in the [About page](http://cplint.lamping.unife.it/help/about.html#slipcover).
+
+--
+[Back to Tutorial](tutorial/tutorial.swinb)
+</div>
+
+</div>
