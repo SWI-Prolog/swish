@@ -733,6 +733,10 @@ fold(test,[490,491,...]).</code></pre>
 <pre><code>$ bash swish-ask.sh --server=http://cplint.lamping.unife.it \
   coin_user.pl Prob &quot;prob(heads(coin),Prob)&quot;</code></pre>
 <p>Example programs can be used by specifying the folder portion of the url of the example, as in the first coin example above where the url for the program is <a href="http://cplint.lamping.unife.it/examples/inference/coin.pl" class="uri">http://cplint.lamping.unife.it/examples/inference/coin.pl</a>.</p>
+<p>You can also use an url for the program as in</p>
+<pre><code>$ bash swish-ask.sh --server=http://cplint.lamping.unife.it \
+  https://raw.githubusercontent.com/friguzzi/swish/\  
+  master/examples/inference/coin.pl Prob &quot;prob(heads(coin),Prob)&quot;</code></pre>
 <p>Results can be downloaded in JSON using the option <code>--json-s</code> or <code>--json-html</code>. With the first the output is in a simple string format where Prolog terms are sent using quoted write, the latter serialize responses as HTML strings. E.g.</p>
 <pre><code>$ bash swish-ask.sh --json-s --server=http://cplint.lamping.unife.it \
   coin_user.pl Prob &quot;prob(heads(coin),Prob)&quot;</code></pre>
