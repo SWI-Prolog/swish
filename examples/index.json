@@ -4,7 +4,7 @@
 { "file":"inference/inference_examples.swinb", "title":"cplint inference example programs"},
 { "file":"learning/learning_examples.swinb", "title":"cplint learning example programs"},
 { "file":"learning/exauc.pl", "title":"AUC calculator"},
-{ "file":"/tutorial/tutorial.swinb", "title":"Tutorial"},
+//{ "file":"/tutorial/tutorial.swinb", "title":"Tutorial"},
 { "file":"examples.swinb",	  "title":"Prolog Example programs" },
 "--",
 { "file":"dict.swinb",		  "title":"Dict tutorial" },
