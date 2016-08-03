@@ -204,8 +204,16 @@ stats_ring(year,   5).
 
 swish_stats(Name, Ring, Stats) :-
 	thread_self(Me),
-	thread_send_message(Name, Me-get_stats(Ring)),
+	catch(thread_send_message(Name, Me-get_stats(Ring)), E,
+	      stats_died(Name, E)),
 	thread_get_message(get_stats(Ring, Stats)).
+
+stats_died(Alias, E) :-
+	print_message(error, E),
+	thread_join(Alias, Status),
+	print_message(error, swish_stats(died, Status)),
+	start_swish_stat_collector,
+	fail.
 
 stat_collect(Dims, Interval) :-
 	new_sliding_stats(Dims, SlidingStat),
