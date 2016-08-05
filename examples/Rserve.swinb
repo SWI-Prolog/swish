@@ -1,0 +1,130 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# R/SWISH demos
+
+R for SWISH provides an interface to [Rserve](https://rforge.net/Rserve/) where the access predicates are inspired by [Real](http://stoics.org.uk/~nicos/sware/real/) by [Nicos Angelopoulos](http://stoics.org.uk/~nicos/).  The interface defines two predicates and a [quasi quotation](http://www.swi-prolog.org/pldoc/man?section=quasiquotations):
+
+  $ Var &lt;- Expression :
+  Evaluate _Expression_ and bind the result to _Var_.  _Var_ can both be a Prolog
+  variable, which causes the R expression to be converted into Prolog or an
+  R variable (atom), which causes the result to be bound to an R variable.
+  $ &lt;- Expression :
+  Evaluate _Expression_ and display the resulting R console output.
+  $ {|r(Arg ...)||R-code|} :
+  In this quasi quotation, `r` specifies the syntax.  `Arg ...` is a list of
+  Prolog terms that are translated to R and bound to an R variable with the
+  same name.  `R-code` is arbitrary R code.  This may contain any characters
+  except for the `|}` termination sequence.
+  
+Above, *Expression* is either a Prolog term or a quasi quotation.  If it is a
+Prolog term, it is translated into R using these rules:
+
+  - An identifier (atom with chars valid for R identifiers) are emitted verbatim.
+  - The Prolog atoms `true` and `false` are translated into the R expressions
+    =TRUE= and =FALSE=.
+  - A Prolog string is translated into an R string.
+  - Numbers are translated into R numbers.
+  - A term =|functor(Arg ...)|= is translated into an R-function call.
+  - The R operators are supported:  =|+, -, *, /, mod, '%%', ^,
+	&gt;=, &gt;, ==, &lt;, &lt;=, =&lt;, \=, '!=', :, &lt;-|=
+  - =|A$B|= and =|A[I]|= are supported
+  - Goal expansion is provided to turn =|a.b|= and =|a.b()|= into valid syntax.
+</div>
+
+<div class="nb-cell markdown">
+## Simple plot examples
+
+First, we make some trivial plots using an R vector, Prolog list and a _quasi quotation_.
+</div>
+
+<div class="nb-cell query">
+&lt;- plot(c(1,2,3)).
+</div>
+
+<div class="nb-cell query">
+&lt;- plot([1,2,3,4]).
+</div>
+
+<div class="nb-cell query">
+{|r||plot(c(1,2,3))|}.
+</div>
+
+<div class="nb-cell query">
+numlist(1, 25, Data),
+{|r(Data)||plot(Data)|}.
+</div>
+
+<div class="nb-cell markdown">
+## Fetch data from R
+
+These example shows fetching data from R.
+</div>
+
+<div class="nb-cell query">
+A &lt;- 1:10.
+</div>
+
+<div class="nb-cell query">
+A &lt;- {|r||1:10|}.
+</div>
+
+<div class="nb-cell markdown">
+## Performance tests for transferring data
+
+Below we compare computing the mean from a list of 1M integers through R as well as natively in Prolog.  It turns out R does the job faster on a large number of integers than Prolog.  Why?  Once in R, the array is a simple C array of integers, causing a blindly fast addition.  The Prolog counterpart adds the numbers one-by-one and does rigid overflow checking and handling.
+</div>
+
+<div class="nb-cell query">
+numlist(1, 1 000 000, _L),
+time(A &lt;- mean(_L)).
+</div>
+
+<div class="nb-cell query">
+numlist(1, 1 000 000, _L),
+time(sum_list(_L, Sum)).
+</div>
+
+<div class="nb-cell markdown">
+## Show error handling
+</div>
+
+<div class="nb-cell query">
+A &lt;- {|r||a b|}.
+</div>
+
+<div class="nb-cell markdown">
+## Using ggplot2 to render plots
+
+The library("ggplot2") can be used for rendering plots.  Unlike native plot() however, the call should be made with &lt;-/1.
+</div>
+
+<div class="nb-cell program">
+:- &lt;- library("ggplot2").
+</div>
+
+<div class="nb-cell query">
+&lt;- {|r||qplot(mpg, data=mtcars, geom="density", fill=gear, alpha=I(.5), main="Distribution of Gas Milage", xlab="Miles Per Gallon", ylab="Density")|}.
+</div>
+
+<div class="nb-cell markdown">
+## Query and handle data frames
+
+This shows how to print a data frame and how to get the data into Prolog.  Note that the interface merely fetches the matrix as a nested list of columns.  We need utilities to create and extract dataframes.  In particular a call that creates an R data frame from the solutions of a goal.
+</div>
+
+<div class="nb-cell program" data-background="true">
+:- use_rendering(table).
+</div>
+
+<div class="nb-cell query">
+&lt;- mtcars.
+</div>
+
+<div class="nb-cell query">
+MtCars &lt;- mtcars,
+Cols &lt;- colnames(mtcars),
+Rows &lt;- rownames(mtcars).
+</div>
+
+</div>
