@@ -212,3 +212,14 @@ div.notebook-menu {
 .nb-cell.markdown pre.code    { width: 90%; margin: auto; margin-bottom: 1em;}
 .nb-cell.markdown dl.termlist { margin-left: 5%; }
 .nb-cell.markdown dl.termlist dd { margin-left: 2em; }
+
+/* Embedded documentation */
+
+.nb-cell.markdown .predicates dt
+{
+}
+
+.nb-cell.markdown .predicates dd
+{ margin-left: 2em;
+  margin-bottom: 1ex;
+}
