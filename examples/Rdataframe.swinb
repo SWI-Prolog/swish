@@ -1,0 +1,73 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# Dealing with R data frames
+
+Data frames are a central concept in R.  A data frame is a 2-dimensional matrix with optional
+column and row names.  The data is (normally) column-oriented.  This differs from the row-oriented
+view on data in Prolog, for example as a set of solutions for a predicate.  The library(r_data) provides predicates for creating and accessing R data frames.
+
+## Creating a data frame from solutions
+
+Below we define a relation sin/3 based on the sine function and turn the resulting solutions into a data frame called `df`.  The subsequent examples plot the relation using _ggplot2_ and provide some timing for exchanging large datasets.
+</div>
+
+<div class="nb-cell program">
+% Y is sin(X) for X in 0..Max
+sin(Max, X, Y) :-
+    between(0, Max, X),
+    Y is sin(X*pi/180).
+</div>
+
+<div class="nb-cell query">
+r_data_frame(df, [x=X,y=Y], sin(10, X, Y)),
+&lt;- df.
+</div>
+
+<div class="nb-cell query">
+time(r_data_frame(df, [x=X,y=Y], sin(360, X, Y))),
+time(&lt;- library("ggplot2")),
+time(&lt;- ggplot(data=df, aes(x=x, y=y)) + geom_line()).
+</div>
+
+<div class="nb-cell query">
+time(r_data_frame(df, [x=X,y=Y], sin(1 000 000, X, Y))).
+</div>
+
+<div class="nb-cell query">
+time(r_data_frame(df, [x=X,y=Y], sin(1 000 000, X, Y))),
+time(r_data_frame_to_dicts(df, _Dicts)).
+</div>
+
+<div class="nb-cell markdown">
+## Importing data frames to Prolog
+
+The predicates r_data_frame_to_dicts/2 and r_data_frame_to_rows/3 translate the column-oriented data frame to a list of row oriented dicts or terms.  We use the example on the predefined R `mtcars` data frame.
+</div>
+
+<div class="nb-cell program">
+:- use_rendering(table).
+</div>
+
+<div class="nb-cell query" data-tabled="true">
+r_data_frame_to_dicts(mtcars, Dicts).
+</div>
+
+<div class="nb-cell query" data-tabled="true">
+r_data_frame_rownames(mtcars, Rows).
+</div>
+
+<div class="nb-cell markdown">
+## Documentation
+
+Below is the reference documentation for the predicates in library(r_data).
+
+  - [[r_data_frame/3]]
+  - [[r_data_frame_from_rows/2]]
+  - [[r_data_frame_to_dicts/2]]
+  - [[r_data_frame_to_rows/3]]
+  - [[r_data_frame_colnames/2]]
+  - [[r_data_frame_rownames/2]]
+</div>
+
+</div>
