@@ -96,7 +96,17 @@ A &lt;- {|r||a b|}.
 <div class="nb-cell markdown">
 ## Using ggplot2 to render plots
 
-The library("ggplot2") can be used for rendering plots.  Unlike native plot() however, the call should be made with &lt;-/1.
+The library("ggplot2") can be used for rendering plots.  Unlike native plot() however, the call should be made with &lt;-/1 because ggplot relies on console output.  We first give the example using an R quasi quotation, followed by using a Prolog term.  Note that
+
+  - Quasi quotations can be used to copy/paste R code into your Prolog
+    program without changing it (except when it contains =||}|=).
+  - Prolog code may need minor modifications.  In the example, =|I(.5)|=
+    must be changed to `'I'(0.5)` because Prolog floats cannot start with
+    a =|.|= and functors (used as function symbols) cannot start with a
+    capital.  The Prolog approach however
+    - Is better portable.
+    - Profits from Prolog syntax checking.
+    - Makes it easier to compose R expressions from smaller elements.
 </div>
 
 <div class="nb-cell program">
@@ -107,10 +117,14 @@ The library("ggplot2") can be used for rendering plots.  Unlike native plot() ho
 &lt;- {|r||qplot(mpg, data=mtcars, geom="density", fill=gear, alpha=I(.5), main="Distribution of Gas Milage", xlab="Miles Per Gallon", ylab="Density")|}.
 </div>
 
+<div class="nb-cell query">
+&lt;- qplot(mpg, data=mtcars, geom="density", fill=gear, alpha='I'(0.5), main="Distribution of Gas Milage", xlab="Miles Per Gallon", ylab="Density").
+</div>
+
 <div class="nb-cell markdown">
 ## Query and handle data frames
 
-This shows how to print a data frame and how to get the data into Prolog.  Note that the interface merely fetches the matrix as a nested list of columns.  We need utilities to create and extract dataframes.  In particular a call that creates an R data frame from the solutions of a goal.
+This shows how to print a data frame and how to get R data into Prolog.  Note that the interface merely fetches the matrix as a nested list of columns.  The library(r/r_data) provides utilites for creating and fetching R data frames from Prolog.  This [notebook](example/Rdataframe.swinb) illustrates the library.
 </div>
 
 <div class="nb-cell program" data-background="true">
