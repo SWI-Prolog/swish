@@ -13,7 +13,7 @@ This notebook provides an overview of tutorials about using SWISH.
 <div class="nb-cell markdown">
 ## Embedded R support
 
-The [R project](https://www.r-project.org/) provides statistical computing and data vizualization.  SWISH can access R through [Rserve](https://rforge.net/Rserve/).  The *prototype* client for Rserve is available from the GitHub repository [swipl-rserve-client](https://github.com/JanWielemaker/swipl-rserve-client).  The GitHub repository [rserve-sandbox](https://github.com/JanWielemaker/rserve-sandbox) provides the matching Rserve server as a [Docker](https://www.docker.com/) specification.
+The [R project](https://www.r-project.org/) provides statistical computing and data vizualization.  SWISH can access R through [Rserve](https://rforge.net/Rserve/).  The *prototype* client for Rserve is available as the _pack_ [rserve_client](http://www.swi-prolog.org/pack/list?p=rserve_client).  The GitHub repository [rserve-sandbox](https://github.com/JanWielemaker/rserve-sandbox) provides the matching Rserve server as a [Docker](https://www.docker.com/) specification.
 
 The notebooks below explain the basics of using R from SWISH.  You can test whether R is available from this server by running the query below.
 
