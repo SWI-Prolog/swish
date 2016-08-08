@@ -32,9 +32,9 @@
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
 
-:- use_module(user:rserve(r_call)).
-:- use_module(user:rserve(r_data)).
-:- use_module(rserve(r_sandbox)).
+% We publish to the user module to avoid autoloading `real'.
+:- use_module(user:library(r/r_call)).
+:- use_module(user:library(r/r_data)).
 
 /** <Module> Bind Rserve to SWISH
 
