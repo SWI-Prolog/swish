@@ -151,7 +151,7 @@ require(["svg-pan-zoom"], function(svgPanZoom) {
 %	R function `graphics.off()` to close all graphics devices.
 
 r_download :-
-	nb_current('R', _),
+	nb_current('R', _), !,
 	<- graphics.off(),
 	Files <- list.files(),
 	maplist(r_download, Files).
@@ -162,7 +162,7 @@ r_download.
 %	Provide a download button for the indicates file.
 
 r_download(File) :-
-	nb_current('R', _),
+	nb_current('R', _), !,
 	catch(r_read_file($, File, Content), E,
 	      r_error(E, File)),
 	(   debugging(r(file))
