@@ -27,14 +27,21 @@
     the GNU General Public License.
 */
 
-:- module(r_swish, []).
+:- module(r_swish,
+	  [ r_download/0,			% Download all
+	    r_download/1			% +File
+	  ]).
 :- use_module(library(pengines)).
+:- use_module(library(debug)).
+:- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
 
 % We publish to the user module to avoid autoloading `real'.
 :- use_module(user:library(r/r_call)).
 :- use_module(user:library(r/r_data)).
+
+:- use_module(download).
 
 /** <Module> Bind Rserve to SWISH
 
@@ -137,3 +144,35 @@ require(["svg-pan-zoom"], function(svgPanZoom) {
 		      |})).
 
 
+%%	r_download
+%
+%	Provide download buttons for all created  files. First calls the
+%	R function `graphics.off()` to close all graphics devices.
+
+r_download :-
+	<- graphics.off(),
+	Files <- list.files(),
+	maplist(r_download, Files).
+
+%%	r_download(File)
+%
+%	Provide a download button for the indicates file.
+
+r_download(File) :-
+	r_read_file($, File, Content),
+	(   debugging(r(file))
+	->  string_length(Content, Len),
+	    debug(r(file), 'Got ~D bytes from ~p', [Len, File])
+	;   true
+	),
+	file_name_extension(Name, Ext, File),
+	download_encoding(Ext, Enc),
+	download_button(Content,
+			[ name(Name),
+			  ext(Ext),
+			  encoding(Enc)
+			]).
+
+download_encoding(svg, utf8) :- !.
+download_encoding(csv, utf8) :- !.
+download_encoding(_,   octet).

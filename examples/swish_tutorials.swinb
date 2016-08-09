@@ -17,8 +17,9 @@ The [R project](https://www.r-project.org/) provides statistical computing and d
 
 The notebooks below explain the basics of using R from SWISH.  You can test whether R is available from this server by running the query below.
 
-  - [Use R from SWISH](example/Rserve.swinb)
+  - [Basic access to R from SWISH](example/Rserve.swinb)
   - [Exchanging R data frames](example/Rdataframe.swinb)
+  - [Downloading (graphics) files](example/Rdownload.swinb)
 </div>
 
 <div class="nb-cell query">
