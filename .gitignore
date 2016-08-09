@@ -2,6 +2,7 @@ node_modules
 bower_components
 passwd
 storage
+storage.*
 log
 *.log
 *~
