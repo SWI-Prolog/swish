@@ -33,6 +33,7 @@
 	  ]).
 :- use_module(library(pengines)).
 :- use_module(library(debug)).
+:- use_module(library(error)).
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
@@ -150,16 +151,20 @@ require(["svg-pan-zoom"], function(svgPanZoom) {
 %	R function `graphics.off()` to close all graphics devices.
 
 r_download :-
+	nb_current('R', _),
 	<- graphics.off(),
 	Files <- list.files(),
 	maplist(r_download, Files).
+r_download.
 
 %%	r_download(File)
 %
 %	Provide a download button for the indicates file.
 
 r_download(File) :-
-	r_read_file($, File, Content),
+	nb_current('R', _),
+	catch(r_read_file($, File, Content), E,
+	      r_error(E, File)),
 	(   debugging(r(file))
 	->  string_length(Content, Len),
 	    debug(r(file), 'Got ~D bytes from ~p', [Len, File])
@@ -172,6 +177,12 @@ r_download(File) :-
 			  ext(Ext),
 			  encoding(Enc)
 			]).
+r_download(File) :-
+	existence_error(r_file, File).
+
+r_error(error(r_error(70),_), File) :- !,
+	existence_error(r_file, File).
+r_error(Error, _) :- throw(Error).
 
 download_encoding(svg, utf8) :- !.
 download_encoding(csv, utf8) :- !.
