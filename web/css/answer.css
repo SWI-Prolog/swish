@@ -62,6 +62,14 @@ span.format
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
 }
 
+button.download
+{ margin-right: 5px;
+}
+
+button.download span.filename
+{ margin-right: 1ex;
+}
+
 
 		 /*******************************
 		 *	GENERAL RENDERERS	*
