@@ -176,3 +176,8 @@ r_download(File) :-
 download_encoding(svg, utf8) :- !.
 download_encoding(csv, utf8) :- !.
 download_encoding(_,   octet).
+
+:- multifile sandbox:safe_primitive/1.
+
+sandbox:safe_primitive(r_swish:r_download).
+sandbox:safe_primitive(r_swish:r_download(_)).
