@@ -62,12 +62,12 @@ span.format
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
 }
 
-button.download
+a.download
 { margin-right: 5px;
 }
 
-button.download span.filename
-{ margin-right: 1ex;
+a.download span.glyphicon
+{ margin-left: 1ex;
 }
 
 

@@ -32,6 +32,7 @@
 	  ]).
 :- use_module(library(pengines)).
 :- use_module(library(option)).
+:- use_module(library(http/mimetype)).
 
 /** <module> Provide data for downloading
 */
@@ -55,15 +56,16 @@
 %	@see https://en.wikipedia.org/wiki/Data_URI_scheme
 
 download_button(Data, Options) :-
-	option(name(Name), Options, swish-download),
-	option(ext(Ext), Options, dat),
+	option(filename(FileName), Options, 'swish-download.dat'),
+	file_mime_type(FileName, Major/Minor),
+	atomics_to_string([Major, Minor], /, ContentType),
 	option(encoding(Enc), Options, utf8),
 	encode_data(Enc, Data, CharSet, EncData),
 	pengine_output(
 	    json{action:downloadButton,
+		 content_type:ContentType,
 		 data:EncData,
-		 name:Name,
-		 ext:Ext,
+		 filename:FileName,
 		 charset:CharSet
 		}).
 

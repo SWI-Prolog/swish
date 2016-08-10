@@ -170,11 +170,10 @@ r_download(File) :-
 	    debug(r(file), 'Got ~D bytes from ~p', [Len, File])
 	;   true
 	),
-	file_name_extension(Name, Ext, File),
+	file_name_extension(_Name, Ext, File),
 	download_encoding(Ext, Enc),
 	download_button(Content,
-			[ name(Name),
-			  ext(Ext),
+			[ filename(File),
 			  encoding(Enc)
 			]).
 r_download(File) :-

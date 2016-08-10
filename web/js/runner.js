@@ -419,7 +419,7 @@ define([ "jquery", "config", "preferences",
      * Handle object output
      */
      downloadButton: function(obj) {
-       var button = $.el.button({class:"download"});
+       var button = $.el.a({class:"download"});
        addAnswer(this, button);
        $(button).downloader(obj);
      },

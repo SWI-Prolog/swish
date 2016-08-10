@@ -31,45 +31,28 @@ define([ "jquery", "laconic" ],
 	  ext:"dat"
 	}, options);
 
+	var type = data.content_type;
+	var name = data.filename || "swish-download.dat";
+	var chs  = data.charset  || "charset=UTF-8";
+
+	function aSupportsDownload() {
+	  return $("<a>")[0].download != undefined;
+	}
+
+	if ( !aSupportsDownload() || !type )
+	  type = "application/octet-stream";
+
+	var href      = "data:"+type+";"+chs+",";
+        href += (chs == "base64" ? data.data : encodeURIComponent(data.data));
+
+	elem.attr("download", name);
+	elem.attr("href", href);
+	elem.attr("title", "Download (use menu for save link as)");
+	elem.text(name);
+
 	elem.addClass("btn btn-primary download");
-	elem.append($.el.span({class:"filename"},
-			      data.name+"."+data.ext),
-		    $.el.span({class:"glyphicon glyphicon-download",
-		               title:"Download"}));
-	elem.on("click", function(ev) {
-	  elem[pluginName]('download');
-	});
-
-	elem.data(pluginName, data);	/* store with element */
+	elem.append($.el.span({class:"glyphicon glyphicon-download"}));
       });
-    },
-
-    /**
-     * Actually download the data
-     */
-    download: function() {
-      var data = this.data(pluginName);
-      var type = data.type;
-      var name = data.name || "swish-download";
-      var ext  = data.ext || "dat";
-      var chs  = data.charset || "charset=UTF-8";
-
-      function aSupportsDownload() {
-	return $("<a>")[0].download != undefined;
-      }
-
-      if ( !aSupportsDownload() || !type )
-	type = "application/octet-stream";
-
-      var href	= "data:"+type+";"+chs+",";
-      href += (chs == "base64" ? data.data : encodeURIComponent(data.data));
-
-      var a = $.el.a({ href:href,
-		       download:name+"."+ext
-		     });
-      $("body").append(a);
-      a.click();
-      $(a).remove();
     }
   }; // methods
 
