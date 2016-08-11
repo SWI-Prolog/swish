@@ -407,12 +407,14 @@ define([ "jquery", "config", "preferences",
     /**
      * Add pengine output as `<span class="output">`
      * @param {String} data HTML that is inserted into the span.
+     * @return {DOM} the added node (a span)
      */
     outputHTML: function(data) {
       var span = $.el.span({class:"output"});
       addAnswer(this, span);
       span.innerHTML = data;
       runScripts(span);
+      return span;
     },
 
     /**
@@ -1010,12 +1012,23 @@ define([ "jquery", "config", "preferences",
 
     if ( typeof(this.data) == 'string' ) {
       this.data = this.data.replace(new RegExp("'[-0-9a-f]{36}':", 'g'), "")
+      var span = elem.prologRunner('outputHTML', this.data);
+
       if ( this.location ) {
+	var loc = this.location;
+	var prefix = "swish://";
+
+	if ( loc.file.startsWith(prefix) )
+	{ var file = loc.file.slice(prefix.length);
+	  $(span).on("click", function() {
+	    elem.closest("body.swish")
+                .swish('playFile', {file:file, line:loc.line, regex:/test/});
+	  });
+	}
 	this.data = this.data.replace(/pengine:\/\/[-0-9a-f]*\//, "");
 	$(".swish-event-receiver").trigger("source-error", this);
       }
 
-      elem.prologRunner('outputHTML', this.data);
     } else if ( typeof(this.data) == 'object' ) {
       elem.prologRunner(this.data.action, this.data);
     } else {
