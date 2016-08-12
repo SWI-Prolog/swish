@@ -895,6 +895,15 @@ define([ "cm/lib/codemirror",
 
 	if ( cm._searchMarkers.length > 0 )
 	  cm.on("cursorActivity", clearSearchMarkers);
+      } else {					/* mark entire line */
+	cm._searchMarkers.push(
+	      cm.markText({line:line, ch:0},
+			  {line:line, ch:cm.getLine(line).length},
+			  {className:"CodeMirror-search-match",
+			   clearOnEnter: true,
+			   clearWhenEmpty: true,
+			   title: "Target line"
+			  }));
       }
 
       return this;

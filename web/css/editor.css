@@ -35,6 +35,10 @@
   outline:1px solid grey;
 }
 
+.CodeMirror-target-line {
+  background-color: yellow;
+}
+
 .CodeMirror-search-match {
   background-color: yellow;
 }
