@@ -613,7 +613,8 @@ define([ "cm/lib/codemirror",
     /**
      * Highlight a (syntax) error in the source.
      * @param {Object} error
-     * @param {String} error.data contains the error message
+     * @param {String} error.data contains the error message (HTML
+     * string)
      * @param {Object} error.location contains the location, providing
      * `line` and `ch` attributes.
      */
@@ -621,24 +622,24 @@ define([ "cm/lib/codemirror",
       if ( error.location.file &&
 	   this.prologEditor('isMyFile', error.location.file) ) {
 	var data = this.data(pluginName);
-	var msg  = $(error.data).text();
-	var left;
+	var chmark;
 
 	if ( error.location.ch ) {
 	  left = data.cm.charCoords({ line: error.location.line-1,
-				      ch:   error.location.ch
+				      ch:   error.location.ch-1
 				    },
 				    "local").left;
-	} else {
-	  left = 0;
+	  chmark = $.el.div({class:"source-msg-charmark"},
+			    $.el.span({class:"glyphicon glyphicon-chevron-up"}));
+	  $(chmark).css("padding-left", left+"px");
 	}
 
-	msg = msg.replace(/^.*?:[0-9][0-9]*: /, "");
-	var elem = $.el.span({class:"source-msg error"},
-			     msg,
-			     $("<span>&times;</span>")[0]);
-	$(elem).css("margin-left", left+"px");
-
+	var elem = $.el.div({ class:"source-msg error",
+			      title:"Error message.  Click to remove"
+			    },
+			    chmark,
+			    $(error.data)[0],
+			    $.el.span({class:"glyphicon glyphicon-remove-circle"}));
 	var widget = data.cm.addLineWidget(error.location.line-1, elem);
 
 	$(elem).on("click", function() {

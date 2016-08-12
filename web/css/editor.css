@@ -15,20 +15,26 @@
 }
 
 .CodeMirror .source-msg {
+  position: relative;
   border-left: 2px solid #000;
   padding: 0px 5px;
   background-color: #ddd;
   cursor: hand; cursor: pointer;
 }
 
-.CodeMirror .source-msg > span {
-  color: #888;
-  font-weight: bold;
-  border: 1px solid #bbb;
+.CodeMirror .source-msg > span.glyphicon {
+  color: #000;
+  position: absolute;
+  right: 5px;
+  top: 5px;
 }
 
-.CodeMirror .source-msg:hover > span {
-  color: #f00;
+.CodeMirror .source-msg-charmark {
+  height: 1.5ex;
+}
+
+.CodeMirror .source-msg:hover {
+  text-decoration: line-through;
 }
 
 .CodeMirror-hover {
