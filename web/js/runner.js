@@ -945,9 +945,9 @@ define([ "jquery", "config", "preferences",
     if ( data.chunk )
       options.chunk = data.chunk;
 
-    this.pengine.ask("'$swish wrapper'((" +
+    this.pengine.ask("'$swish wrapper'((\n" +
 		     termNoFullStop(data.query.query) +
-		     "), Residuals)", options);
+		     "\n), Residuals)", options);
     elem.prologRunner('setState', "running");
   }
 
