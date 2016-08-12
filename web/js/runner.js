@@ -924,14 +924,21 @@ define([ "jquery", "config", "preferences",
     return $(runner).parents(".swish").swish('breakpoints', data.prolog.id);
   }
 
+  function registerSources(pengine) {
+    var runner = pengine.options.runner;
+    var data   = runner.data(pluginName);
+
+    if ( data.query.editor )
+      $(data.query.editor).prologEditor('pengine', {add: pengine.id});
+  }
+
   function handleCreate() {
     var elem = this.pengine.options.runner;
     var data = elem.data(pluginName);
     var options = {};
     var bps;
 
-    if ( data.query.editor )
-      $(data.query.editor).prologEditor('pengine', {add: this.pengine.id});
+    registerSources(this.pengine);
 
     if ( (bps = breakpoints(elem)) )
       options.breakpoints = Pengine.stringify(bps);
@@ -1022,13 +1029,13 @@ define([ "jquery", "config", "preferences",
 	{ var file = loc.file.slice(prefix.length);
 	  $(span).on("click", function() {
 	    elem.closest("body.swish")
-                .swish('playFile', {file:file, line:loc.line, regex:/test/});
+                .swish('playFile', {file:file, line:loc.line});
 	  });
 	}
 	this.data = this.data.replace(/pengine:\/\/[-0-9a-f]*\//, "");
+	registerSources(this.pengine);
 	$(".swish-event-receiver").trigger("source-error", this);
       }
-
     } else if ( typeof(this.data) == 'object' ) {
       elem.prologRunner(this.data.action, this.data);
     } else {
