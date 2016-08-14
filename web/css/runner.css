@@ -150,7 +150,25 @@ pre.prolog-message {
   white-space: pre-wrap;
   padding: 2px 2px;
   margin: 0;
+  width: 100%;
 }
+
+span.output.clickable {
+  display: block;
+  position: relative;
+  padding-left: 25px;
+}
+
+span.output.clickable:hover {
+  text-decoration: underline;
+}
+
+span.output.clickable > span.glyphicon {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+}
+
 
 pre.msg-information   { color: #060; font-style: italic; }
 pre.msg-informational { color: #060; font-style: italic; }

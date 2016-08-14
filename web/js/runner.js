@@ -1058,6 +1058,8 @@ define([ "jquery", "config", "preferences",
 
 	if ( loc.file.startsWith(prefix) )
 	{ var file = loc.file.slice(prefix.length);
+	  $(span).addClass("clickable");
+	  $(span).append($.el.span({class:"glyphicon glyphicon-hand-right"}));
 	  $(span).on("click", function() {
 	    elem.closest("body.swish")
                 .swish('playFile', {file:file, line:loc.line});
