@@ -279,7 +279,11 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
       }
       $(".swish-event-receiver").trigger("clearMessages");
 
-      var query = { query:q, editor: data.editor };
+      var query = { query: q,
+		    editor: data.editor,
+		    query_editor: this.find(".query")
+		  };
+
       if ( typeof(data.source) == "function" )
 	query.source = data.source(q);
       else if ( typeof(data.source) == "string" )

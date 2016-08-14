@@ -427,6 +427,23 @@ define([ "jquery", "config", "preferences",
      },
 
     /**
+     * Display a syntax error in the query.
+     * {Object} options
+     * {String} options.message is the message
+     * {Object} options.location contains the `line` and `ch` position
+     */
+     syntaxError: function(options) {
+       var data = this.data(pluginName);
+
+       options.data = "<pre class=\"output msg-error\">" +
+		      options.message +
+		      "</pre>";
+       options.location.file = true;
+       $(data.query.query_editor).prologEditor('highlightError', options);
+       return this;
+     },
+
+    /**
      * Add an error message to the output.  The error is
      * wrapped in a `<pre class="error">` element.
      * @param {String|Object} options If `options` is a string, it is a
@@ -445,8 +462,22 @@ define([ "jquery", "config", "preferences",
 	    title:"Remote pengine timed out"
 	  }));
 	  return this;
+	} else if ( options.code == "syntax_error" )
+	{ var m = options.message.match(/^HTTP:DATA:(\d+):(\d+):\s*(.*)/);
+
+	  if ( m && m.length == 4 ) {
+	    this.prologRunner('syntaxError',
+			      { location:
+				{ line: parseInt(m[1])-1,
+				  ch:	parseInt(m[2])
+				},
+				message: m[3]
+			      });
+	    msg = "ERROR: syntax error in query";
+	  }
 	}
-	msg = options.message;
+	if ( !msg )
+	  msg = options.message;
       } else
 	msg = options;
 

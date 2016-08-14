@@ -1216,11 +1216,12 @@ var cellTypes = {
       if ( pretext )
 	text = pretext + ", (" + prolog.trimFullStop(text) + ")";
     }
-    var query = { source: programs.prologEditor('getSource'),
-                  query:  text,
-		  tabled: settings.tabled||false,
-		  chunk:  settings.chunk,
-		  title:  false
+    var query = { source:       programs.prologEditor('getSource'),
+                  query:        text,
+		  tabled:       settings.tabled||false,
+		  chunk:        settings.chunk,
+		  title:        false,
+		  query_editor: this.find(".prolog-editor.query")
                 };
     if ( programs[0] )
       query.editor = programs[0];

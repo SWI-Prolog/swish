@@ -620,7 +620,8 @@ define([ "cm/lib/codemirror",
      */
     highlightError: function(error) {
       if ( error.location.file &&
-	   this.prologEditor('isMyFile', error.location.file) ) {
+	   (error.location.file == true ||
+	    this.prologEditor('isMyFile', error.location.file)) ) {
 	var data = this.data(pluginName);
 	var chmark;
 
