@@ -1049,7 +1049,7 @@ define([ "jquery", "config", "preferences",
     var elem = this.pengine.options.runner;
 
     if ( typeof(this.data) == 'string' ) {
-      this.data = this.data.replace(new RegExp("'[-0-9a-f]{36}':", 'g'), "")
+      this.data = this.data.replace(/'[-0-9a-f]{36}':/g, "")  /* remove module */
       var span = elem.prologRunner('outputHTML', this.data);
 
       if ( this.location ) {
