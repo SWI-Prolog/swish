@@ -1056,13 +1056,24 @@ define([ "jquery", "config", "preferences",
 	var loc = this.location;
 	var prefix = "swish://";
 
-	if ( loc.file.startsWith(prefix) )
-	{ var file = loc.file.slice(prefix.length);
+	function clickableError() {
 	  $(span).addClass("clickable");
 	  $(span).append($.el.span({class:"glyphicon glyphicon-hand-right"}));
+	  $(span).attr("title", "Click to view error in context");
+	}
+
+	if ( loc.file.startsWith(prefix) ) {
+	  var file = loc.file.slice(prefix.length);
+	  clickableError();
 	  $(span).on("click", function() {
 	    elem.closest("body.swish")
                 .swish('playFile', {file:file, line:loc.line});
+	  });
+	} else if ( loc.file.startsWith("pengine://") ) {
+	  var data = elem.data(pluginName);
+	  clickableError();
+	  $(span).on("click", function() {
+	    $(data.query.editor).prologEditor('gotoLine', loc.line);
 	  });
 	}
 	this.data = this.data.replace(/pengine:\/\/[-0-9a-f]*\//, "");
