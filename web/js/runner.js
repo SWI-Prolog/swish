@@ -1045,18 +1045,25 @@ define([ "jquery", "config", "preferences",
    * this to indicate the location of the error in CodeMirror.
    */
 
-  function handleOutput() {
-    var elem = this.pengine.options.runner;
+  function handleOutput(msg) {
+    var elem = msg.pengine.options.runner;
 
-    if ( typeof(this.data) == 'string' ) {
-      this.data = this.data.replace(/'[-0-9a-f]{36}':/g, "")  /* remove module */
-      var span = elem.prologRunner('outputHTML', this.data);
+    if ( typeof(msg.data) == 'string' ) {
+      msg.data = msg.data.replace(/'[-0-9a-f]{36}':/g, "")  /* remove module */
 
-      if ( this.location ) {
-	var loc = this.location;
+      if ( msg.location ) {
+	var loc = msg.location;
 	var prefix = "swish://";
+	var span;
 
 	function clickableError() {
+	  var str = loc.file+":"+loc.line+":";
+	  if ( loc.ch ) str += loc.ch+":";
+	  str += "\\s*";
+	  msg.data = msg.data.replace(new RegExp(str, "g"), "");
+
+	  span = elem.prologRunner('outputHTML', msg.data);
+
 	  $(span).addClass("clickable");
 	  $(span).append($.el.span({class:"glyphicon glyphicon-hand-right"}));
 	  $(span).attr("title", "Click to view error in context");
@@ -1076,14 +1083,15 @@ define([ "jquery", "config", "preferences",
 	    $(data.query.editor).prologEditor('gotoLine', loc.line);
 	  });
 	}
-	this.data = this.data.replace(/pengine:\/\/[-0-9a-f]*\//, "");
-	registerSources(this.pengine);
-	$(".swish-event-receiver").trigger("source-error", this);
+	registerSources(msg.pengine);
+	$(".swish-event-receiver").trigger("source-error", msg);
+      } else {
+	elem.prologRunner('outputHTML', msg.data);
       }
-    } else if ( typeof(this.data) == 'object' ) {
-      elem.prologRunner(this.data.action, this.data);
+    } else if ( typeof(msg.data) == 'object' ) {
+      elem.prologRunner(msg.data.action, msg.data);
     } else {
-      console.log(this.data);
+      console.log(msg.data);
     }
     RS(elem).prologRunners('scrollToBottom');
   }
