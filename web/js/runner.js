@@ -473,7 +473,7 @@ define([ "jquery", "config", "preferences",
 				},
 				message: m[3]
 			      });
-	    msg = "ERROR: syntax error in query";
+	    msg = "Cannot run query due to a syntax error (check query window)";
 	  }
 	}
 	if ( !msg )
@@ -1116,7 +1116,7 @@ define([ "jquery", "config", "preferences",
 
 	  $(span).addClass("error-context");
 	  $(span).append($.el.span({class:"glyphicon glyphicon-hand-right"}));
-	  $(span).attr("title", "Click to view error in context");
+	  $(span).attr("title", "Error in program.  Click to show in context");
 	  $(span).on("click", gotoError);
 	  $(span).data("error_context", econtext);
 	}

@@ -228,6 +228,9 @@ define([ "cm/lib/codemirror",
 	  if ( data.role != "query" )
 	    elem.prologEditor('print');
 	});
+	elem.on("clearMessages", function(ev) {
+	  elem.prologEditor('clearMessages');
+	});
 
 	if ( options.save ) {
 	  storage.typeName = options.typeName||"program";
@@ -243,9 +246,6 @@ define([ "cm/lib/codemirror",
 
 	  elem.on("source-error", function(ev, error) {
 	    elem.prologEditor('highlightError', error);
-	  });
-	  elem.on("clearMessages", function(ev) {
-	    elem.prologEditor('clearMessages');
 	  });
 	  elem.on("pengine-died", function(ev, id) {
 	    if ( data.pengines ) {
