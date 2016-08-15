@@ -1039,6 +1039,50 @@ define([ "jquery", "config", "preferences",
   }
 
   /**
+   * Make indicated source locations clickable.
+   * @param {String} msg is the HTML error message string
+   * @param {DOM} editor is the source editor; the editor for pengine://
+   * source locations
+   */
+  function clickableLocations(msg, editor) {
+    var pattern = /pengine:\/\/[-0-9a-f]{36}\/src:(\d+)/;
+
+    return msg.replace(pattern, function(matched) {
+      var line = matched.match(pattern)[1];
+      return "<a class='goto-error' title='Goto location'>" +
+               "<span class='glyphicon glyphicon-hand-right'></span> "+
+	       "<b>line <span class='line'>"+line+"</span></b></a>";
+    });
+  }
+
+  function gotoError(ev) {
+    var a        = $(ev.target).closest("a.goto-error");
+    var ctx      = $(ev.target).closest(".error-context");
+    var econtext = ctx.data("error_context");
+
+    if ( a[0] ) {
+      var line = parseInt(a.find("span.line").text());
+      var file = a.find("span.file").text();
+
+      ev.preventDefault();
+
+      if ( file ) {
+	ctx.closest("body.swish")
+	   .swish('playFile', {file:file, line:line});
+      } else {
+	$(econtext.editor).prologEditor('gotoLine', line);
+      }
+
+      return false;
+    } else if ( econtext.location.file ) {
+      ctx.closest("body.swish")
+	 .swish('playFile', econtext.location);
+    } else {
+      $(econtext.editor).prologEditor('gotoLine', econtext.location.line);
+    }
+  }
+
+  /**
    * handle `pengine_output/1`.  Note that compiler warnings and errors
    * also end up here. If they have a location, this is provided through
    * this.location, which contains `file`, `line` and `ch`.  We must use
@@ -1049,6 +1093,9 @@ define([ "jquery", "config", "preferences",
     var elem = msg.pengine.options.runner;
 
     if ( typeof(msg.data) == 'string' ) {
+      var data = elem.data(pluginName);
+      var econtext = {editor: data.query.editor};
+
       msg.data = msg.data.replace(/'[-0-9a-f]{36}':/g, "")  /* remove module */
 
       if ( msg.location ) {
@@ -1060,33 +1107,38 @@ define([ "jquery", "config", "preferences",
 	  var str = loc.file+":"+loc.line+":";
 	  if ( loc.ch ) str += loc.ch+":";
 	  str += "\\s*";
-	  msg.data = msg.data.replace(new RegExp(str, "g"), "");
+
+	  msg.data = clickableLocations(
+			 msg.data.replace(new RegExp(str, "g"), ""),
+			 econtext.editor);
 
 	  span = elem.prologRunner('outputHTML', msg.data);
 
-	  $(span).addClass("clickable");
+	  $(span).addClass("error-context");
 	  $(span).append($.el.span({class:"glyphicon glyphicon-hand-right"}));
 	  $(span).attr("title", "Click to view error in context");
+	  $(span).on("click", gotoError);
+	  $(span).data("error_context", econtext);
 	}
 
 	if ( loc.file.startsWith(prefix) ) {
 	  var file = loc.file.slice(prefix.length);
+	  econtext.location = {file:file, line:loc.line};
 	  clickableError();
-	  $(span).on("click", function() {
-	    elem.closest("body.swish")
-                .swish('playFile', {file:file, line:loc.line});
-	  });
 	} else if ( loc.file.startsWith("pengine://") ) {
-	  var data = elem.data(pluginName);
-	  clickableError();
-	  $(span).on("click", function() {
-	    $(data.query.editor).prologEditor('gotoLine', loc.line);
-	  });
+	  econtext.location = {line:loc.line};
+	  clickableError(data.query.editor);
 	}
 	registerSources(msg.pengine);
+	msg.error_context = econtext;
+	msg.error_handler = gotoError;
 	$(".swish-event-receiver").trigger("source-error", msg);
       } else {
-	elem.prologRunner('outputHTML', msg.data);
+	var span = elem.prologRunner('outputHTML',
+				     clickableLocations(msg.data,
+							econtext.editor));
+	$(span).on("click", gotoError);
+	$(span).data("error_context", econtext);
       }
     } else if ( typeof(msg.data) == 'object' ) {
       elem.prologRunner(msg.data.action, msg.data);

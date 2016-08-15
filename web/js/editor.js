@@ -635,7 +635,7 @@ define([ "cm/lib/codemirror",
 	  $(chmark).css("padding-left", left+"px");
 	}
 
-	var elem = $.el.div({ class:"source-msg error",
+	var elem = $.el.div({ class:"source-msg error error-context",
 			      title:"Error message.  Click to remove"
 			    },
 			    chmark,
@@ -643,7 +643,12 @@ define([ "cm/lib/codemirror",
 			    $.el.span({class:"glyphicon glyphicon-remove-circle"}));
 	var widget = data.cm.addLineWidget(error.location.line-1, elem);
 
-	$(elem).on("click", function() {
+	if ( error.error_context )
+	  $(elem).data("error_context", error.error_context);
+	$(elem).on("click", function(ev) {
+	  if ( error.error_handler &&
+	       error.error_handler(ev) == false )
+	    return;
 	  widget.clear();
 	});
 	$(elem).data("cm-widget", widget);

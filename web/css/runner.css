@@ -153,22 +153,26 @@ pre.prolog-message {
   width: 100%;
 }
 
-span.output.clickable {
+span.output.error-context {
   display: block;
   position: relative;
   padding-left: 25px;
 }
 
-span.output.clickable:hover {
+span.output.error-context:hover {
   text-decoration: underline;
 }
 
-span.output.clickable > span.glyphicon {
+span.output.error-context > span.glyphicon {
   position: absolute;
   top: 5px;
   left: 5px;
 }
 
+a.goto-error:hover {
+  text-decoration: none;		/* ignored inside <pre>? */
+  outline: 2px solid #337ab7;
+}
 
 pre.msg-information   { color: #060; font-style: italic; }
 pre.msg-informational { color: #060; font-style: italic; }
