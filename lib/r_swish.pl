@@ -156,11 +156,11 @@ function updateSize() {
     }
   }
 
+  reactive();
   w = Math.max(w*0.95, 100);
   if ( w < data.w0 ) {
     svg.width(w);
     svg.height(w = Math.max(w*data.h0/data.w0, w/4));
-    reactive();
     if ( pan ) {
       pan.resize();
       pan.fit();
