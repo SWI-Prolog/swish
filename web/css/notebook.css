@@ -9,8 +9,6 @@
 
 .nb-toolbar, .nb-content
 { width: 100%;
-  padding-left: 1em;
-  padding-right: 1em;
 }
 
 .notebook.hamburger .nb-toolbar {
@@ -80,10 +78,13 @@ div.notebook-menu {
 }
 
 .nb-cell
-{ box-sizing: border-box;
-  background-color: #eee;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+{ margin-left: 20px;
+  margin-right: 10px;
+  box-sizing: border-box;
+}
+
+.nb-cell:focus
+{ outline: 0px;
 }
 
 .nb-type-select
@@ -121,8 +122,17 @@ div.notebook-menu {
   float: right;
 }
 
-.nb-cell.active, .nb-cell.active > .with-buttons
-{ border: 1px solid #888;
+.nb-cell.active
+{ margin-left: 8px;
+  border-left: 7px solid green !important;
+  padding-left: 5px;
+}
+
+.nb-cell.markdown.active > div.editor
+{ border: 1px dotted #888;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  margin-right: 52px;
 }
 
 .nb-cell.singleline div.editor
@@ -152,11 +162,6 @@ div.notebook-menu {
 
 .nb-cell.background span.glyphicon-cloud
 { color: white;
-}
-
-.nb-cell.query, .nb-cell.program
-{ border: 0px;
-  background: transparent;
 }
 
 .nb-cell > .with-buttons
