@@ -123,7 +123,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	    var bg  = $(".background.prolog.source").text();
 
 	    if ( bg )
-	      src += '\n\n' + bg;
+	      src += '\n%@background@\n' + bg;
 
 	    return src;
 	  };
