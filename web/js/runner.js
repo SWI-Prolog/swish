@@ -912,6 +912,7 @@ define([ "jquery", "config", "preferences",
 		 *	 SCRIPTS IN NODES	*
 		 *******************************/
 
+  var node_id = 1;
   function runScripts(elem) {
     var scripts = [];
     elem = $(elem);
@@ -942,6 +943,16 @@ define([ "jquery", "config", "preferences",
 
   Node.prototype.node = function() {
     return $(this.my_node);
+  }
+
+  /**
+   * Provide a unique id for the node.  This can be used as prefix to
+   * avoid conflicts for `id` attributes.
+   */
+  Node.prototype.unique_id = function() {
+    if ( !this.uid )
+      this.uid = node_id++;
+    return this.uid;
   }
 
 
