@@ -697,6 +697,9 @@ var cellTypes = {
 	    this.find(".editor").prologEditor('makeCurrent');
 	    break;
 	  case "query":
+	    var ed = this.prevAll(".program").first().find(".editor");
+	    if ( ed.length == 1 )
+	      ed.prologEditor('makeCurrent');
 	    this.closest(".notebook")
                 .find(".nb-cell.program")
                 .not(this.nbCell("program_cells"))
