@@ -880,15 +880,22 @@ var cellTypes = {
 
     /**
      * Returns all program cells in current notebook that are loaded
-     * for executing the receiving query.
+     * for executing the current cell.  This always starts with the
+     * background programs.  If `this` is a program cell, it is added.
+     * Otherwise the program cell before `this` is added.
      * @return {jQuery} set of nbCell elements that form the
      * sources for the receiving query cell.
      */
     program_cells: function() {
       var data = this.data(pluginName);
       var programs = this.closest(".notebook")
-	                 .find(".nb-cell.program.background")
-			 .add(this.prevAll(".program").first());
+	                 .find(".nb-cell.program.background");
+      if ( this.hasClass("program") ) {
+	if ( !this.hasClass("background") )
+	  programs = programs.add(this);
+      } else {
+	programs = programs.add(this.prevAll(".program").first());
+      }
       return programs;
     },
 
