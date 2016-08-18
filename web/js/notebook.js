@@ -973,10 +973,15 @@ var cellTypes = {
   }
 
   methods.type.program = function(options) {	/* program */
+    var cell = this;
     var editor, bg;
 
     options = options||{};
     options.autoCurrent = false;
+    options.getSource = function() {
+      var programs = cell.nbCell('programs');
+      return programs.prologEditor('getSource', undefined, true);
+    };
 
     this.html("");
 
@@ -1223,7 +1228,8 @@ var cellTypes = {
       if ( pretext )
 	text = pretext + ", (" + prolog.trimFullStop(text) + ")";
     }
-    var query = { source:       programs.prologEditor('getSource'),
+    var query = { source:       programs.prologEditor('getSource',
+						      undefined, true),
                   query:        text,
 		  tabled:       settings.tabled||false,
 		  chunk:        settings.chunk,
