@@ -138,6 +138,8 @@ define([ "cm/lib/codemirror",
 
 	if ( options.mode == "prolog" ) {
 	  data.role = options.role;
+	  if ( options.getSource )
+	    data.getSource = options.getSource;
 
 	  if ( config.http.locations.cm_highlight ) {
 	    options.prologHighlightServer =
@@ -404,11 +406,16 @@ define([ "cm/lib/codemirror",
     /**
      * FIXME: Add indication of the source, such that errors
      * can be relayed to the proper editor.
+     *
+     * @param {String} [role] Only return source for editors that
+     * match the given role.
+     * @param {Boolean} [direct] If `true`, do not try to indirect
+     * over the `data.getSource` function.
      * @returns {String} current contents of the editor.  If
      * the jQuery object holds multiple editors, we return the
      * joined content of the editors.
      */
-    getSource: function(role) {
+    getSource: function(role, direct) {
       var src = [];
 
       this.each(function() {
@@ -416,8 +423,15 @@ define([ "cm/lib/codemirror",
 	  var data = $(this).data(pluginName);
 
 	  if ( data ) {
-	    if ( !role || (role == data.role) )
-	      src.push(data.cm.getValue());
+	    if ( !role || (role == data.role) ) {
+	      var mysrc;
+	      if ( typeof(data.getSource) == "function" && !direct ) {
+		mysrc = data.getSource();
+	      } else {
+		mysrc = data.cm.getValue();
+	      }
+	      src.push(mysrc);
+	    }
 	  }
 	}
       });
