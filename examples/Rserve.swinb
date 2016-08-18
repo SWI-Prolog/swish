@@ -23,13 +23,52 @@ Prolog term, it is translated into R using these rules:
   - An identifier (atom with chars valid for R identifiers) are emitted verbatim.
   - The Prolog atoms `true` and `false` are translated into the R expressions
     =TRUE= and =FALSE=.
-  - A Prolog string is translated into an R string.
+  - A Prolog string is translated into an R string.  Note that R strings may be
+    written as `"string"` or `'string'`, while in Prolog `'string'` is an atom,
+    which is treated as an identifier.  Thus, use double quoted Prolog strings
+    to create a string in R.
   - Numbers are translated into R numbers.
   - A term =|functor(Arg ...)|= is translated into an R-function call.
   - The R operators are supported:  =|+, -, *, /, mod, '%%', ^,
 	&gt;=, &gt;, ==, &lt;, &lt;=, =&lt;, \=, '!=', :, &lt;-|=
   - =|A$B|= and =|A[I]|= are supported
   - Goal expansion is provided to turn =|a.b|= and =|a.b()|= into valid syntax.
+</div>
+
+<div class="nb-cell markdown">
+## Exchange data betwee Prolog and R
+
+Data may be transferred using the assignment operator `Target &lt;- Source`, where `Source` is the Prolog representation of an R expression.  `Target` is either a Prolog variable, transferring the value of an R expression to Prolog, or an R variable or expression, transferring a Prolog expression to R.
+
+First we illustrate exchanging R data to Prolog.  Note that the expression can both be the Prolog representation of an R expression or R source represented as a quasi quotation.
+</div>
+
+<div class="nb-cell query">
+A &lt;- 1:10.
+</div>
+
+<div class="nb-cell query">
+A &lt;- {|r||1:10|}.
+</div>
+
+<div class="nb-cell markdown">
+Next, we transfer data from Prolog to R.  We compute the mean and return it to show that `a &lt;- List` actuall binds the R variable `a`.
+</div>
+
+<div class="nb-cell query">
+numlist(0, 10, List),
+a &lt;- List,
+Mean &lt;- mean(a).
+</div>
+
+<div class="nb-cell markdown">
+The left side of the assignment can be any valid R term as illustrated below, where we assign the column names of a data frame.  See [Data frame](example/Rdataframe.swinb) for more high level operations on data frames.
+</div>
+
+<div class="nb-cell query">
+df &lt;- data.frame([100,200,300]),
+colnames(df) &lt;- ["hundreds"],
+&lt;- df.
 </div>
 
 <div class="nb-cell markdown">
@@ -53,20 +92,6 @@ First, we make some trivial plots using an R vector, Prolog list and a _quasi qu
 <div class="nb-cell query">
 numlist(1, 25, Data),
 {|r(Data)||plot(Data)|}.
-</div>
-
-<div class="nb-cell markdown">
-## Fetch data from R
-
-These example shows fetching data from R.
-</div>
-
-<div class="nb-cell query">
-A &lt;- 1:10.
-</div>
-
-<div class="nb-cell query">
-A &lt;- {|r||1:10|}.
 </div>
 
 <div class="nb-cell markdown">
