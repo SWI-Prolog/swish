@@ -16,7 +16,7 @@ R for SWISH provides an interface to [Rserve](https://rforge.net/Rserve/) where 
   Prolog terms that are translated to R and bound to an R variable with the
   same name.  `R-code` is arbitrary R code.  This may contain any characters
   except for the `|}` termination sequence.
-  
+
 Above, *Expression* is either a Prolog term or a quasi quotation.  If it is a
 Prolog term, it is translated into R using these rules:
 
@@ -136,8 +136,6 @@ The library("ggplot2") can be used for rendering plots.  Unlike native plot() ho
 
 <div class="nb-cell program">
 :- &lt;- library("ggplot2").
-
-:- use_rendering(table).
 </div>
 
 <div class="nb-cell query">
