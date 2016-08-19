@@ -36,7 +36,7 @@ Prolog term, it is translated into R using these rules:
 </div>
 
 <div class="nb-cell markdown">
-## Exchange data betwee Prolog and R
+## Exchange data between Prolog and R
 
 Data may be transferred using the assignment operator `Target &lt;- Source`, where `Source` is the Prolog representation of an R expression.  `Target` is either a Prolog variable, transferring the value of an R expression to Prolog, or an R variable or expression, transferring a Prolog expression to R.
 
