@@ -42,7 +42,7 @@
 :- use_module(user:library(r/r_call)).
 :- use_module(user:library(r/r_data)).
 
-:- use_module(library(r/r_call), [r_read_file/3]).
+:- use_module(library(r/r_call)).
 :- use_module(download).
 
 /** <Module> Bind Rserve to SWISH
