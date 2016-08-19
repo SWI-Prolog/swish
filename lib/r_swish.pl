@@ -120,25 +120,30 @@ var data = { w0: svg.width(),
 	   };
 var pan;
 
-function fixIDs(node, prefix) {
-  var hprefix = "#"+prefix;
-  var re = /(url\()#([^)]*)(\))/;
+function fixIDs(node, prefix1) {
+  var i=0;
+  node.each(function() {
+    var prefix = prefix1+(i++)+"_";
+    var img = $(this);
+    var hprefix = "#"+prefix;
+    var re = /(url\()#([^)]*)(\))/;
 
-  node.find("[id]").each(function() {
-    var elem = $(this);
-    elem.attr("id", prefix+elem.attr("id"));
-  });
-  node.find("use").each(function() {
-    var elem = $(this);
-    var r = elem.attr("xlink:href");
-    if ( r.charAt(0) == "#" )
-      elem.attr("xlink:href", hprefix+r.slice(1));
-  });
-  node.find("[clip-path]").each(function() {
-    var elem = $(this);
-    var r = elem.attr("clip-path").match(re);
-    if ( r.length == 4 )
-      elem.attr("clip-path", r[1]+hprefix+r[2]+r[3]);
+    img.find("[id]").each(function() {
+      var elem = $(this);
+      elem.attr("id", prefix+elem.attr("id"));
+    });
+    img.find("use").each(function() {
+      var elem = $(this);
+      var r = elem.attr("xlink:href");
+      if ( r.charAt(0) == "#" )
+	elem.attr("xlink:href", hprefix+r.slice(1));
+    });
+    img.find("[clip-path]").each(function() {
+      var elem = $(this);
+      var r = elem.attr("clip-path").match(re);
+      if ( r.length == 4 )
+	elem.attr("clip-path", r[1]+hprefix+r[2]+r[3]);
+    });
   });
 }
 
