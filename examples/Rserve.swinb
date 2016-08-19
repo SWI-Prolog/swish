@@ -136,6 +136,8 @@ The library("ggplot2") can be used for rendering plots.  Unlike native plot() ho
 
 <div class="nb-cell program">
 :- &lt;- library("ggplot2").
+
+:- use_rendering(table).
 </div>
 
 <div class="nb-cell query">
