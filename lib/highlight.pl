@@ -31,6 +31,7 @@
 	  [ current_highlight_state/2
 	  ]).
 :- use_module(library(debug)).
+:- use_module(library(settings)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_json)).
@@ -53,6 +54,9 @@ http:location(codemirror, swish(cm), []).
 :- http_handler(codemirror(tokens), codemirror_tokens, []).
 :- http_handler(codemirror(leave),  codemirror_leave,  []).
 :- http_handler(codemirror(info),   token_info,        []).
+
+:- setting(swish:editor_max_idle_time, nonneg, 3600,
+	   "Maximum time we keep a mirror editor around").
 
 /** <module> Highlight token server
 
@@ -154,13 +158,13 @@ insert([H|T], TB, ChPos0, ChPos, Changed) :-
 	->  Len	= 0
 	;   Changed = true,
 	    string_length(H, Len),
-	    debug(cm(change), 'Insert ~q at ~d', [H, ChPos0]),
+	    debug(cm(change_text), 'Insert ~q at ~d', [H, ChPos0]),
 	    insert_memory_file(TB, ChPos0, H)
 	),
 	ChPos1 is ChPos0+Len,
 	(   T == []
 	->  ChPos2 = ChPos1
-	;   debug(cm(change), 'Adding newline at ~d', [ChPos1]),
+	;   debug(cm(change_text), 'Adding newline at ~d', [ChPos1]),
 	    Changed = true,
 	    insert_memory_file(TB, ChPos1, '\n'),
 	    ChPos2 is ChPos1+1
@@ -247,7 +251,8 @@ destroy_editor(_).
 :- dynamic
 	gced_editors/1.
 
-editor_max_idle_time(3600).
+editor_max_idle_time(Time) :-
+	setting(swish:editor_max_idle_time, Time).
 
 gc_editors :-
 	get_time(Now),
@@ -320,11 +325,14 @@ prolog:xref_open_source(UUID, Stream) :-
 
 codemirror_leave(Request) :-
 	http_read_json_dict(Request, Data, []),
-	debug(cm(leave), 'Leaving editor ~p', [Data]),
 	(   atom_string(UUID, Data.get(uuid))
-	->  forall(current_editor(UUID, _TB, _Role, _),
-		   with_mutex(swish_gc_editor, destroy_editor(UUID)))
-	;   true
+	->  debug(cm(leave), 'Leaving editor ~p', [UUID]),
+	    (	current_editor(UUID, _, _, _)
+	    ->	forall(current_editor(UUID, _TB, _Role, _),
+		       with_mutex(swish_gc_editor, destroy_editor(UUID)))
+	    ;	debug(cm(leave), 'No editor for ~p', [UUID])
+	    )
+	;   debug(cm(leave), 'No editor?? (data=~p)', [Data])
 	),
 	reply_json_dict(true).
 
@@ -480,7 +488,8 @@ shadow_editor(Data, TB) :-
 	    insert_memory_file(TB, 0, Text),
 	    mark_changed(TB, true)
 	;   Changes = Data.get(changes)
-	->  (   maplist(apply_change(TB, Changed), Changes)
+	->  (   debug(cm(change), 'Patch editor for ~p', [UUID]),
+		maplist(apply_change(TB, Changed), Changes)
 	    ->	true
 	    ;	throw(cm(out_of_sync))
 	    ),
@@ -490,7 +499,8 @@ shadow_editor(Data, TB) :-
 	Text = Data.get(text), !,
 	atom_string(UUID, Data.uuid),
 	create_editor(UUID, TB, Data),
-	debug(cm(change), 'Initialising editor to ~q', [Text]),
+	debug(cm(change), 'Create editor for ~p', [UUID]),
+	debug(cm(change_text), 'Initialising editor to ~q', [Text]),
 	insert_memory_file(TB, 0, Text).
 shadow_editor(Data, TB) :-
 	_{role:_} :< Data, !,
