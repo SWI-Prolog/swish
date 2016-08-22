@@ -1067,7 +1067,7 @@ var cellTypes = {
 	  "Download answers as CSV": function() {
 	    var query  = cellText(this).replace(/\.\s*$/,"");
 	    var source = this.nbCell('programs')
-			     .prologEditor('getSource');
+			     .prologEditor('getSource', undefined, true);
 	    var options = {};
 	    var name   = this.attr("name");
 	    if ( name )
@@ -1474,7 +1474,7 @@ var cellTypes = {
 		 *******************************/
 
   function cellText(cell) {
-    return cell.find(".editor").prologEditor('getSource');
+    return cell.find(".editor").prologEditor('getSource', undefined, true);
   }
 
   /**
@@ -1589,7 +1589,7 @@ function Notebook(options) {
  */
 Notebook.prototype.swish = function(options) {
   var pcells = this.cell().nbCell("programs");
-  var source = pcells.prologEditor('getSource');
+  var source = pcells.prologEditor('getSource', undefined, true);
 
   if ( source )
     options.src = source;
