@@ -124,6 +124,12 @@ swish_config(Key, Value, Options) :-
 swish_config(Key, Value, _) :-
 	config(Key, Value).
 
+% We need to use '$swish wrapper' with a variable _residuals in
+% versions that support the `var_prefix` option.
+:- if(current_prolog_flag(var_prefix, _)).
+config(residuals_var, '_residuals').
+:- endif.
+
 %%	source_alias(?Alias, ?Options) is nondet.
 %
 %	Multifile hook that  defines   properties  of file_search_path/2

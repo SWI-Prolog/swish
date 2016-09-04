@@ -979,6 +979,7 @@ define([ "jquery", "config", "preferences",
     var data = elem.data(pluginName);
     var options = {};
     var bps;
+    var resvar = config.swish.residuals_var || "Residuals";
 
     registerSources(this.pengine);
 
@@ -989,7 +990,7 @@ define([ "jquery", "config", "preferences",
 
     this.pengine.ask("'$swish wrapper'((\n" +
 		     termNoFullStop(data.query.query) +
-		     "\n), Residuals)", options);
+		     "\n), "+resvar+")", options);
     elem.prologRunner('setState', "running");
   }
 
