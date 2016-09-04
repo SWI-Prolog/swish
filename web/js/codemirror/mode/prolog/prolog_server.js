@@ -258,6 +258,7 @@ classification of tokens.
 		   };
   var serverSync = { "var": "var",	/* Server Types */
 		     "singleton": "var",
+		     "uatom": "var",	/* var_prefix in effect */
 		     "atom": "atom",
 		     "qatom": "qatom",
 		     "string": "string",

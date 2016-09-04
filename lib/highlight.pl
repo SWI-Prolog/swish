@@ -612,8 +612,12 @@ json_token(TB, Start, Token) :-
 	dict_create(Token, json, [type(Type)|Attrs]).
 
 atomic_special(atom, Start, Len, TB, Type, Attrs) :-
-	(   memory_file_substring(TB, Start, 1, _, "'")
+	memory_file_substring(TB, Start, 1, _, FirstChar),
+	(   FirstChar == "'"
 	->  Type = qatom,
+	    Attrs = []
+	;   char_type(FirstChar, upper)
+	->  Type = uatom,			% var_prefix in effect
 	    Attrs = []
 	;   Type = atom,
 	    (   Len =< 5			% solo characters, neck, etc.
