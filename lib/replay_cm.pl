@@ -42,6 +42,20 @@
 :- use_module(library(http/http_open)).
 :- use_module(library(http/json)).
 
+/** <module> Replay CodeMirror highlight requests from a session
+
+  1. ?- load_log('httpd-1.log.gz').
+  2. ?- request(Id, Time, Request, false).
+
+You can use ?- replay. to replay all events on http://localhost:3050. To
+avoid piling up states you need to set the state timeout on the *server*
+low, e.g.
+
+    set_setting(swish:editor_max_idle_time, 2).
+*/
+
+% This should not ne needed. Writing the log file should use a fixed set
+% of operators.
 
 :- op(900,  fx, <-).
 :- op(900, xfx, <-).
@@ -63,43 +77,58 @@ load_log(Log) :-
 	retractall(request(_,_,_,_)),
 	absolute_file_name(Log, Path,
 			   [ access(read),
-			     extensions(['', log])
+			     extensions(['', log, gz])
 			   ]),
 	empty_assoc(Active),
 	setup_call_cleanup(
-	    open(Path, read, In, [encoding(utf8)]),
-	    read_log(In, Active),
-	    close(In)).
+	    open(Path, In),
+	    read_log(In, Active, 1, Session),
+	    close(In)),
+	predicate_property(request(_,_,_,_), number_of_clauses(Count)),
+	format('Loaded ~D requests from ~D sessions~n', [Count, Session]).
 
-read_log(In, Active) :-
+open(Path, In) :-
+	open(Path, read, In0, [encoding(utf8)]),
+	(   file_name_extension(_, gz, Path)
+	->  zopen(In0, In, [])
+	;   In = In0
+	).
+
+
+read_log(In, Active, Session0, Session) :-
 	read_term(In, Term,
 		  [ syntax_errors(dec10),
 		    module(replay_cm)
 		  ]),
-	read_log(Term, Active, In).
+	read_log(Term, Active, In, Session0, Session).
 
-read_log(end_of_file, Active, _) :- !,
+read_log(end_of_file, Active, _, Session, Session) :- !,
 	not_completed(Active).
-read_log(Term, Active, In) :-
-	assert_event(Term, Active, Active1),
-	read_log(In, Active1).
+read_log(Term, Active, In, Session0, Session) :-
+	assert_event(Term, Active, Active1, Session0, Session1),
+	read_log(In, Active1, Session1, Session).
 
-assert_event(request(Id, Time, Request), Active0, Active) :-
+assert_event(request(Id, Time, Request),
+	     Active0, Active, Session, Session) :-
 	memberchk(path(Path), Request),
 	sub_atom(Path, 0, _, _, '/cm/'), !,
 	put_assoc(Id, Active0, request(Id, Time, Request), Active).
-assert_event(completed(Id, CPU, Bytes, Code, Status), Active0, Active) :-
+assert_event(completed(Id, CPU, Bytes, Code, Status),
+	     Active0, Active, Session, Session) :-
 	del_assoc(Id, Active0, request(Id, Time, Request), Active), !,
-	assertz(request(Id, Time, Request,
+	atomic_list_concat([Session, '-', Id], ReqID),
+	assertz(request(ReqID, Time, Request,
 			completed{ cpu:CPU,
 				   bytes:Bytes,
 				   code:Code,
 				   status:Status
 				 })).
-assert_event(server(started, _), Active0, Active) :- !,
+assert_event(server(started, _),
+	     Active0, Active, Session0, Session1) :- !,
 	not_completed(Active0),
-	empty_assoc(Active).
-assert_event(_, Active, Active).
+	empty_assoc(Active),
+	Session1 is Session0 + 1.
+assert_event(_, Active, Active, Session, Session).
 
 not_completed(Assoc) :-
 	assoc_to_list(Assoc, Pairs),
