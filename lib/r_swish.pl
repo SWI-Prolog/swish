@@ -38,9 +38,9 @@
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
 
-% We publish to the user module to avoid autoloading `real'.
-:- use_module(user:library(r/r_call)).
-:- use_module(user:library(r/r_data)).
+% We publish to the R interface to `swish`
+:- use_module(swish:library(r/r_call)).
+:- use_module(swish:library(r/r_data)).
 
 :- use_module(library(r/r_call)).
 :- use_module(library(r/r_serve)).
