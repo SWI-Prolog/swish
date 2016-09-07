@@ -388,8 +388,14 @@ xref_state_module(TB, UUID) :-
 	(   module_property(UUID, class(temporary))
 	->  true
 	;   set_module(UUID:class(temporary)),
-	    add_import_module(UUID, swish, start)
+	    add_import_module(UUID, swish, start),
+	    maplist(copy_flag(UUID, swish), [var_prefix])
 	).
+
+copy_flag(Module, Application, Flag) :-
+    current_prolog_flag(Application:Flag, Value), !,
+    set_prolog_flag(Module:Flag, Value).
+copy_flag(_, _, _).
 
 destroy_state_module(UUID) :-
 	module_property(UUID, class(temporary)), !,
