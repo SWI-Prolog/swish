@@ -533,6 +533,7 @@ string_attribute(id).
 string_attribute('URL').
 string_attribute(fillcolor).
 string_attribute(fontcolor).
+string_attribute(color).
 string_attribute(fontname).
 string_attribute(style).
 string_attribute(size).
