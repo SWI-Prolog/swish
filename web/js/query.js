@@ -38,12 +38,16 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	var data   = $.extend({}, defaults, options);
 	var qediv  = $.el.div({class:"query",style:"height:100%"});
 	var tabled = tableCheckbox(data);
+	var qtd;
 
         var content =
 	  $.el.table({class:"prolog-query"},
 		     $.el.tr($.el.td({class:"prolog-prompt"},
 				     "?-"),
-			     $.el.td({colspan:2, style:"height:100%"},
+			     qtd =
+			     $.el.td({ colspan:2,
+			               style:"height:100%;vertical-align:top"
+				     },
 				     qediv),
 			     $.el.td()),
 		     $.el.tr($.el.td(),
@@ -55,8 +59,9 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 				     tabled,
 				     runButton(data))));
 
-	elem.addClass("prolog-query-editor swish-event-receiver");
+	elem.addClass("prolog-query-editor swish-event-receiver reactive-size");
 	elem.append(content);
+	$(qediv).height($(qediv).height());
 
 	function tableSelected() {
 	  return $(tabled).find("input").prop("checked");
@@ -92,6 +97,14 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 	    var exl = data.examples();
 	    elem.queryEditor('setQuery', exl && exl[0] ? exl[0] : "");
 	  }
+	});
+	elem.on("reactive-resize-start", function(ev, dir) {
+	  if ( dir == 'horizontal' )
+	    $(qediv).height("2em");
+	});
+	elem.on("reactive-resize", function(ev) {
+	  $(qediv).height($(qtd).height())
+	          .prologEditor("refresh");
 	});
       });
     },
