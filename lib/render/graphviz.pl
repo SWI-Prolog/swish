@@ -458,8 +458,14 @@ attribute_list([H|T], O) -->
 
 attribute(Name=Value, _O) -->
 	atom(Name),"=",value(Name, Value).
-attribute(html(Value), _, List, Tail) :- !,
+attribute(html(Value), _, List, Tail) :-
+	atomic(Value), !,
 	format(codes(List,Tail), 'label=<~w>', [Value]).
+attribute(html(Term), _, List, Tail) :- !,
+	phrase(html(Term), Tokens0),
+	delete(Tokens0, nl(_), Tokens),
+	with_output_to(string(HTML), print_html(Tokens)),
+	format(codes(List,Tail), 'label=<~w>', [HTML]).
 attribute(NameValue, _O)  -->
 	{NameValue =.. [Name,Value]}, !,
 	atom(Name),"=",value(Name, Value).
