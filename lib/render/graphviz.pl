@@ -506,6 +506,7 @@ This code is copied from ClioPatria, rdf_graphviz.pl
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 string_attribute(label).
+string_attribute(xlabel).
 string_attribute(url).
 string_attribute(href).
 string_attribute(id).
