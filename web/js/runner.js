@@ -851,7 +851,8 @@ define([ "jquery", "config", "preferences",
 	   data.stacks[s].usage = data.stacks[s].usage.slice(1);
 	 data.stacks[s].usage.push(u);
 	 spark.sparkline(data.stacks[s].usage,
-			 { composite: i>0,
+			 { height: spark.parent().height(),
+			   composite: i>0,
 			   chartRangeMin: 0,
 			   chartRangeMax: 4,
 			   lineColor: colors[i],
