@@ -34,10 +34,21 @@ define([ "jquery", "splitter" ],
 	elem.split({ orientation:dir,
 	             position:pos,
 		     limit:10,
+		     onDragStart: function() { elem.tile('resize_start'); },
 		     onDrag: function(ev) { panes.trigger("pane.resize"); },
 		     onDragEnd: function() { elem.tile('resize_save'); }
 	           });
 	elem.tile('resize_save');
+      });
+    },
+
+    resize_start: function() {
+      return this.each(function() {
+	var elem    = $(this);
+	var info    = paneInfo(elem);
+
+	elem.find(".reactive-size").trigger("reactive-resize-start",
+					    info.splitter.orientation);
       });
     },
 
