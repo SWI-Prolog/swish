@@ -42,6 +42,7 @@
 :- use_module(library(error)).
 :- use_module(library(option)).
 :- use_module(library(lists)).
+:- use_module(library(apply)).
 :- use_module(library(dcg/basics)).
 :- use_module('../render').
 
@@ -480,13 +481,28 @@ attribute(NameValue, _O)  -->
 attribute(NameValue, _O)  -->
 	{ domain_error(graphviz_attribute, NameValue) }.
 
+%%	value(+Name, +Value)//
+%
+%	Emit a GraphViz value.
+
 value(Name, Value) -->
 	{ string_attribute(Name), !,
 	  value_codes(Value, Codes)
 	},
 	"\"", cstring(Codes), "\"".
+value(_Name, Number, List, Tail) :-
+	number(Number), !,
+	format(codes(List,Tail), '~w', [Number]).
+value(_Name, (A,B), List, Tail) :-
+	number(A), number(B), !,
+	format(codes(List,Tail), '"~w,~w"', [A, B]).
 value(_Name, Value, List, Tail) :-
+	is_graphviz_id(Value), !,
 	format(codes(List,Tail), '~w', [Value]).
+value(_Name, Value) -->
+	{ value_codes(Value, Codes)
+	},
+	"\"", cstring(Codes), "\"".
 
 id(ID) --> { number(ID) }, !, number(ID).
 id(ID) --> { atom(ID), !, atom_codes(ID, Codes) }, "\"", cstring(Codes), "\"".
@@ -511,6 +527,27 @@ value_codes(Value, Codes) :-
 	format(codes(Codes), '~w', [Value]).
 value_codes(Value, Codes) :-
 	format(codes(Codes), '~p', [Value]).
+
+%%	is_graphviz_id(+AtomOrString) is semidet.
+%
+%	True if AtomOrString is a valid Graphviz  ID, i.e., a value that
+%	does not need to be quoted.
+
+is_graphviz_id(Atom) :-
+	(   atom(Atom)
+	->  true
+	;   string(Atom)
+	),
+	atom_codes(Atom, Codes),
+	maplist(id_code, Codes),
+	Codes = [C0|_],
+	\+ between(0'0, 0'9, C0).
+
+id_code(C) :- between(0'a, 0'z, C).
+id_code(C) :- between(0'A, 0'Z, C).
+id_code(C) :- between(0'0, 0'9, C).
+id_code(C) :- between(0'_, 0'_, C).
+id_code(C) :- between(8'200, 8'377, C).
 
 
 		 /*******************************
