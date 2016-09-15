@@ -51,7 +51,11 @@
 .cm-s-prolog span.cm-no_option_name    {color: red;}
 .cm-s-prolog span.cm-flag_name         {color: blue;}
 .cm-s-prolog span.cm-no_flag_name      {color: red;}
-.cm-s-prolog span.cm-error             {border-bottom: 1px dashed #f00; }
+.cm-s-prolog span.cm-error             {border-bottom: 2px dotted #f00; }
+.cm-s-prolog span.cm-instantiation_error {border-bottom: 2px dotted #f00; }
+/* Only on FF :(
+.cm-s-prolog span.cm-instantiation_error {text-decoration: underline wavy red; }
+*/
 .cm-s-prolog span.cm-link	       {color: #762;}
 .cm-s-prolog span.cm-expanded	       {color: blue; text-decoration: underline;}
 /* xpce */
