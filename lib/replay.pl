@@ -61,6 +61,14 @@ log, perform the following steps:
 	of such pengines.  This doesn't work yet.  A work around is
 	to run the thread monitor (=|?- prolog_ide(thread_monitor).|=)
 	in the pengine server and abort the long running pengine.
+
+	Alternatively, set a short time limit on the server.  This may
+	of course fail to reproduce the problem.  As the server never
+	has to wait long for the user anyway, it is alsu wise to reduce
+	the idle limit:
+
+	    set_setting(swish:time_limit, 2).
+	    set_setting(swish:idle_limit, 5).
 */
 
 :- debug(playback(event)).
