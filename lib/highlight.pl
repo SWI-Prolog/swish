@@ -716,6 +716,7 @@ style(module(_Module),   module,			   [text]).
 style(error,		 error,				   [text]).
 style(type_error(Expect), error,		      [text,expected(Expect)]).
 style(syntax_error(_Msg,_Pos), syntax_error,		   []).
+style(instantiation_error, instantiation_error,	           [text]).
 style(predicate_indicator, atom,			   [text]).
 style(predicate_indicator, atom,			   [text]).
 style(arity,		 int,				   []).

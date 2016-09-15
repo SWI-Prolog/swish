@@ -100,6 +100,7 @@ var tokenHelp = {
   "uatom":     "Uppercase atom due to var_prefix flag",
   "tag":       "Tag of a SWI7 dict",
   "ext_quant": "Existential quantification operator",
+  "instantiation_error": "No variable allowed here",
 
   "string_terminal": "Terminal (DCG)",
 
