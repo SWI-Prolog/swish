@@ -131,7 +131,7 @@ grammar below:
 	      | digraph(Options, Statements)
   Options    := ID | [ID] | [strict, ID]
   Statements := List of statements
-  Statement  := NodeStm | EdgeStm | AttrStm | Name = Value | SubGraph
+  Statement  := NodeStm | EdgeStm | AttrStm | Name = Value | SubGraph | Group
   NodeStm    := NodeID | node(NodeID, AttrList)
   NodeID     := ID | ID:Port | ID:Port:CompassPT
   CompassPT  := n | ne | e | se | s | sw | w | nw | c | _
@@ -145,7 +145,10 @@ grammar below:
   Attribute  := Name = Value
 	      | Name(Value)
   SubGraph   := subgraph(ID, Statements)
+  Group      := group(Statements)
   ```
+
+A term group(Statements) generates a {...} delimited group in the output.  A typical usage is group([rank=same, a, b, c]) to place the nodes a..c on the same rank.
 </div>
 
 <div class="nb-cell markdown">

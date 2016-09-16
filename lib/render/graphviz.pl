@@ -409,6 +409,11 @@ statement(subgraph(ID, Statements), O) -->
 	{ step_indent(O, O1) },
 	keyword(subgraph), ws, id(ID), ws, "{", nl,
 	statements(Statements, O1), indent(O), "}".
+statement(group(Statements), O) -->
+	{ step_indent(O, O1) },
+	"{", nl, statements(Statements, O1), indent(O), "}".
+statement(ID, O) -->
+	node(ID, O).
 
 step_indent(O, O2) :-
 	I is O.indent+2,
