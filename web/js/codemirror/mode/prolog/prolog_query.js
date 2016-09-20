@@ -13,7 +13,7 @@
 
   CodeMirror.commands.prologFireQuery = function(cm) {
     var endl  = cm.lineCount();
-    var endc  = cm.getLine(endl-1);
+    var endc  = cm.getLine(endl-1).length;
     var token = cm.getTokenAt({line:endl, ch:endc}, true);
 
     if ( token.type == "fullstop" )
