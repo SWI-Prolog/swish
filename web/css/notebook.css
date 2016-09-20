@@ -228,3 +228,22 @@ div.notebook-menu {
 { margin-left: 2em;
   margin-bottom: 1ex;
 }
+
+a.btn-image
+{ padding: 1px 2px;
+}
+
+.nb-cell.program span.image-icon
+{ display: inline-block;
+  width: 18px;
+  height: 16px;
+  padding: 0px;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  vertical-align: middle;
+  background-image: url("../icons/local.png");
+}
+
+.nb-cell.program.background span.image-icon
+{ background-image: url("../icons/global.png");
+}

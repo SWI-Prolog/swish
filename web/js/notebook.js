@@ -977,7 +977,7 @@ var cellTypes = {
 
   methods.type.program = function(options) {	/* program */
     var cell = this;
-    var editor, bg;
+    var editor;
 
     options = options||{};
     options.autoCurrent = false;
@@ -992,10 +992,10 @@ var cellTypes = {
       {class:"btn-group nb-cell-buttons", role:"group"},
       glyphButton("triangle-bottom", "singleline", "Show only first line",
 		  "default", "xs"),
-      bg=glyphButton("cloud", "background", "Use as background program",
-		     "success", "xs"));
+      imageButton("background", "Use as background program", "xs"));
     this.append(buttons,
 		editor=$.el.div({class:"editor with-buttons"}));
+    console.log("XXX");
     if ( options.background )
     { this.addClass("background");
     }
@@ -1557,6 +1557,16 @@ function glyphButton(glyph, action, title, style, size) {
 		    class:"btn btn-"+style+" btn-"+size+" action-"+action,
 		    title:title, "data-action":action},
 		   $.el.span({class:"glyphicon glyphicon-"+glyph}));
+
+  return btn;
+}
+
+function imageButton(action, title, size) {
+  size = size||"sm";
+  var btn = $.el.a({href:"#",
+		    class:"btn btn-default btn-image btn-"+size+" action-"+action,
+		    title:title, "data-action":action},
+		   $.el.span({class:"image-icon"}));
 
   return btn;
 }
