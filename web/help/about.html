@@ -13,17 +13,22 @@
     border: 0px;
   }
   div.acknowledgement { width: 90%;
-			margin-top: 2em; margin-left:auto; margin-right: auto;
+			margin-top: 2em; margin-left: auto; margin-right: auto;
 			border-top: 1px solid #bbb;
 			padding-top: 5px;
+			text-align: center;
 		      }
-  div.acknowledgement > span { display: inline-block; width: 48%;
-			       vertical-align: top;
-			       color: #888;
-			     }
-  img.commit-logo { vertical-align: top;}
+  div.sponsors { text-align: center;
+		 width: 70%;
+		 margin: auto;
+		 color: #888;
+	       }
+  div.acknowledgement img { margin: 0px 5px; }
+  img.sponsor-logo.top { vertical-align: top;}
   img.commit { width: 30% }
   img.vu { width: 8% }
+  img.cwi { width: 15%; }
+  img.vre4eic { width: 12% }
   img.synerscope { width: 12% }
   </style>  </head>
   <body>
@@ -69,14 +74,21 @@ latest <a href="http://github.com/SWI-Prolog/swipl-devel.git">GIT</a>.
 
 <div class=acknowledgement>
 <a href="http://vu.nl" target="_blank">
-<img src="../icons/VU-logo.png" class="vu commit-logo"></a>
+<img src="../icons/VU-logo.png" class="vu sponsor-logo top"></a>
+<a href="http://www.cwi.nl" target="_blank">
+<img src="../icons/cwi-logo.png" class="cwi sponsor-logo"></a>
+<a href="http://www.vre4eic.eu" target="_blank">
+<img src="../icons/vre4eic-logo.png" class="vre4eic sponsor-logo top"></a>
 <a href="http://www.commit-nl.nl" target="_blank">
-<img src="../icons/COMMIT_logo.png" class="commit commit-logo"></a>
-<span>SWISH is developed within the DataLab valorisation project sponsored by
-the <a href="http://www.commit-nl.nl">COMMIT/ consortium</a>
-</span>
+<img src="../icons/COMMIT_logo.png" class="commit sponsor-logo"></a>
 <a href="http://www.synerscope.com" target="_blank">
-<img src="../icons/Synerscope-logo.png" class="synerscope commit-logo"></a>
+<img src="../icons/Synerscope-logo.png" class="synerscope sponsor-logo top"></a>
+</div>
+
+<div class="sponsors">
+The development of SWISH as a <em>DataLab</em> is sponsored by
+the <a href="http://www.commit-nl.nl">COMMIT/ consortium</a> and
+<a href="http://www.vre4eic.eu">VRE4EIC</a>.
 </div>
 
 </body>
