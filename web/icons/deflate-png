@@ -1,0 +1,4 @@
+in="$1"
+out=`basename $in .png`-small.png
+
+convert -quality 95 -strip -colors 16 $in $out
