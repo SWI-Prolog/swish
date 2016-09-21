@@ -59,7 +59,17 @@ save(Out, url(S)) :-
 	phrase(base64(Codes), Base64),
 	format(Out, 'url(data:image/~w;base64,~s)', [Ext,Base64]).
 save(Out, url(S)) :-
+	sub_atom(S, 0, _, _, 'data:'), !,
+	(   atom_length(S, Len),
+	    Len < 50
+	->  S1 = S
+	;   sub_atom(S, 0, 50, _, S1)
+	),
+	debug(css, 'URL: already inlined: ~s ...', [S1]),
+	format(Out, 'url(~s)', [S]).
+save(Out, url(S)) :-
 	debug(css, 'URL: ~q', [S]),
+	format('~s~n', [S]),
 	format(Out, 'url(~s)', [S]).
 
 image_ext(gif).
