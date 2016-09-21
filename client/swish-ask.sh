@@ -4,6 +4,8 @@
 #
 # This program allows you to download query  results from a SWISH server
 # as CSV data.
+#
+# This code is un the public domain.
 
 server=${SWISH_SERVER-http://localhost:3050}
 srctext=
