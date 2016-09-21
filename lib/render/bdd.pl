@@ -1,4 +1,4 @@
-/*  Part of SWI-Prolog
+/*  Part of SWISH
 
     Author:        Markus Triska
     E-mail:        triska@metalevel.at
