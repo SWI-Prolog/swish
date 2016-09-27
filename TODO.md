@@ -135,7 +135,5 @@ _not_ see exactly the same UI for cooperation.  What about
 
   - Colouring of /library/http/html_write.pl.  Broken sequences:
     - DCG exports
-    - use_module/2
     - ?- [file].
-    - :- op(1150, fx, [(mode), (public)]).
 
