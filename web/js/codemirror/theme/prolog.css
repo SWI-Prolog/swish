@@ -58,6 +58,8 @@
 */
 .cm-s-prolog span.cm-link	       {color: #762;}
 .cm-s-prolog span.cm-expanded	       {color: blue; text-decoration: underline;}
+.cm-s-prolog span.cm-undefined_import  {color: red;}
+.cm-s-prolog span.cm-unused_import     {color: blue; background: pink; }
 /* xpce */
 .cm-s-prolog span.cm-xpce_method         {font-weight: bold;}
 .cm-s-prolog span.cm-xpce_class_built_in {color: blue;}

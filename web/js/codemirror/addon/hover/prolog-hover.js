@@ -56,6 +56,8 @@ var tokenHelp = {
 			 return localDef("CHR constraint",data,cm)
 		       },
   "head_unreferenced": "Predicate is not called",
+  "unused_import":     "Imported predicate is not used",
+  "undefined_import":  "Imported predicate is not defined",
   "head_constraint":   "CHR constraint",
 
   "file": function(data, cm) {

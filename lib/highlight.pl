@@ -747,6 +747,8 @@ style(dict_content,	 dict_open-dict_close,             []).
 style(expanded,		 expanded,			   [text]).
 style(comment_string,	 comment_string,		   []).
 style(ext_quant,	 ext_quant,			   []).
+style(unused_import,	 unused_import,			   [text]).
+style(undefined_import,	 undefined_import,		   [text]).
 					% from library(http/html_write)
 style(html(_Element),	 html,				   []).
 style(entity(_Element),	 entity,			   []).
