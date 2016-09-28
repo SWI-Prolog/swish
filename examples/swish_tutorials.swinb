@@ -20,10 +20,17 @@ The notebooks below explain the basics of using R from SWISH.  You can test whet
   - [Basic access to R from SWISH](example/Rserve.swinb)
   - [Exchanging R data frames](example/Rdataframe.swinb)
   - [Downloading (graphics) files](example/Rdownload.swinb)
+
 </div>
 
 <div class="nb-cell query">
 &lt;- 'R.Version'().
+</div>
+
+<div class="nb-cell markdown">
+### More elaborate examples
+
+  - [EM Clustering of the Iris Dataset](example/iris.swinb)
 </div>
 
 </div>
