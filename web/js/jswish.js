@@ -107,6 +107,16 @@ preferences.setDefault("emacs-keybinding", false);
 	"View changes": function() {
 	  menuBroadcast("diff");
 	},
+	"Edit": "--",
+	"Find (Ctrl-F)": function() {
+	  menuBroadcast("edit-command", "find");
+	},
+	"Find and replace (Shift-Ctrl-F)": function() {
+	  menuBroadcast("edit-command", "replace");
+	},
+	"Jump to line (Alt-G)": function() {
+	  menuBroadcast("edit-command", "jumpToLine");
+	},
 	"Options": "--",
 	"Semantic highlighting": {
 	  preference: "semantic-highlighting",
