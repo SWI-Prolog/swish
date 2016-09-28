@@ -173,10 +173,17 @@ define([ "jquery", "preferences", "laconic" ],
       dropdown.append($.el.li({class:"divider"}));
     } else if ( typeof(options) == "function" ) {	/* Simple action */
       var a;
+      var i;
 
       if ( options.typeIcon ) {
 	a = $.el.a($.el.span({class:"dropdown-icon type-icon "+options.typeIcon}),
 		   label);
+      } else if ( (i=label.indexOf("(")) > 0 ) {
+	var accell = label.substr(i);
+	a = $.el.a({class:"accelerated"},
+		   label.substr(0,i).trim(),
+		   $.el.span({class:"accell-spacer"},accell),
+		   $.el.span({class:"accell-text"},accell));
       } else {
 	a = $.el.a(label);
       }

@@ -55,3 +55,17 @@ ul.dropdown-menu li.checkbox span  { margin-left: 20px; }
   height: 18px;
   width: 18px;
 }
+
+a.accelerated
+{ position: relative;
+}
+
+a.accelerated span.accell-spacer
+{ color: #fff;
+}
+
+a.accelerated span.accell-text
+{ color: #888;
+  position: absolute;
+  right: 10px;
+}
