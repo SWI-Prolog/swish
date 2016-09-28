@@ -130,6 +130,8 @@ define([ "cm/lib/codemirror",
     }
   };
 
+  var lastEditor;
+
   /** @lends $.fn.prologEditor */
   var methods = {
     /**
@@ -271,6 +273,12 @@ define([ "cm/lib/codemirror",
 	});
 	elem.on("clearMessages", function(ev) {
 	  elem.prologEditor('clearMessages');
+	});
+	elem.on("edit-command", function(ev, command) {
+	  elem.prologEditor('execCommand', command);
+	});
+	data.cm.on("blur", function(ev) {
+	  elem.prologEditor('execCommand', 'prepare');
 	});
 
 	if ( options.save ) {
@@ -742,6 +750,25 @@ define([ "cm/lib/codemirror",
 
       return this;
     },
+
+    /**
+     * Execute a command on the editor from the menu.  The trick is to
+     * find the current editor.  For that purpose we make "blur" trigger
+     * the 'prepare' command that sets the last editor.  On the
+     * following menu action we execute on the last editor.
+     */
+   execCommand: function(command) {
+     if ( command == 'prepare' ) {
+       lastEditor = this[0];
+     } else if ( lastEditor == this[0] ) {
+       elem = $(lastEditor);
+       var data = elem.data(pluginName);
+       data.cm.execCommand(command);
+       elem.find(".Codemirror-dialog input").focus();
+     }
+
+     return this;
+   },
 
     /**
      * @param {String} file is the file as known to Prolog,
