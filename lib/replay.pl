@@ -35,6 +35,7 @@
 :- module(replay,
 	  [ load_log/1,			% +File
 	    replay/0,
+	    replay_after/1,		% +Time
 	    replay/1,			% +Pengine
 	    replay/2,			% +Pengine, +ServerURL
 	    concurrent_replay/1,	% +Count
@@ -103,6 +104,14 @@ replay :-
 	\+ skip_pengine_store(Pengine),
 	Src \== (-),
 	replay(Pengine).
+
+replay_after(Time) :-
+	pengine_in_log(Pengine, StartTime, Src),
+	StartTime >= Time,
+	\+ skip_pengine_store(Pengine),
+	Src \== (-),
+	replay(Pengine).
+
 
 %%	concurrent_replay(+Count) is det.
 %
@@ -231,8 +240,9 @@ fix_ask_option(Id, breakpoints(List0), breakpoints(List)) :- !,
 fix_ask_option(_, Option, Option).
 
 fix_breakpoint(Id, BP0, BP) :-
-	fix_file(BP0.file, Id, NewFile),
+	fix_file(BP0.file, Id, NewFile), !,
 	BP = BP0.put(file, NewFile).
+fix_breakpoint(_, BP, BP).
 
 fix_file(OldFile, Pengine, NewFile) :-
 	split_string(OldFile, "/", "", Parts),
