@@ -105,3 +105,13 @@ div.edit-modal .goto-source
   box-shadow: 10px 10px 5px #888888;
   z-index: 2001;
 }
+
+		 /*******************************
+		 *	      DIALOG		*
+		 *******************************/
+
+div.CodeMirror-dialog
+{ border: 1px solid #888;
+  background: #f8f8f8;
+  box-shadow: 10px 10px 5px #888888;
+}
