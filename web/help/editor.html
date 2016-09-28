@@ -3,8 +3,35 @@
 <html>
   <head>
   <title>Using the Prolog editor</title>
+  <style>
+  dl.help-editor dd { margin-left: 2em; }
+  </style>
   </head>
-  <body>
+<body>
+
+<h2>About</h2>
+
+The editor is an instance of <a
+href="https://codemirror.net/">CodeMirror</a>, extended with various
+standard, contributed and dedicated plugins. Notably the <em>hover</em>
+and <em>semantic highlighting</em> plugins have been developed within
+the SWISH project.
+
+<h2>Find and replace</h2>
+
+<p>
+We load the default CodeMirror plugin for find and replace.
+The keybindings are:</p>
+<dl class="help-editor">
+  <dt>Ctrl-F / Cmd-F</dt><dd>Start searching</dd>
+  <dt>Ctrl-G / Cmd-G</dt><dd>Find next</dd>
+  <dt>Shift-Ctrl-G / Shift-Cmd-G</dt><dd>Find previous</dd>
+  <dt>Shift-Ctrl-F / Cmd-Option-F</dt><dd>Replace</dd>
+  <dt>Shift-Ctrl-R / Shift-Cmd-Option-F</dt><dd>Replace all</dd>
+  <dt>Alt-F</dt><dd>Persistent search (dialog doesn't autoclose,
+  enter to find next, Shift-Enter to find previous)</dd>
+  <dt>Alt-G</dt><dd>Jump to line</dd>
+</dl>
 
 <h2>Navigating</h2>
 
