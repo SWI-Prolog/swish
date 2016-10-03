@@ -46,6 +46,8 @@ Run
 swish_daemon.
 
 user:file_search_path(swish, SwishDir) :-
+	getenv('SWISH_HOME', SwishDir), !.
+user:file_search_path(swish, SwishDir) :-
 	source_file(swish_daemon, ThisFile),
 	file_directory_name(ThisFile, SwishDir).
 
