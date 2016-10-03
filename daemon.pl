@@ -62,7 +62,8 @@ user:file_search_path(swish, SwishDir) :-
 %	Load additional modules into SWISH
 
 load_swish_modules :-
-	getenv('SWISH_MODULES', Atom), !,
+	getenv('SWISH_MODULES', Atom),
+	Atom \== '', !,
 	atomic_list_concat(Modules, :, Atom),
 	maplist(load_swish_module, Modules).
 load_swish_modules.
