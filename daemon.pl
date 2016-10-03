@@ -51,6 +51,7 @@ user:file_search_path(swish, SwishDir) :-
 	source_file(swish_daemon, ThisFile),
 	file_directory_name(ThisFile, SwishDir).
 
+:- initialization load_swish_modules.
 :- initialization http_daemon.
 
 :- use_module(swish(lib/ssl_certificate)).
