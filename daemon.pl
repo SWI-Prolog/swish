@@ -56,3 +56,16 @@ user:file_search_path(swish, SwishDir) :-
 :- use_module(swish(lib/ssl_certificate)).
 :- [swish(swish)].
 :- use_module(swish:swish(lib/swish_debug)).
+
+%%	load_swish_modules
+%
+%	Load additional modules into SWISH
+
+load_swish_modules :-
+	getenv('SWISH_MODULES', Atom), !,
+	atomic_list_concat(Modules, :, Atom),
+	maplist(load_swish_module, Modules).
+load_swish_modules.
+
+load_swish_module(Module) :-
+	use_module(swish(lib/Module)).
