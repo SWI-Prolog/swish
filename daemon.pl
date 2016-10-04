@@ -62,13 +62,13 @@ user:file_search_path(swish, SwishDir) :-
 %
 %	Load additional modules into SWISH. These   are  loaded from the
 %	environment variable =SWISH_MODULES=, which is   a `:` separated
-%	list of modules to load, relative   to the swish home directory.
-%	If the syntax Module@Context is used,  the exports of Module are
-%	imported into the module Context.  For example:
+%	list of modules to load of the   form Alias/Local. If the syntax
+%	Module@Context is used, the exports of  Module are imported into
+%	the module Context. For example:
 %
-%	  - =|lib/r_swish@swish|= loads the R connection into the swish
-%	    application context.
-%	  - =|lib/authenticate|= load the authentication module.
+%	  - =|swish/lib/r_swish@swish|= loads the R connection into the
+%	    swish application context.
+%	  - =|swish/lib/authenticate|= load the authentication module.
 
 load_swish_modules :-
 	getenv('SWISH_MODULES', Atom),
@@ -79,6 +79,14 @@ load_swish_modules.
 
 load_swish_module(Spec) :-
 	atomic_list_concat([Module,Into], @, Spec), !,
-	use_module(Into:swish(Module)).
+	module_term(Module, Term),
+	use_module(Into:Term).
 load_swish_module(Module) :-
-	use_module(swish(Module)).
+	module_term(Module, Term),
+	use_module(Term).
+
+module_term(Spec, Term) :-
+	sub_atom(Spec, B, _, A, /), !,
+	sub_atom(Spec, 0, B, _, Alias),
+	sub_atom(Spec, _, A, 0, Local),
+	Term =.. [Alias, Local].
