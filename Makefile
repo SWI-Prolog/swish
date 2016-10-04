@@ -21,7 +21,8 @@ clean::
 
 bower-components::
 	curl $(BOWER_URL) > $(BOWER_ARCHIVE)
-	unzip $(BOWER_ARCHIVE)
+	unzip -u $(BOWER_ARCHIVE)
+	rm $(BOWER_ARCHIVE)
 
 swish-bower-components.zip::
 	rm -f $@
