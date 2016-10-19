@@ -527,9 +527,8 @@ shadow_editor(_Data, _TB) :-
 %%	server_tokens(+Role) is det.
 %
 %	These predicates help debugging the   server side. show_mirror/0
-%	opens the XPCE editor,  which   simplifies  validation  that the
-%	server  copy  is  in  sync  with    the  client.  The  predicate
-%	server_tokens/1 dumps the token list.
+%	displays the text the server thinks is in the client editor. The
+%	predicate server_tokens/1 dumps the token list.
 %
 %	@arg	Role is one of =source= or =query=, expressing the role of
 %		the editor in the SWISH UI.
