@@ -478,7 +478,8 @@ attribute(html(Value), O) --> !,
 attribute(Name=html(Value), _, List, Tail) :-
 	atomic(Value), !,
 	format(codes(List,Tail), '~w=<~w>', [Name, Value]).
-attribute(Name=html(Term), _, List, Tail) :- !,
+attribute(Name=html(Term), _, List, Tail) :-
+	nonvar(Term), !,
 	phrase(html(Term), Tokens0),
 	delete(Tokens0, nl(_), Tokens),
 	with_output_to(string(HTML), print_html(Tokens)),
