@@ -194,8 +194,6 @@ strip_stack(Error, Error).
 '$swish wrapper'(Goal, '$residuals'(Residuals)) :-
 	catch(swish_call(Goal), E, throw(E)),
 	deterministic(Det),
-	Goal = M:_,
-	residuals(M, Residuals),
 	(   tracing,
 	    Det == false
 	->  (   notrace,
@@ -205,7 +203,9 @@ strip_stack(Error, Error).
 		fail
 	    )
 	;   notrace
-	).
+	),
+	Goal = M:_,
+	residuals(M, Residuals).
 
 swish_call(Goal) :-
 	Goal,
