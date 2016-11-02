@@ -205,7 +205,8 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	  $.el.tr($.el.th("Comment"),
 		  $.el.th("Date"),
 		  $.el.th("Author"),
-		  $.el.th("Changed"))));
+		  $.el.th("Changed")),
+	  $.el.tbody()));
 
 	playButton = form.widgets.glyphIconButton(
            "glyphicon-play",
@@ -254,7 +255,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
     fillHistoryTable: function(history) {
       var gitty = this;
       var data  = this.data(pluginName);
-      var table = this.find(".table.gitty-history");
+      var table = this.find(".table.gitty-history tbody");
 
       for(var i=0; i<history.length; i++) {
 	var h = history[i];
