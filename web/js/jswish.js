@@ -91,7 +91,7 @@ preferences.setDefault("emacs-keybinding", false);
 	"Download": function() {
 	  menuBroadcast("download");
 	},
-	"Collaborate ...": function() {
+	"Start TogetherJS ...": function() {
 	  $("body").swish('collaborate');
 	},
 	"Print group": "--",
@@ -213,6 +213,9 @@ preferences.setDefault("emacs-keybinding", false);
 	  menuBroadcast("help", {file:"beware.html", notagain:"beware"});
 
 	elem.data(pluginName, data);	/* store with element */
+
+	if ( window.location.href.indexOf("&togetherjs=") > 0 )
+	  elem.swish('collaborate');
       });
     },
 
