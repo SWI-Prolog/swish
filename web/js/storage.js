@@ -284,9 +284,6 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	post = { data: data.getValue(),
 		 type: type.dataType
 	       };
-	if ( data.meta ) {			/* rename */
-	  post.previous = data.meta.commit;
-	}
       } else {
 	if ( !data.isClean(data.cleanGeneration) ) {
 	  post = { data: data.getValue(),
@@ -300,6 +297,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 
       if ( meta )
 	post.meta = meta;
+      if ( data.meta )
+	post.previous = data.meta.commit;
 
       $.ajax({ url: url,
                dataType: "json",

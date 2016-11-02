@@ -163,7 +163,7 @@ storage(put, Request) :-
 	->  gitty_data(Dir, File, Data, _OldMeta)
 	;   option(data(Data), Dict, "")
 	),
-	meta_data(Request, Dict, Meta),
+	meta_data(Request, Dir, Dict, Meta),
 	storage_url(File, URL),
 	gitty_update(Dir, File, Data, Meta, Commit),
 	debug(storage, 'Updated: ~p', [Commit]),
@@ -189,7 +189,7 @@ storage_url(File, HREF) :-
 	http_link_to_id(web_storage, path_postfix(File), HREF).
 
 %%	meta_data(+Request, +Dict, -Meta) is det.
-%%	meta_data(+Request, Store, +Dict, -Meta) is det.
+%%	meta_data(+Request, +Store, +Dict, -Meta) is det.
 %
 %	Gather meta-data from the  Request   (user,  peer)  and provided
 %	meta-data. Illegal and unknown values are ignored.
