@@ -433,7 +433,7 @@ set_head(Store, File, Head) :-
 		 *	       DIFF		*
 		 *******************************/
 
-%%	gitty_diff(+Store, ?Hash1, +FileOrHash2, -Dict) is det.
+%%	gitty_diff(+Store, ?Hash1, +FileOrHash2OrData, -Dict) is det.
 %
 %	True if Dict representeds the changes   in Hash1 to FileOrHash2.
 %	If Hash1 is unbound,  it  is   unified  with  the  `previous` of
@@ -448,7 +448,19 @@ set_head(Store, File, Head) :-
 %	  data.  Only present of data has changed
 %	  - tags:_{added:AddedTags, deleted:DeletedTags}
 %	  If tags have changed, the added and deleted ones.
+%
+%	@arg	FileOrHash2OrData is a file name, hash or a term
+%		data(String) to compare a given string with a
+%		gitty version.
 
+gitty_diff(Store, C1, data(Data2), Dict) :- !,
+	must_be(atom, C1),
+	gitty_data(Store, C1, Data1, _Meta1),
+	(   Data1 \== Data2
+	->  udiff_string(Data1, Data2, UDIFF),
+	    Dict = json{data:UDIFF}
+	;   Dict = json{}
+	).
 gitty_diff(Store, C1, C2, Dict) :-
 	gitty_data(Store, C2, Data2, Meta2),
 	(   var(C1)
