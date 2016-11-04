@@ -51,8 +51,10 @@
 :- use_module(lib/profiles).
 :- use_module(lib/highlight).
 :- use_module(lib/markdown).
+:- use_module(lib/chat, []).
 :- use_module(lib/template_hint, []).
 
+:- debug(chat(_)).
 
 		 /*******************************
 		 *	       CORS		*
