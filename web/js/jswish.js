@@ -47,6 +47,7 @@ define([ "jquery",
 	 "preferences",
 	 "history",
 	 "modal",
+	 "chat",
 	 "jquery-ui",
 	 "splitter",
 	 "bootstrap",
@@ -219,6 +220,8 @@ preferences.setDefault("emacs-keybinding", false);
 
 	if ( window.location.href.indexOf("&togetherjs=") > 0 )
 	  elem.swish('collaborate');
+
+	elem.chat('');
       });
     },
 
