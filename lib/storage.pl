@@ -196,7 +196,7 @@ update_error(error(gitty(commit_version(_, Head, Previous)), _),
 	Status0 = json{url:URL,
 		       file:File,
 		       error:edit_conflict,
-		       edit:_{other:OtherEdit,
+		       edit:_{server:OtherEdit,
 			      me:MyEdits}
 		      },
 	(   OtherDiff = OtherEdit.get(data)
