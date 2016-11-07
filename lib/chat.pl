@@ -41,8 +41,10 @@
 	  ]).
 :- use_module(library(http/hub)).
 :- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_session)).
 :- use_module(library(http/websocket)).
 :- use_module(library(http/json)).
+:- use_module(library(error)).
 :- use_module(library(debug)).
 :- use_module(library(http/html_write)).
 
@@ -58,18 +60,49 @@
 
 swish_config:config(chat, true).
 
-:- http_handler(swish(chat),
-		http_upgrade_to_websocket(
-		    accept_chat,
-		    [ guarded(false),
-		      subprotocols([chat])
-		    ]),
-		[ id(swish_chat)
-		]).
+:- http_handler(swish(chat), start_chat, [ id(swish_chat) ]).
 
-accept_chat(WebSocket) :-
+start_chat(Request) :-
+	http_session_id(Session),
+	http_upgrade_to_websocket(
+	    accept_chat(Session),
+	    [ guarded(false),
+	      subprotocols([chat])
+	    ],
+	    Request).
+
+accept_chat(Session, WebSocket) :-
 	create_chat_room,
-	hub_add(swish_chat, WebSocket, _Id).
+	hub_add(swish_chat, WebSocket, Id),
+	create_visitor(Id, Session).
+
+
+		 /*******************************
+		 *	        DATA		*
+		 *******************************/
+
+:- dynamic
+	visitor/2,			% Id, Session
+	subscription/3.			% Session, Channel, SubChannel
+
+create_visitor(WSID, Session) :-
+	assertz(visitor(WSID, Session)).
+
+destroy_visitor(WSID) :-
+	retract(visitor(WSID, Session)),
+	retractall(subscription(Session, _, _)).
+
+subscribe(WSID, Channel) :-
+	subscribe(WSID, Channel, _SubChannel).
+subscribe(WSID, Channel, SubChannel) :-
+	visitor(WSID, Session),
+	assertz(subscription(Session, Channel, SubChannel)).
+
+unsubscribe(WSID, Channel) :-
+	unsubscribe(WSID, Channel, _SubChannel).
+unsubscribe(WSID, Channel, SubChannel) :-
+	visitor(WSID, Session),
+	retractall(subscription(Session, Channel, SubChannel)).
 
 
 		 /*******************************
@@ -93,26 +126,10 @@ chat_broadcast(Message, Channel) :-
 	must_be(atom, Channel),
 	hub_broadcast(swish_chat, Message, subscribed(Channel)).
 
-subscribed(Channel, Id) :-
-	subscription(Id, Channel, _).
-subscribed(Channel, SubChannel, Id) :-
-	subscription(Id, Channel, SubChannel).
-
-		 /*******************************
-		 *	        DATA		*
-		 *******************************/
-
-:- dynamic
-	visitor/2,			% Id, Joined
-	subscription/3.			% Id, Channel, SubChannel
-
-create_visitor(Id) :-
-	get_time(Time),
-	assertz(visitor(Id, Time)).
-
-destroy_visitor(Id) :-
-	retract(visitor(Id, _)),
-	retractall(subscription(Id, _, _)).
+subscribed(Channel, WSID) :-
+	subscription(WSID, Channel, _).
+subscribed(Channel, SubChannel, WSID) :-
+	subscription(WSID, Channel, SubChannel).
 
 
 		 /*******************************
@@ -131,12 +148,15 @@ create_chat_room_sync :-
 	thread_create(swish_chat(Room), _, [alias(swish_chat)]).
 
 swish_chat(Room) :-
-	(   catch(swish_chat_event(Room), E,
-		  print_message(warning, E))
+	(   catch(swish_chat_event(Room), E, chat_exception(E))
 	->  true
-	;   true			% warning?
+	;   print_message(warning, goal_failed(swish_chat_event(Room)))
 	),
 	swish_chat(Room).
+
+chat_exception('$aborted') :- !.
+chat_exception(E) :-
+	print_message(warning, E).
 
 swish_chat_event(Room) :-
 	thread_get_message(Room.queues.event, Message),
@@ -152,8 +172,7 @@ handle_message(Message, _Room) :-
 	json_message(JSON, Message.client).
 handle_message(Message, _Room) :-
 	hub{joined:Id} :< Message, !,
-	debug(chat(visitor), 'Joined: ~p', [Id]),
-	create_visitor(Id).
+	debug(chat(visitor), 'Joined: ~p', [Id]).
 handle_message(Message, _Room) :-
 	hub{left:Id} :< Message, !,
 	(   destroy_visitor(Id)
@@ -173,21 +192,21 @@ json_message(Dict, Client) :-
 	   channel:ChannelS, sub_channel:SubChannelS} :< Dict, !,
 	atom_string(Channel, ChannelS),
 	atom_string(SubChannel, SubChannelS),
-	assertz(subscription(Client, Channel, SubChannel)).
+	subscribe(Client, Channel, SubChannel).
 json_message(Dict, Client) :-
 	_{type: "subscribe", channel:ChannelS} :< Dict, !,
 	atom_string(Channel, ChannelS),
-	assertz(subscription(Client, Channel, _)).
+	subscribe(Client, Channel).
 json_message(Dict, Client) :-
 	_{ type: "unsubscribe",
 	   channel:ChannelS, sub_channel:SubChannelS} :< Dict, !,
 	atom_string(Channel, ChannelS),
 	atom_string(SubChannel, SubChannelS),
-	retractall(subscription(Client, Channel, SubChannel)).
+	unsubscribe(Client, Channel, SubChannel).
 json_message(Dict, Client) :-
 	_{type: "unsubscribe", channel:ChannelS} :< Dict, !,
 	atom_string(Channel, ChannelS),
-	retractall(subscription(Client, Channel, _)).
+	unsubscribe(Client, Channel).
 
 
 		 /*******************************
