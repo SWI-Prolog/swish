@@ -55,22 +55,45 @@ define([ "jquery", "config" ],
 	var elem = $(this);
 	var data = {};			/* private data */
 
-	if ( config.swish.chat ) {
-	  var url = window.location.host + config.http.locations.swish_chat;
-
-	  data.connection =  new WebSocket("ws://" + url, ['chat']);
-	  data.connection.onerror = function(error) {
-	    console.log('WebSocket Error ' + error);
-	  }
-
-	  data.connection.onmessage = function (e) {
-	    console.log(e);
-	  }
-	}
-
 	elem.data(pluginName, data);	/* store with element */
+
+	if ( config.swish.chat ) {
+	  elem.chat('connect');
+	}
       });
     },
+
+		 /*******************************
+		 *	      WEBSOCKET		*
+		 *******************************/
+
+    /**
+     * Create a websocket connection to /chat on the SWISH server.
+     */
+    connect: function() {
+      var elem = this;
+      var data = this.data(pluginName);
+      var url  = window.location.host + config.http.locations.swish_chat;
+
+      data.connection = new WebSocket("ws://" + url, ['chat']);
+      data.connection.onerror = function(error) {
+	console.log('WebSocket Error ' + error);
+      }
+
+      data.connection.onmessage = function(e) {
+	var msg = JSON.parse(e.data);
+	msg.origin = e.origin;
+	if ( msg.type )
+	  elem.chat(msg.type, e);
+	else
+	  console.log(e);
+      }
+    },
+
+
+		 /*******************************
+		 *	   BASIC MESSAGES	*
+		 *******************************/
 
     /**
      * @param {Object} msg is the JSON object to broadcast
@@ -100,8 +123,47 @@ define([ "jquery", "config" ],
 	msg.sub_channel = sub_channel;
 
       this.chat('send', msg);
+    },
+
+		 /*******************************
+		 *	      ACTIONS		*
+		 *******************************/
+
+    welcome: function(e) {
+      this.chat('addUser', "Me");
+    },
+
+
+		 /*******************************
+		 *	        UI		*
+		 *******************************/
+
+    addUser: function(id, options) {
+      var elem = this;
+
+      return this.append(li_user(id, options));
     }
+
   }; // methods
+
+  function li_user(id, options) {
+    options = options||{};
+
+    if ( !options.name )
+      options.name = id;
+
+    var li = $.el.li({class:"dropdown", id:id},
+		     $.el.a({ class:"dropdown-toggle",
+			      'data-toggle':"dropdown",
+			    },
+			    $.el.span({class:"glyphicon glyphicon-user"}),
+			    $.el.b({class:"caret"})),
+		     $.el.ul({ class:"dropdown-menu pull-right" },
+			     $.el.li(options.name)));
+
+    return li;
+  }
+
 
   /**
    * <Class description>

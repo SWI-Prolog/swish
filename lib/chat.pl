@@ -98,6 +98,8 @@ start_chat(Request, Options) :-
 accept_chat(Session, Options, WebSocket) :-
 	create_chat_room,
 	hub_add(swish_chat, WebSocket, Id),
+	dict_create(Status, _, [type(welcome)]),
+	hub_send(Id, json(Status)),
 	create_visitor(Id, Session, Options).
 
 
@@ -241,18 +243,6 @@ json_message(Dict, Client) :-
 %%	notifications(+Options)//
 
 notifications(_Options) -->
-	html(ul(class([nav, 'navbar-nav', 'pull-right']),
-		[ li(class(dropdown),
-		     [ a([ class('dropdown-toggle'),
-			   'data-toggle'(dropdown)
-			 ],
-			 [ span(class([glyphicon, 'glyphicon-user']), []),
-			   b(class(caret), [])
-			 ]),
-		       ul([ class(['dropdown-menu', 'pull-right']),
-			    name('Notifications')
-			  ],
-			  [ li(a('Hello nice world!'))
-			  ])
-		     ])
-		])).
+	html(ul([ class([nav, 'navbar-nav', 'pull-right']),
+		  id(chat)
+		], [])).
