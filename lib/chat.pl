@@ -52,7 +52,16 @@
 
 /** <module> The SWISH collaboration backbone
 
+We have three levels of identity as   enumerated  below. Note that these
+form a hierarchy: a particular user  may   be  logged  on using multiple
+browsers which in turn may have multiple SWISH windows opened.
 
+  1. Any open SWISH window has an associated websocket, represented
+     by the identifier returned by hub_add/3.
+  2. Any browser, possibly having multiple open SWISH windows, is
+     identified by a session cookie.
+  3. The user may be logged in, either based on the cookie or on
+     HTTP authentication.
 */
 
 :- multifile
@@ -60,21 +69,36 @@
 
 swish_config:config(chat, true).
 
+:- initialization
+	Time is 24*60*60,
+	http_set_session_options([timeout(Time)]).
+
+
+		 /*******************************
+		 *	ESTABLISH WEBSOCKET	*
+		 *******************************/
+
 :- http_handler(swish(chat), start_chat, [ id(swish_chat) ]).
 
 start_chat(Request) :-
+	swish_config:authenticate(Request, User), !, % must throw to deny access
+	start_chat(Request, [user(User)]).
+start_chat(Request) :-
+	start_chat(Request, []).
+
+start_chat(Request, Options) :-
 	http_session_id(Session),
 	http_upgrade_to_websocket(
-	    accept_chat(Session),
+	    accept_chat(Session, Options),
 	    [ guarded(false),
 	      subprotocols([chat])
 	    ],
 	    Request).
 
-accept_chat(Session, WebSocket) :-
+accept_chat(Session, Options, WebSocket) :-
 	create_chat_room,
 	hub_add(swish_chat, WebSocket, Id),
-	create_visitor(Id, Session).
+	create_visitor(Id, Session, Options).
 
 
 		 /*******************************
@@ -82,14 +106,15 @@ accept_chat(Session, WebSocket) :-
 		 *******************************/
 
 :- dynamic
-	visitor/2,			% Id, Session
+	visitor/3,			% Id, Session, OptionDict
 	subscription/3.			% Session, Channel, SubChannel
 
-create_visitor(WSID, Session) :-
-	assertz(visitor(WSID, Session)).
+create_visitor(WSID, Session, Options) :-
+	dict_create(Dict, options, Options),
+	assertz(visitor(WSID, Session, Dict)).
 
 destroy_visitor(WSID) :-
-	retract(visitor(WSID, Session)),
+	retract(visitor(WSID, Session, _)),
 	retractall(subscription(Session, _, _)).
 
 subscribe(WSID, Channel) :-
