@@ -343,7 +343,7 @@ swish_logo(_Options) -->
 %	Add search box to the navigation bar
 
 search_form(Options) -->
-	html(div(class(['col-sm-3', 'col-md-3', 'pull-right']),
+	html(div(class(['pull-right']),
 		 \search_box(Options))).
 
 
