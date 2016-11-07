@@ -241,6 +241,9 @@ json_message(Dict, Client) :-
 		 *******************************/
 
 %%	notifications(+Options)//
+%
+%	The  chat  element  is  added  to  the  navbar  and  managed  by
+%	web/js/chat.js
 
 notifications(_Options) -->
 	html(ul([ class([nav, 'navbar-nav', 'pull-right']),
