@@ -88,7 +88,11 @@ define([ "jquery", "preferences", "laconic" ],
      * @param {String} label Name of new dropdown to add
      */
     appendDropdown: function(label) {
+<<<<<<< d36a9654e8c3ab2d7ba26d27144a7a9e375f9a1a
       var ul1 = this.children(".nav.navbar-nav.menubar");
+=======
+      var ul1 = this.children(".nav.navbar-nav.app-menu");
+>>>>>>> First steps including notifications into the UI
       var ul2 = $.el.ul({name:label, class:"dropdown-menu"});
       var li  = $.el.li({class:"dropdown"},
 			$.el.a({class:"dropdown-toggle",

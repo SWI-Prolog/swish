@@ -67,6 +67,7 @@
 :- use_module(help).
 :- use_module(search).
 :- use_module(login).
+:- use_module(chat).
 
 /** <module> Provide the SWISH application as Prolog HTML component
 
@@ -340,7 +341,8 @@ swish_navbar(Options) -->
 		       ],
 		       [ ul([class([nav, 'navbar-nav', menubar])], []),
 			 ul([class([nav, 'navbar-nav', 'navbar-right'])],
-			    [ li(\search_box(Options)),
+			    [ li(\notifications(Options)),
+			      li(\search_box(Options)),
 			      li(\login_button(Options))
 			    ])
 		       ])

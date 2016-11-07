@@ -3,8 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2016, VU University Amsterdam
-			      CWI Amsterdam
+    Copyright (C): 2016, VU University Amsterdam
+			 CWI Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -35,13 +35,16 @@
 
 :- module(swish_chat,
 	  [ chat_broadcast/1,		% +Message
-	    chat_broadcast/2		% +Message, +Channel
+	    chat_broadcast/2,		% +Message, +Channel
+
+	    notifications//1		% +Options
 	  ]).
 :- use_module(library(http/hub)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/websocket)).
 :- use_module(library(http/json)).
 :- use_module(library(debug)).
+:- use_module(library(http/html_write)).
 
 :- use_module(config).
 
@@ -185,3 +188,27 @@ json_message(Dict, Client) :-
 	_{type: "unsubscribe", channel:ChannelS} :< Dict, !,
 	atom_string(Channel, ChannelS),
 	retractall(subscription(Client, Channel, _)).
+
+
+		 /*******************************
+		 *	       UI		*
+		 *******************************/
+
+%%	notifications(+Options)//
+
+notifications(_Options) -->
+	html(ul(class([nav, 'navbar-nav', 'pull-right']),
+		[ li(class(dropdown),
+		     [ a([ class('dropdown-toggle'),
+			   'data-toggle'(dropdown)
+			 ],
+			 [ span(class([glyphicon, 'glyphicon-user']), []),
+			   b(class(caret), [])
+			 ]),
+		       ul([ class(['dropdown-menu', 'pull-right']),
+			    name('Notifications')
+			  ],
+			  [ li(a('Hello nice world!'))
+			  ])
+		     ])
+		])).
