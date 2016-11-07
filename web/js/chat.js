@@ -138,6 +138,29 @@ define([ "jquery", "config" ],
 		 *	        UI		*
 		 *******************************/
 
+    /**
+     * Present a notification associated with a user
+     */
+    notify: function(user, options) {
+      var div  = $.el.div({class:"notification"});
+      var elm  = $("#"+user);
+      var epos = elm.offset();
+
+      $("body").append(div);
+      $(div).html(options.html)
+	    .css({ left: epos.left+elm.width()-$(div).outerWidth()-5,
+	           top:  epos.top+elm.height()+5
+	         })
+	    .show(400);
+    },
+
+
+    /**
+     * Add a new user to the notification area
+     * @param {String} id is the identifier of the user
+     * @param {Object} [options]
+     * @param {String} [options.name] is the name of the user
+     */
     addUser: function(id, options) {
       var elem = this;
 
@@ -146,6 +169,9 @@ define([ "jquery", "config" ],
 
   }; // methods
 
+  /**
+   * Add an entry for a user to the notification area
+   */
   function li_user(id, options) {
     options = options||{};
 
