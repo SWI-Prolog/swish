@@ -53,6 +53,7 @@
 :- use_module(storage).
 :- use_module(gitty).
 :- use_module(config).
+:- use_module(avatar).
 
 /** <module> The SWISH collaboration backbone
 
@@ -102,9 +103,8 @@ start_chat(Request, Options) :-
 accept_chat(Session, Options, WebSocket) :-
 	create_chat_room,
 	hub_add(swish_chat, WebSocket, Id),
-	create_visitor(Id, Session, TmpUser, Options),
-	dict_create(Status, _, [type(welcome), uid(TmpUser)]),
-	hub_send(Id, json(Status)).
+	create_visitor(Id, Session, TmpUser, UserData, Options),
+	hub_send(Id, json(UserData.put(_{type:welcome, uid:TmpUser}))).
 
 
 		 /*******************************
@@ -133,17 +133,30 @@ accept_chat(Session, Options, WebSocket) :-
 	visitor_data/2,			% TmpUser, Data
 	subscription/3.			% Session, Channel, SubChannel
 
-create_visitor(WSID, Session, TmpUser, Options) :-
+%%	create_visitor(+WSID, +Session, -TmpUser, -UserData, +Options)
+%
+%	Create a new visitor.
+
+create_visitor(WSID, Session, TmpUser, UserData, Options) :-
 	uuid(TmpUser),
-	dict_create(Dict, options, Options),
+	get_visitor_data(UserData, Options),
 	assertz(visitor(WSID, Session, TmpUser)),
-	assertz(visitor_data(TmpUser, Dict)).
+	assertz(visitor_data(TmpUser, UserData)).
 
 destroy_visitor(WSID) :-
 	must_be(atom, WSID),
 	retract(visitor(WSID, Session, TmpUser)),
-	retractall(visitor_data(TmpUser, _)),
+	destroy_visitor_data(TmpUser),
 	retractall(subscription(Session, _, _)).
+
+destroy_visitor_data(TmpUser) :-
+	(   retract(visitor_data(TmpUser, Data)),
+	    release_avatar(Data.get(avatar)),
+	    fail
+	;   true
+	).
+
+%%	subscribe(+WSID, +Channel) is det.
 
 subscribe(WSID, Channel) :-
 	subscribe(WSID, Channel, _SubChannel).
@@ -164,6 +177,56 @@ subscribe_session_to_gitty_file(Session, File) :-
 	->  true
 	;   assertz(subscription(Session, gitty, File))
 	).
+
+%%	add_user_details(+Message, -Enriched) is det.
+%
+%	Add additional information to a message.  Message must
+%	contain a `uid` field.
+
+add_user_details(Message, Enriched) :-
+	visitor_data(Message.uid, Data),
+	_{realname:Name, avatar:Avatar} :< Data,
+	Enriched = Message.put(_{name:Name, avatar:Avatar}).
+
+%%	get_visitor_data(-Data:dict, +Options) is det.
+%
+%	Optain data for a new visitor.
+%
+%	@bug	This may check for avatar validity, which may take
+%		long.  Possibly we should do this in a thread.
+
+get_visitor_data(Data, Options) :-
+	swish_config:config(user, UserData, Options), !,
+	(   _{realname:Name, email:Email} :< UserData
+	->  email_avatar(Email, Avatar),
+	    dict_create(Data, u,
+			[ realname(Name),
+			  email(email),
+			  avatar(Avatar)
+			| Options
+			])
+	;   _{realname:Name} :< UserData
+	->  random_avatar(Avatar),
+	    dict_create(Data, u,
+			[ realname(Name),
+			  avatar(Avatar)
+			| Options
+			])
+	;   dict_create(Data, u,
+			[ realname(Name)
+			| Options
+			])
+	).
+get_visitor_data(u{avatar:Avatar}, _Options) :-
+	random_avatar(Avatar).
+
+
+email_avatar(Email, Avatar) :-
+	email_gravatar(Email, Avatar),
+	valid_gravatar(Avatar), !.
+email_avatar(_, Avatar) :-
+	random_avatar(Avatar).
+
 
 		 /*******************************
 		 *	   BROADCASTING		*
@@ -294,12 +357,13 @@ swish_event(Event, _Request) :-
 
 broadcast_event(Event, File, Session) :-
 	visitor(_, Session, UID),
-	event_html(Event, Message),
-	chat_broadcast(_{ type:notify,
-			  uid:UID,
-			  html:Message
-			},
-		       gitty/File).
+	event_html(Event, HTML),
+	Message0 = _{ type:notify,
+		      uid:UID,
+		      html:HTML
+		    },
+	add_user_details(Message0, Message),
+	chat_broadcast(Message, gitty/File).
 
 event_html(Event, HTML) :-
 	phrase(event_message(Event), Tokens),
