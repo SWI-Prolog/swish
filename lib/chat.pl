@@ -98,25 +98,47 @@ start_chat(Request, Options) :-
 accept_chat(Session, Options, WebSocket) :-
 	create_chat_room,
 	hub_add(swish_chat, WebSocket, Id),
-	dict_create(Status, _, [type(welcome)]),
-	hub_send(Id, json(Status)),
-	create_visitor(Id, Session, Options).
+	create_visitor(Id, Session, TmpUser, Options),
+	dict_create(Status, _, [type(welcome), uid(TmpUser)]),
+	hub_send(Id, json(Status)).
 
 
 		 /*******************************
 		 *	        DATA		*
 		 *******************************/
 
+%%	visitor(?WSId, ?Session, ?TmpUser).
+%%	visitor_data(?TmpUser, ?UserDict).
+%%	subscription(?Session, ?Channel, ?SubChannel).
+%
+%	These predicates represent our notion of visitors.
+%
+%	@arg WSID is the identifier of the web socket. As we may have to
+%	reconnect lost connections, this is may be replaced.
+%	@arg Session is the session identifier.  This is used to connect
+%	SWISH actions to WSIDs.
+%	@arg TmpUser is the ID with which we identify the user for this
+%	run. The value is a UUID and thus doesn't reveal the real
+%	identity of the user.
+%	@arg UserDict is a dict that holds information about the real
+%	user identity.  This can be empty if no information is known
+%	about this user.
+
 :- dynamic
-	visitor/3,			% Id, Session, OptionDict
+	visitor/3,			% WSId, Session, TmpUser
+	visitor_data/2,			% TmpUser, Data
 	subscription/3.			% Session, Channel, SubChannel
 
-create_visitor(WSID, Session, Options) :-
+create_visitor(WSID, Session, TmpUser, Options) :-
+	uuid(TmpUser),
 	dict_create(Dict, options, Options),
-	assertz(visitor(WSID, Session, Dict)).
+	assertz(visitor(WSID, Session, TmpUser)),
+	assertz(visitor_data(TmpUser, Dict)).
 
 destroy_visitor(WSID) :-
-	retract(visitor(WSID, Session, _)),
+	must_be(atom, WSID),
+	retract(visitor(WSID, Session, TmpUser)),
+	retractall(visitor_data(TmpUser, _)),
 	retractall(subscription(Session, _, _)).
 
 subscribe(WSID, Channel) :-

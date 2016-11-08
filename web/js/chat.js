@@ -136,12 +136,22 @@ define([ "jquery", "config" ],
 		 *	      ACTIONS		*
 		 *******************************/
 
+    /**
+     * The welcome message is sent by SWISH immediately after opening
+     * the websocket connection.  It provides the session UID for this
+     * user
+     */
     welcome: function(e) {
-      this.chat('addUser', "Me");
+      if ( !e.name )
+	e.name = "Me";
+      this.chat('addUser', e.uid, e);
     },
 
+    /**
+     * Display a notification by some user.
+     */
     notify: function(e) {
-      this.chat('notifyUser', e.user, e);
+      this.chat('notifyUser', e.uid, e);
     },
 
 
