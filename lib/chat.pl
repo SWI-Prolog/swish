@@ -122,13 +122,13 @@ destroy_visitor(WSID) :-
 subscribe(WSID, Channel) :-
 	subscribe(WSID, Channel, _SubChannel).
 subscribe(WSID, Channel, SubChannel) :-
-	visitor(WSID, Session),
+	visitor(WSID, Session, _),
 	assertz(subscription(Session, Channel, SubChannel)).
 
 unsubscribe(WSID, Channel) :-
 	unsubscribe(WSID, Channel, _SubChannel).
 unsubscribe(WSID, Channel, SubChannel) :-
-	visitor(WSID, Session),
+	visitor(WSID, Session, _),
 	retractall(subscription(Session, Channel, SubChannel)).
 
 
@@ -139,19 +139,22 @@ unsubscribe(WSID, Channel, SubChannel) :-
 %%	chat_broadcast(+Message)
 %%	chat_broadcast(+Message, +Channel)
 %
-%	Send Message to all known SWISH clients. Message is a message as
-%	accepted by ws_send/2.
+%	Send Message to all known SWISH clients. Message is a valid JSON
+%	object, i.e., a dict or option list.
+%
+%	@arg Channel is either an atom or a term Channel/SubChannel,
+%	where both Channel and SubChannel are atoms.
 
 chat_broadcast(Message) :-
-	hub_broadcast(swish_chat, Message).
+	hub_broadcast(swish_chat, json(Message)).
 
 chat_broadcast(Message, Channel/SubChannel) :- !,
 	must_be(atom, Channel),
 	must_be(atom, SubChannel),
-	hub_broadcast(swish_chat, Message, subscribed(Channel, SubChannel)).
+	hub_broadcast(swish_chat, json(Message), subscribed(Channel, SubChannel)).
 chat_broadcast(Message, Channel) :-
 	must_be(atom, Channel),
-	hub_broadcast(swish_chat, Message, subscribed(Channel)).
+	hub_broadcast(swish_chat, json(Message), subscribed(Channel)).
 
 subscribed(Channel, WSID) :-
 	subscription(WSID, Channel, _).

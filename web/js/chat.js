@@ -60,6 +60,13 @@ define([ "jquery", "config" ],
 	if ( config.swish.chat ) {
 	  elem.chat('connect');
 	}
+
+	elem.on("click", function(ev) {
+	  var li = $(ev.target).closest("li.user");
+
+	  if ( li.length == 1 )
+	    elem.chat('unnotify', li.attr("id"));
+	});
       });
     },
 
@@ -84,7 +91,7 @@ define([ "jquery", "config" ],
 	var msg = JSON.parse(e.data);
 	msg.origin = e.origin;
 	if ( msg.type )
-	  elem.chat(msg.type, e);
+	  elem.chat(msg.type, msg);
 	else
 	  console.log(e);
       }
@@ -133,6 +140,10 @@ define([ "jquery", "config" ],
       this.chat('addUser', "Me");
     },
 
+    notify: function(e) {
+      this.chat('notifyUser', e.user, e);
+    },
+
 
 		 /*******************************
 		 *	        UI		*
@@ -140,20 +151,42 @@ define([ "jquery", "config" ],
 
     /**
      * Present a notification associated with a user
+     *
+     * @param {Oject} options
+     * @param {String} options.html provides the inner html of the message.
+     * @param {Number} [options.fadeIn=400] provide the fade in time.
+     * @param {Number} [options.fadeOut=400] provide the fade out time.
+     * @param {Number} [options.time=5000] provide the show time.  The
+     * value `0` prevents a timeout.
      */
-    notify: function(user, options) {
-      var div  = $.el.div({class:"notification arrow_box"});
+    notifyUser: function(user, options) {
       var elm  = $("#"+user);
-      var epos = elm.offset();
 
-      $("body").append(div);
-      $(div).html(options.html)
-	    .css({ left: epos.left+elm.width()-$(div).outerWidth()-5,
-	           top:  epos.top+elm.height()+5
-	         })
-	    .show(400);
+      if ( elm.length > 0 ) {
+	var div  = $.el.div({ class:"notification notify-arrow",
+			      id:"ntf-"+user
+			    });
+	var epos = elm.offset();
+
+	$("body").append(div);
+	$(div).html(options.html)
+	      .css({ left: epos.left+elm.width()-$(div).outerWidth()-5,
+		     top:  epos.top+elm.height()+5
+		   })
+	      .on("click", function(){$(div).remove();})
+	      .show(options.fadeIn||400);
+	if ( options.time !== 0 ) {
+	  setTimeout(function() {
+	    $(div).hide(options.fadeOut||400, function(){$(div).remove();});
+	  }, options.time||5000);
+	}
+      }
     },
 
+    unnotify: function(user) {
+      $("#ntf-"+user).remove();
+      return this;
+    },
 
     /**
      * Add a new user to the notification area
@@ -163,8 +196,9 @@ define([ "jquery", "config" ],
      */
     addUser: function(id, options) {
       var elem = this;
+      var li = li_user(id, options);
 
-      return this.append(li_user(id, options));
+      this.append(li);
     }
 
   }; // methods
@@ -178,7 +212,7 @@ define([ "jquery", "config" ],
     if ( !options.name )
       options.name = id;
 
-    var li = $.el.li({class:"dropdown", id:id},
+    var li = $.el.li({class:"dropdown user", id:id},
 		     $.el.a({ class:"dropdown-toggle",
 			      'data-toggle':"dropdown",
 			    },

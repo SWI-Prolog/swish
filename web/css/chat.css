@@ -2,20 +2,20 @@ div.notification
 { display: inline-block;
   position: absolute;
   min-width: 10em;
-  background: yellow;
+  background: #cff;
   padding: 5px 1em;
   display: none;
 }
 
 /* http://www.cssarrowplease.com/ */
 
-.arrow_box {
-	background: #ffff00;
-	border: 1px solid #000000;
-        radius: 5px;
+.notify-arrow {
+	background: #cff;
+	border: 1px solid #888;
+        border-radius: 5px;
         box-shadow: 6px 6px 3px #aaa;
 }
-.arrow_box:after, .arrow_box:before {
+.notify-arrow:after, .notify-arrow:before {
 	bottom: 100%;
 	right: 12px;
 	border: solid transparent;
@@ -24,15 +24,15 @@ div.notification
 	width: 0;
 	position: absolute;
 }
-.arrow_box:after {
-	border-color: rgba(255, 255, 0, 0);
-	border-bottom-color: #ffff00;
+.notify-arrow:after {
+	border-color: rgba(192, 255, 255, 0);
+	border-bottom-color: #cff;
 	border-width: 14px;
 	margin-left: -14px;
 }
-.arrow_box:before {
-	border-color: rgba(0, 0, 0, 0);
-	border-bottom-color: #000000;
+.notify-arrow:before {
+	border-color: rgba(128, 128, 128, 0);
+	border-bottom-color: #888;
 	border-width: 15px;
 	margin-left: -15px;
 }
