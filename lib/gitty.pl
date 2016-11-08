@@ -45,6 +45,7 @@
 	    gitty_hash/2,		% +Store, ?Hash
 
 	    gitty_reserved_meta/1,	% ?Key
+	    is_gitty_hash/1,		% @Term
 
 	    gitty_diff/4,		% +Store, ?Start, +End, -Diff
 
@@ -400,6 +401,21 @@ gitty_reserved_meta(name).
 gitty_reserved_meta(time).
 gitty_reserved_meta(data).
 gitty_reserved_meta(previous).
+
+
+%%	is_gitty_hash(@Term) is semidet.
+%
+%	True if Term is a possible gitty (SHA1) hash
+
+is_gitty_hash(SHA1) :-
+	atom(SHA1),
+	atom_length(SHA1, 40),
+	atom_codes(SHA1, Codes),
+	maplist(hex_digit, Codes).
+
+hex_digit(C) :- between(0'0, 0'9, C), !.
+hex_digit(C) :- between(0'a, 0'f, C).
+
 
 		 /*******************************
 		 *	    FSCK SUPPORT	*

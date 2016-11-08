@@ -47,6 +47,7 @@
 :- use_module(library(apply)).
 :- use_module(library(option)).
 :- use_module(library(debug)).
+:- use_module(library(broadcast)).
 :- use_module(library(solution_sequences)).
 
 :- use_module(page).
@@ -167,6 +168,7 @@ storage(post, Request) :-
 	->  debug(storage, 'Created: ~p', [Commit]),
 	    storage_url(File, URL),
 
+	    broadcast(swish(Request, created(File))),
 	    reply_json_dict(json{url:URL,
 				 file:File,
 				 meta:Commit.put(symbolic, "HEAD")
@@ -188,6 +190,7 @@ storage(put, Request) :-
 	      true),
 	(   var(Error)
 	->  debug(storage, 'Updated: ~p', [Commit]),
+	    broadcast(swish(Request, updated(File, Meta.previous, Commit))),
 	    reply_json_dict(json{url:URL,
 				 file:File,
 				 meta:Commit.put(symbolic, "HEAD")
@@ -198,7 +201,9 @@ storage(delete, Request) :-
 	authentity(Request, Meta),
 	storage_dir(Dir),
 	request_file(Request, Dir, File),
-	gitty_update(Dir, File, "", Meta, _New),
+	gitty_file(Dir, File, Previous),
+	gitty_update(Dir, File, "", Meta, Commit),
+	broadcast(swish(Request, deleted(File, Previous, Commit))),
 	reply_json_dict(true).
 
 %%	update_error(+Error, +Storage, +Data, +File, +URL)
@@ -260,7 +265,7 @@ meta_data(Request, Dict, Meta) :-
 meta_data(Request, Store, Dict, Meta) :-
 	meta_data(Request, Dict, Meta1),
 	(   atom_string(Previous, Dict.get(previous)),
-	    is_sha1(Previous),
+	    is_gitty_hash(Previous),
 	    gitty_commit(Store, Previous, _PrevMeta)
 	->  Meta = Meta1.put(previous, Previous)
 	;   Meta = Meta1
@@ -312,6 +317,7 @@ storage_get(Request, swish, Options) :-
 storage_get(Request, Format, _) :-
 	storage_dir(Dir),
 	request_file_or_hash(Request, Dir, FileOrHash, Type),
+	broadcast(swish(Request, download(Dir, FileOrHash))),
 	storage_get(Format, Dir, Type, FileOrHash, Request).
 
 storage_get(swish, Dir, _, FileOrHash, Request) :-
@@ -340,18 +346,10 @@ request_file_or_hash(Request, Dir, FileOrHash, Type) :-
 	option(path_info(FileOrHash), Request),
 	(   gitty_file(Dir, FileOrHash, _Hash)
 	->  Type = file
-	;   is_sha1(FileOrHash)
+	;   is_gitty_hash(FileOrHash)
 	->  Type = hash
 	;   http_404([], Request)
 	).
-
-is_sha1(SHA1) :-
-	atom_length(SHA1, 40),
-	atom_codes(SHA1, Codes),
-	maplist(hex_digit, Codes).
-
-hex_digit(C) :- between(0'0, 0'9, C), !.
-hex_digit(C) :- between(0'a, 0'f, C).
 
 %%	authentity(+Request, -Authentity:dict) is det.
 %
