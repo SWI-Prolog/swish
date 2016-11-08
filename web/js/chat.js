@@ -142,7 +142,7 @@ define([ "jquery", "config" ],
      * Present a notification associated with a user
      */
     notify: function(user, options) {
-      var div  = $.el.div({class:"notification"});
+      var div  = $.el.div({class:"notification arrow_box"});
       var elm  = $("#"+user);
       var epos = elm.offset();
 

@@ -1,0 +1,38 @@
+div.notification
+{ display: inline-block;
+  position: absolute;
+  min-width: 10em;
+  background: yellow;
+  padding: 5px 1em;
+  display: none;
+}
+
+/* http://www.cssarrowplease.com/ */
+
+.arrow_box {
+	background: #ffff00;
+	border: 1px solid #000000;
+        radius: 5px;
+        box-shadow: 6px 6px 3px #aaa;
+}
+.arrow_box:after, .arrow_box:before {
+	bottom: 100%;
+	right: 12px;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+}
+.arrow_box:after {
+	border-color: rgba(255, 255, 0, 0);
+	border-bottom-color: #ffff00;
+	border-width: 14px;
+	margin-left: -14px;
+}
+.arrow_box:before {
+	border-color: rgba(0, 0, 0, 0);
+	border-bottom-color: #000000;
+	border-width: 15px;
+	margin-left: -15px;
+}
