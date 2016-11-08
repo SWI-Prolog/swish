@@ -7,6 +7,14 @@ div.notification
   display: none;
 }
 
+a.dropdown-toggle.avatar
+{ padding: 4px;
+}
+
+img.avatar
+{ width: 42px;
+}
+
 /* http://www.cssarrowplease.com/ */
 
 .notify-arrow {

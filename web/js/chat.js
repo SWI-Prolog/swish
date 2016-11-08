@@ -222,11 +222,19 @@ define([ "jquery", "config" ],
     if ( !options.name )
       options.name = id;
 
+    function avatar(options) {
+      if ( options.avatar ) {
+	return $.el.img({class:"avatar", src:options.avatar, alt:options.name});
+      } else {
+	return $.el.span({class:"avatar glyphicon glyphicon-user"})
+      }
+    }
+
     var li = $.el.li({class:"dropdown user", id:id},
-		     $.el.a({ class:"dropdown-toggle",
+		     $.el.a({ class:"dropdown-toggle avatar",
 			      'data-toggle':"dropdown",
 			    },
-			    $.el.span({class:"glyphicon glyphicon-user"}),
+			    avatar(options),
 			    $.el.b({class:"caret"})),
 		     $.el.ul({ class:"dropdown-menu pull-right" },
 			     $.el.li(options.name)));

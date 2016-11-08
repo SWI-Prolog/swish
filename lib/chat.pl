@@ -212,7 +212,8 @@ get_visitor_data(Data, Options) :-
 			  avatar(Avatar)
 			| Options
 			])
-	;   dict_create(Data, u,
+	;   _{user:Name} :< UserData
+	->  dict_create(Data, u,
 			[ realname(Name)
 			| Options
 			])
