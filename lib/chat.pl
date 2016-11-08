@@ -45,9 +45,13 @@
 :- use_module(library(http/websocket)).
 :- use_module(library(http/json)).
 :- use_module(library(error)).
+:- use_module(library(lists)).
 :- use_module(library(debug)).
+:- use_module(library(broadcast)).
 :- use_module(library(http/html_write)).
 
+:- use_module(storage).
+:- use_module(gitty).
 :- use_module(config).
 
 /** <module> The SWISH collaboration backbone
@@ -153,6 +157,13 @@ unsubscribe(WSID, Channel, SubChannel) :-
 	visitor(WSID, Session, _),
 	retractall(subscription(Session, Channel, SubChannel)).
 
+%%	subscribe_session_to_gitty_file(+Session, +File)
+
+subscribe_session_to_gitty_file(Session, File) :-
+	(   subscription(Session, gitty, File)
+	->  true
+	;   assertz(subscription(Session, gitty, File))
+	).
 
 		 /*******************************
 		 *	   BROADCASTING		*
@@ -168,20 +179,26 @@ unsubscribe(WSID, Channel, SubChannel) :-
 %	where both Channel and SubChannel are atoms.
 
 chat_broadcast(Message) :-
+	debug(chat(broadcast), 'Broadcast: ~p', [Message]),
 	hub_broadcast(swish_chat, json(Message)).
 
 chat_broadcast(Message, Channel/SubChannel) :- !,
 	must_be(atom, Channel),
 	must_be(atom, SubChannel),
+	debug(chat(broadcast), 'Broadcast on ~p: ~p',
+	      [Channel/SubChannel, Message]),
 	hub_broadcast(swish_chat, json(Message), subscribed(Channel, SubChannel)).
 chat_broadcast(Message, Channel) :-
 	must_be(atom, Channel),
+	debug(chat(broadcast), 'Broadcast on ~p: ~p', [Channel, Message]),
 	hub_broadcast(swish_chat, json(Message), subscribed(Channel)).
 
 subscribed(Channel, WSID) :-
-	subscription(WSID, Channel, _).
+	visitor(WSID, Session, _),
+	subscription(Session, Channel, _).
 subscribed(Channel, SubChannel, WSID) :-
-	subscription(WSID, Channel, SubChannel).
+	visitor(WSID, Session, _),
+	subscription(Session, Channel, SubChannel).
 
 
 		 /*******************************
@@ -260,6 +277,58 @@ json_message(Dict, Client) :-
 	atom_string(Channel, ChannelS),
 	unsubscribe(Client, Channel).
 
+
+		 /*******************************
+		 *	      EVENTS		*
+		 *******************************/
+
+:- unlisten(swish(_, _)),
+   listen(swish(Request, Event), swish_event(Event, Request)).
+
+swish_event(Event, _Request) :-
+	http_session_id(Session),
+	debug(event, 'Event: ~p, session ~q', [Event, Session]),
+	event_file(Event, File),
+	subscribe_session_to_gitty_file(Session, File),
+	broadcast_event(Event, File, Session).
+
+broadcast_event(Event, File, Session) :-
+	visitor(_, Session, UID),
+	event_html(Event, Message),
+	chat_broadcast(_{ type:notify,
+			  uid:UID,
+			  html:Message
+			},
+		       gitty/File).
+
+event_html(Event, HTML) :-
+	phrase(event_message(Event), Tokens),
+	delete(Tokens, nl(_), SingleLine),
+	with_output_to(string(HTML), print_html(SingleLine)).
+
+event_message(created(File)) -->
+	html([ 'Created ', \file(File) ]).
+event_message(updated(File, _From, _To)) -->
+	html([ 'Saved ', \file(File) ]).
+event_message(deleted(File, _From, _To)) -->
+	html([ 'Deleted ', \file(File) ]).
+event_message(download(Store, FileOrHash)) -->
+	{ event_file(download(Store, FileOrHash), File)
+	},
+	html([ 'Downloaded ', \file(File) ]).
+
+file(File) -->
+	html(a(href('/p/'+File), File)).
+
+event_file(created(File), File).
+event_file(updated(File, _From, _To), File).
+event_file(deleted(File, _From, _To), File).
+event_file(download(Store, FileOrHash), File) :-
+	(   is_gitty_hash(FileOrHash)
+	->  gitty_commit(Store, FileOrHash, Meta),
+	    File = Meta.name
+	;   File = FileOrHash
+	).
 
 		 /*******************************
 		 *	       UI		*
