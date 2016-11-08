@@ -44,6 +44,7 @@
 :- use_module(library(uri)).
 :- use_module(library(md5)).
 :- use_module(library(lists)).
+:- use_module(library(random)).
 :- use_module(library(apply)).
 :- use_module(library(http/http_path)).
 :- use_module(library(http/http_open)).
@@ -96,7 +97,7 @@ random_avatar(AvatarURL) :-
 	findall(I, free_avatar(I), L),
 	    (	L == []
 	    ->	resource_error(avatars)
-	    ;	random_member(L, A),
+	    ;	random_member(A, L),
 		avatar(A, AvatarURL),
 		with_mutex(avatar, claim_avatar(A)),
 		!
