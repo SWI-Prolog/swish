@@ -475,7 +475,7 @@ event_message(closed(File)) -->
 event_message(download(Store, FileOrHash)) -->
 	{ event_file(download(Store, FileOrHash), File)
 	},
-	html([ 'Downloaded ', \file(File) ]).
+	html([ 'Opened ', \file(File) ]).
 
 file(File) -->
 	html(a(href('/p/'+File), File)).
