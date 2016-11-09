@@ -42,8 +42,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "config" ],
-       function($, config) {
+define([ "jquery", "config", "preferences" ],
+       function($, config, preferences) {
 
 (function($) {
   var pluginName = 'chat';
@@ -84,6 +84,10 @@ define([ "jquery", "config" ],
       var elem = this;
       var data = this.data(pluginName);
       var url  = window.location.host + config.http.locations.swish_chat;
+      var avatar = preferences.getVal("avatar");
+
+      if ( avatar )
+	url += "?avatar=" + encodeURIComponent(avatar);
 
       data.connection = new WebSocket("ws://" + url, ['chat']);
       data.connection.onerror = function(error) {
@@ -147,6 +151,8 @@ define([ "jquery", "config" ],
     welcome: function(e) {
       if ( !e.name )
 	e.name = "Me";
+      if ( e.avatar )
+	preferences.setVal("avatar", e.avatar);
       this.chat('addUser', e.uid, e);
     },
 

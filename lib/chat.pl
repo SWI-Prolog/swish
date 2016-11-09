@@ -42,6 +42,7 @@
 :- use_module(library(http/hub)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_session)).
+:- use_module(library(http/http_parameters)).
 :- use_module(library(http/websocket)).
 :- use_module(library(http/json)).
 :- use_module(library(error)).
@@ -92,12 +93,24 @@ start_chat(Request) :-
 
 start_chat(Request, Options) :-
 	http_session_id(Session),
+	http_parameters(Request,
+			[ avatar(Avatar, [optional(true)])
+			]),
+	extend_options([avatar(Avatar)], Options, Options1),
 	http_upgrade_to_websocket(
-	    accept_chat(Session, Options),
+	    accept_chat(Session, Options1),
 	    [ guarded(false),
 	      subprotocols([chat])
 	    ],
 	    Request).
+
+extend_options([], Options, Options).
+extend_options([H|T0], Options, [H|T]) :-
+	ground(H), !,
+	extend_options(T0, Options, T).
+extend_options([_|T0], Options, T) :-
+	extend_options(T0, Options, T).
+
 
 accept_chat(Session, Options, WebSocket) :-
 	create_chat_room,
@@ -248,7 +261,7 @@ add_user_details(Message, Enriched) :-
 get_visitor_data(Data, Options) :-
 	swish_config:config(user, UserData, Options), !,
 	(   _{realname:Name, email:Email} :< UserData
-	->  email_avatar(Email, Avatar),
+	->  email_avatar(Email, Avatar, Options),
 	    dict_create(Data, u,
 			[ realname(Name),
 			  email(email),
@@ -256,7 +269,7 @@ get_visitor_data(Data, Options) :-
 			| Options
 			])
 	;   _{realname:Name} :< UserData
-	->  noble_avatar(Avatar),
+	->  noble_avatar_url(Avatar, Options),
 	    dict_create(Data, u,
 			[ realname(Name),
 			  avatar(Avatar)
@@ -268,15 +281,15 @@ get_visitor_data(Data, Options) :-
 			| Options
 			])
 	).
-get_visitor_data(u{avatar:Avatar}, _Options) :-
-	noble_avatar(Avatar).
+get_visitor_data(u{avatar:Avatar}, Options) :-
+	noble_avatar_url(Avatar, Options).
 
 
-email_avatar(Email, Avatar) :-
+email_avatar(Email, Avatar, _) :-
 	email_gravatar(Email, Avatar),
 	valid_gravatar(Avatar), !.
-email_avatar(_, Avatar) :-
-	noble_avatar(Avatar).
+email_avatar(_, Avatar, Options) :-
+	noble_avatar(Avatar, Options).
 
 
 		 /*******************************
@@ -293,7 +306,9 @@ reply_avatar(Request) :-
 	option(path_info(Local), Request),
 	http_reply_file(noble_avatar(Local), [], Request).
 
-noble_avatar(HREF) :-
+noble_avatar_url(HREF, Options) :-
+	option(avatar(HREF), Options), !.
+noble_avatar_url(HREF, _Options) :-
 	noble_avatar(_Gender, Path, true),
 	file_base_name(Path, File),
 	http_absolute_location(swish(avatar/File), HREF, []).
