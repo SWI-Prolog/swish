@@ -46,14 +46,17 @@
 :- use_module(library(http/json)).
 :- use_module(library(error)).
 :- use_module(library(lists)).
+:- use_module(library(option)).
 :- use_module(library(debug)).
 :- use_module(library(broadcast)).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/http_path)).
 
 :- use_module(storage).
 :- use_module(gitty).
 :- use_module(config).
 :- use_module(avatar).
+:- use_module(noble_avatar).
 
 /** <module> The SWISH collaboration backbone
 
@@ -253,7 +256,7 @@ get_visitor_data(Data, Options) :-
 			| Options
 			])
 	;   _{realname:Name} :< UserData
-	->  random_avatar(Avatar),
+	->  noble_avatar(Avatar),
 	    dict_create(Data, u,
 			[ realname(Name),
 			  avatar(Avatar)
@@ -266,14 +269,34 @@ get_visitor_data(Data, Options) :-
 			])
 	).
 get_visitor_data(u{avatar:Avatar}, _Options) :-
-	random_avatar(Avatar).
+	noble_avatar(Avatar).
 
 
 email_avatar(Email, Avatar) :-
 	email_gravatar(Email, Avatar),
 	valid_gravatar(Avatar), !.
 email_avatar(_, Avatar) :-
-	random_avatar(Avatar).
+	noble_avatar(Avatar).
+
+
+		 /*******************************
+		 *	   NOBLE AVATAR		*
+		 *******************************/
+
+:- http_handler(swish(avatar), reply_avatar, [prefix]).
+
+%%	reply_avatar(+Request)
+%
+%	HTTP handler for Noble Avatar images.
+
+reply_avatar(Request) :-
+	option(path_info(Local), Request),
+	http_reply_file(noble_avatar(Local), [], Request).
+
+noble_avatar(HREF) :-
+	noble_avatar(_Gender, Path, true),
+	file_base_name(Path, File),
+	http_absolute_location(swish(avatar/File), HREF, []).
 
 
 		 /*******************************
