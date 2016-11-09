@@ -154,6 +154,12 @@ define([ "jquery", "config" ],
       this.chat('notifyUser', e.uid, e);
     },
 
+    /**
+     * A user has left
+     */
+    left: function(e) {
+      $("#"+e.uid).hide(400, function() {this.remove();});
+    },
 
 		 /*******************************
 		 *	        UI		*

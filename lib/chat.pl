@@ -74,10 +74,6 @@ browsers which in turn may have multiple SWISH windows opened.
 
 swish_config:config(chat, true).
 
-:- initialization
-	Time is 24*60*60,
-	http_set_session_options([timeout(Time)]).
-
 
 		 /*******************************
 		 *	ESTABLISH WEBSOCKET	*
@@ -111,8 +107,9 @@ accept_chat(Session, Options, WebSocket) :-
 		 *	        DATA		*
 		 *******************************/
 
-%%	visitor(?WSId, ?Session, ?TmpUser).
-%%	visitor_data(?TmpUser, ?UserDict).
+%%	visitor_session(?WSId, ?Session).
+%%	session_user(?Session, ?TmpUser).
+%%	visitor_data(?TmpUser, ?UserData:dict).
 %%	subscription(?Session, ?Channel, ?SubChannel).
 %
 %	These predicates represent our notion of visitors.
@@ -129,7 +126,8 @@ accept_chat(Session, Options, WebSocket) :-
 %	about this user.
 
 :- dynamic
-	visitor/3,			% WSId, Session, TmpUser
+	visitor_session/2,		% WSID, Session
+	session_user/2,			% Session, TmpUser
 	visitor_data/2,			% TmpUser, Data
 	subscription/3.			% Session, Channel, SubChannel
 
@@ -139,31 +137,61 @@ accept_chat(Session, Options, WebSocket) :-
 %	opened from the same  browser  or   re-establishing  a  lost web
 %	socket.
 
-create_visitor(WSID, Session, TmpUser, UserData, _Options) :-
-	visitor(_WSID0, Session, TmpUser),
-	visitor_data(TmpUser, UserData), !,
-	assertz(visitor(WSID, Session, TmpUser)).
 create_visitor(WSID, Session, TmpUser, UserData, Options) :-
-	uuid(TmpUser),
-	get_visitor_data(UserData, Options),
-	assertz(visitor(WSID, Session, TmpUser)),
-	assertz(visitor_data(TmpUser, UserData)).
+	(   visitor_session(_, Session)
+	->  true
+	;   OneDay is 24*60*60,
+	    http_set_session(Session, timeout(OneDay))
+	),
+	assertz(visitor_session(WSID, Session)),
+	create_session_user(Session, TmpUser, UserData, Options).
 
 %%	destroy_visitor(+WSID)
 %
 %	The web socket WSID has been   closed. We should not immediately
-%	destroy the visitor as the browser may   soon reconnect due to a
-%	page reload or re-establishing the web  socket after a temporary
-%	network failure.
+%	destroy the temporary user as the browser may soon reconnect due
+%	to a page reload  or  re-establishing   the  web  socket after a
+%	temporary network failure. We leave   the destruction thereof to
+%	the session, but set the session timeout to a fairly short time.
+%
+%	@tbd	We should only inform clients that we have informed
+%		about this user.
 
 destroy_visitor(WSID) :-
 	must_be(atom, WSID),
-	retract(visitor(WSID, Session, TmpUser)),
-	(   visitor(_, Session, TmpUser)
+	retract(visitor_session(WSID, Session)),
+	(   visitor_session(_, Session)
 	->  true
-	;   destroy_visitor_data(TmpUser),
-	    retractall(subscription(Session, _, _))
+	;   http_set_session(Session, timeout(300)),
+	    session_user(Session, UID),
+	    Message = _{ type:left,
+			 uid:UID
+		       },
+	    chat_broadcast(Message)
 	).
+
+%%	create_session_user(+Session, -User, -UserData, +Options)
+%
+%	Associate a user with the session. The user id is a UUID that is
+%	not associated with  any  persistent  notion   of  a  user.  The
+%	destruction is left to the destruction of the session.
+
+:- unlisten(http_session(end(_, _))),
+   listen(http_session(end(SessionID, _Peer)),
+	  destroy_session_user(SessionID)).
+
+create_session_user(Session, TmpUser, UserData, _Options) :-
+	session_user(Session, TmpUser),
+	visitor_data(TmpUser, UserData), !.
+create_session_user(Session, TmpUser, UserData, Options) :-
+	uuid(TmpUser),
+	get_visitor_data(UserData, Options),
+	assertz(session_user(Session, TmpUser)),
+	assertz(visitor_data(TmpUser, UserData)).
+
+destroy_session_user(Session) :-
+	retract(session_user(Session, TmpUser)),
+	destroy_visitor_data(TmpUser).
 
 destroy_visitor_data(TmpUser) :-
 	(   retract(visitor_data(TmpUser, Data)),
@@ -177,13 +205,13 @@ destroy_visitor_data(TmpUser) :-
 subscribe(WSID, Channel) :-
 	subscribe(WSID, Channel, _SubChannel).
 subscribe(WSID, Channel, SubChannel) :-
-	visitor(WSID, Session, _),
+	visitor_session(WSID, Session),
 	assertz(subscription(Session, Channel, SubChannel)).
 
 unsubscribe(WSID, Channel) :-
 	unsubscribe(WSID, Channel, _SubChannel).
 unsubscribe(WSID, Channel, SubChannel) :-
-	visitor(WSID, Session, _),
+	visitor_session(WSID, Session),
 	retractall(subscription(Session, Channel, SubChannel)).
 
 %%	subscribe_session_to_gitty_file(+Session, +File)
@@ -279,10 +307,10 @@ chat_broadcast(Message, Channel) :-
 		      subscribed(Channel)).
 
 subscribed(Channel, WSID) :-
-	visitor(WSID, Session, _),
+	visitor_session(WSID, Session),
 	subscription(Session, Channel, _).
 subscribed(Channel, SubChannel, WSID) :-
-	visitor(WSID, Session, _),
+	visitor_session(WSID, Session),
 	subscription(Session, Channel, SubChannel).
 
 
@@ -378,7 +406,7 @@ swish_event(Event, _Request) :-
 	broadcast_event(Event, File, Session).
 
 broadcast_event(Event, File, Session) :-
-	visitor(_, Session, UID),
+	session_user(Session, UID),
 	event_html(Event, HTML),
 	Message0 = _{ type:notify,
 		      uid:UID,
