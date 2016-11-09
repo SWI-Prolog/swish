@@ -842,6 +842,19 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       }
 
       return undefined;
+    },
+
+    /**
+     * Called if this element is inside a tab this is being closed
+     */
+    close: function() {
+      var data = this.data(pluginName);
+
+      if ( data.meta )
+	$("#chat").trigger('send',
+			   { type:'gitty-closed',
+			     file:data.meta.name
+			   });
     }
   }; // methods
 

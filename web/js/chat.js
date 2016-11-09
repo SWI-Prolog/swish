@@ -67,6 +67,9 @@ define([ "jquery", "config" ],
 	  if ( li.length == 1 )
 	    elem.chat('unnotify', li.attr("id"));
 	});
+	elem.on("send", function(ev, msg) {
+	  elem.chat('send', msg);
+	})
       });
     },
 

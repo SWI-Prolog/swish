@@ -369,26 +369,33 @@ handle_message(Message, _Room) :-
 	debug(chat(ignored), 'Ignoring chat message ~p', [Message]).
 
 
-json_message(Dict, Client) :-
+json_message(Dict, WSID) :-
 	_{ type: "subscribe",
 	   channel:ChannelS, sub_channel:SubChannelS} :< Dict, !,
 	atom_string(Channel, ChannelS),
 	atom_string(SubChannel, SubChannelS),
-	subscribe(Client, Channel, SubChannel).
-json_message(Dict, Client) :-
+	subscribe(WSID, Channel, SubChannel).
+json_message(Dict, WSID) :-
 	_{type: "subscribe", channel:ChannelS} :< Dict, !,
 	atom_string(Channel, ChannelS),
-	subscribe(Client, Channel).
-json_message(Dict, Client) :-
+	subscribe(WSID, Channel).
+json_message(Dict, WSID) :-
 	_{ type: "unsubscribe",
 	   channel:ChannelS, sub_channel:SubChannelS} :< Dict, !,
 	atom_string(Channel, ChannelS),
 	atom_string(SubChannel, SubChannelS),
-	unsubscribe(Client, Channel, SubChannel).
-json_message(Dict, Client) :-
+	unsubscribe(WSID, Channel, SubChannel).
+json_message(Dict, WSID) :-
 	_{type: "unsubscribe", channel:ChannelS} :< Dict, !,
 	atom_string(Channel, ChannelS),
-	unsubscribe(Client, Channel).
+	unsubscribe(WSID, Channel).
+json_message(Dict, WSID) :-
+	_{type: "gitty-closed", file:FileS} :< Dict, !,
+	atom_string(File, FileS),
+	visitor_session(WSID, Session),
+	broadcast_event(closed(File), File, Session).
+json_message(Dict, _WSID) :-
+	debug(chat(ignored), 'Ignoring JSON message ~p', [Dict]).
 
 
 		 /*******************************
@@ -416,7 +423,10 @@ broadcast_event(Event, File, Session) :-
 	chat_broadcast(Message, gitty/File).
 
 event_html(Event, HTML) :-
-	phrase(event_message(Event), Tokens),
+	(   phrase(event_message(Event), Tokens)
+	->  true
+	;   phrase(html('Unknown-event: ~p'-[Event]), Tokens)
+	),
 	delete(Tokens, nl(_), SingleLine),
 	with_output_to(string(HTML), print_html(SingleLine)).
 
@@ -426,6 +436,8 @@ event_message(updated(File, _From, _To)) -->
 	html([ 'Saved ', \file(File) ]).
 event_message(deleted(File, _From, _To)) -->
 	html([ 'Deleted ', \file(File) ]).
+event_message(closed(File)) -->
+	html([ 'Closed ', \file(File) ]).
 event_message(download(Store, FileOrHash)) -->
 	{ event_file(download(Store, FileOrHash), File)
 	},

@@ -357,6 +357,7 @@ var tabbed = {
       li.remove();
 					/* HACK: close embedded runners */
       tab.find(".prolog-runner").prologRunner('close');
+      tab.find(".storage").storage('close');
       tab.remove();
       if ( new_active && new_active.length > 0 ) {
 	new_active.find("a").first().tab('show');
