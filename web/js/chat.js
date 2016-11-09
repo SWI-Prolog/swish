@@ -198,7 +198,7 @@ define([ "jquery", "config" ],
 	      .show(options.fadeIn||400);
 	if ( options.time !== 0 ) {
 	  setTimeout(function() {
-	    $(div).hide(options.fadeOut||400, function(){$(div).remove();});
+	    $(div).hide(options.fadeOut||400, function(){this.remove();});
 	  }, options.time||5000);
 	}
       }
