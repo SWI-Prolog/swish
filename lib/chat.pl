@@ -185,8 +185,11 @@ subscribe_session_to_gitty_file(Session, File) :-
 
 add_user_details(Message, Enriched) :-
 	visitor_data(Message.uid, Data),
-	_{realname:Name, avatar:Avatar} :< Data,
-	Enriched = Message.put(_{name:Name, avatar:Avatar}).
+	(   _{realname:Name, avatar:Avatar} :< Data
+	->  Enriched = Message.put(_{name:Name, avatar:Avatar})
+	;   _{avatar:Avatar} :< Data
+	->  Enriched = Message.put(_{avatar:Avatar})
+	).
 
 %%	get_visitor_data(-Data:dict, +Options) is det.
 %

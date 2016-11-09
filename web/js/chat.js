@@ -169,12 +169,17 @@ define([ "jquery", "config" ],
      * @param {Number} [options.time=5000] provide the show time.  The
      * value `0` prevents a timeout.
      */
-    notifyUser: function(user, options) {
-      var elm  = $("#"+user);
+    notifyUser: function(uid, options) {
+      var elm  = $("#"+uid);
+
+      if ( elm.length == 0 ) {
+	this.chat('addUser', uid, options);
+	elm = $("#"+uid);
+      }
 
       if ( elm.length > 0 ) {
 	var div  = $.el.div({ class:"notification notify-arrow",
-			      id:"ntf-"+user
+			      id:"ntf-"+uid
 			    });
 	var epos = elm.offset();
 
@@ -193,22 +198,19 @@ define([ "jquery", "config" ],
       }
     },
 
-    unnotify: function(user) {
-      $("#ntf-"+user).remove();
+    unnotify: function(uid) {
+      $("#ntf-"+uid).remove();
       return this;
     },
 
     /**
      * Add a new user to the notification area
-     * @param {String} id is the identifier of the user
+     * @param {String} uid is the identifier of the user
      * @param {Object} [options]
      * @param {String} [options.name] is the name of the user
      */
-    addUser: function(id, options) {
-      var elem = this;
-      var li = li_user(id, options);
-
-      this.append(li);
+    addUser: function(uid, options) {
+      return this.append(li_user(uid, options));
     }
 
   }; // methods
