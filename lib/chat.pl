@@ -135,19 +135,35 @@ accept_chat(Session, Options, WebSocket) :-
 
 %%	create_visitor(+WSID, +Session, -TmpUser, -UserData, +Options)
 %
-%	Create a new visitor.
+%	Create a new visitor. The first   clause  deals with two windows
+%	opened from the same  browser  or   re-establishing  a  lost web
+%	socket.
 
+create_visitor(WSID, Session, TmpUser, UserData, _Options) :-
+	visitor(_WSID0, Session, TmpUser),
+	visitor_data(TmpUser, UserData), !,
+	assertz(visitor(WSID, Session, TmpUser)).
 create_visitor(WSID, Session, TmpUser, UserData, Options) :-
 	uuid(TmpUser),
 	get_visitor_data(UserData, Options),
 	assertz(visitor(WSID, Session, TmpUser)),
 	assertz(visitor_data(TmpUser, UserData)).
 
+%%	destroy_visitor(+WSID)
+%
+%	The web socket WSID has been   closed. We should not immediately
+%	destroy the visitor as the browser may   soon reconnect due to a
+%	page reload or re-establishing the web  socket after a temporary
+%	network failure.
+
 destroy_visitor(WSID) :-
 	must_be(atom, WSID),
 	retract(visitor(WSID, Session, TmpUser)),
-	destroy_visitor_data(TmpUser),
-	retractall(subscription(Session, _, _)).
+	(   visitor(_, Session, TmpUser)
+	->  true
+	;   destroy_visitor_data(TmpUser),
+	    retractall(subscription(Session, _, _))
+	).
 
 destroy_visitor_data(TmpUser) :-
 	(   retract(visitor_data(TmpUser, Data)),
@@ -254,11 +270,13 @@ chat_broadcast(Message, Channel/SubChannel) :- !,
 	must_be(atom, SubChannel),
 	debug(chat(broadcast), 'Broadcast on ~p: ~p',
 	      [Channel/SubChannel, Message]),
-	hub_broadcast(swish_chat, json(Message), subscribed(Channel, SubChannel)).
+	hub_broadcast(swish_chat, json(Message),
+		      subscribed(Channel, SubChannel)).
 chat_broadcast(Message, Channel) :-
 	must_be(atom, Channel),
 	debug(chat(broadcast), 'Broadcast on ~p: ~p', [Channel, Message]),
-	hub_broadcast(swish_chat, json(Message), subscribed(Channel)).
+	hub_broadcast(swish_chat, json(Message),
+		      subscribed(Channel)).
 
 subscribed(Channel, WSID) :-
 	visitor(WSID, Session, _),
@@ -307,18 +325,18 @@ handle_message(Message, _Room) :-
 	atom_json_dict(Message.data, JSON, []),
 	json_message(JSON, Message.client).
 handle_message(Message, _Room) :-
-	hub{joined:Id} :< Message, !,
-	debug(chat(visitor), 'Joined: ~p', [Id]).
+	hub{joined:WSID} :< Message, !,
+	debug(chat(visitor), 'Joined: ~p', [WSID]).
 handle_message(Message, _Room) :-
-	hub{left:Id} :< Message, !,
-	(   destroy_visitor(Id)
-	->  debug(chat(visitor), 'Left: ~p', [Id])
+	hub{left:WSID} :< Message, !,
+	(   destroy_visitor(WSID)
+	->  debug(chat(visitor), 'Left: ~p', [WSID])
 	;   true
 	).
 handle_message(Message, _Room) :-
-	websocket{opcode:close, client:Id} :< Message, !,
-	debug(chat(visitor), 'Left: ~p', [Id]),
-	destroy_visitor(Id).
+	websocket{opcode:close, client:WSID} :< Message, !,
+	debug(chat(visitor), 'Left: ~p', [WSID]),
+	destroy_visitor(WSID).
 handle_message(Message, _Room) :-
 	debug(chat(ignored), 'Ignoring chat message ~p', [Message]).
 
