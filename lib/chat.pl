@@ -245,7 +245,7 @@ subscribe_session_to_gitty_file(Session, File) :-
 
 add_user_details(Message, Enriched) :-
 	visitor_data(Message.uid, Data),
-	(   _{realname:Name, avatar:Avatar} :< Data
+	(   _{name:Name, avatar:Avatar} :< Data
 	->  Enriched = Message.put(_{name:Name, avatar:Avatar})
 	;   _{avatar:Avatar} :< Data
 	->  Enriched = Message.put(_{avatar:Avatar})
@@ -262,25 +262,21 @@ get_visitor_data(Data, Options) :-
 	swish_config:config(user, UserData, Options), !,
 	(   _{realname:Name, email:Email} :< UserData
 	->  email_avatar(Email, Avatar, Options),
-	    dict_create(Data, u,
-			[ realname(Name),
-			  email(email),
-			  avatar(Avatar)
-			| Options
-			])
+	    Extra = [ name(Name),
+		      email(email),
+		      avatar(Avatar)
+		    ]
 	;   _{realname:Name} :< UserData
 	->  noble_avatar_url(Avatar, Options),
-	    dict_create(Data, u,
-			[ realname(Name),
-			  avatar(Avatar)
-			| Options
-			])
+	    Extra = [ name(Name),
+		      avatar(Avatar)
+		    ]
 	;   _{user:Name} :< UserData
-	->  dict_create(Data, u,
-			[ realname(Name)
-			| Options
-			])
-	).
+	->  Extra = [ name(Name)
+		    ]
+	),
+	merge_options(Extra, Options, UserOptions),
+	dict_create(Data, u, UserOptions).
 get_visitor_data(u{avatar:Avatar}, Options) :-
 	noble_avatar_url(Avatar, Options).
 
