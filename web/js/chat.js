@@ -71,9 +71,9 @@ define([ "jquery", "config", "preferences" ],
 	  elem.chat('send', msg);
 	});
 
-	window.onbeforeunload = function() {
+	$(window).bind("beforeunload", function() {
 	  elem.chat('disconnect');
-	};
+	});
       });
     },
 
