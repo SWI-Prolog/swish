@@ -69,7 +69,11 @@ define([ "jquery", "config", "preferences" ],
 	});
 	elem.on("send", function(ev, msg) {
 	  elem.chat('send', msg);
-	})
+	});
+
+	window.onbeforeunload = function() {
+	  elem.chat('disconnect');
+	};
       });
     },
 
@@ -102,6 +106,17 @@ define([ "jquery", "config", "preferences" ],
 	else
 	  console.log(e);
       }
+    },
+
+    disconnect: function() {
+      var data = this.data(pluginName);
+
+      this.chat('send', {type: "unload"});
+      data.connection.onclose = function(){};
+      data.connection.close();
+      data.connection = undefined;
+
+      return this;
     },
 
 

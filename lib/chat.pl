@@ -230,13 +230,31 @@ unsubscribe(WSID, Channel, SubChannel) :-
 	visitor_session(WSID, Session),
 	retractall(subscription(Session, Channel, SubChannel)).
 
-%%	subscribe_session_to_gitty_file(+Session, +File)
+%%	subscribe_session_to_gitty_file(+Session, +File) is det.
+%%	unsubscribe_session_to_gitty_file(+Session, +File) is det.
 
 subscribe_session_to_gitty_file(Session, File) :-
 	(   subscription(Session, gitty, File)
 	->  true
 	;   assertz(subscription(Session, gitty, File))
 	).
+
+unsubscribe_session_to_gitty_file(Session, File) :-
+	retractall(subscription(Session, gitty, File)).
+
+%%	session_close_file(Session, File) is det.
+%%	session_close_all(Session) is det.
+%
+%	Indicate that we closed a file or   all files due to leaving the
+%	page. Note that in a browser may have multiple sockets open.
+
+session_close_file(Session, File) :-
+	broadcast_event(closed(File), File, Session),
+	unsubscribe_session_to_gitty_file(Session, File).
+
+session_close_all(Session) :-
+	forall(subscription(Session, gitty, File),
+	       session_close_file(Session, File)).
 
 %%	add_user_details(+Message, -Enriched) is det.
 %
@@ -385,6 +403,7 @@ swish_chat_event(Room) :-
 handle_message(Message, _Room) :-
 	websocket{opcode:text} :< Message, !,
 	atom_json_dict(Message.data, JSON, []),
+	debug(chat(received), 'Received from ~p: ~p', [Message.client, JSON]),
 	json_message(JSON, Message.client).
 handle_message(Message, _Room) :-
 	hub{joined:WSID} :< Message, !,
@@ -427,7 +446,11 @@ json_message(Dict, WSID) :-
 	_{type: "gitty-closed", file:FileS} :< Dict, !,
 	atom_string(File, FileS),
 	visitor_session(WSID, Session),
-	broadcast_event(closed(File), File, Session).
+	session_close_file(Session, File).
+json_message(Dict, WSID) :-
+	_{type: "unload"} :< Dict, !,	% clean close/reload
+	visitor_session(WSID, Session),
+	session_close_all(Session).
 json_message(Dict, _WSID) :-
 	debug(chat(ignored), 'Ignoring JSON message ~p', [Dict]).
 

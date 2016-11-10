@@ -161,6 +161,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 
       if ( this.storage('unload', "setSource") == false )
 	return false;
+      this.storage('close');
 
       if ( src.meta ) {
 	data.file = src.meta.name;
@@ -850,7 +851,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
     close: function() {
       var data = this.data(pluginName);
 
-      if ( data.meta )
+      if ( data.st_type == "gitty" && data.meta && data.meta.name )
 	$("#chat").trigger('send',
 			   { type:'gitty-closed',
 			     file:data.meta.name
