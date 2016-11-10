@@ -107,7 +107,7 @@ noble_avatar(Gender, Image, New) :-
 	file_name_extension(Base, png, PNG),
 	with_mutex(noble_avatar,
 		   create_avatar_sync(Components,
-				      noble_avatar(PNG), Image, New)).
+				      noble_avatar, PNG, Image, New)).
 noble_avatar(Gender, Image, true) :- !,
 	repeat,
 	    noble_avatar(Gender, Image, New),
@@ -132,16 +132,25 @@ existing_noble_avatar(Gender, Image) :-
 	gender_id(Gender, Index).
 
 
-create_avatar_sync(Components, Location, Image, New) :-
+create_avatar_sync(Components, DirAlias, File, Image, New) :-
+	Location =.. [DirAlias,File],
 	(   absolute_file_name(Location, Image,
 			       [ access(read),
 				 file_errors(fail)
 			       ])
 	->  New = false
 	;   absolute_file_name(Location, Image,
-			       [ access(write) ]),
-	    composite(Components, Image),
+			       [ access(write), file_errors(fail) ])
+	->  composite(Components, Image),
 	    New	= true
+	;   Dir =.. [DirAlias,.],
+	    absolute_file_name(Dir, DirPath, [solutions(all)]),
+	    file_directory_name(DirPath, Parent),
+	    exists_directory(Parent),
+	    \+ exists_directory(DirPath)
+	->  make_directory(DirPath),
+	    absolute_file_name(Location, Image, [access(write)]),
+	    composite(Components, Image)
 	).
 
 composite(Components, Image) :-
