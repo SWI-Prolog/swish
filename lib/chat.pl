@@ -242,11 +242,34 @@ subscribe_session_to_gitty_file(Session, File) :-
 unsubscribe_session_to_gitty_file(Session, File) :-
 	retractall(subscription(Session, gitty, File)).
 
-%%	session_open_file(Session, File)
+%%	sync_gazers(WSID, Files:list(atom)) is det.
 %
-%	A browser has an open file.
+%	A browser has entered SWISH with   Files open. Make other gazers
+%	at one of the member files aware of   the new gazer and make the
+%	new gazer aware of existing ones.
 
-session_open_file(Session, File) :-
+sync_gazers(_, []) :- !.
+sync_gazers(WSID, Files) :-
+	inform_newby_about_existing_gazers(WSID, Files),
+	inform_existing_gazers_about_newby(WSID, Files).
+
+inform_newby_about_existing_gazers(WSID, Files) :-
+	findall(Gazer, files_gazer(Files, Gazer), Gazers),
+	hub_send(WSID, json(_{type:"gazers", gazers:Gazers})).
+
+files_gazer(Files, Gazer) :-
+	member(File, Files),
+	subscription(Session, gitty, File),
+	session_user(Session, UID),
+	public_user_data(UID, Data),
+	Gazer = _{file:File, uid:UID}.put(Data).
+
+inform_existing_gazers_about_newby(WSID, Files) :-
+	visitor_session(WSID, Session),
+	forall(member(File, Files),
+	       signal_gazer(Session, File)).
+
+signal_gazer(Session, File) :-
 	subscribe_session_to_gitty_file(Session, File),
 	broadcast_event(download(File), File, Session).
 
@@ -270,11 +293,21 @@ session_close_all(Session) :-
 %	contain a `uid` field.
 
 add_user_details(Message, Enriched) :-
-	visitor_data(Message.uid, Data),
+	public_user_data(Message.uid, Data),
+	Enriched = Message.put(Data).
+
+%%	public_user_data(+UID, -Public:dict) is det.
+%
+%	True when Public provides the   information  we publically share
+%	about UID. This is currently the name and avatar.
+
+public_user_data(UID, Public) :-
+	visitor_data(UID, Data),
 	(   _{name:Name, avatar:Avatar} :< Data
-	->  Enriched = Message.put(_{name:Name, avatar:Avatar})
+	->  Public = _{name:Name, avatar:Avatar}
 	;   _{avatar:Avatar} :< Data
-	->  Enriched = Message.put(_{avatar:Avatar})
+	->  Public = _{avatar:Avatar}
+	;   Public = _{}
 	).
 
 %%	get_visitor_data(-Data:dict, +Options) is det.
@@ -478,13 +511,14 @@ json_message(Dict, WSID) :-
 	visitor_session(WSID, Session),
 	session_close_all(Session).
 json_message(Dict, WSID) :-
-	_{type: "has-open-files", files:Files} :< Dict, !,
-	visitor_session(WSID, Session),
-	forall(member(FileDict, Files),
-	       ( atom_string(File, FileDict.get(file)),
-	         session_open_file(Session, File))).
+	_{type: "has-open-files", files:FileDicts} :< Dict, !,
+	maplist(dict_file_name, FileDicts, Files),
+	sync_gazers(WSID, Files).
 json_message(Dict, _WSID) :-
 	debug(chat(ignored), 'Ignoring JSON message ~p', [Dict]).
+
+dict_file_name(Dict, File) :-
+	atom_string(File, Dict.get(file)).
 
 
 		 /*******************************

@@ -176,6 +176,21 @@ define([ "jquery", "config", "preferences" ],
     },
 
     /**
+     * Replied when opening SWISH on a file to inform
+     * the new user about existing visitors to same
+     * files as are open in the current SWISH.  See
+     * inform_newby_about_existing_gazers/2.
+     */
+    gazers: function(e) {
+      if ( e.gazers ) {
+	for(var i=0; i<e.gazers.length; i++) {
+	  var gazer = e.gazers[i];
+	  this.chat('addUser', gazer.uid, gazer);
+	}
+      }
+    },
+
+    /**
      * Display a notification by some user.
      */
     notify: function(e) {
