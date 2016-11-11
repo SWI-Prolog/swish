@@ -317,7 +317,7 @@ storage_get(Request, swish, Options) :-
 storage_get(Request, Format, _) :-
 	storage_dir(Dir),
 	request_file_or_hash(Request, Dir, FileOrHash, Type),
-	broadcast(swish(Request, download(Dir, FileOrHash))),
+	broadcast(swish(Request, download(Dir, FileOrHash, Format))),
 	storage_get(Format, Dir, Type, FileOrHash, Request).
 
 storage_get(swish, Dir, _, FileOrHash, Request) :-

@@ -242,6 +242,14 @@ subscribe_session_to_gitty_file(Session, File) :-
 unsubscribe_session_to_gitty_file(Session, File) :-
 	retractall(subscription(Session, gitty, File)).
 
+%%	session_open_file(Session, File)
+%
+%	A browser has an open file.
+
+session_open_file(Session, File) :-
+	subscribe_session_to_gitty_file(Session, File),
+	broadcast_event(download(File), File, Session).
+
 %%	session_close_file(Session, File) is det.
 %%	session_close_all(Session) is det.
 %
@@ -422,6 +430,24 @@ handle_message(Message, _Room) :-
 	debug(chat(ignored), 'Ignoring chat message ~p', [Message]).
 
 
+%%	json_message(+Message, +WSID) is det.
+%
+%	Process a JSON message  translated  to   a  dict.  The following
+%	messages are understood:
+%
+%	  - subscribe channel [subchannel]
+%	  - unsubscribe channel [subchannel]
+%	  Actively (un)subscribe for specific message channels.
+%	  - gitty-closed file
+%	  The browser has closed an (the) editor holding _file_.
+%	  Problem is that there can be multiple editors in different
+%	  browser windows associated to the same session.
+%	  - unload
+%	  A SWISH instance is cleanly being unloaded.
+%	  - has-open-files files
+%	  Executed after initiating the websocket to indicate loaded
+%	  files.
+
 json_message(Dict, WSID) :-
 	_{ type: "subscribe",
 	   channel:ChannelS, sub_channel:SubChannelS} :< Dict, !,
@@ -451,6 +477,12 @@ json_message(Dict, WSID) :-
 	_{type: "unload"} :< Dict, !,	% clean close/reload
 	visitor_session(WSID, Session),
 	session_close_all(Session).
+json_message(Dict, WSID) :-
+	_{type: "has-open-files", files:Files} :< Dict, !,
+	visitor_session(WSID, Session),
+	forall(member(FileDict, Files),
+	       ( atom_string(File, FileDict.get(file)),
+	         session_open_file(Session, File))).
 json_message(Dict, _WSID) :-
 	debug(chat(ignored), 'Ignoring JSON message ~p', [Dict]).
 
@@ -462,12 +494,32 @@ json_message(Dict, _WSID) :-
 :- unlisten(swish(_, _)),
    listen(swish(Request, Event), swish_event(Event, Request)).
 
+%%	swish_event(+Event, +Request)
+%
+%	An event happened inside SWISH due to handling Request.
+
+swish_event(Event, _Request) :-
+	silent_event(Event), !.
 swish_event(Event, _Request) :-
 	http_session_id(Session),
 	debug(event, 'Event: ~p, session ~q', [Event, Session]),
 	event_file(Event, File),
 	subscribe_session_to_gitty_file(Session, File),
 	broadcast_event(Event, File, Session).
+
+%%	silent_event(+Event) is semidet.
+%
+%	If true, ignore the event.  This is a quick filter.
+
+silent_event(download(_Store, _FileOrHash, Format)) :-
+	Format \== json.
+
+%%	broadcast_event(+Event, +File, +Session)
+%
+%	Event happened that is related to  File in Session. Broadcast it
+%	to subscribed users as a notification.
+%
+%	@tbd	Extend the structure to allow other browsers to act.
 
 broadcast_event(Event, File, Session) :-
 	session_user(Session, UID),
@@ -478,6 +530,11 @@ broadcast_event(Event, File, Session) :-
 		    },
 	add_user_details(Message0, Message),
 	chat_broadcast(Message, gitty/File).
+
+%%	event_html(+Event, -HTML:string) mis det.
+%
+%	Describe an event as an HTML  message   to  be  displayed in the
+%	client's notification area.
 
 event_html(Event, HTML) :-
 	(   phrase(event_message(Event), Tokens)
@@ -495,7 +552,9 @@ event_message(deleted(File, _From, _To)) -->
 	html([ 'Deleted ', \file(File) ]).
 event_message(closed(File)) -->
 	html([ 'Closed ', \file(File) ]).
-event_message(download(Store, FileOrHash)) -->
+event_message(download(File)) -->
+	html([ 'Opened ', \file(File) ]).
+event_message(download(Store, FileOrHash, _Format)) -->
 	{ event_file(download(Store, FileOrHash), File)
 	},
 	html([ 'Opened ', \file(File) ]).
@@ -503,10 +562,14 @@ event_message(download(Store, FileOrHash)) -->
 file(File) -->
 	html(a(href('/p/'+File), File)).
 
+%%	event_file(+Event, -File) is semidet.
+%
+%	True when Event is associated with File.
+
 event_file(created(File), File).
 event_file(updated(File, _From, _To), File).
 event_file(deleted(File, _From, _To), File).
-event_file(download(Store, FileOrHash), File) :-
+event_file(download(Store, FileOrHash, _Format), File) :-
 	(   is_gitty_hash(FileOrHash)
 	->  gitty_commit(Store, FileOrHash, Meta),
 	    File = Meta.name

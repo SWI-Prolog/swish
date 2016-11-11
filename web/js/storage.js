@@ -856,6 +856,31 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 			   { type:'gitty-closed',
 			     file:data.meta.name
 			   });
+    },
+
+    /**
+     * Broadcast all open pages.  This is used to synchronise state.
+     * Future versions may include modified status, etc.
+     * @param {Bool} [always] if `true`, also report if no files are
+     * open.
+     */
+    opened: function(always) {
+      var opened = [];
+
+      this.each(function() {
+	var data = $(this).data(pluginName);
+
+	if ( data.st_type == "gitty" && data.meta && data.meta.name ) {
+	  opened.push({ file:data.meta.name
+		      });
+	}
+      });
+
+      if ( always || opened.length > 0 )
+	$("#chat").trigger('send',
+			   { type:'has-open-files',
+			     files:opened
+			   });
     }
   }; // methods
 

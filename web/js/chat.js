@@ -57,10 +57,7 @@ define([ "jquery", "config", "preferences" ],
 
 	elem.data(pluginName, data);	/* store with element */
 
-	if ( config.swish.chat ) {
-	  elem.chat('connect');
-	}
-
+	/* add event handling */
 	elem.on("click", function(ev) {
 	  var li = $(ev.target).closest("li.user");
 
@@ -70,10 +67,14 @@ define([ "jquery", "config", "preferences" ],
 	elem.on("send", function(ev, msg) {
 	  elem.chat('send', msg);
 	});
-
 	$(window).bind("beforeunload", function() {
 	  elem.chat('disconnect');
 	});
+
+	/* setup websocket */
+	if ( config.swish.chat ) {
+	  elem.chat('connect');
+	}
       });
     },
 
@@ -94,10 +95,10 @@ define([ "jquery", "config", "preferences" ],
 	url += "?avatar=" + encodeURIComponent(avatar);
 
       data.connection = new WebSocket("ws://" + url, ['chat']);
+
       data.connection.onerror = function(error) {
 	console.log('WebSocket Error ' + error);
-      }
-
+      };
       data.connection.onmessage = function(e) {
 	var msg = JSON.parse(e.data);
 	msg.origin = e.origin;
@@ -105,7 +106,10 @@ define([ "jquery", "config", "preferences" ],
 	  elem.chat(msg.type, msg);
 	else
 	  console.log(e);
-      }
+      };
+      data.connection.onopen = function() {
+	$(".storage").storage('opened');
+      };
     },
 
     disconnect: function() {
