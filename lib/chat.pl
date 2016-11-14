@@ -277,11 +277,13 @@ signal_gazer(Session, File) :-
 %%	session_close_all(Session) is det.
 %
 %	Indicate that we closed a file or   all files due to leaving the
-%	page. Note that in a browser may have multiple sockets open.
+%	page.
+%
+%	@bug Note that a browser may have multiple swish windows open.
 
 session_close_file(Session, File) :-
-	broadcast_event(closed(File), File, Session),
-	unsubscribe_session_to_gitty_file(Session, File).
+	unsubscribe_session_to_gitty_file(Session, File),
+	broadcast_event(closed(File), File, Session).
 
 session_close_all(Session) :-
 	forall(subscription(Session, gitty, File),
