@@ -172,7 +172,7 @@ define([ "jquery", "config", "preferences" ],
 	e.name = "Me";
       if ( e.avatar )
 	preferences.setVal("avatar", e.avatar);
-      this.chat('addUser', e.uid, e);
+      this.chat('addUser', e);
     },
 
     /**
@@ -185,7 +185,7 @@ define([ "jquery", "config", "preferences" ],
       if ( e.gazers ) {
 	for(var i=0; i<e.gazers.length; i++) {
 	  var gazer = e.gazers[i];
-	  this.chat('addUser', gazer.uid, gazer);
+	  this.chat('addUser', gazer);
 	}
       }
     },
@@ -194,14 +194,14 @@ define([ "jquery", "config", "preferences" ],
      * Display a notification by some user.
      */
     notify: function(e) {
-      this.chat('notifyUser', e.uid, e);
+      this.chat('notifyUser', e);
     },
 
     /**
      * A user has left
      */
     left: function(e) {
-      $("#"+e.uid).hide(400, function() {this.remove();});
+      $("#"+e.wsid).hide(400, function() {this.remove();});
     },
 
 		 /*******************************
@@ -211,24 +211,24 @@ define([ "jquery", "config", "preferences" ],
     /**
      * Present a notification associated with a user
      *
-     * @param {Oject} options
+     * @param {Object} options
      * @param {String} options.html provides the inner html of the message.
      * @param {Number} [options.fadeIn=400] provide the fade in time.
      * @param {Number} [options.fadeOut=400] provide the fade out time.
      * @param {Number} [options.time=5000] provide the show time.  The
      * value `0` prevents a timeout.
      */
-    notifyUser: function(uid, options) {
-      var elm  = $("#"+uid);
+    notifyUser: function(options) {
+      var elm = $("#"+options.wsid);
 
-      if ( elm.length == 0 ) {
-	this.chat('addUser', uid, options);
-	elm = $("#"+uid);
-      }
+      if ( elm.length == 0 )
+	elm = this.chat('addUser', options);
+
+      updateFiles(elm, options);
 
       if ( elm.length > 0 ) {
 	var div  = $.el.div({ class:"notification notify-arrow",
-			      id:"ntf-"+uid
+			      id:"ntf-"+options.wsid
 			    });
 	var epos = elm.offset();
 
@@ -247,21 +247,21 @@ define([ "jquery", "config", "preferences" ],
       }
     },
 
-    unnotify: function(uid) {
-      $("#ntf-"+uid).remove();
+    unnotify: function(wsid) {
+      $("#ntf-"+wsid).remove();
       return this;
     },
 
     /**
      * Add a new user to the notification area
-     * @param {String} uid is the identifier of the user
      * @param {Object} [options]
      * @param {String} [options.name] is the name of the user
      */
-    addUser: function(uid, options) {
-      return this.append(li_user(uid, options));
+    addUser: function(options) {
+      var li = li_user(options.wsid, options);
+      this.append(li);
+      return $(li);
     }
-
   }; // methods
 
   /**
@@ -293,6 +293,18 @@ define([ "jquery", "config", "preferences" ],
     return li;
   }
 
+  function updateFiles(li, options) {
+    var ul   = li.find("ul.dropdown-menu");
+    var file = options.event_argv[0];
+
+    if ( options.event == "opened" )
+      ul.append($.el.li({class:"file", "data-file":file}, file));
+    else if ( options.event == "closed" )
+      ul.find('li.file[data-file="'+file+'"]').remove();
+
+    if ( ul.find('li.file').length == 0 )
+      ul.hide(400, function() {this.remove();});
+  }
 
   /**
    * <Class description>

@@ -116,7 +116,11 @@ accept_chat(Session, Options, WebSocket) :-
 	create_chat_room,
 	hub_add(swish_chat, WebSocket, Id),
 	create_visitor(Id, Session, TmpUser, UserData, Options),
-	hub_send(Id, json(UserData.put(_{type:welcome, uid:TmpUser}))).
+	Msg = _{ type:welcome,
+		 uid:TmpUser,
+		 wsid:Id
+	       },
+	hub_send(Id, json(UserData.put(Msg))).
 
 
 		 /*******************************
@@ -434,7 +438,7 @@ swish_chat_event(Room) :-
 
 %%	handle_message(+Message, +Room)
 %
-%	Handle incomming messages
+%	Handle incoming messages
 
 handle_message(Message, _Room) :-
 	websocket{opcode:text} :< Message, !,
@@ -522,7 +526,14 @@ swish_event(Event, _Request) :-
 	http_session_id(Session),
 	debug(event, 'Event: ~p, session ~q', [Event, Session]),
 	event_file(Event, File),
-	session_broadcast_event(Event, File, Session, undefined).
+	(   visitor_session(WSID, Session),
+	    subscription(WSID, gitty, File)
+	->  true
+	;   visitor_session(WSID, Session)
+	->  true
+	;   WSID = undefined
+	),
+	session_broadcast_event(Event, File, Session, WSID).
 
 %%	broadcast_event(+Event) is semidet.
 %
