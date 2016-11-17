@@ -145,7 +145,7 @@ accept_chat(Session, Options, WebSocket) :-
 	visitor_session/2,		% WSID, Session
 	session_user/2,			% Session, TmpUser
 	visitor_data/2,			% TmpUser, Data
-	subscription/3.			% Session, Channel, SubChannel
+	subscription/3.			% WSID, Channel, SubChannel
 
 %%	create_visitor(+WSID, +Session, -TmpUser, -UserData, +Options)
 %
@@ -221,73 +221,68 @@ destroy_visitor_data(TmpUser) :-
 subscribe(WSID, Channel) :-
 	subscribe(WSID, Channel, _SubChannel).
 subscribe(WSID, Channel, SubChannel) :-
-	visitor_session(WSID, Session),
-	assertz(subscription(Session, Channel, SubChannel)).
+	(   subscription(WSID, Channel, SubChannel)
+	->  true
+	;   assertz(subscription(WSID, Channel, SubChannel))
+	).
 
 unsubscribe(WSID, Channel) :-
 	unsubscribe(WSID, Channel, _SubChannel).
 unsubscribe(WSID, Channel, SubChannel) :-
-	visitor_session(WSID, Session),
-	retractall(subscription(Session, Channel, SubChannel)).
-
-%%	subscribe_session_to_gitty_file(+Session, +File) is det.
-%%	unsubscribe_session_to_gitty_file(+Session, +File) is det.
-
-subscribe_session_to_gitty_file(Session, File) :-
-	(   subscription(Session, gitty, File)
-	->  true
-	;   assertz(subscription(Session, gitty, File))
-	).
-
-unsubscribe_session_to_gitty_file(Session, File) :-
-	retractall(subscription(Session, gitty, File)).
+	retractall(subscription(WSID, Channel, SubChannel)).
 
 %%	sync_gazers(WSID, Files:list(atom)) is det.
 %
-%	A browser has entered SWISH with   Files open. Make other gazers
-%	at one of the member files aware of   the new gazer and make the
-%	new gazer aware of existing ones.
+%	A browser signals it has Files open.   This happens when a SWISH
+%	instance is created as well  as   when  a SWISH instance changes
+%	state, such as closing a tab, adding   a  tab, bringing a tab to
+%	the foreground, etc.
 
-sync_gazers(_, []) :- !.
-sync_gazers(WSID, Files) :-
-	inform_newby_about_existing_gazers(WSID, Files),
+sync_gazers(WSID, Files0) :-
+	findall(F, subscription(WSID, gitty, F), Viewing0),
+	sort(Files0, Files),
+	sort(Viewing0, Viewing),
+	(   Files == Viewing
+	->  true
+	;   ord_subtract(Files, Viewing, New),
+	    add_gazing(WSID, New),
+	    ord_subtract(Viewing, Files, Left),
+	    del_gazing(WSID, Left)
+	).
+
+add_gazing(_, []) :- !.
+add_gazing(WSID, Files) :-
+	inform_me_about_existing_gazers(WSID, Files),
 	inform_existing_gazers_about_newby(WSID, Files).
 
-inform_newby_about_existing_gazers(WSID, Files) :-
+inform_me_about_existing_gazers(WSID, Files) :-
 	findall(Gazer, files_gazer(Files, Gazer), Gazers),
 	hub_send(WSID, json(_{type:"gazers", gazers:Gazers})).
 
 files_gazer(Files, Gazer) :-
 	member(File, Files),
-	subscription(Session, gitty, File),
+	subscription(WSID, gitty, File),
+	visitor_session(WSID, Session),
 	session_user(Session, UID),
 	public_user_data(UID, Data),
 	Gazer = _{file:File, uid:UID}.put(Data).
 
 inform_existing_gazers_about_newby(WSID, Files) :-
-	visitor_session(WSID, Session),
 	forall(member(File, Files),
-	       signal_gazer(Session, File)).
+	       signal_gazer(WSID, File)).
 
-signal_gazer(Session, File) :-
-	subscribe_session_to_gitty_file(Session, File),
-	broadcast_event(download(File), File, Session).
+signal_gazer(WSID, File) :-
+	subscribe(WSID, gitty, File),
+	broadcast_event(opened(File), File, WSID).
 
-%%	session_close_file(Session, File) is det.
-%%	session_close_all(Session) is det.
-%
-%	Indicate that we closed a file or   all files due to leaving the
-%	page.
-%
-%	@bug Note that a browser may have multiple swish windows open.
+del_gazing(_, []) :- !.
+del_gazing(WSID, Files) :-
+	forall(member(File, Files),
+	       del_gazing1(WSID, File)).
 
-session_close_file(Session, File) :-
-	unsubscribe_session_to_gitty_file(Session, File),
-	broadcast_event(closed(File), File, Session).
-
-session_close_all(Session) :-
-	forall(subscription(Session, gitty, File),
-	       session_close_file(Session, File)).
+del_gazing1(WSID, File) :-
+	unsubscribe(WSID, gitty, File),
+	broadcast_event(closed(File), File, WSID).
 
 %%	add_user_details(+Message, -Enriched) is det.
 %
@@ -402,11 +397,9 @@ chat_broadcast(Message, Channel) :-
 		      subscribed(Channel)).
 
 subscribed(Channel, WSID) :-
-	visitor_session(WSID, Session),
-	subscription(Session, Channel, _).
+	subscription(WSID, Channel, _).
 subscribed(Channel, SubChannel, WSID) :-
-	visitor_session(WSID, Session),
-	subscription(Session, Channel, SubChannel).
+	subscription(WSID, Channel, SubChannel).
 
 
 		 /*******************************
@@ -473,10 +466,6 @@ handle_message(Message, _Room) :-
 %	  - subscribe channel [subchannel]
 %	  - unsubscribe channel [subchannel]
 %	  Actively (un)subscribe for specific message channels.
-%	  - gitty-closed file
-%	  The browser has closed an (the) editor holding _file_.
-%	  Problem is that there can be multiple editors in different
-%	  browser windows associated to the same session.
 %	  - unload
 %	  A SWISH instance is cleanly being unloaded.
 %	  - has-open-files files
@@ -504,14 +493,8 @@ json_message(Dict, WSID) :-
 	atom_string(Channel, ChannelS),
 	unsubscribe(WSID, Channel).
 json_message(Dict, WSID) :-
-	_{type: "gitty-closed", file:FileS} :< Dict, !,
-	atom_string(File, FileS),
-	visitor_session(WSID, Session),
-	session_close_file(Session, File).
-json_message(Dict, WSID) :-
 	_{type: "unload"} :< Dict, !,	% clean close/reload
-	visitor_session(WSID, Session),
-	session_close_all(Session).
+	sync_gazers(WSID, []).
 json_message(Dict, WSID) :-
 	_{type: "has-open-files", files:FileDicts} :< Dict, !,
 	maplist(dict_file_name, FileDicts, Files),
@@ -535,34 +518,40 @@ dict_file_name(Dict, File) :-
 %	An event happened inside SWISH due to handling Request.
 
 swish_event(Event, _Request) :-
-	silent_event(Event), !.
-swish_event(Event, _Request) :-
+	broadcast_event(Event),
 	http_session_id(Session),
 	debug(event, 'Event: ~p, session ~q', [Event, Session]),
 	event_file(Event, File),
-	subscribe_session_to_gitty_file(Session, File),
-	broadcast_event(Event, File, Session).
+	session_broadcast_event(Event, File, Session, undefined).
 
-%%	silent_event(+Event) is semidet.
+%%	broadcast_event(+Event) is semidet.
 %
-%	If true, ignore the event.  This is a quick filter.
+%	If true, broadcast this event.
 
-silent_event(download(_Store, _FileOrHash, Format)) :-
-	Format \== json.
+broadcast_event(updated(_File, _From, _To)).
 
-%%	broadcast_event(+Event, +File, +Session)
+
+%%	broadcast_event(+Event, +File, +WSID)
 %
-%	Event happened that is related to  File in Session. Broadcast it
+%	Event happened that is related to  File in WSID. Broadcast it
 %	to subscribed users as a notification.
 %
 %	@tbd	Extend the structure to allow other browsers to act.
 
-broadcast_event(Event, File, Session) :-
+broadcast_event(Event, File, WSID) :-
+	visitor_session(WSID, Session),
+	session_broadcast_event(Event, File, Session, WSID).
+
+session_broadcast_event(Event, File, Session, WSID) :-
 	session_user(Session, UID),
 	event_html(Event, HTML),
+	Event =.. [EventName|Argv],
 	Message0 = _{ type:notify,
 		      uid:UID,
-		      html:HTML
+		      html:HTML,
+		      event:EventName,
+		      event_argv:Argv,
+		      wsid:WSID
 		    },
 	add_user_details(Message0, Message),
 	chat_broadcast(Message, gitty/File).
@@ -588,6 +577,8 @@ event_message(deleted(File, _From, _To)) -->
 	html([ 'Deleted ', \file(File) ]).
 event_message(closed(File)) -->
 	html([ 'Closed ', \file(File) ]).
+event_message(opened(File)) -->
+	html([ 'Opened ', \file(File) ]).
 event_message(download(File)) -->
 	html([ 'Opened ', \file(File) ]).
 event_message(download(Store, FileOrHash, _Format)) -->
