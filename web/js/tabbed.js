@@ -364,6 +364,8 @@ var tabbed = {
       } else if ( this.tabbed('navContent').children().length == 0 ) {
 	this.tabbed('newTab');
       }
+
+      $(".storage").storage('chat_status', true);
     },
 
     /**
@@ -374,8 +376,9 @@ var tabbed = {
       var a = this.tabbed('navTab', id);
       if ( a ) {
 	a.tab('show');
-	return this;
       }
+
+      $(".storage").storage('chat_status', true);
     },
 
     /**

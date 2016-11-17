@@ -108,7 +108,7 @@ define([ "jquery", "config", "preferences" ],
 	  console.log(e);
       };
       data.connection.onopen = function() {
-	$(".storage").storage('opened');
+	$(".storage").storage('chat_status');
       };
     },
 

@@ -54,6 +54,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 
   var defaults = {
     typeName: "program",
+    is_clean: true,
     markClean: function(clean) {}
   }
 
@@ -125,6 +126,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	elem.on("activate-tab", function(ev) {
 						/* TBD: What exactly? */
 	});
+	elem.on("data-is-clean", function(ev, clean) {
+	  elem.storage('markClean', clean);
+	});
 
 	$(window).bind("beforeunload", function(ev) {
 	  return elem.storage('unload', "beforeunload", ev);
@@ -161,7 +165,6 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 
       if ( this.storage('unload', "setSource") == false )
 	return false;
-      this.storage('close');
 
       if ( src.meta ) {
 	data.file = src.meta.name;
@@ -192,6 +195,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       this.tabbed('title', title, type.dataType);
       if ( !src.noHistory )
 	history.push(src);
+      $(".storage").storage('chat_status', true);
 
       return this;
     },
@@ -849,30 +853,37 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
      * Called if this element is inside a tab this is being closed
      */
     close: function() {
-      var data = this.data(pluginName);
-
-      if ( data.st_type == "gitty" && data.meta && data.meta.name )
-	$("#chat").trigger('send',
-			   { type:'gitty-closed',
-			     file:data.meta.name
-			   });
     },
 
     /**
-     * Broadcast all open pages.  This is used to synchronise state.
-     * Future versions may include modified status, etc.
+     * maintain `data.is_clean`
+     */
+    markClean: function(clean) {
+      var data = this.data(pluginName);
+
+      data.is_clean = clean;
+    },
+
+    /**
+     * Broadcast all open (gitty) files. This is used to synchronise
+     * state.  Each state object has the property `file`.  If the file
+     * is locally modified, `state.modified` is `true` and if the file
+     * is the visible one, `state.visible` is true
      * @param {Bool} [always] if `true`, also report if no files are
      * open.
      */
-    opened: function(always) {
+    chat_status: function(always) {
       var opened = [];
 
       this.each(function() {
 	var data = $(this).data(pluginName);
 
 	if ( data.st_type == "gitty" && data.meta && data.meta.name ) {
-	  opened.push({ file:data.meta.name
-		      });
+	  var state = { file:  data.meta.name };
+
+	  if ( !data.is_clean ) state.modified = true;
+	  if ( $(this).is(":visible") ) state.visible = true;
+	  opened.push(state);
 	}
       });
 
