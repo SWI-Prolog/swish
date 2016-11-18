@@ -397,7 +397,7 @@ var cellTypes = {
       var viewrect;
 
       if ( options.if_visible ) {
-	if ( view.find(".nb-cell").length > 0 )
+	if ( view.find(".nb-content > div.nb-cell").length > 0 )
 	  viewrect = view[0].getBoundingClientRect();
       }
 
@@ -1030,7 +1030,6 @@ var cellTypes = {
       imageButton("background", "Use as background program", "xs"));
     this.append(buttons,
 		editor=$.el.div({class:"editor with-buttons"}));
-    console.log("XXX");
     if ( options.background )
     { this.addClass("background");
     }
