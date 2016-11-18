@@ -168,11 +168,16 @@ define([ "jquery", "config", "preferences" ],
      * user
      */
     welcome: function(e) {
+      var data = $(this).data(pluginName);
+
+      data.wsid = e.wsid;
       if ( !e.name )
 	e.name = "Me";
       if ( e.avatar )
 	preferences.setVal("avatar", e.avatar);
-      this.chat('addUser', e);
+
+      var li = this.chat('addUser', e);
+      $(li).addClass("myself");
     },
 
     /**
@@ -186,6 +191,8 @@ define([ "jquery", "config", "preferences" ],
 	for(var i=0; i<e.gazers.length; i++) {
 	  var gazer = e.gazers[i];
 	  this.chat('addUser', gazer);
+	  if ( gazer.file )
+	    this.chat('addUserFile', gazer.wsid, gazer.file);
 	}
       }
     },
@@ -197,12 +204,6 @@ define([ "jquery", "config", "preferences" ],
       this.chat('notifyUser', e);
     },
 
-    /**
-     * A user has left
-     */
-    left: function(e) {
-      $("#"+e.wsid).hide(400, function() {this.remove();});
-    },
 
 		 /*******************************
 		 *	        UI		*
@@ -219,48 +220,142 @@ define([ "jquery", "config", "preferences" ],
      * value `0` prevents a timeout.
      */
     notifyUser: function(options) {
-      var elm = $("#"+options.wsid);
+      var elem = this;
+      var user_li = this.chat('addUser', options);
 
-      if ( elm.length == 0 )
-	elm = this.chat('addUser', options);
-
-      updateFiles(elm, options);
-
-      if ( elm.length > 0 ) {
+      if ( user_li.length > 0 ) {
 	var div  = $.el.div({ class:"notification notify-arrow",
 			      id:"ntf-"+options.wsid
 			    });
-	var epos = elm.offset();
+	var epos = user_li.offset();
 
 	$("body").append(div);
 	$(div).html(options.html)
-	      .css({ left: epos.left+elm.width()-$(div).outerWidth()-5,
-		     top:  epos.top+elm.height()+5
+	      .css({ left: epos.left+user_li.width()-$(div).outerWidth()-5,
+		     top:  epos.top+user_li.height()+5
 		   })
 	      .on("click", function(){$(div).remove();})
 	      .show(options.fadeIn||400);
+
 	if ( options.time !== 0 ) {
+	  var time = options.time;
+
+	  if ( !time )
+	    time = user_li.hasClass("myself") ? 1000 : 5000;
+
 	  setTimeout(function() {
-	    $(div).hide(options.fadeOut||400, function(){this.remove();});
-	  }, options.time||5000);
+	    $(div).hide(options.fadeOut||400, function() {
+	      elem.chat('unnotify', options.wsid);
+	    });
+	  }, time);
 	}
+
+	this.chat('updateFiles', options);
       }
     },
 
     unnotify: function(wsid) {
       $("#ntf-"+wsid).remove();
+
+      if ( $("#"+wsid).hasClass("removed") )
+	this.chat('removeUser', wsid);
+
+      return this;
+    },
+
+    updateFiles: function(options) {
+      var data = $(this).data(pluginName);
+
+      function file() {
+	return options.event_argv[0];
+      }
+
+      if ( options.event == "opened" ) {
+	this.chat('addUserFile', options.wsid, file());
+      } else if ( options.event == "closed" ) {
+	var wsid = options.wsid == data.wsid ? undefined : options.wsid;
+	this.chat('removeUserFile', wsid, file(), true);
+      }
+    },
+
+    /**
+     * Return or add a user to the notification area.
+     * @param {Object} options
+     * @param {String} options.wsid Identifier for the user (a UUID)
+     * @param {String} [options.name] is the name of the user
+     * @returns {jQuery} the `li` element representing the user
+     */
+    addUser: function(options) {
+      var li = $("#"+options.wsid);
+
+      if ( li.length == 0 )
+      { li = $(li_user(options.wsid, options));
+	this.append(li);
+      }
+
+      return li;
+    },
+
+    removeUser: function(wsid) {
+      if ( typeof wsid != "string" )
+	wsid = wsid.wsid;		/* allow for an object */
+
+      if ( $("#ntf-"+wsid).length > 0 )
+	$("#"+wsid).addClass("removed");
+      else
+	$("#"+wsid).hide(400, function() {this.remove();});
+    },
+
+    addUserFile: function(wsid, file) {
+      var li = $("#"+wsid);
+      var ul = li.find("ul.dropdown-menu");
+      var fli;
+
+      ul.find("li.file").each(function() {
+	if ( $(this).data("file") == file ) {
+	  fli = this;
+	  return false;
+	}
+      });
+
+      if ( fli == undefined )
+	ul.append($.el.li({class:"file", "data-file":file}, file));
+
       return this;
     },
 
     /**
-     * Add a new user to the notification area
-     * @param {Object} [options]
-     * @param {String} [options.name] is the name of the user
+     * Remove a file associated with the user wsid.
+     * @param {String} [wsid] User for which to remove file.  If
+     * `undefined`, remove file for all users.
+     * @param {Boolean} [user_too] if `true', remove the user if
+     * the set of files becomes empty and this is not `myself`.
      */
-    addUser: function(options) {
-      var li = li_user(options.wsid, options);
-      this.append(li);
-      return $(li);
+    removeUserFile: function(wsid, file, user_too) {
+      var elem = this;
+
+      function removeFile(user_li) {
+	var ul = user_li.children("ul.dropdown-menu");
+
+	ul.find("li.file").each(function() {
+	  if ( $(this).data("file") == file ) {
+	    $(this).remove();
+	    if ( user_too &&
+		 !user_li.hasClass("myself") &&
+		 ul.find("li.file").length == 0 )
+	      elem.chat('removeUser', user_li.attr("id"));
+	    return false;
+	  }
+	});
+      }
+
+      if ( wsid ) {
+	removeFile($("#"+wsid));
+      } else {
+	this.children().each(function() {
+	  removeFile($(this), file, user_too);
+	});
+      }
     }
   }; // methods
 
@@ -275,7 +370,9 @@ define([ "jquery", "config", "preferences" ],
 
     function avatar(options) {
       if ( options.avatar ) {
-	return $.el.img({class:"avatar", src:options.avatar, alt:options.name});
+	return $.el.img({ class:"avatar", src:options.avatar,
+			  title:options.name
+			});
       } else {
 	return $.el.span({class:"avatar glyphicon glyphicon-user"})
       }
@@ -283,28 +380,17 @@ define([ "jquery", "config", "preferences" ],
 
     var li = $.el.li({class:"dropdown user", id:id},
 		     $.el.a({ class:"dropdown-toggle avatar",
-			      'data-toggle':"dropdown",
+			      'data-toggle':"dropdown"
 			    },
 			    avatar(options),
 			    $.el.b({class:"caret"})),
-		     $.el.ul({ class:"dropdown-menu pull-right" },
-			     $.el.li(options.name)));
+		     $.el.ul({ class:"dropdown-menu pull-right",
+		               title:options.name
+			     }));
 
     return li;
   }
 
-  function updateFiles(li, options) {
-    var ul   = li.find("ul.dropdown-menu");
-    var file = options.event_argv[0];
-
-    if ( options.event == "opened" )
-      ul.append($.el.li({class:"file", "data-file":file}, file));
-    else if ( options.event == "closed" )
-      ul.find('li.file[data-file="'+file+'"]').remove();
-
-    if ( ul.find('li.file').length == 0 )
-      ul.hide(400, function() {this.remove();});
-  }
 
   /**
    * <Class description>

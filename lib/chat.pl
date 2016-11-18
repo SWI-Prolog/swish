@@ -182,13 +182,12 @@ destroy_visitor(WSID) :-
 	retract(visitor_session(WSID, Session)),
 	(   visitor_session(_, Session)
 	->  true
-	;   http_set_session(Session, timeout(300)),
-	    session_user(Session, UID),
-	    Message = _{ type:left,
-			 uid:UID
-		       },
-	    chat_broadcast(Message)
-	).
+	;   http_set_session(Session, timeout(300))
+	),
+	chat_broadcast(_{ type:removeUser,
+			  wsid:WSID
+			}).
+
 
 %%	create_session_user(+Session, -User, -UserData, +Options)
 %
@@ -269,7 +268,7 @@ files_gazer(Files, Gazer) :-
 	visitor_session(WSID, Session),
 	session_user(Session, UID),
 	public_user_data(UID, Data),
-	Gazer = _{file:File, uid:UID}.put(Data).
+	Gazer = _{file:File, uid:UID, wsid:WSID}.put(Data).
 
 inform_existing_gazers_about_newby(WSID, Files) :-
 	forall(member(File, Files),
@@ -285,8 +284,8 @@ del_gazing(WSID, Files) :-
 	       del_gazing1(WSID, File)).
 
 del_gazing1(WSID, File) :-
-	unsubscribe(WSID, gitty, File),
-	broadcast_event(closed(File), File, WSID).
+	broadcast_event(closed(File), File, WSID),
+	unsubscribe(WSID, gitty, File).
 
 %%	add_user_details(+Message, -Enriched) is det.
 %
