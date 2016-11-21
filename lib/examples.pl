@@ -106,7 +106,7 @@ index_json(HREF, Dir, JSON) :-
 	read_file_to_json(File, JSON0),
 	maplist(add_href(HREF), JSON0, JSON).
 index_json(HREF, Dir, JSON) :-
-	string_concat(Dir, "/*.pl", Pattern),
+	string_concat(Dir, "/*.{pl,swinb}", Pattern),
 	expand_file_name(Pattern, Files),
 	maplist(ex_file_json(HREF), Files, JSON).
 
