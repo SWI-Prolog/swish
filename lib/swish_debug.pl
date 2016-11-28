@@ -96,6 +96,10 @@ stale_module_property(M, thread_status, Status) :-
 	catch(thread_property(Thread, status(Status)), _, fail).
 stale_module_property(M, program_space, Space) :-
 	module_property(M, program_space(Space)).
+stale_module_property(M, program_size, Size) :-
+	module_property(M, program_size(Size)).
+stale_module_property(UUID, highlight_state, State) :-
+	current_highlight_state(UUID, State).
 
 
 %%	swish_statistics(?State)
