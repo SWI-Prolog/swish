@@ -177,9 +177,9 @@ insert([H|T], TB, ChPos0, ChPos, Changed) :-
 	insert(T, TB, ChPos2, ChPos, Changed).
 
 :- dynamic
-	current_editor/4,			% UUID, MemFile, Role, Time
-	editor_last_access/2,			% UUID, Time
-	xref_upto_data/1.			% UUID
+	current_editor/5,		% UUID, MemFile, Role, Lock, Time
+	editor_last_access/2,		% UUID, Time
+	xref_upto_data/1.		% UUID
 
 create_editor(UUID, Editor, Change) :-
 	must_be(atom, UUID),
@@ -190,7 +190,8 @@ create_editor(UUID, Editor, Change) :-
 	;   Role = source
 	),
 	get_time(Now),
-	asserta(current_editor(UUID, Editor, Role, Now)).
+	mutex_create(Lock),
+	asserta(current_editor(UUID, Editor, Role, Lock, Now)).
 
 %%	current_highlight_state(?UUID, -State) is nondet.
 %
@@ -200,9 +201,10 @@ current_highlight_state(UUID,
 			highlight{data:Editor,
 				  role:Role,
 				  created:Created,
+				  lock:Lock,
 				  access:Access
 				 }) :-
-	current_editor(UUID, Editor, Role, Created),
+	current_editor(UUID, Editor, Role, Lock, Created),
 	(   editor_last_access(Editor, Access)
 	->  true
 	;   Access = Created
@@ -218,7 +220,7 @@ current_highlight_state(UUID,
 uuid_like(UUID) :-
 	split_string(UUID, "-", "", Parts),
 	maplist(string_length, Parts, [8,4,4,4,12]),
-	\+ current_editor(UUID, _, _, _).
+	\+ current_editor(UUID, _, _, _, _).
 
 %%	destroy_editor(+UUID)
 %
@@ -229,14 +231,14 @@ destroy_editor(UUID) :-
 	must_be(atom, UUID),
 	retractall(xref_upto_data(UUID)),
 	retractall(editor_last_access(UUID, _)),
-	current_editor(UUID, Editor, _, _), !,
+	current_editor(UUID, Editor, _, _, _), !,
 	(   xref_source_id(Editor, SourceID)
 	->  xref_clean(SourceID),
 	    destroy_state_module(UUID)
 	;   true
 	),
 	% destroy late to make xref_source_identifier/2 work.
-	retractall(current_editor(UUID, Editor, _, _)),
+	retractall(current_editor(UUID, Editor, _, _, _)),
 	free_memory_file(Editor).
 destroy_editor(_).
 
@@ -276,7 +278,7 @@ gc_editors :-
 
 garbage_editor(UUID, TimeOut) :-
 	get_time(Now),
-	current_editor(UUID, _TB, _Role, Created),
+	current_editor(UUID, _TB, _Role, _Lock, Created),
 	Now - Created > TimeOut,
 	(   editor_last_access(UUID, Access)
 	->  Now - Access > TimeOut
@@ -301,7 +303,7 @@ destroy_old_editor_sync(_).
 
 fetch_editor(UUID, TB) :-
 	with_mutex(swish_gc_editor,
-		   ( current_editor(UUID, TB, _Role, _),
+		   ( current_editor(UUID, TB, _Role, _Lock, _),
 		     update_access(UUID)
 		   )).
 
@@ -315,10 +317,10 @@ update_access(UUID) :-
 	prolog:xref_open_source/2.
 
 prolog:xref_source_identifier(UUID, UUID) :-
-	current_editor(UUID, _, _, _).
+	current_editor(UUID, _, _, _, _).
 
 prolog:xref_open_source(UUID, Stream) :-
-	current_editor(UUID, TB, _Role, _), !,
+	current_editor(UUID, TB, _Role, _, _), !,
 	open_memory_file(TB, read, Stream).
 
 
@@ -332,8 +334,8 @@ codemirror_leave(Request) :-
 	http_read_json_dict(Request, Data, []),
 	(   atom_string(UUID, Data.get(uuid))
 	->  debug(cm(leave), 'Leaving editor ~p', [UUID]),
-	    (	current_editor(UUID, _, _, _)
-	    ->	forall(current_editor(UUID, _TB, _Role, _),
+	    (	current_editor(UUID, _, _, _, _)
+	    ->	forall(current_editor(UUID, _TB, _Role, _Lock, _),
 		       with_mutex(swish_gc_editor, destroy_editor(UUID)))
 	    ;	debug(cm(leave), 'No editor for ~p', [UUID])
 	    )
@@ -347,7 +349,7 @@ codemirror_leave(Request) :-
 
 mark_changed(MemFile, Changed) :-
 	(   Changed == true
-	->  current_editor(UUID, MemFile, _Role, _),
+	->  current_editor(UUID, MemFile, _Role, _, _),
 	    retractall(xref_upto_data(UUID))
 	;   true
 	).
@@ -357,7 +359,7 @@ mark_changed(MemFile, Changed) :-
 xref(UUID) :-
 	xref_upto_data(UUID), !.
 xref(UUID) :-
-	current_editor(UUID, MF, _Role, _),
+	current_editor(UUID, MF, _Role, _Lock, _),
 	xref_source_id(MF, SourceId),
 	xref_state_module(MF, Module),
 	xref_source(SourceId,
@@ -381,7 +383,7 @@ xref(UUID) :-
 %	;   SourceId = Master
 %	).
 xref_source_id(TB, UUID) :-
-	current_editor(UUID, TB, _Role, _).
+	current_editor(UUID, TB, _Role, _Lock, _).
 
 %%	xref_state_module(+TB, -Module) is semidet.
 %
@@ -389,7 +391,7 @@ xref_source_id(TB, UUID) :-
 %	temporary module based on the UUID of the source.
 
 xref_state_module(TB, UUID) :-
-	current_editor(UUID, TB, _Role, _),
+	current_editor(UUID, TB, _Role, _Lock, _),
 	(   module_property(UUID, class(temporary))
 	->  true
 	;   set_module(UUID:class(temporary)),
@@ -432,7 +434,7 @@ codemirror_tokens(Request) :-
 
 
 enriched_tokens(TB, _Data, Tokens) :-		% source window
-	current_editor(UUID, TB, source, _), !,
+	current_editor(UUID, TB, source, _Lock, _), !,
 	xref(UUID),
 	server_tokens(TB, Tokens).
 enriched_tokens(TB, Data, Tokens) :-		% query window
@@ -538,12 +540,12 @@ shadow_editor(_Data, _TB) :-
 	server_tokens/1.
 
 show_mirror(Role) :-
-	current_editor(_UUID, TB, Role, _), !,
+	current_editor(_UUID, TB, Role, _Lock, _), !,
 	memory_file_to_string(TB, String),
 	write(user_error, String).
 
 server_tokens(Role) :-
-	current_editor(_UUID, TB, Role, _), !,
+	current_editor(_UUID, TB, Role, _Lock, _), !,
 	enriched_tokens(TB, _{}, Tokens),
 	print_term(Tokens, [output(user_error)]).
 
@@ -553,7 +555,7 @@ server_tokens(Role) :-
 %		represents the tokens found in a single toplevel term.
 
 server_tokens(TB, GroupedTokens) :-
-	current_editor(UUID, TB, _Role, _),
+	current_editor(UUID, TB, _Role, _Lock, _),
 	setup_call_cleanup(
 	    open_memory_file(TB, read, Stream),
 	    ( set_stream_file(TB, Stream),
