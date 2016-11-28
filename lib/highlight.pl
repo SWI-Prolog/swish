@@ -326,9 +326,9 @@ prolog:xref_open_source(UUID, Stream) :-
 
 %%	codemirror_leave(+Request)
 %
-%	POST  handler  that  deals   with    destruction   of  the  XPCE
-%	source_buffer  associated  with  an  editor,   as  well  as  the
-%	associated cross-reference information.
+%	POST  handler  that  deals  with    destruction  of  our  mirror
+%	associated  with  an  editor,   as    well   as  the  associated
+%	cross-reference information.
 
 codemirror_leave(Request) :-
 	http_read_json_dict(Request, Data, []),
