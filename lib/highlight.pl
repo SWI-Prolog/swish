@@ -99,10 +99,11 @@ codemirror_change(Request) :-
 	http_read_json_dict(Request, Change, []),
 	debug(cm(change), 'Change ~p', [Change]),
 	UUID = Change.uuid,
-	(   shadow_editor(Change, TB)
+	(   shadow_editor(Change, UUID, TB)
 	->  (	catch(apply_change(TB, Changed, Change.change),
 		      cm(outofsync), fail)
 	    ->  mark_changed(TB, Changed),
+		release_editor(UUID),
 		reply_json_dict(true)
 	    ;	destroy_editor(UUID),
 		change_failed(UUID, outofsync)
@@ -181,6 +182,12 @@ insert([H|T], TB, ChPos0, ChPos, Changed) :-
 	editor_last_access/2,		% UUID, Time
 	xref_upto_data/1.		% UUID
 
+%%	create_editor(+UUID, -Editor, +Change) is det.
+%
+%	Create a new editor for source UUID   from Change. The editor is
+%	created  in  a  locked  state  and    must   be  released  using
+%	release_editor/1 before it can be publically used.
+
 create_editor(UUID, Editor, Change) :-
 	must_be(atom, UUID),
 	uuid_like(UUID),
@@ -191,6 +198,14 @@ create_editor(UUID, Editor, Change) :-
 	),
 	get_time(Now),
 	mutex_create(Lock),
+	with_mutex(swish_create_editor,
+		   register_editor(UUID, Editor, Role, Lock, Now)).
+create_editor(UUID, Editor, _Change) :-
+	fetch_editor(UUID, Editor).
+
+register_editor(UUID, Editor, Role, Lock, Now) :-
+	\+ current_editor(UUID, _, _, _, _),
+	mutex_lock(Lock),
 	asserta(current_editor(UUID, Editor, Role, Lock, Now)).
 
 %%	current_highlight_state(?UUID, -State) is nondet.
@@ -225,19 +240,22 @@ uuid_like(UUID) :-
 %%	destroy_editor(+UUID)
 %
 %	Destroy source admin UUID: the shadow  text (a memory file), the
-%	XREF data and the module used for cross-referencing.
+%	XREF data and the module used  for cross-referencing. The editor
+%	must  be  acquired  using  fetch_editor/2    before  it  can  be
+%	destroyed.
 
 destroy_editor(UUID) :-
 	must_be(atom, UUID),
+	current_editor(UUID, Editor, _, Lock, _), !,
+	mutex_unlock(Lock),
 	retractall(xref_upto_data(UUID)),
 	retractall(editor_last_access(UUID, _)),
-	current_editor(UUID, Editor, _, _, _), !,
 	(   xref_source_id(Editor, SourceID)
 	->  xref_clean(SourceID),
 	    destroy_state_module(UUID)
 	;   true
 	),
-	% destroy late to make xref_source_identifier/2 work.
+	% destroy after xref_clean/1 to make xref_source_identifier/2 work.
 	retractall(current_editor(UUID, Editor, _, _, _)),
 	free_memory_file(Editor).
 destroy_editor(_).
@@ -274,7 +292,7 @@ gc_editors :-
 gc_editors :-
 	editor_max_idle_time(MaxIdle),
 	forall(garbage_editor(UUID, MaxIdle),
-	       destroy_old_editor(UUID)).
+	       destroy_garbage_editor(UUID)).
 
 garbage_editor(UUID, TimeOut) :-
 	get_time(Now),
@@ -285,44 +303,72 @@ garbage_editor(UUID, TimeOut) :-
 	;   true
 	).
 
-destroy_old_editor(UUID) :-
-	with_mutex(swish_gc_editor,
-		   destroy_old_editor_sync(UUID)).
-
-destroy_old_editor_sync(UUID) :-
-	editor_max_idle_time(MaxIdle),
-	garbage_editor(UUID, MaxIdle), !,
-	debug(cm(gc), 'GC highlight state for ~q', [UUID]),
+destroy_garbage_editor(UUID) :-
+	fetch_editor(UUID, _TB),
 	destroy_editor(UUID).
-destroy_old_editor_sync(_).
 
 %%	fetch_editor(+UUID, -MemFile) is semidet.
 %
-%	Fetch existing editor for source UUID. Make sure the last access
-%	time is updated to avoid concurrent GC of the editor.
+%	Fetch existing editor for source UUID.   Update  the last access
+%	time. After success, the editor is   locked and must be released
+%	using release_editor/1.
 
 fetch_editor(UUID, TB) :-
-	with_mutex(swish_gc_editor,
-		   ( current_editor(UUID, TB, _Role, _Lock, _),
-		     update_access(UUID)
-		   )).
+	current_editor(UUID, TB, Role, Lock, _),
+	catch(mutex_lock(Lock), error(existence_error(mutex,_),_), fail),
+	(   current_editor(UUID, TB, Role, Lock, _)
+	->  update_access(UUID)
+	;   mutex_unlock(Lock)
+	).
+
+release_editor(UUID) :-
+	current_editor(UUID, _TB, _Role, Lock, _),
+	mutex_unlock(Lock).
+
+
+%%	update_access(+UUID)
+%
+%	Update the registered last access. We only update if the time is
+%	behind for more than a minute.
 
 update_access(UUID) :-
 	get_time(Now),
-	retractall(editor_last_access(UUID, _)),
-	asserta(editor_last_access(UUID, Now)).
+	(   editor_last_access(UUID, Last),
+	    Now-Last < 60
+	->  true
+	;   retractall(editor_last_access(UUID, _)),
+	    asserta(editor_last_access(UUID, Now))
+	).
 
 :- multifile
 	prolog:xref_source_identifier/2,
-	prolog:xref_open_source/2.
+	prolog:xref_open_source/2,
+	prolog:xref_close_source/2.
 
 prolog:xref_source_identifier(UUID, UUID) :-
 	current_editor(UUID, _, _, _, _).
 
+%%	prolog:xref_open_source(+UUID, -Stream)
+%
+%	Open a source. As we cannot open   the same source twice we must
+%	lock  it.  As  of  7.3.32   this    can   be  done  through  the
+%	prolog:xref_close_source/2 hook. In older  versions   we  get no
+%	callback on the close, so we must leave the editor unlocked.
+
+:- if(current_predicate(prolog_source:close_source/3)).
 prolog:xref_open_source(UUID, Stream) :-
-	current_editor(UUID, TB, _Role, _, _), !,
+	fetch_editor(UUID, TB),
 	open_memory_file(TB, read, Stream).
 
+prolog:xref_close_source(UUID, Stream) :-
+	release_editor(UUID),
+	close(Stream).
+:- else.
+prolog:xref_open_source(UUID, Stream) :-
+	fetch_editor(UUID, TB),
+	open_memory_file(TB, read, Stream),
+	release_editor(UUID).
+:- endif.
 
 %%	codemirror_leave(+Request)
 %
@@ -334,9 +380,8 @@ codemirror_leave(Request) :-
 	http_read_json_dict(Request, Data, []),
 	(   atom_string(UUID, Data.get(uuid))
 	->  debug(cm(leave), 'Leaving editor ~p', [UUID]),
-	    (	current_editor(UUID, _, _, _, _)
-	    ->	forall(current_editor(UUID, _TB, _Role, _Lock, _),
-		       with_mutex(swish_gc_editor, destroy_editor(UUID)))
+	    (	fetch_editor(UUID, _TB)
+	    ->	destroy_editor(UUID)
 	    ;	debug(cm(leave), 'No editor for ~p', [UUID])
 	    )
 	;   debug(cm(leave), 'No editor?? (data=~p)', [Data])
@@ -359,39 +404,31 @@ mark_changed(MemFile, Changed) :-
 xref(UUID) :-
 	xref_upto_data(UUID), !.
 xref(UUID) :-
-	current_editor(UUID, MF, _Role, _Lock, _),
-	xref_source_id(MF, SourceId),
-	xref_state_module(MF, Module),
-	xref_source(SourceId,
-		    [ silent(true),
-		      module(Module)
-		    ]),
-	asserta(xref_upto_data(UUID)).
+	setup_call_cleanup(
+	    fetch_editor(UUID, _TB),
+	    ( xref_source_id(UUID, SourceId),
+	      xref_state_module(UUID, Module),
+	      xref_source(SourceId,
+			  [ silent(true),
+			    module(Module)
+			  ]),
+	      asserta(xref_upto_data(UUID))
+	    ),
+	    release_editor(UUID)).
 
-%%	xref_source_id(+TextBuffer, -SourceID) is det.
+%%	xref_source_id(+Editor, -SourceID) is det.
 %
-%	Find the object we need  to   examine  for cross-referencing. If
-%	this is an included file, this is the corresponding main file.
+%	SourceID is the xref source  identifier   for  Editor. As we are
+%	using UUIDs we just use the editor.
 
-%xref_source_id(TB, SourceId) :-
-%	get(TB, file, File), File \== @nil, !,
-%	get(File, absolute_path, Path0),
-%	absolute_file_name(Path0, Path),
-%	master_load_file(Path, [], Master),
-%	(   Master == Path
-%	->  SourceId = TB
-%	;   SourceId = Master
-%	).
-xref_source_id(TB, UUID) :-
-	current_editor(UUID, TB, _Role, _Lock, _).
+xref_source_id(UUID, UUID).
 
-%%	xref_state_module(+TB, -Module) is semidet.
+%%	xref_state_module(+UUID, -Module) is semidet.
 %
 %	True if we must run the cross-referencing   in  Module. We use a
 %	temporary module based on the UUID of the source.
 
-xref_state_module(TB, UUID) :-
-	current_editor(UUID, TB, _Role, _Lock, _),
+xref_state_module(UUID, UUID) :-
 	(   module_property(UUID, class(temporary))
 	->  true
 	;   set_module(UUID:class(temporary)),
@@ -422,9 +459,10 @@ destroy_state_module(_).
 codemirror_tokens(Request) :-
 	http_read_json_dict(Request, Data, []),
 	debug(cm(tokens), 'Asking for tokens: ~p', [Data]),
-	(   catch(shadow_editor(Data, TB), cm(Reason), true)
+	(   catch(shadow_editor(Data, UUID, TB), cm(Reason), true)
 	->  (   var(Reason)
-	    ->	enriched_tokens(TB, Data, Tokens),
+	    ->	call_cleanup(enriched_tokens(TB, Data, Tokens),
+			     release_editor(UUID)),
 		reply_json_dict(json{tokens:Tokens}, [width(0)])
 	    ;	change_failed(Data.uuid, Reason)
 	    )
@@ -470,12 +508,12 @@ json_source_id(String, SourceID) :-
 string_source_id(String, SourceID) :-
 	atom_string(SourceID, String),
 	(   fetch_editor(SourceID, _TB)
-	->  true
+	->  release_editor(SourceID)
 	;   true
 	).
 
 
-%%	shadow_editor(+Data, -MemoryFile) is det.
+%%	shadow_editor(+Data, -UUID, -MemoryFile) is det.
 %
 %	Get our shadow editor:
 %
@@ -492,7 +530,7 @@ string_source_id(String, SourceID) :-
 %	@throws cm(out_of_sync) if the changes do not apply due to an
 %	internal error or a lost message.
 
-shadow_editor(Data, TB) :-
+shadow_editor(Data, UUID, TB) :-
 	atom_string(UUID, Data.get(uuid)),
 	fetch_editor(UUID, TB), !,
 	(   Text = Data.get(text)
@@ -508,18 +546,18 @@ shadow_editor(Data, TB) :-
 	    ),
 	    mark_changed(TB, Changed)
 	).
-shadow_editor(Data, TB) :-
+shadow_editor(Data, UUID, TB) :-
 	Text = Data.get(text), !,
 	atom_string(UUID, Data.uuid),
 	create_editor(UUID, TB, Data),
 	debug(cm(change), 'Create editor for ~p', [UUID]),
 	debug(cm(change_text), 'Initialising editor to ~q', [Text]),
 	insert_memory_file(TB, 0, Text).
-shadow_editor(Data, TB) :-
+shadow_editor(Data, UUID, TB) :-
 	_{role:_} :< Data, !,
 	atom_string(UUID, Data.uuid),
 	create_editor(UUID, TB, Data).
-shadow_editor(_Data, _TB) :-
+shadow_editor(_Data, _UUID, _TB) :-
 	throw(cm(existence_error)).
 
 :- thread_local
