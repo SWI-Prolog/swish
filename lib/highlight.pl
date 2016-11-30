@@ -96,6 +96,10 @@ tokens_.
 %	the editor is not known.
 
 codemirror_change(Request) :-
+	call_cleanup(codemirror_change_(Request),
+		     check_unlocked).
+
+codemirror_change_(Request) :-
 	http_read_json_dict(Request, Change, []),
 	debug(cm(change), 'Change ~p', [Change]),
 	atom_string(UUID, Change.uuid),
@@ -330,6 +334,24 @@ release_editor(UUID) :-
 	debug(cm(lock), 'Unlocked ~p', [UUID]),
 	mutex_unlock(Lock).
 
+check_unlocked :-
+	check_unlocked(unknown).
+
+check_unlocked(Reason) :-
+	thread_self(Me),
+	current_editor(_UUID, _TB, _Role, Lock, _),
+	mutex_property(Lock, status(locked(Me, _Count))), !,
+	print_message(error, locked(Reason, Me)),
+	assertion(fail).
+check_unlocked(_).
+
+unlocked_editor(UUID) :-
+	thread_self(Me),
+	current_editor(UUID, _TB, _Role, Lock, _),
+	mutex_property(Lock, status(locked(Me, _Count))), !,
+	fail.
+unlocked_editor(_).
+
 %%	update_access(+UUID)
 %
 %	Update the registered last access. We only update if the time is
@@ -381,6 +403,10 @@ prolog:xref_open_source(UUID, Stream) :-
 %	cross-reference information.
 
 codemirror_leave(Request) :-
+	call_cleanup(codemirror_leave_(Request),
+		     check_unlocked).
+
+codemirror_leave_(Request) :-
 	http_read_json_dict(Request, Data, []),
 	(   atom_string(UUID, Data.get(uuid))
 	->  debug(cm(leave), 'Leaving editor ~p', [UUID]),
@@ -461,6 +487,13 @@ destroy_state_module(_).
 %	editor.
 
 codemirror_tokens(Request) :-
+	setup_call_catcher_cleanup(
+	    true,
+	    codemirror_tokens_(Request),
+	    Reason,
+	    check_unlocked(Reason)).
+
+codemirror_tokens_(Request) :-
 	http_read_json_dict(Request, Data, []),
 	atom_string(UUID, Data.get(uuid)),
 	debug(cm(tokens), 'Asking for tokens: ~p', [Data]),
@@ -469,7 +502,8 @@ codemirror_tokens(Request) :-
 	    ->	call_cleanup(enriched_tokens(TB, Data, Tokens),
 			     release_editor(UUID)),
 		reply_json_dict(json{tokens:Tokens}, [width(0)])
-	    ;	change_failed(UUID, Reason)
+	    ;	check_unlocked(Reason),
+		change_failed(UUID, Reason)
 	    )
 	;   reply_json_dict(json{tokens:[[]]})
 	),
