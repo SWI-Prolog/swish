@@ -98,8 +98,8 @@ tokens_.
 codemirror_change(Request) :-
 	http_read_json_dict(Request, Change, []),
 	debug(cm(change), 'Change ~p', [Change]),
-	UUID = Change.uuid,
-	catch(shadow_editor(Change, UUID, TB),
+	atom_string(UUID, Change.uuid),
+	catch(shadow_editor(Change, TB),
 	      cm(Reason), true),
 	(   var(Reason)
 	->  (	catch(apply_change(TB, Changed, Change.change),
@@ -318,6 +318,7 @@ destroy_garbage_editor(UUID) :-
 fetch_editor(UUID, TB) :-
 	current_editor(UUID, TB, Role, Lock, _),
 	catch(mutex_lock(Lock), error(existence_error(mutex,_),_), fail),
+	debug(cm(lock), 'Locked ~p', [UUID]),
 	(   current_editor(UUID, TB, Role, Lock, _)
 	->  update_access(UUID)
 	;   mutex_unlock(Lock)
@@ -325,8 +326,8 @@ fetch_editor(UUID, TB) :-
 
 release_editor(UUID) :-
 	current_editor(UUID, _TB, _Role, Lock, _),
+	debug(cm(lock), 'Unlocked ~p', [UUID]),
 	mutex_unlock(Lock).
-
 
 %%	update_access(+UUID)
 %
@@ -460,13 +461,14 @@ destroy_state_module(_).
 
 codemirror_tokens(Request) :-
 	http_read_json_dict(Request, Data, []),
+	atom_string(UUID, Data.get(uuid)),
 	debug(cm(tokens), 'Asking for tokens: ~p', [Data]),
-	(   catch(shadow_editor(Data, UUID, TB), cm(Reason), true)
+	(   catch(shadow_editor(Data, TB), cm(Reason), true)
 	->  (   var(Reason)
 	    ->	call_cleanup(enriched_tokens(TB, Data, Tokens),
 			     release_editor(UUID)),
 		reply_json_dict(json{tokens:Tokens}, [width(0)])
-	    ;	change_failed(Data.uuid, Reason)
+	    ;	change_failed(UUID, Reason)
 	    )
 	;   reply_json_dict(json{tokens:[[]]})
 	),
@@ -515,7 +517,7 @@ string_source_id(String, SourceID) :-
 	).
 
 
-%%	shadow_editor(+Data, -UUID, -MemoryFile) is det.
+%%	shadow_editor(+Data, -MemoryFile) is det.
 %
 %	Get our shadow editor:
 %
@@ -532,7 +534,7 @@ string_source_id(String, SourceID) :-
 %	@throws cm(out_of_sync) if the changes do not apply due to an
 %	internal error or a lost message.
 
-shadow_editor(Data, UUID, TB) :-
+shadow_editor(Data, TB) :-
 	atom_string(UUID, Data.get(uuid)),
 	fetch_editor(UUID, TB), !,
 	(   Text = Data.get(text)
@@ -549,18 +551,18 @@ shadow_editor(Data, UUID, TB) :-
 	    ),
 	    mark_changed(TB, Changed)
 	).
-shadow_editor(Data, UUID, TB) :-
+shadow_editor(Data, TB) :-
 	Text = Data.get(text), !,
 	atom_string(UUID, Data.uuid),
 	create_editor(UUID, TB, Data),
 	debug(cm(change), 'Create editor for ~p', [UUID]),
 	debug(cm(change_text), 'Initialising editor to ~q', [Text]),
 	insert_memory_file(TB, 0, Text).
-shadow_editor(Data, UUID, TB) :-
+shadow_editor(Data, TB) :-
 	_{role:_} :< Data, !,
 	atom_string(UUID, Data.uuid),
 	create_editor(UUID, TB, Data).
-shadow_editor(_Data, _UUID, _TB) :-
+shadow_editor(_Data, _TB) :-
 	throw(cm(existence_error)).
 
 :- thread_local
