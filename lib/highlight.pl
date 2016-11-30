@@ -306,8 +306,9 @@ garbage_editor(UUID, TimeOut) :-
 	).
 
 destroy_garbage_editor(UUID) :-
-	fetch_editor(UUID, _TB),
+	fetch_editor(UUID, _TB), !,
 	destroy_editor(UUID).
+destroy_garbage_editor(_).
 
 %%	fetch_editor(+UUID, -MemFile) is semidet.
 %
