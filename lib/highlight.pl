@@ -545,9 +545,11 @@ shadow_editor(Data, TB) :-
 	    mark_changed(TB, true)
 	;   Changes = Data.get(changes)
 	->  (   debug(cm(change), 'Patch editor for ~p', [UUID]),
-		maplist(apply_change(TB, Changed), Changes)
+		catch(maplist(apply_change(TB, Changed), Changes), E,
+		      (release_editor(UUID), throw(E)))
 	    ->	true
 	    ;	release_editor(UUID),
+		assertion(unlocked_editor(UUID)),
 		throw(cm(out_of_sync))
 	    ),
 	    mark_changed(TB, Changed)
