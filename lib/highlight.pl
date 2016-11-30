@@ -99,7 +99,9 @@ codemirror_change(Request) :-
 	http_read_json_dict(Request, Change, []),
 	debug(cm(change), 'Change ~p', [Change]),
 	UUID = Change.uuid,
-	(   shadow_editor(Change, UUID, TB)
+	catch(shadow_editor(Change, UUID, TB),
+	      cm(Reason), true),
+	(   var(Reason)
 	->  (	catch(apply_change(TB, Changed, Change.change),
 		      cm(outofsync), fail)
 	    ->  mark_changed(TB, Changed),
@@ -108,7 +110,7 @@ codemirror_change(Request) :-
 	    ;	destroy_editor(UUID),
 		change_failed(UUID, outofsync)
 	    )
-	;   change_failed(UUID, existence_error)
+	;   change_failed(UUID, Reason)
 	).
 
 change_failed(UUID, Reason) :-
@@ -542,7 +544,8 @@ shadow_editor(Data, UUID, TB) :-
 	->  (   debug(cm(change), 'Patch editor for ~p', [UUID]),
 		maplist(apply_change(TB, Changed), Changes)
 	    ->	true
-	    ;	throw(cm(out_of_sync))
+	    ;	release_editor(UUID),
+		throw(cm(out_of_sync))
 	    ),
 	    mark_changed(TB, Changed)
 	).
