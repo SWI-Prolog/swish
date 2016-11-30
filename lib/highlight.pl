@@ -252,7 +252,7 @@ destroy_editor(UUID) :-
 	mutex_unlock(Lock),
 	retractall(xref_upto_data(UUID)),
 	retractall(editor_last_access(UUID, _)),
-	(   xref_source_id(Editor, SourceID)
+	(   xref_source_id(UUID, SourceID)
 	->  xref_clean(SourceID),
 	    destroy_state_module(UUID)
 	;   true
