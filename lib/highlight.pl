@@ -1047,13 +1047,13 @@ predicate_info(Module:Name/Arity, Key, Value) :-
 	functor(Head, Name, Arity),
 	predicate_property(system:Head, iso), !,
 	ignore(Module = system),
-	(   catch(predicate(Name, Arity, Summary, _, _), _, fail),
+	(   catch(once(predicate(Name, Arity, Summary, _, _)), _, fail),
 	    Key = summary,
 	    Value = Summary
 	;   Key = iso,
 	    Value = true
 	).
 predicate_info(_Module:Name/Arity, summary, Summary) :-
-	catch(predicate(Name, Arity, Summary, _, _), _, fail), !.
+	catch(once(predicate(Name, Arity, Summary, _, _)), _, fail), !.
 predicate_info(PI, summary, Summary) :-	% PlDoc
-	prolog:predicate_summary(PI, Summary).
+	once(prolog:predicate_summary(PI, Summary)).
