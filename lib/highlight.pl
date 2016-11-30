@@ -201,7 +201,7 @@ create_editor(UUID, Editor, Change) :-
 	get_time(Now),
 	mutex_create(Lock),
 	with_mutex(swish_create_editor,
-		   register_editor(UUID, Editor, Role, Lock, Now)).
+		   register_editor(UUID, Editor, Role, Lock, Now)), !.
 create_editor(UUID, Editor, _Change) :-
 	fetch_editor(UUID, Editor).
 
