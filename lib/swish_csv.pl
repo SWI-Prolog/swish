@@ -89,6 +89,9 @@ csv(output(_Id, message(_Term, _Class, HTML, _Where)), _VarNames, _Opts) :- !,
 	format('<html>~n~s~n</html>~n', [HTML]).
 csv(page(Page, Event), VarNames, Options) :-
 	csv(Event, VarNames, [page(Page)|Options]).
+csv(failure(_Id, _Time), VarNames, Options) :- !,
+	VarTerm =.. [row|VarNames],
+	success([], VarTerm, [more(false)|Options]).
 csv(Event, _VarNames, _) :-
 	print_term(Event, [output(user_error)]).
 
