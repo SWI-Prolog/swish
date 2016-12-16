@@ -942,15 +942,43 @@ highlight_style(StyleName, Style) :-
 css_style(bold(true),      'font-weight'(bold)) :- !.
 css_style(underline(true), 'text-decoration'(underline)) :- !.
 css_style(colour(Name), color(RGB)) :-
-	current_prolog_flag(gui, true), !,
-	get(colour(Name), red,   R0),
-	get(colour(Name), green, G0),
-	get(colour(Name), blue,  B0),
-	R is R0//256,
-	G is G0//256,
-	B is B0//256,
+	x11_color(Name, R, G, B),
 	format(atom(RGB), '#~|~`0t~16r~2+~`0t~16r~2+~`0t~16r~2+', [R,G,B]).
 css_style(Style, Style).
+
+%%	x11_color(+Name, -R, -G, -B)
+%
+%	True if RGB is the color for the named X11 color.
+
+x11_color(Name, R, G, B) :-
+	(   x11_color_cache(_,_,_,_)
+	->  true
+	;   load_x11_colours
+	),
+	x11_color_cache(Name, R, G, B).
+
+:- dynamic
+	x11_color_cache/4.
+
+load_x11_colours :-
+	source_file(load_x11_colours, File),
+	file_directory_name(File, Dir),
+	directory_file_path(Dir, 'rgb.txt', RgbFile),
+	setup_call_cleanup(
+	    open(RgbFile, read, In),
+	    ( lazy_list(lazy_read_lines(In, [as(string)]), List),
+	      maplist(assert_colour, List)
+	    ),
+	    close(In)).
+
+assert_colour(String) :-
+	split_string(String, "\s\t\r", "\s\t\r", [RS,GS,BS|NameParts]),
+	number_string(R, RS),
+	number_string(G, GS),
+	number_string(B, BS),
+	atomic_list_concat(NameParts, '_', Name0),
+	downcase_atom(Name0, Name),
+	assertz(x11_color_cache(Name, R, G, B)).
 
 %%	css(?Context, ?Selector, -Style) is nondet.
 %
