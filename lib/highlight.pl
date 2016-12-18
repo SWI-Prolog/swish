@@ -826,7 +826,8 @@ style(dcg(plain),	 brace_term_open-brace_term_close, []).
 style(brace_term,	 brace_term_open-brace_term_close, []).
 style(dict_content,	 dict_open-dict_close,             []).
 style(expanded,		 expanded,			   [text]).
-style(comment_string,	 comment_string,		   []).
+style(comment_string,	 comment_string,		   []). % up to 7.3.33
+style(comment(string),	 comment_string,		   []). % after 7.3.33
 style(ext_quant,	 ext_quant,			   []).
 style(unused_import,	 unused_import,			   [text]).
 style(undefined_import,	 undefined_import,		   [text]).
