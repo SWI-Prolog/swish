@@ -1,5 +1,7 @@
 #!/usr/bin/env swipl
 
+:- module(swish_daemon, []).
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Run
 
@@ -42,8 +44,37 @@ Run
 */
 
 :- use_module(library(http/http_unix_daemon)).
+:- use_module(library(option)).
+:- use_module(library(main)).
 
-swish_daemon.
+:- if(current_predicate(argv_options/3)).
+swish_daemon :-
+	current_prolog_flag(argv, Argv),
+	argv_options(Argv, _RestArgv, Options0),
+	swish_options(Options0, Options),
+	(   option(https(_), Options)
+	->  use_module(swish(lib/ssl_certificate))
+	;   true
+	),
+	http_daemon(Options).
+:- else.
+swish_daemon :-
+	http_daemon.
+:- endif.
+
+swish_options(Options0, Options) :-
+	option(https(_), Options0), !,
+	add_default_option(certfile, Options0, 'https/server.crt', Options1),
+	add_default_option(keyfile,  Options1, 'https/server.key', Options).
+swish_options(Options, Options).
+
+add_default_option(Name, Options0, Default, Options) :-
+	Term =.. [Name,Value],
+	(   option(Term, Options0)
+	->  Options = Options0
+	;   Value = Default,
+	    Options = [Term|Options0]
+	).
 
 user:file_search_path(swish, SwishDir) :-
 	getenv('SWISH_HOME', SwishDir), !.
@@ -52,9 +83,8 @@ user:file_search_path(swish, SwishDir) :-
 	file_directory_name(ThisFile, SwishDir).
 
 :- initialization load_swish_modules.
-:- initialization http_daemon.
+:- initialization swish_daemon.
 
-:- use_module(swish(lib/ssl_certificate)).
 :- [swish(swish)].
 :- use_module(swish:swish(lib/swish_debug)).
 
