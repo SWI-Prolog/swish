@@ -209,7 +209,8 @@ preferences.setDefault("emacs-keybinding", false);
 
 	$(".notebook").notebook();
 
-	if ( options.show_beware )
+	if ( options.show_beware &&
+	     !(swish.option && swish.option.show_beware == false) )
 	  menuBroadcast("help", {file:"beware.html", notagain:"beware"});
 
 	elem.data(pluginName, data);	/* store with element */

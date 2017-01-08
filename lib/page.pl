@@ -99,6 +99,8 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 %	  of a line.
 %	  - q(Query)
 %	  Use Query as the initial query.
+%	  - show_beware(Boolean)
+%	  Control showing the _beware limited edition_ warning.
 
 swish_reply(Options, Request) :-
 	swish_config:authenticate(Request, User), !, % must throw to deny access
@@ -115,18 +117,20 @@ swish_reply2(_, Request) :-
 swish_reply2(Options, Request) :-
 	swish_reply_config(Request, Options), !.
 swish_reply2(SwishOptions, Request) :-
-	Params = [ code(_,	 [optional(true)]),
-		   background(_, [optional(true)]),
-		   examples(_,   [optional(true)]),
-		   q(_,          [optional(true)]),
-		   format(_,     [oneof([swish,raw,json]), default(swish)])
+	Params = [ code(_,	  [optional(true)]),
+		   show_beware(_, [optional(true)]),
+		   background(_,  [optional(true)]),
+		   examples(_,    [optional(true)]),
+		   q(_,           [optional(true)]),
+		   format(_,      [oneof([swish,raw,json]), default(swish)])
 		 ],
 	http_parameters(Request, Params),
 	params_options(Params, Options0),
 	merge_options(Options0, SwishOptions, Options1),
-	source_option(Request, Options1, Options2),
-	option(format(Format), Options2),
-	swish_reply3(Format, Options2).
+	add_show_beware(Options1, Options2),
+	source_option(Request, Options2, Options3),
+	option(format(Format), Options3),
+	swish_reply3(Format, Options3).
 
 swish_reply3(raw, Options) :-
 	option(code(Code), Options), !,
@@ -159,6 +163,31 @@ params_options([H0|T0], [H|T]) :-
 	params_options(T0, T).
 params_options([_|T0], T) :-
 	params_options(T0, T).
+
+%!	add_show_beware(+Options0, -Option) is det.
+%
+%	Add show_beware(false) when called with code, query or examples.
+%	These are dedicated calls that do not justify this message.
+
+add_show_beware(Options0, Options) :-
+	implicit_no_show_beware(Options0), !,
+	Options = [show_beware(false)|Options0].
+add_show_beware(Options, Options).
+
+implicit_no_show_beware(Options) :-
+	option(show_beware(_), Options), !,
+	fail.
+implicit_no_show_beware(Options) :-
+	\+ option(format(swish), Options), !,
+	fail.
+implicit_no_show_beware(Options) :-
+	option(code(_), Options).
+implicit_no_show_beware(Options) :-
+	option(q(_), Options).
+implicit_no_show_beware(Options) :-
+	option(examples(_), Options).
+implicit_no_show_beware(Options) :-
+	option(background(_), Options).
 
 
 %%	source_option(+Request, +Options0, -Options)
@@ -360,6 +389,7 @@ swish_content(Options) -->
 	},
 	swish_resources,
 	swish_config_hash(Options),
+	swish_options(Options),
 	html(div([id(content), class([container, swish])],
 		 [ div([class([tile, horizontal]), 'data-split'('50%')],
 		       [ div([ class([editors, tabbed])
@@ -390,6 +420,24 @@ swish_config_hash(Options) -->
 		   window.swish.config_hash = Hash;
 		   |}).
 
+
+%!	swish_options(+Options)//
+%
+%	Emit additional options. This is  similar   to  config,  but the
+%	config object is big and stable   for a particular SWISH server.
+%	The options are set per session.
+
+swish_options(Options) -->
+	{ option(show_beware(Show), Options),
+	  JSShow = @(Show)
+	}, !,
+	js_script({|javascript(JSShow)||
+		   window.swish = window.swish||{};
+		   window.swish.option = window.swish.options||{};
+		   window.swish.option.show_beware = JSShow;
+		   |}).
+swish_options(_Options) -->
+	[].
 
 %%	source(+Type, +Options)//
 %
