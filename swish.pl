@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2016, VU University Amsterdam
+    Copyright (c)  2014-2017, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -118,6 +118,8 @@ http:location(swish, root(.), [priority(-100)]).
 %	  only running queries and saving files is restricted. Note
 %	  that this flag has no effect if no authentication module is
 %	  loaded.
+%	  - include_alias
+%	  Alias for searching files for `:- include(Alias(Name)).`
 %	  - ping
 %	  Ping pengine status every N seconds.  Updates sparkline
 %	  chart with stack usage.
@@ -134,6 +136,7 @@ swish_config:config(application,        swish).
 swish_config:config(csv_formats,        [prolog]).
 swish_config:config(community_examples, false).
 swish_config:config(public_access,      false).
+swish_config:config(include_alias,	example).
 swish_config:config(ping,		10).
 swish_config:config(notebook,		_{eval_script: true}).
 

@@ -113,6 +113,7 @@ program using Prolog's <b>include/1</b> predicate as illustrated below.
 :- include(clever).
 </pre>
 
+<p>
 You can also include a <em>specific version</em> of a program by including
 its <em>hash</em>.  You can find the hash of a specific version using
 <b>Info &amp; History ...</b>, selecting the desired version and opening
@@ -121,6 +122,16 @@ browser's address field.  Now, include this version using e.g.,
 
 <pre style="font-size:80%">
 :- include('23dacada6952ec6701da2dc9d4ebcf5c7b860380').
+</pre>
+
+<p>
+You can also use the <i>Alias(Name)</i> syntax to include files from
+the directories in the search path <i>Alias</i>.  By default this is
+enabled for <code>example</code>, so the following directive allow you
+to reuse the predicates from the <em>movies</em> example:
+
+<pre style="font-size:80%">
+:- include(example(movies)).
 </pre>
 
 <p>
