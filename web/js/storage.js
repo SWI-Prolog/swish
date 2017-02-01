@@ -379,9 +379,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       var fork    = data.meta && meta.symbolic != "HEAD";
       var type    = tabbed.tabTypes[data.typeName];
       var author  = config.swish.user ?
-        ( config.swish.user.realname && config.swish.user.email ?
-	    config.swish.user.realname + " <" + config.swish.user.email + ">" :
-	    config.swish.user.user
+        ( config.swish.user.name && config.swish.user.email ?
+	    config.swish.user.name + " <" + config.swish.user.email + ">" :
+	    config.swish.user.name||config.swish.user.user
         ) :
 	meta.author;
 
