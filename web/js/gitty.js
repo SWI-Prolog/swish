@@ -113,8 +113,6 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
 	elem.gitty('showMetaData');
       });
-
-      return this;
     },
 
     /**
@@ -173,8 +171,6 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
 	tab.append(formel);
       });
-
-      return this;
     },
 
 
