@@ -6,3 +6,4 @@ storage.*
 log
 *.log
 *~
+config-enabled

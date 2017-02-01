@@ -84,6 +84,23 @@ http:location(swish, root(.), [priority(-100)]).
 
 
 		 /*******************************
+		 *         LOCAL CONFIG		*
+		 *******************************/
+
+%!	load_config
+%
+%	Load files from config-enabled if present.
+
+load_config :-
+	exists_directory('config-enabled'), !,
+	expand_file_name('config-enabled/*.pl', Files),
+	maplist(ensure_loaded, Files).
+load_config.
+
+:- initialization(load_config, now).
+
+
+		 /*******************************
 		 *	      CONFIG		*
 		 *******************************/
 
