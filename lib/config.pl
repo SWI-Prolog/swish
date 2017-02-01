@@ -45,7 +45,10 @@
 	config/2,			% ?Key, ?Value
 	config/3,			% ?Key, ?Value, +Options
 	source_alias/2,			% ?Alias, ?Options
-	authenticate/2.			% +Request, -User
+	authenticate/2,			% +Request, -User
+        login_item/2,                   % -Server, -HTML_DOM
+        login/2,                        % +Server, +Request
+        user_info/3.                    % +Request, -Server, -Info
 
 /** <module> Make HTTP locations known to JSON code
 */
@@ -135,6 +138,81 @@ swish_config(Key, Value, _) :-
 config(residuals_var, '_residuals').
 :- endif.
 
+		 /*******************************
+		 *             LOGIN		*
+		 *******************************/
+
+%!	login_item(-Server, -Item) is nondet.
+%
+%	This hook is called  to  find   all  possible  login options. It
+%	should bind Item to an HTML description for html//1 that must be
+%	clicked to login  with  this  option.   The  item  may  have the
+%	following HTML attributes:
+%
+%	  - 'data-server'(+Server)
+%	  This must be present and provides the first argument for the
+%	  login/2 hook.
+%
+%	  - 'data-frame'(+Style)
+%	  The login is realised in a popup to avoid reloading the
+%	  current swish page.  If Style is `popup`, a browser popup window
+%	  is used. This is necessary for identity providers that refuse to
+%	  open inside a frame. The default is `iframe`, which handles
+%	  the login inside an =iframe= element in a modal popup.
+%
+%	The Item is often  an  image.  The   image  must  have  a  class
+%	=login-with=. Below is an example to login with Google:
+%
+%	```
+%	swish_config:login_item(Item) :-
+%	    http_absolute_location(icons('social_google_box.png'), Img, []),
+%	    Item = img([ src(Img),
+%	                 class('login-with'),
+%	                 'data-server'(google),
+%	                 title('Login with Google')
+%	               ]).
+%	```
+%
+%	@arg Item may be of the form  `Tag-Item`. In this case the items
+%	are ordered by Tag. The default tag is `0`.
+
+%!	login(+Server, +Request) is det.
+%
+%	If a login item with   `'data-server'(+Server)`  is clicked, the
+%	HTTP handler with id `login` is called. This handler figures the
+%	selected login _server_ and calls this hook.
+
+%!	user_info(+Request, -Server, -UserInfo:dict) is semidet.
+%
+%	Each login facility must provide  this   hook.  The  hook should
+%	succeed if-and-only-if the user is logged in using this facility
+%	and the hook must bind UserInfo with   a  dict that contains the
+%	following fields:
+%
+%	  - user: User
+%	  User name (id) if the logged in user.
+%	  - name: Name
+%	  Common name of the logged in user.
+%	  - email: Email
+%	  Email address of the logged in user.
+%	  - picture: URL
+%	  If present, URL is used to indicate the currently logged in
+%	  user.
+%	  - auth_method: Method
+%	  Authentication method used. Currently one of `basic`, `digest`
+%	  or `oauth2`.
+%	  - logout_url: URL
+%	  URL that must be used to logout.  Needed if `auth_method` is
+%	  not one of the HTTP authentication methods (`basic` or
+%	  `digest`).
+%
+%	If this hook fails the user is not logged in.
+
+
+		 /*******************************
+		 *          OTHER HOOKS		*
+		 *******************************/
+
 %%	source_alias(?Alias, ?Options) is nondet.
 %
 %	Multifile hook that  defines   properties  of file_search_path/2
@@ -146,6 +224,7 @@ config(residuals_var, '_residuals').
 %	  The _New Tab_ search form searches in files that satisfy the
 %	  given pattern in the matching directories.  Pattern is handed
 %	  to expand_file_name/2.
+
 
 		 /*******************************
 		 *	      MESSAGES		*
