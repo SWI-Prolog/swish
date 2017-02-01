@@ -60,6 +60,7 @@ define([ "jquery",
 	 "runner",
 	 "term",
 	 "laconic",
+	 "login",
 	 "d3",
 	 "c3",
 	 "svg-pan-zoom"
@@ -192,6 +193,7 @@ preferences.setDefault("emacs-keybinding", false);
 	var data = {};			/* private data */
 
 	$("#navbar").navbar(defaults.menu);
+	$("#login").login();
 
 	var  editor = $(".prolog-editor").prologEditor({save:true});
 	data.runner = $(".prolog-runners").prologRunners();

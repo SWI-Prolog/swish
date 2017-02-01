@@ -1,0 +1,47 @@
+/* Support login.js
+*/
+
+#login.login  > .logout { display: none; }
+#login.logout > .login  { display: none; }
+#login.logout > .logout { color: green; }
+
+#login .value { margin-left: 5px; }
+
+iframe.login
+{ width: 90%;
+  margin: 0 auto;
+  display: block;
+  height: 30ex;
+}
+
+button.login-cont
+{ margin: 2ex auto 2ex;
+  display: block;
+}
+
+#login-details
+{ position: absolute;
+  padding: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+  background: #fff;
+  z-index: 5000;
+}
+
+#login-details td
+{ padding-left: 1em;
+}
+
+#login-details .login-caption
+{ text-align: center;
+  border-bottom: 1px solid #888;
+  margin-bottom: 5px;
+  font-style: italic;
+  color: #888;
+}
+
+img.profile-picture,
+img.login-with
+{ width: 24px;
+  height: 24px;
+}

@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2016, VU University Amsterdam
+    Copyright (c)  2014-2017, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,7 @@
 :- use_module(config).
 :- use_module(help).
 :- use_module(search).
+:- use_module(login).
 
 /** <module> Provide the SWISH application as Prolog HTML component
 
@@ -337,8 +338,11 @@ swish_navbar(Options) -->
 		   div([ class([collapse, 'navbar-collapse']),
 			 id(navbar)
 		       ],
-		       [ ul([class([nav, 'navbar-nav'])], []),
-			 \search_form(Options)
+		       [ ul([class([nav, 'navbar-nav', menubar])], []),
+			 ul([class([nav, 'navbar-nav', 'navbar-right'])],
+			    [ li(\search_box(Options)),
+			      li(\login_button(Options))
+			    ])
 		       ])
 		 ])).
 
@@ -366,14 +370,6 @@ swish_logo(_Options) -->
 	{ http_absolute_location(swish(.), HREF, [])
 	},
 	html(a([href(HREF), class('swish-logo')], &(nbsp))).
-
-%%	search_form(+Options)//
-%
-%	Add search box to the navigation bar
-
-search_form(Options) -->
-	html(div(class(['pull-right']),
-		 \search_box(Options))).
 
 
 %%	swish_content(+Options)//

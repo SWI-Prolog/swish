@@ -3,7 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2016, VU University Amsterdam
+    Copyright (c)  2014-2017, VU University Amsterdam
+                              CWI Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,7 +34,8 @@
 */
 
 :- module(swish_authenticate,
-	  [ swish_add_user/3,		% +User, +Passwd, +Fields
+	  [ login/2,                    % +Request, -User
+            swish_add_user/3,		% +User, +Passwd, +Fields
 	    swish_add_user/1,		% +Dict
 	    swish_add_user/0,
 	    swish_logged_in/3,		% +Request, -User, -Data
@@ -46,9 +48,12 @@
 :- use_module(library(http/http_authenticate)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
-:- use_module(form).
+:- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_path)).
 
+:- use_module(form).
 :- use_module(config).
+:- use_module(login).
 :- use_module(page, []).
 
 :- if(exists_source(library(http/http_digest))).
@@ -69,7 +74,10 @@
 	swish_config:config/2,
 	swish_config:config/3,
 	swish_config:authenticate/2,
-	swish_config:verify_write_access/3.
+	swish_config:verify_write_access/3,
+        swish_config:login_item/2,		% -Server, -HTML_DOM
+        swish_config:login/2,			% +Server, +Request
+	swish_config:user_info/3.		% +Request, -Server, -UserInfo
 
 /** <module> SWISH login management
 
@@ -108,7 +116,21 @@ password_file(File) :-
 	update_auth_type(File),
 	asserta(password_file_cache(File)).
 
-%%	logged_in(+Request, -User) is det.
+%!	login(+Request, -User) is det.
+%
+%	Perform a login
+
+login(Request, User) :-
+        logged_in(Request, User), !.
+login(Request, User) :-
+	setting(method, digest), !,
+	setting(realm, Realm),
+	password_file(File),
+	http:authenticate(digest(File, Realm), Request, [user(User)|_Details]).
+login(_Request, _User) :-
+	throw(http_reply(authorise(basic('SWISH user')))).
+
+%%	logged_in(+Request, -User) is semidet.
 %
 %	True when User is  logged  in.   Throws  an  HTTP  authorization
 %	exception if the user is not authenticated.
@@ -117,6 +139,9 @@ password_file(File) :-
 
 logged_in(Request, User) :-
 	setting(method, digest), !,
+        memberchk(authorization(Challenge), Request),
+        debug(authenticate, 'Authorization: ~p', [Challenge]),
+        has_digest(Challenge),
 	setting(realm, Realm),
 	password_file(File),
 	http:authenticate(digest(File, Realm), Request, [user(User)|_Details]).
@@ -124,18 +149,25 @@ logged_in(Request, User) :-
 	password_file(File),
 	http_authenticate(basic(File), Request, [User|_Fields]), !,
 	debug(authenticate, 'Logged in as ~p', [User]).
-logged_in(_Request, _User) :-
-	throw(http_reply(authorise(basic('SWISH user')))).
+
+has_digest(Challenge) :-
+	http_parse_digest_challenge(Challenge, Fields),
+        debug(authenticate, 'Digest: ~p', [Fields]),
+        \+ memberchk(username(logout), Fields).
+
 
 %%	swish_config:config(?Key, ?Value, +Options) is nondet.
 %
-%	Make the user available as config.swish.user.
+%       Make the user available  as   config.swish.user.  This  value is
+%       provided if the  user  must  login   for  any  access  to swish.
+%       Optional login is handled by `update`  in =login.js= which calls
+%       the HTTP handler `user_info`.
 
 swish_config:config(user, Dict, Options) :-
 	option(user(User), Options),
 	password_file(File),
-	(   http_current_user(File, User, [_Hash,Group,RealName,Email])
-	->  Dict = u{user:User, group:Group, realname:RealName, email:Email}
+	(   http_current_user(File, User, [_Hash,Group,Name,Email])
+	->  Dict = u{user:User, group:Group, name:Name, email:Email}
 	;   Dict = u{user:User}
 	).
 
@@ -146,15 +178,22 @@ swish_config:config(user, Dict, Options) :-
 %	logged in user.
 
 pengines:authentication_hook(Request, _Application, User) :-
-	logged_in(Request, User), !.
+	(   swish_config(public_access, true)
+        ->  (   logged_in(Request, User)
+            ->  true
+            ;   User = anonymous
+            )
+        ;   login(Request, User)
+        ).
 
-pengines:not_sandboxed(_User, _Application).
+pengines:not_sandboxed(User, _Application) :-
+	User \== anonymous.
 
 
 %%	swish_config:verify_write_access(+Request, +File, +Options)
 
 swish_config:verify_write_access(Request, _File, _Options) :-
-	logged_in(Request, _User), !.
+	login(Request, _User), !.
 
 %%	swish_config:authenticate(+Request, -User)
 %
@@ -163,7 +202,7 @@ swish_config:verify_write_access(Request, _File, _Options) :-
 
 swish_config:authenticate(Request, User) :-
 	\+ swish_config(public_access, true),
-	logged_in(Request, User).
+	login(Request, User).
 
 
 %%	update_auth_type(+File)
@@ -200,11 +239,11 @@ is_sha1(Hash) :-
 %	True if User is a user with properties.
 
 swish_current_user(User,
-		   u{user:User, group:Group, realname:RealName, email:Email}) :-
+		   u{user:User, group:Group, name:Name, email:Email}) :-
 	password_file(File),
-	http_current_user(File, User, [_Hash,Group,RealName,Email]).
+	http_current_user(File, User, [_Hash,Group,Name,Email]).
 
-%%	swish_logged_in(+Request, -User, -UserData) is det.
+%%	swish_logged_in(+Request, -User, -UserData) is semidet.
 %
 %	True when Request is associated with User.
 
@@ -212,6 +251,62 @@ swish_logged_in(Request, User, UserData) :-
 	logged_in(Request, User),
 	swish_current_user(User, UserData).
 
+
+		 /*******************************
+		 *	LOGIN INTEGRATION	*
+		 *******************************/
+
+:- http_handler(swish(http_logout), http_logout, [id(http_logout)]).
+
+%!	swish_config:login_item(-Server, -Item)
+
+swish_config:login_item(local, 0-Item) :-
+	swish_config(public_access, true),
+        http_absolute_location(icons('logo.png'), Img, []),
+        Item = img([ src(Img),
+                     class('login-with'),
+                     'data-server'(local),
+                     title('Local login')
+                   ]).
+
+%!  swish_config:login(+Server, +Request)
+%
+%   Handler to deal with local HTTP based login.
+
+swish_config:login(local, Request) :-
+	login(Request, User),
+	user_name(User, Options),
+	reply_logged_in([ user(User)
+			| Options
+			]).
+
+user_name(User, [name(Name)]) :-
+	swish_current_user(User, UserData),
+	Name = UserData.get(name),
+	!.
+user_name(_User, []).
+
+%!  swish_config:user_info(+Request, -Server, -UserInfo) is semidet.
+%
+%   True when UserInfo describes the currently http-authenticated user.
+
+swish_config:user_info(Request, local, UserInfo) :-
+	swish_logged_in(Request, _User, UserData), !,
+        setting(method, Method),
+        UserInfo = UserData.put(auth_method, Method).
+
+%!  http_logout(+Request)
+%
+%   HTTP   Handler   for   logging   out.     This   page   replies   to
+%   clearAuthenticationCache() from web/js/login.js
+
+http_logout(_Request) :-
+	throw(http_reply(authorise(basic('SWISH user')))).
+
+
+		 /*******************************
+		 *       USER MANAGEMENT	*
+		 *******************************/
 
 %%	swish_add_user(+User, +Passwd, +Fields) is det.
 %
@@ -316,7 +411,7 @@ swish_add_user(Data) :-
 	validate_form(
 	    Data,
 	    [ field(user,     User,     [alnum, atom, length >= 2]),
-	      field(realname, RealName, [strip, alnum_and_spaces]),
+	      field(name,     Name,     [strip, alnum_and_spaces]),
 	      field(email,    Email,    [email]),
 	      field(group,    Group,    [downcase, atom,oneof(Groups)]),
 	      field(pwd1,     Pwd1,     [password]),
@@ -327,7 +422,7 @@ swish_add_user(Data) :-
 	->  true
 	;   input_error(pwd2, matching_password)
 	),
-	swish_add_user(User, Pwd1, [Group,RealName,Email]).
+	swish_add_user(User, Pwd1, [Group,Name,Email]).
 
 new_user(User) :-
 	writeable_passwd_file(File),
