@@ -84,6 +84,9 @@ define([ "config", "preferences", "links", "jquery", "laconic", "bootstrap" ],
 	elem.on("feedback", function(ev, options) {
 	  elem.swishModal('feedback', options);
 	});
+	elem.on("show", function(ev, options) {
+	  elem.swishModal('show', options);
+	});
       });
     },
 
@@ -181,6 +184,8 @@ define([ "config", "preferences", "links", "jquery", "laconic", "bootstrap" ],
      * function result is added to the content using `$.append()`.
      * @param {String} options.notagain Identifier to stop this dialog
      * showing
+     * @param {function} [options.onclose] If present, call this
+     * function if the modal window is closed.
      */
     show: function(options) {
       var content = $.el.div({class:"modal-body"});
@@ -214,6 +219,8 @@ define([ "config", "preferences", "links", "jquery", "laconic", "bootstrap" ],
 		.on("click", "a", links.followLink)
 	        .on("shown.bs.modal", initTagsManagers)
 	        .on("hidden.bs.modal", function() {
+		  if ( options.onclose )
+		    options.onclose();
 		  $(this).remove();
 		});
 
@@ -355,6 +362,9 @@ define([ "config", "preferences", "links", "jquery", "laconic", "bootstrap" ],
     },
     alert: function(options) {
       $(".swish-event-receiver").trigger("alert", options);
+    },
+    show: function(options) {
+      $(".swish-event-receiver").trigger("show", options);
     }
   };
 });
