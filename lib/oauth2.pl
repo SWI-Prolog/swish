@@ -46,6 +46,7 @@
 :- use_module(library(http/http_path)).
 :- use_module(library(http/http_host)).
 :- use_module(library(http/http_wrapper)).
+:- use_module(library(http/http_header)).
 :- use_module(library(http/json)).
 :- use_module(library(base64)).
 :- use_module(library(utf8)).
@@ -53,6 +54,7 @@
 :- use_module(library(debug)).
 :- use_module(library(error)).
 :- use_module(library(option)).
+:- use_module(library(apply)).
 
 /** <module> Oauth2 based login
 
@@ -211,7 +213,9 @@ oauth2_reply(Request, Options) :-
 			[ code(AuthCode, [string]),
 			  state(State, [])
 			]),
+	debug(oauth, 'Code: ~p', [AuthCode]),
 	validate_forgery_state(State, _ServerID, _Redirect),
+	debug(oauth, 'State: OK', []),
 	oauth2_token_details(ServerID, AuthCode, TokenInfo),
 	call_login(Request, ServerID, TokenInfo).
 
@@ -322,6 +326,8 @@ oauth2_token_details(ServerID, AuthCode, Dict) :-
 				    client_id(ClientID),
 				    client_secret(ClientSecret)
 				  ])),
+			request_header('Accept'='application/json;q=1.0,\c
+					         */*;q=0.1'),
 			header(content_type, ContentType),
 			status_code(Code)
 		      | Options
@@ -329,15 +335,35 @@ oauth2_token_details(ServerID, AuthCode, Dict) :-
 	    read_reply(Code, ContentType, In, Dict),
 	    close(In)).
 
-read_reply(200, _Type, In, Dict) :- !,
+read_reply(Code, ContentType, In, Dict) :-
+	debug(oauth, 'Token details returned ~p ~p', [Code, ContentType]),
+	http_parse_header_value(content_type, ContentType, Parsed),
+	read_reply2(Code, Parsed, In, Dict).
+
+%!	read_reply2(+Code, +ContentType, +Stream, -Dict) is det.
+%
+%	Read the server reply as a dict.   Normally, the reply is a JSON
+%	object, but stackexchange seems to send it as a www-form-encoded
+%	string.
+
+read_reply2(200, media(application/json, _Attributes), In, Dict) :- !,
 	json_read_dict(In, Dict).
-read_reply(Code, 'application/json', In,
+read_reply2(200, media(text/plain, _Attributes), In, Dict) :- !,
+	read_string(In, _, Reply),
+	uri_query_components(Reply, Fields0),
+	maplist(convert_field, Fields0, Fields),
+	dict_create(Dict, _, Fields).
+read_reply2(Code, media(application/json, _Attributes), In,
 	   error{code:Code, details:Details}) :- !,
 	json_read_dict(In, Details).
-read_reply(Code, Type, In,
+read_reply2(Code, Type, In,
 	   error{code:Code, message:Reply}) :-
-	debug(oauth2(token), 'Got code ~w, type ~q', [Code, Type]),
+	debug(oauth(token), 'Got code ~w, type ~q', [Code, Type]),
 	read_string(In, _, Reply).
+
+convert_field(expires=Atom, expires=Number) :-
+	atom_number(Atom, Number), !.
+convert_field(Field, Field).
 
 
 %!	server_attr(+ServerID, +Attr, -Value) is det.
