@@ -366,6 +366,8 @@ default_attribute(discovery_endpoint, ServerID, URI) :- !,
 	uri_extend(Base, '/.well-known/openid-configuration', [], URI).
 default_attribute(cert_verify_hook, _, Hook) :- !,
 	Hook = default.
+default_attribute(url, _, _) :- !,
+	fail.
 default_attribute(Attribute, ServerID, URI) :-
 	oauth2_discover(ServerID, Dict),
 	URI = Dict.get(Attribute).
