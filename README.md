@@ -50,7 +50,7 @@ you            need            the             [nightly            build
 system    from    the     current      git     development    repository
 [swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
 
-Apr 15, 2016: SWI-Prolog 7.3.20 supports SWISH completely.
+Feb 3, 2017: SWI-Prolog 7.4.0-rc1 and 7.5.0 support SWISH completely.
 
 ## Running SWISH
 
@@ -63,14 +63,31 @@ Now direct your browser to http://localhost:3050/
 If you want  to  know  what  the   latest  version  looks  like,  go  to
 http://swish.swi-prolog.org/
 
+### Configuring SWISH
+
+There is a lot that can be configured in SWISH.  Roughly:
+
+  - Make additional libraries available, e.g., RDF support, database
+    connections, link to R, etc.
+
+  - Configure authentication and authorization.  The default is not
+    to demand and run commands sandboxed.  At the other extreme you
+    can configure the system to demand login for all access and provide
+    full access to Prolog.
+
+Configuration is done  by  reading  `*.pl`   files  from  the  directory
+`config-enabled`. The directory `config-available`   contains  templates
+that can be copied and optionally edited to create a configuration.
+
 
 ### Running SWISH without sandbox limitations
 
 By default, SWISH does not require the user   to  login but lets you run
 only _safe_ commands.  If  you  want   to  use  SWISH  for  unrestricted
-development, load the authentication module:
+development, enable the config file `auth_http_always.pl`:
 
-    ?- [lib/authenticate].
+    mkdir -p config-enabled
+    (cd config-enabled && ln -s ../config-available/auth_http_always.pl)
 
 Next, for first usage, you need  to   create  a user. The authentication
 module defines swish_add_user/0, which asks for   details about the user
@@ -97,10 +114,31 @@ that old credentials cannot be re-used   by  an attacker. Unfortunately,
 the server stores the password as the   SHA1 hash created from the user,
 password and _realm_.  This  is   relatively  vulnerable  to brute-force
 attacks for anyone who gains access to the  password file due to the low
-computational overhead of SHA1. Also note   that  the exchanged commands
-and replies are not encrypted. Secure servers  should use HTTPS. This is
-supported by SWISH, but creating and   deploying the certificates can be
-rather involved.
+computational overhead of SHA1 and the   lack of a user-specific _salt_.
+Also note that the exchanged  commands   and  replies are not encrypted.
+Secure servers should use HTTPS.
+
+### Optional login
+
+Instead of using `auth_http_always.pl` you can use `auth_http.pl`, which
+allows for unauthenticated -sandboxed- usage as   well  as logging in to
+the server and get unrestricted  access.   In  addition, several _social
+login_ modules are provided to login  using Google, etc. Currently these
+provide no additional rights. A more   fine grained authorization scheme
+is planned.
+
+
+## Running as a service
+
+The script daemon.pl is provided to run SWISH  as a service or daemon on
+Unix systems. Run this to get an overview of the options.
+
+    ./daemon.pl --help
+
+This script can be used to start  SWISH   as  a  daemon from the command
+line, start SWISH from service managers   such as `upstart` or `systemd`
+and    simplifies    running    as     an      HTTPS     server.     See
+https://github.com/triska/letswicrypt.
 
 
 ## Design
