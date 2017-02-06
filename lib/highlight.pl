@@ -209,6 +209,7 @@ create_editor(UUID, Editor, Change) :-
 create_editor(UUID, Editor, _Change) :-
 	fetch_editor(UUID, Editor).
 
+% editor and lock are left to symbol-GC if this fails.
 register_editor(UUID, Editor, Role, Lock, Now) :-
 	\+ current_editor(UUID, _, _, _, _),
 	mutex_lock(Lock),
@@ -337,20 +338,25 @@ release_editor(UUID) :-
 check_unlocked :-
 	check_unlocked(unknown).
 
+%!	check_unlocked(+Reason)
+%
+%	Verify that all editors locked by this thread are unlocked
+%	again.
+
 check_unlocked(Reason) :-
 	thread_self(Me),
 	current_editor(_UUID, _TB, _Role, Lock, _),
 	mutex_property(Lock, status(locked(Me, _Count))), !,
+	unlock(Me, Lock),
 	print_message(error, locked(Reason, Me)),
 	assertion(fail).
 check_unlocked(_).
 
-unlocked_editor(UUID) :-
-	thread_self(Me),
-	current_editor(UUID, _TB, _Role, Lock, _),
+unlock(Me, Lock) :-
 	mutex_property(Lock, status(locked(Me, _Count))), !,
-	fail.
-unlocked_editor(_).
+	mutex_unlock(Lock),
+	unlock(Me, Lock).
+unlock(_, _).
 
 %%	update_access(+UUID)
 %
@@ -423,9 +429,9 @@ codemirror_leave_(Request) :-
 %	Mark that our cross-reference data might be obsolete
 
 mark_changed(MemFile, Changed) :-
-	(   Changed == true
-	->  current_editor(UUID, MemFile, _Role, _, _),
-	    retractall(xref_upto_data(UUID))
+	(   Changed == true,
+	    current_editor(UUID, MemFile, _Role, _, _)
+	->  retractall(xref_upto_data(UUID))
 	;   true
 	).
 
@@ -571,23 +577,11 @@ string_source_id(String, SourceID) :-
 
 shadow_editor(Data, TB) :-
 	atom_string(UUID, Data.get(uuid)),
-	fetch_editor(UUID, TB), !,
-	(   Text = Data.get(text)
-	->  size_memory_file(TB, Size),
-	    delete_memory_file(TB, 0, Size),
-	    insert_memory_file(TB, 0, Text),
-	    mark_changed(TB, true)
-	;   Changes = Data.get(changes)
-	->  (   debug(cm(change), 'Patch editor for ~p', [UUID]),
-		catch(maplist(apply_change(TB, Changed), Changes), E,
-		      (release_editor(UUID), throw(E)))
-	    ->	true
-	    ;	release_editor(UUID),
-		assertion(unlocked_editor(UUID)),
-		throw(cm(out_of_sync))
-	    ),
-	    mark_changed(TB, Changed)
-	).
+	setup_call_catcher_cleanup(
+	    fetch_editor(UUID, TB),
+	    once(update_editor(Data, UUID, TB)),
+	    Catcher,
+	    cleanup_update(Catcher, UUID)), !.
 shadow_editor(Data, TB) :-
 	Text = Data.get(text), !,
 	atom_string(UUID, Data.uuid),
@@ -601,6 +595,25 @@ shadow_editor(Data, TB) :-
 	create_editor(UUID, TB, Data).
 shadow_editor(_Data, _TB) :-
 	throw(cm(existence_error)).
+
+update_editor(Data, _UUID, TB) :-
+	Text = Data.get(text), !,
+	size_memory_file(TB, Size),
+	delete_memory_file(TB, 0, Size),
+	insert_memory_file(TB, 0, Text),
+	mark_changed(TB, true).
+update_editor(Data, UUID, TB) :-
+	Changes = Data.get(changes), !,
+	(   debug(cm(change), 'Patch editor for ~p', [UUID]),
+	    maplist(apply_change(TB, Changed), Changes)
+	->  true
+	;   throw(cm(out_of_sync))
+	),
+	mark_changed(TB, Changed).
+
+cleanup_update(exit, _) :- !.
+cleanup_update(_, UUID) :-
+	release_editor(UUID).
 
 :- thread_local
 	token/3.
