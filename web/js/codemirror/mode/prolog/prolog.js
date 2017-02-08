@@ -224,7 +224,7 @@ CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
 	  break;
 	case "]":
 	  state.nesting.pop();
-	  return ret("list_close", null);
+	  return ret("list_close", null, "]");
 	case "}":
 	{ var nest = nesting(state);
 	  var type = (nest && nest.tag) ? "dict_close" : "brace_term_close";
@@ -246,7 +246,7 @@ CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
 			       closeColumn: stream.column(),
 			       alignment: stream.column()+2
 			     });
-	  return ret("list_open", null);
+	  return ret("list_open", null, "[");
 	  break;
 	case "{":
 	  if ( config.quasiQuotations && stream.eat("|") ) {

@@ -1053,7 +1053,8 @@ token_info(Token) -->
 	{ _{type:Type, text:Name, arity:Arity} :< Token,
 	  goal_type(_, Type, _), !,
 	  ignore(token_predicate_module(Token, Module)),
-	  predicate_info(Module:Name/Arity, Info)
+	  text_arity_pi(Name, Arity, PI),
+	  predicate_info(Module:PI, Info)
 	},
 	pred_info(Info).
 
@@ -1070,13 +1071,17 @@ pred_tags(Info) -->
 pred_summary(Info) -->
 	html(span(class('pred-summary'), Info.get(summary))).
 
-
 %%	token_predicate_module(+Token, -Module) is semidet.
 %
 %	Try to extract the module from the token.
 
 token_predicate_module(Token, Module) :-
 	source_file_property(Token.get(file), module(Module)), !.
+
+text_arity_pi('[', 2, consult/1) :- !.
+text_arity_pi(']', 2, consult/1) :- !.
+text_arity_pi(Name, Arity, Name/Arity).
+
 
 %%	predicate_info(+PI, -Info:list(dict)) is det.
 %
