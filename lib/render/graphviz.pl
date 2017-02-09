@@ -147,7 +147,7 @@ render_dot(DOTString, Program, _Options) -->	% <svg> rendering
 	  call_cleanup((   read_string(XDotOut, _, SVG),
 			   read_string(ErrorOut, _, Error)
 		       ),
-		       (   process_wait(PID, _Status),
+		       (   process_wait_0(PID),
 			   close(ErrorOut, [force(true)]),
 			   close(XDotOut)
 		       ))
@@ -159,6 +159,13 @@ render_dot(DOTString, Program, _Options) -->	% <svg> rendering
 		     \svg(SVG, [])))
 	;   html(div(style('color:red;'),
 		     [ '~w'-[Program], ': ', Error]))
+	).
+
+process_wait_0(PID) :-
+	process_wait(PID, Status),
+	(   Status == exit(0)
+	->  true
+	;   print_message(error, format('Process ~q died on ~q', [PID, Status]))
 	).
 
 %%	svg(+SVG:string, +Options:list)//
@@ -265,17 +272,13 @@ swish_send_graphviz(Request) :-
 				      [ dialect(xml) ]),
 		       read_string(ErrorOut, _, Error)
 		     ),
-		     (	 process_wait(PID, Status),
+		     (	 process_wait_0(PID),
 			 close(ErrorOut, [force(true)]),
 			 close(XDotOut)
 		     )),
 	(   Error == ""
 	->  true
 	;   print_message(error, format('~w', [Error]))
-	),
-	(   Status == exit(0)
-	->  true
-	;   print_message(error, format('Graphviz died on ~q', [Status]))
 	),
 	rewrite_svg_dom(SVGDom0, SVGDom),
 	format('Content-type: ~w~n~n', ['image/svg+xml; charset=UTF-8']),
