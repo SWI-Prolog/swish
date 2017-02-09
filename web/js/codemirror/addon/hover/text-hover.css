@@ -1,8 +1,8 @@
 .CodeMirror-hover-tooltip {
-	background-color: infobackground;
-	border: 1px solid black;
+	background-color: #ffd;
+	border: 1px solid #888;
 	border-radius: 4px 4px 4px 4px;
-	color: infotext;
+	color: #000;
 	font-size: 10pt;
 	overflow: hidden;
 	padding: 2px 5px;
