@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2016, VU University Amsterdam
+    Copyright (C): 2014-2017, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -484,7 +484,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
       populateMenu: function(menu, client, actions) {
 	var ul = menu.find(".dropdown-menu");
 
-	function runMenu(a) {
+	function runMenu(ev, a) {
 	  var action = $(a).data('action');
 
 	  if ( action )
@@ -510,7 +510,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 	  }
 	}
 
-	ul.on("click", "a", function() { runMenu(this); } );
+	ul.on("click", "a", function(ev) { return runMenu(ev, this); } );
 
 	return menu;
       }
