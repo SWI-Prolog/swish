@@ -42,8 +42,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "modal", "config", "laconic" ],
-       function($, modal, config) {
+define([ "jquery", "modal", "config", "form", "laconic" ],
+       function($, modal, config, form) {
 
 (function($) {
   var pluginName = 'login';
@@ -53,18 +53,17 @@ define([ "jquery", "modal", "config", "laconic" ],
     _init: function(options) {
       return this.each(function() {
 	var elem = $(this);
+	var data = {};
+
+	data.url = elem.attr("href");
+	elem.removeAttr("href");
 
 	elem.on("click", function(ev) {
 	  if ( elem.hasClass("login") )
 	    elem.login('login', ev);
-	  else
-	    elem.login('logout', ev);
-	  ev.preventDefault();
-	  return false;
 	});
-	elem.hover(function(ev) { elem.login('details', true); },
-		   function(ev) { elem.login('details', false); });
 
+	elem.data(pluginName, data);
 	elem.login('update');
       });
     },
@@ -81,55 +80,32 @@ define([ "jquery", "modal", "config", "laconic" ],
 		elem.removeClass("login").addClass("logout");
 
 		var span = elem.find("span.logout span.value");
+		var icon;
 
 		if ( obj.picture ) {
-		  span.html("")
-		      .append($.el.img({ class: "profile-picture",
-					 src: obj.picture
-				       }));
+		  icon = $.el.img({ class: "profile-picture",
+				    src: obj.picture
+				  });
 		} else {
-		  span.html("Logout");
+		  icon = $.el.span({class:"glyphicon glyphicon-user"});
 		}
+		icon = $.el.span(icon, $.el.b({class: "caret"}));
+		span.html("");
+		span.append(form.widgets.dropdownButton(icon, {
+		  divClass:"user-menu btn-transparent",
+		  ulClass:"pull-right",
+		  client: elem,
+		  actions: {
+		    "Logout":  function() { this.login('logout'); },
+		    "Profile": function() { this.login('profile'); }
+		  }
+		}));
 	      } else
 	      { delete config.swish.user;
 		elem.removeClass("logout").addClass("login");
-		$("#login-details").remove();
 	      }
 	    },
 	    "json");
-    },
-
-    details: function(show) {
-      var elem = $(this);
-      var user = config.swish.user;
-
-      if ( show && user ) {
-	var offset = elem.offset();
-	var table  = $.el.table();
-
-	function add(field, label) {
-	  if ( user[field] ) {
-	    $(table).append($.el.tr($.el.th(label+":"), $.el.td(user[field])));
-	  }
-	}
-
-	add("user",  "User");
-	add("name",  "Name");
-	add("group", "Group");
-	add("email", "Email");
-
-	var modal = $.el.div({id: "login-details"},
-			     $.el.div({class:"login-caption"}, "Current user"),
-			     table);
-
-	$("body").append(modal);
-	$(modal).offset({ left: offset.left + elem.outerWidth()
-					    - $(modal).outerWidth() - 5,
-			  top:  offset.top  + elem.outerHeight()
-			});
-      } else if ( !show ) {
-	$("#login-details").remove();
-      }
     },
 
     /**
@@ -137,8 +113,9 @@ define([ "jquery", "modal", "config", "laconic" ],
      */
     login: function(ev) {
       var elem   = $(this);
+      var data   = this.data(pluginName);
       var target = $(ev.target);
-      var url    = target.closest("a").attr("href");
+      var url    = data.url;
       var server = target.closest("[data-server]").data("server");
       var frame  = target.closest("[data-frame]").data("frame")||"iframe";
 
@@ -178,9 +155,31 @@ define([ "jquery", "modal", "config", "laconic" ],
     },
 
     /**
+     * Examine/edit the user profile.  Opens a modal window that is
+     * filled through an AJAX call on the server.
+     */
+    profile: function() {
+      modal.show({
+	title: "User profile",
+	body: function() {
+	  elem = $(this);
+	  $.ajax({ url: config.swish.user.swish_profile_url ||
+			config.http.locations.user_profile,
+		   success: function(data) {
+		     elem.append(data);
+		   },
+		   error: function(jqXHDR) {
+		     modal.ajaxError(jqXHDR);
+		   }
+	         });
+	}
+      });
+    },
+
+    /**
      * Logout the current user
      */
-    logout: function(ev) {
+    logout: function() {
       var user = config.swish.user;
       var elem = $(this);
 
