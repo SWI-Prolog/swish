@@ -50,13 +50,14 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
     /**
      * Serialize a form as an object. The following normalizations are
      * performed:
-     *   - Form fields that have an empty string are ignored
+     *   - Form fields that have an empty string are ignored unless
+     *     `ignore_empty` is `true`
      *   - The value from a `<input type="checkbox">`is converted
      *     into a JavaScript boolean.
      *	 - The value of a tag-list is converted into a list of strings.
      * @returns {Object} holding the name/value pairs of the form
      */
-    serializeAsObject: function(form) {
+    serializeAsObject: function(form, ignore_empty) {
       var arr = form.serializeArray(0);
       var obj = {};
 
@@ -66,7 +67,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 	var input = form.find('[name="'+name+'"]');
 	var type  = input.prop("type");
 
-	if ( value != "" ) {
+	if ( value != "" || ignore_empty == true ) {
 	  // deal with tag lists
 	  if ( type == "hidden" && name.indexOf("hidden-") == 0 ) {
 	    name = name.slice("hidden-".length);
