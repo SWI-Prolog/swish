@@ -1,3 +1,6 @@
 [submodule "pack/profile"]
 	path = pack/profile
 	url = https://github.com/JanWielemaker/profile.git
+[submodule "pack/smtp"]
+	path = pack/smtp
+	url = https://github.com/JanWielemaker/smtp.git
