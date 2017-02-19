@@ -87,11 +87,24 @@ http:location(swish, root(.), [priority(-100)]).
 		 *         LOCAL CONFIG		*
 		 *******************************/
 
+% Built-in as of SWI-Prolog 7.5.2. Options ensure we get the local
+% version
+:- if(\+current_predicate(attach_packs/2)).
+attach_packs(Dir,_) :-
+	absolute_file_name(Dir, Path,
+			   [ file_type(directory),
+			     file_errors(fail)
+			   ]), !,
+	attach_packs(Path).
+attach_packs(_, _).
+:- endif.
+
 %!	load_config
 %
 %	Load files from config-enabled if present.
 
 load_config :-
+	attach_packs(swish(pack), [duplicate(replace), search(first)]),
 	exists_directory('config-enabled'), !,
 	expand_file_name('config-enabled/*.pl', Files),
 	maplist(ensure_loaded, Files).
