@@ -97,7 +97,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
       form.find("[type=checkbox]").each(function() {
 	var checkbox = $(this);
 	var name = checkbox.prop('name');
-	if ( obj[name] === undefined )
+	if ( checkbox.prop("disabled") != true && obj[name] === undefined )
 	  obj[name] = false;
       });
 
