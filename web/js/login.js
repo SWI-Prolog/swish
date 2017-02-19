@@ -190,7 +190,7 @@ define([ "jquery", "modal", "config", "form", "laconic" ],
 		     elem.login('update');
 		   },
 		   error: function(jqXHDR) {
-		     modal.ajaxError(jqXHR);
+		     modal.ajaxError(jqXHDR);
 		   }
 	         });
 	} else if ( user.auth_method == "basic" ||
