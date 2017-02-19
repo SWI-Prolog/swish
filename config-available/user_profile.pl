@@ -48,6 +48,13 @@
 Configure  maintenance  of  user  profiles.  This  config  file  may  be
 optionally enabled if one  or   more,  notably federated, authentication
 modules are loaded. It maintains a database of identified users.
+
+The user profile infra structure depends on the pack _profile_, which is
+linked to SWISH as a git submodule.  To use profiles, run
+
+    ```
+    git submodule update --init pack/profile
+    ```
 */
 
 :- multifile
