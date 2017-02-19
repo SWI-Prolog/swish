@@ -1,0 +1,3 @@
+[submodule "pack/profile"]
+	path = pack/profile
+	url = https://github.com/JanWielemaker/profile.git
