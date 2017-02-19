@@ -96,8 +96,12 @@ define([ "jquery", "modal", "config", "form", "laconic" ],
 		  ulClass:"pull-right",
 		  client: elem,
 		  actions: {
-		    "Logout":  function() { this.login('logout'); },
-		    "Profile": function() { this.login('profile'); }
+		    "Logout":  function() {
+		      if ( this.login ) this.login('logout');
+		    },
+		    "Profile": function() {
+		      if ( this.login ) this.login('profile');
+		    }
 		  }
 		}));
 	      } else

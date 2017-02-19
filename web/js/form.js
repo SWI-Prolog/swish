@@ -372,7 +372,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
        * primary button.
        * @param {Function} options.action is called with two arguments,
        * the _event_ and the serialized data from the embedded form
-       * @param {Number} options.offset determinis the begin column in
+       * @param {Number} options.offset determines the begin column in
        * the grid (default 2)
        */
       buttons: function(options) {
@@ -489,8 +489,6 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 
 	  if ( action )
 	    action.call(client, a);
-
-	  return false;
 	}
 
 	function addMenuItem(label, onclick) {
@@ -510,7 +508,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 	  }
 	}
 
-	ul.on("click", "a", function(ev) { return runMenu(ev, this); } );
+	ul.on("click", "a", function(ev) { runMenu(ev, this); } );
 
 	return menu;
       }
