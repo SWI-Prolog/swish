@@ -40,6 +40,7 @@
             name_label/2                % +Name, -Label
           ]).
 :- use_module(library(option)).
+:- use_module(library(occurs)).
 :- use_module(library(http/html_write)).
 
 /** <module> Bootstrap form generator
@@ -47,17 +48,23 @@
 This library provides HTML rules for constructing Bootstrap forms.
 */
 
-%!  bt_form(+Fields, +Options)//
+%!  bt_form(+Contents, +Options)//
 %
-%   Emit a Bootstrap form from Fields.  Each field is a term
+%   Emit a Bootstrap form from Contents.  Each element of Contents is
+%   one of the following terms:
 %
-%     input(Name, InputOptions)
+%     - input(Name, Type, InputOptions)
+%     - button(Name, Type, ButtonOptions)
+%     - button_group(Buttons, GroupOptions)
 %
 %   Options processed:
 %
 %     - class(+Class)
 %     One of 'form-inline' or 'form-horizontal'.  Default is a vertical
 %     form.
+%     - label_columns(+SizeCount)
+%     Number of columns of the grid to use for the label.  In use for
+%     'form-horizontal'.  Default is sm-2 (a pair)
 
 bt_form(Fields, Options) -->
     { form_attributes(Atts, Options) },
@@ -73,6 +80,22 @@ bt_form_content([H|T], Options) -->
     bt_form_content(T, Options).
 
 
+%!  form_style(+Style, +Options)
+
+form_style(horizontal, Options) :-
+    option(class(Class), Options),
+    sub_term('form-horizontal', Class).
+form_style(inline, Options) :-
+    option(class(Class), Options),
+    sub_term('form-inline', Class).
+form_style(vertical, Options) :-
+    (   option(class(Class), Options)
+    ->  \+ sub_term('form-inline', Class),
+        \+ sub_term('form-horizontal', Class)
+    ;   true
+    ).
+
+
 %!  bt_form_element(+Term, +Options)//
 %
 %   Add a single element to the form.
@@ -84,20 +107,94 @@ bt_form_element(input(Name, Type, IOptions), Options) -->
              ])).
 bt_form_element(button(Name, Type, IOptions), Options) -->
     bt_button(Name, Type, IOptions, Options).
+bt_form_element(button_group(Buttons, IOptions), Options) -->
+    bt_button_group(Buttons, IOptions, Options).
 
 %!  bt_label(+Name, +ElementOptions, +FormsOptions)//
 %
 %   Emit a label.
 
-bt_label(Name, IOptions, _Options) -->
-    html(label([for(Name)], \label(Name, IOptions))).
+bt_label(Name, IOptions, Options) -->
+    { phrase(label_attr(Options), Attrs) },
+    html(label([for(Name)|Attrs], \label(Name, IOptions))).
+
+label_attr(Options) -->
+    { form_style(horizontal, Options),
+      option(label_columns(Size-Count), Options, sm-2),
+      atomic_list_concat([col,Size,Count], -, Class)
+    },
+    [ class(['control-label', Class]) ].
+label_attr(_) --> [].
+
+
 
 %!  bt_input(+Name, +Type, +InputOptions, +FormOptions)//
 %
-%   Emit an input element
+%   Emit an input element.  InputOptions are:
+%
+%     - value(+Value)
+%     Initial value of the input
+%     - disabled(+Boolean)
+%     If `true`, the input cannot be edited.
 
-bt_input(Name, Type, _InputOptions, _FormOptions) -->
-    html(input([type(Type), class('form-control'), name(Name)])).
+bt_input(Name, Type, InputOptions, FormOptions) -->
+    { form_style(horizontal, FormOptions),
+      option(label_columns(Size-Count), FormOptions, sm-2),
+      FieldCols is 12-Count,
+      atomic_list_concat([col,Size,FieldCols], -, Class)
+    },
+    html(div(class(Class),
+             \bt_input_elem(Name, Type, InputOptions, FormOptions))).
+bt_input(Name, Type, InputOptions, FormOptions) -->
+    bt_input_elem(Name, Type, InputOptions, FormOptions).
+
+bt_input_elem(Name, checkbox, InputOptions, _FormOptions) -->
+    !,
+    { phrase(checkbox_attr(InputOptions), Attrs) },
+    html(input([type(checkbox), name(Name)|Attrs])).
+bt_input_elem(Name, Type, InputOptions, _FormOptions) -->
+    { phrase(input_attr(InputOptions), Attrs) },
+    html(input([type(Type), class('form-control'), name(Name)|Attrs])).
+
+checkbox_attr(Options) -->
+    ( checkbox_value(Options) -> [] ; [] ),
+    ( input_disabled(Options) -> [] ; [] ).
+
+checkbox_value(Options) -->
+    { option(value(true), Options) },
+    [ checked(checked) ].
+
+input_attr(Options) -->
+    ( input_value(Options) -> [] ; [] ),
+    ( input_disabled(Options) -> [] ; [] ).
+
+input_value(Options) -->
+    { option(value(Value), Options) },
+    [ value(Value) ].
+input_disabled(Options) -->
+    { option(disabled(true), Options) },
+    [ disabled(disabled) ].
+
+
+%!  bt_button_group(+Buttons, +ButtonOptions, +FormOptions)//
+%
+%   Emit a div for a group of buttons.
+
+bt_button_group(Buttons, _ButtonOptions, FormOptions) -->
+    { form_style(horizontal, FormOptions),
+      !,
+      option(label_columns(_-Count), FormOptions, sm-2),
+      Count12 is 12-Count,
+      atomic_list_concat([col,xs,offset,Count], -, Offset),
+      atomic_list_concat([col,xs,Count12], -, Width)
+    },
+    html(div(class('form-group'),
+             div(class([Offset,Width]),
+                 \bt_form_content(Buttons, FormOptions)))).
+bt_button_group(Buttons, _ButtonOptions, FormOptions) -->
+    html(div(class(['col-xs-12', 'text-center']),
+             \bt_form_content(Buttons, FormOptions))).
+
 
 %!  bt_button(+Name, +Type, +ButtonOptions, +FormOptions)//
 

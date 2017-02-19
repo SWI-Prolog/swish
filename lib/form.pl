@@ -85,12 +85,19 @@ validate_form([field(Field, Value, Options)|T], Dict, Errors) :-
 %	  All characters must be alphanumeric or spaces
 %	  - atom
 %	  Convert input to an atom
+%	  - string
+%	  Convert input to a string
 %	  - default(Term)
 %	  Use Term as value if no value appears in the input.
 %	  - downcase
 %	  Convert input to lower case
 %	  - email
 %	  Input must be a value E-mail address.
+%	  - url
+%	  Input must be a valid absolute URL
+%	  - url(Scheme)
+%	  Input must be a valid absolute URL of type Scheme. Using
+%	  `http` also allows for `https`
 %	  - float
 %	  Value is converted to a floating point number.
 %	  - integer
@@ -115,12 +122,16 @@ validate_form([field(Field, Value, Options)|T], Dict, Errors) :-
 
 
 validate_field(Dict, Field, Value, Options) :-
-	(   Value0 = Dict.get(Field)
+	(   Value0 = Dict.get(Field),
+	    \+ is_empty(Value0)
 	->  validate_value(Options, Value0, Value, Field)
 	;   memberchk(default(Value), Options)
 	->  true
 	;   input_error(Field, required)
 	).
+
+is_empty(Value) :-
+	normalize_space(string(""), Value).
 
 validate_value([], Value, Value, _).
 validate_value([H|T], Value0, Value, Field) :-
@@ -155,10 +166,19 @@ validate_step(alnum_and_spaces, Value, Value) :-
 validate_step(email, Value, Value) :-
 	string_codes(Value, Codes),
 	phrase(email, Codes).
+validate_step(url, Value, Value) :-
+	validate_step(url(_), Value, Value).
+validate_step(url(Scheme), Value, Value) :-
+	is_url(Scheme, Value).
 validate_step(downcase, Value0, Value) :-
 	string_lower(Value0, Value).
 validate_step(atom, Value0, Value) :-
 	atom_string(Value, Value0).
+validate_step(string, Value0, Value) :-
+	(   string(Value0)
+	->  Value = Value0
+	;   atom_string(Value0, Value)
+	).
 validate_step(number, Value0, Value) :-
 	number_string(Value, Value0).
 validate_step(integer, Value0, Value) :-
@@ -219,6 +239,31 @@ domain_name_char -->
 
 domain_special(0'-).
 domain_special(0'_).
+
+%!	is_url(?Scheme, +URL) is semidet.
+%
+%	True if URL looks like a URL that satisfies Scheme.
+
+is_url(Scheme, URL) :-
+	(   string(URL)
+	->  true
+	;   atom(URL)
+	),
+	uri_components(URL, Components),
+	valid_url_scheme(Scheme, Components),
+	valid_authority(Components).
+
+valid_url_scheme(SchemeReq, Components) :-
+	uri_data(scheme, Components, Scheme),
+	nonvar(Scheme),
+	is_scheme(SchemeReq, Scheme).
+
+is_scheme(Scheme, Scheme) :- !.
+is_scheme(http, https).
+
+valid_authority(Components) :-
+	uri_data(authority, Components, Authority),
+	nonvar(Authority).
 
 validate_failed(H, _Value0, Field) :-
 	input_error(Field, H).
