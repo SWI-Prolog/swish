@@ -93,7 +93,8 @@ oauth2:login(_Request, unity, TokenInfo) :-
     http_session_assert(oauth2(unity, TokenInfo)),
     http_session_assert(user_info(unity, UserInfo)),
     reply_logged_in([ identity_provider('Unity'),
-                      name(UserInfo.name)
+                      name(UserInfo.name),
+                      user_info(UserInfo)
                     ]).
 
 %!  map_user_info(+OAuthInfo, -UserInfo) is det.
@@ -103,7 +104,13 @@ oauth2:login(_Request, unity, TokenInfo) :-
 map_user_info(Dict0, Dict) :-
     dict_pairs(Dict0, Tag, Pairs0),
     maplist(map_user_field, Pairs0, Pairs),
-    dict_pairs(Dict, Tag, Pairs).
+    http_link_to_id(unity_logout, [], LogoutURL),
+    dict_pairs(Dict, Tag,
+               [ auth_method-oauth2,
+                 logout_url-LogoutURL,
+                 identity_provider-unity
+               | Pairs
+               ]).
 
 map_user_field(cn-Name, name-Name) :- !.
 map_user_field(Field, Field).
@@ -113,7 +120,10 @@ map_user_field(Field, Field).
 %   Logout by removing the session data
 
 unity_logout(_Request) :-
-    session_remove_user_data,
+    (   http_in_session(SessionID)
+    ->  http_close_session(SessionID)
+    ;   true
+    ),
     reply_json_dict(true).
 
 session_remove_user_data :-
@@ -126,9 +136,7 @@ session_remove_user_data :-
 
 swish_config:user_info(_Request, unity, UserInfo) :-
     http_in_session(_SessionID),
-    http_session_data(user_info(unity, UserData)),
-    http_link_to_id(unity_logout, [], LogoutURL),
-    UserInfo = UserData.put(_{auth_method:oauth2, logout_url:LogoutURL}).
+    http_session_data(user_info(unity, UserInfo)).
 
 %!  oauth2:server_attribute(?Server, ?Attribute, ?Value)
 %

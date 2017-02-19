@@ -140,7 +140,8 @@ oauth2:login(_Request, stackexchange, TokenInfo) :-
     http_session_assert(oauth2(stackexchange, TokenInfo)),
     http_session_assert(user_info(stackexchange, UserInfo)),
     reply_logged_in([ identity_provider('StackOverflow'),
-                      name(UserInfo.name)
+                      name(UserInfo.name),
+                      user_info(UserInfo)
                     ]).
 
 %!  stackexchange_me(+AccessToken, -Info)
@@ -207,7 +208,10 @@ read_reply2(Code, Type, In,
 %   Logout by removing the session data
 
 stackexchange_logout(_Request) :-
-    session_remove_user_data,
+    (   http_in_session(SessionID)
+    ->  http_close_session(SessionID)
+    ;   true
+    ),
     reply_json_dict(true).
 
 %!  swish_config:user_info(+Request, ?Server, -Info:dict) is semidet.
@@ -216,9 +220,7 @@ stackexchange_logout(_Request) :-
 
 swish_config:user_info(_Request, stackexchange, UserInfo) :-
     http_in_session(_SessionID),
-    http_session_data(user_info(stackexchange, UserData)),
-    http_link_to_id(stackexchange_logout, [], LogoutURL),
-    UserInfo = UserData.put(_{auth_method:oauth2, logout_url:LogoutURL}).
+    http_session_data(user_info(stackexchange, UserInfo)).
 
 %!  map_user_info(+OAuthInfo, -UserInfo) is det.
 %
@@ -227,7 +229,13 @@ swish_config:user_info(_Request, stackexchange, UserInfo) :-
 map_user_info(Dict0, Dict) :-
     dict_pairs(Dict0, Tag, Pairs0),
     maplist(map_user_field, Pairs0, Pairs),
-    dict_pairs(Dict, Tag, Pairs).
+    http_link_to_id(stackexchange_logout, [], LogoutURL),
+    dict_pairs(Dict, Tag,
+               [ identity_provider-stackexchange,
+                 auth_method-oauth2,
+                 logout_url-LogoutURL
+               | Pairs
+               ]).
 
 map_user_field(display_name-Name, name-Name) :- !.
 map_user_field(profile_image-URL, picture-URL) :- !.

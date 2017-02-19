@@ -50,6 +50,7 @@
 :- use_module(library(settings)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
+:- use_module(library(http/http_session)).
 
 :- use_module(form).
 :- use_module(config).
@@ -69,6 +70,8 @@
 	   "HTTP authentication realm").
 :- setting(password_file, callable, passwd,
 	   "Location of the password file").
+
+:- http_set_session_options([create(noauto), timeout(3600)]).
 
 :- multifile
 	swish_config:config/2,
@@ -275,16 +278,18 @@ swish_config:login_item(local, 0-Item) :-
 
 swish_config:login(local, Request) :-
 	login(Request, User),
-	user_name(User, Options),
-	reply_logged_in([ user(User)
+	swish_current_user(User, UserData),
+	user_name(UserData, Options),
+	UserInfo = UserData.put(identity_provider, local),
+	reply_logged_in([ user(User),
+			  user_info(UserInfo)
 			| Options
 			]).
 
-user_name(User, [name(Name)]) :-
-	swish_current_user(User, UserData),
+user_name(UserData, [name(Name)]) :-
 	Name = UserData.get(name),
 	!.
-user_name(_User, []).
+user_name(_, []).
 
 %!  swish_config:user_info(+Request, -Server, -UserInfo) is semidet.
 %
@@ -301,6 +306,10 @@ swish_config:user_info(Request, local, UserInfo) :-
 %   clearAuthenticationCache() from web/js/login.js
 
 http_logout(_Request) :-
+	(   http_in_session(SessionID)
+	->  http_close_session(SessionID)
+	;   true
+	),
 	throw(http_reply(authorise(basic('SWISH user')))).
 
 

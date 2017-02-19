@@ -87,12 +87,13 @@ swish_config:login(google, Request) :-
     oauth2_login(Request, [server(google)]).
 
 oauth2:login(_Request, google, TokenInfo) :-
-    oauth2_claim(TokenInfo, Claim),
-    debug(oauth, 'Claim: ~p', [Claim]),
+    token_info_to_user_info(TokenInfo, UserInfo),
+    debug(oauth, 'UserInfo: ~p', [UserInfo]),
     http_open_session(_SessionID, []),
     http_session_assert(oauth2(google, TokenInfo)),
     reply_logged_in([ identity_provider('Google'),
-                      name(Claim.name)
+                      name(UserInfo.name),
+                      user_info(UserInfo)
                     ]).
 
 %!  google_logout(+Request)
@@ -100,7 +101,10 @@ oauth2:login(_Request, google, TokenInfo) :-
 %   Logout by removing the session data
 
 google_logout(_Request) :-
-    http_session_retractall(oauth2(_,_)),
+    (   http_in_session(SessionID)
+    ->  http_close_session(SessionID)
+    ;   true
+    ),
     reply_json_dict(true).
 
 %!  swish_config:user_info(+Request, ?Server, -Info:dict) is semidet.
@@ -110,10 +114,16 @@ google_logout(_Request) :-
 swish_config:user_info(_Request, google, UserInfo) :-
     http_in_session(_SessionID),
     http_session_data(oauth2(google, TokenInfo)),
+    token_info_to_user_info(TokenInfo, UserInfo).
+
+token_info_to_user_info(TokenInfo, UserInfo) :-
     oauth2_claim(TokenInfo, Claim),
     map_user_info(Claim, Claim1),
     http_link_to_id(google_logout, [], LogoutURL),
-    UserInfo = Claim1.put(_{auth_method:oauth2, logout_url:LogoutURL}).
+    UserInfo = Claim1.put(_{ auth_method:oauth2,
+                             logout_url:LogoutURL,
+                             identity_provider:google
+                           }).
 
 %!  map_user_info(+OAuthInfo, -UserInfo) is det.
 %

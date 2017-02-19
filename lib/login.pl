@@ -35,7 +35,9 @@
 
 :- module(swish_login,
           [ login_button//1,            % +Options
-            reply_logged_in/1           % +Options
+            login_continue_button//0,
+            reply_logged_in/1,          % +Options
+            reply_logged_in_page/1      % +Options
           ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
@@ -49,7 +51,11 @@
 :- use_module(config, []).
 :- use_module(bootstrap).
 
-:- multifile swish_config:profile_field/3.
+:- multifile
+    swish_config:profile_field/3,       % +Field, -Order, -Type
+    swish_config:reply_logged_in/1,     % +Options
+    swish_config:user_info/3,           % +Request, -Server, -Info
+    swish_config:user_profile/2.        % +Request, -Info
 
 /** <module> SWISH login support
 
@@ -64,7 +70,8 @@ configuration files in =config-available=.
 
 :- http_handler(swish(login),        swish_login,  [id(login)]).
 :- http_handler(swish(user_info),    user_info,    [id(user_info)]).
-:- http_handler(swish(user_profile), user_profile, [id(user_profile)]).
+:- http_handler(swish(user_profile), user_profile, [id(user_profile),
+                                                    priority(-10)]).
 
 
 		 /*******************************
@@ -120,6 +127,7 @@ login_items(Items) -->
 
 
 %!  reply_logged_in(+Options) is det.
+%!  reply_logged_in_page(+Options) is det.
 %
 %   Reply with an HTML  document  that   the  login  succeeded.  This is
 %   normally called from the protocol-specific login handler to indicate
@@ -132,10 +140,22 @@ login_items(Items) -->
 %     User id of the identified user.
 %     - name(+Name)
 %     Common name of the identified user.
+%     - user_info(+Dict)
+%     Information provided by the identity provider.
 %
 %   At least one of user(User) or name(Name) must be present.
+%
+%   The     predicate     reply_logged_in/1     calls     the     _hook_
+%   swish_config:reply_logged_in/1.   This   hook   is    provided   for
+%   interacting with a user profile manager.
 
 reply_logged_in(Options) :-
+    swish_config:reply_logged_in(Options),
+    !.
+reply_logged_in(Options) :-
+    reply_logged_in_page(Options).
+
+reply_logged_in_page(Options) :-
     reply_html_page(
         title('Logged in'),
         [ h4('Welcome'),
@@ -144,7 +164,7 @@ reply_logged_in(Options) :-
               ' as ',
               \user(Options)
             ]),
-          \script
+          \login_continue_button
         ]).
 
 identity_provider(Options) -->
@@ -168,13 +188,13 @@ user(Options) -->
 user(_) -->
     html(unknown).
 
-%!  script//
+%!  login_continue_button//
 %
 %   The login page is opened either  inside   an  iframe  inside a SWISH
 %   modal dialog or inside a browser popup   window. This scripts adds a
 %   button to dismiss the browser popup window.
 
-script -->
+login_continue_button -->
     html(style(\[ 'div.login-continue { text-align: center; margin-top: 2em; }'
                 ])),
 
@@ -227,11 +247,24 @@ swish_login(Request) :-
 %   protocol.
 
 user_info(Request) :-
-    swish_config:user_info(Request, _Server, Info),
+    swish_config:user_info(Request, _Server, UserInfo),
+    (   swish_config:user_profile(Request, Profile)
+    ->  copy_fields([identity_provider, auth_method, logout_url],
+                    UserInfo, Profile, Info)
+    ;   Info = UserInfo
+    ),
     !,
     reply_json_dict(Info).
 user_info(_Request) :-
     reply_json_dict(null).
+
+copy_fields([], _From, Dict, Dict).
+copy_fields([H|T], From, Dict0, Dict) :-
+    (   V = From.get(H)
+    ->  copy_fields(T, From, Dict0.put(H,V), Dict)
+    ;   copy_fields(T, From, Dict0, Dict)
+    ).
+
 
 %!  user_profile(+Request)
 %
@@ -240,12 +273,10 @@ user_info(_Request) :-
 %   content for a modal window.
 
 user_profile(Request) :-
-    swish_config:user_info(Request, ServerID, Info),
+    swish_config:user_info(Request, _ServerID, Info),
     !,
     dict_pairs(Info, _, Pairs0),
-    select_fields([ identity_provider-ServerID
-                  | Pairs0
-                  ], Pairs),
+    select_fields(Pairs0, Pairs),
     reply_html_page(title('User profile'),
                     [ table(class([table, 'table-striped']),
                             \profile_rows(Pairs, Info)),
