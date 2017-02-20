@@ -45,6 +45,7 @@
 :- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(debug)).
+:- use_module(library(broadcast)).
 
 :- use_module(swish(lib/config), []).
 :- use_module(swish(lib/login)).
@@ -347,20 +348,24 @@ save_profile(User, Dict) :-
     dict_pairs(Dict, _, Pairs),
     maplist(save_profile_field(User), Pairs).
 
-save_profile_field(User, Name-"") :-
+save_profile_field(User, Name-Value) :-
+    (   Term =.. [Name,Old],
+        profile_property(User, Term)
+    ->  true
+    ;   Old = ""
+    ),
+    update_profile_field(User, Name, Old, Value).
+
+update_profile_field(User, Name, _Old, "") :-
     !,
     profile_remove(User, Name).
-save_profile_field(User, Name-Value) :-
-    set_profile(User, Name=Value, Modified),
-    (   Modified == true
-    ->  propagate_profile_change(User, Name, Value)
-    ;   true
+update_profile_field(User, Name, Old, New0) :-
+    profile_canonical_value(Name, New0, New),
+    (   Old == New
+    ->  true
+    ;   set_profile(User, Name=New),
+        broadcast(user_profile(modified(User, Name, Old, New)))
     ).
-
-propagate_profile_change(User, email, _) :-
-    !,
-    set_profile(User, email_verified=false, _).
-propagate_profile_change(_, _, _).
 
 
 %!  update_profile(+Request)

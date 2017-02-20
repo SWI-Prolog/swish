@@ -35,6 +35,7 @@
 
 :- module(config_user_profile, []).
 :- use_module(library(settings)).
+:- use_module(library(broadcast)).
 :- use_module(library(user_profile)).
 :- use_module(library(profile/backend/profile_prolog), []).
 
@@ -60,6 +61,7 @@ linked to SWISH as a git submodule.  To use profiles, run
 :- multifile
     user_profile:attribute/3,
     user_profile:attribute_mapping/3.
+
 
 %!  user_profile:attribute(?Name, ?Type, ?Options) is nondet.
 %
@@ -89,4 +91,14 @@ user_profile:attribute_mapping(nick_name,         local, user).
 user_profile:attribute_mapping(external_identity, local, user).
 user_profile:attribute_mapping(Attr,              _,     Attr).
 
+		 /*******************************
+		 *         DEPENDENCIES		*
+		 *******************************/
 
+:- listen(user_profile(modified(User, Name, _Old, New)),
+          propagate_profile_change(User, Name, New)).
+
+propagate_profile_change(User, email, _) :-
+    !,
+    set_profile(User, email_verified=false).
+propagate_profile_change(_, _, _).
