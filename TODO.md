@@ -65,14 +65,6 @@ _not_ see exactly the same UI for cooperation.  What about
       - Requires complete graph in memory.
   - Re-map Control-S (google-docs ignores save)
 
-## Login
-
-  - Social login
-    - login-with-google (oauth2)
-    - etc ...
-  - Make it easy to add HTTPS certificate based login.
-    - not SWISH specific
-
 ## Search
 
   - Implement string search with result page
