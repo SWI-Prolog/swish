@@ -210,7 +210,8 @@ update_last_login(User) :-
 swish_config:user_profile(_Request, Profile) :-
     http_in_session(_SessionID),
     http_session_data(profile_id(User)),
-    current_profile(User, Profile).
+    current_profile(User, Profile0),
+    Profile = Profile0.put(user_id, User).
 
 
 		 /*******************************
