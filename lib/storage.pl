@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2016, VU University Amsterdam
+    Copyright (c)  2014-2017, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -63,19 +63,36 @@ notion of a _tree_. I.e., all files   are considered individual and have
 their own version.
 */
 
-:- setting(directory, atom, storage, 'The directory for storing files.').
+:- setting(directory, callable, data(storage),
+	   'The directory for storing files.').
 
 :- http_handler(swish('p/'), web_storage, [ id(web_storage), prefix ]).
 
 :- initialization open_gittystore.
 
+:- dynamic  storage_dir/1.
+:- volatile storage_dir/1.
+
 open_gittystore :-
-	setting(directory, Dir),
-	(   exists_directory(Dir)
-	->  true
-	;   make_directory(Dir)
-	),
-	gitty_open(Dir, []).
+	setting(directory, Spec),
+	absolute_file_name(Spec, Dir,
+			   [ file_type(directory),
+			     access(write),
+			     file_errors(fail)
+			   ]), !,
+	gitty_open(Dir, []),
+	asserta(storage_dir(Dir)).
+open_gittystore :-
+	setting(directory, Spec),
+	absolute_file_name(Spec, Dir,
+			   [ solutions(all)
+			   ]),
+	\+ exists_directory(Dir),
+	catch(make_directory(Dir),
+	      error(permission_error(create, directory, Dir), _),
+	      fail), !,
+	gitty_open(Dir, []),
+	asserta(storage_dir(Dir)).
 
 
 %%	web_storage(+Request) is det.
@@ -125,7 +142,7 @@ storage(post, Request) :-
 	http_read_json_dict(Request, Dict),
 	option(data(Data), Dict, ""),
 	option(type(Type), Dict, pl),
-	setting(directory, Dir),
+	storage_dir(Dir),
 	make_directory_path(Dir),
 	meta_data(Request, Dir, Dict, Meta),
 	(   atom_string(Base, Dict.get(meta).get(name))
@@ -158,7 +175,7 @@ storage(post, Request) :-
 	).
 storage(put, Request) :-
 	http_read_json_dict(Request, Dict),
-	setting(directory, Dir),
+	storage_dir(Dir),
 	request_file(Request, Dir, File),
 	(   Dict.get(update) == "meta-data"
 	->  gitty_data(Dir, File, Data, _OldMeta)
@@ -179,7 +196,7 @@ storage(put, Request) :-
 	).
 storage(delete, Request) :-
 	authentity(Request, Meta),
-	setting(directory, Dir),
+	storage_dir(Dir),
 	request_file(Request, Dir, File),
 	gitty_update(Dir, File, "", Meta, _New),
 	reply_json_dict(true).
@@ -293,7 +310,7 @@ meta_allowed(commit_message, string).
 storage_get(Request, swish, Options) :-
 	swish_reply_config(Request, Options), !.
 storage_get(Request, Format, _) :-
-	setting(directory, Dir),
+	storage_dir(Dir),
 	request_file_or_hash(Request, Dir, FileOrHash, Type),
 	storage_get(Format, Dir, Type, FileOrHash, Request).
 
@@ -390,11 +407,11 @@ random_char(Char) :-
 %	True if File is known in the store.
 
 storage_file(File) :-
-	setting(directory, Dir),
+	storage_dir(Dir),
 	gitty_file(Dir, File, _Head).
 
 storage_file(File, Data, Meta) :-
-	setting(directory, Dir),
+	storage_dir(Dir),
 	gitty_data(Dir, File, Data, Meta).
 
 
@@ -419,7 +436,7 @@ storage_file(File, Data, Meta) :-
 %	@tbd We should only demand public on public servers.
 
 swish_search:typeahead(file, Query, FileInfo, _Options) :-
-	setting(directory, Dir),
+	storage_dir(Dir),
 	gitty_file(Dir, File, Head),
 	gitty_commit(Dir, Head, Meta),
 	Meta.get(public) == true,
@@ -449,7 +466,7 @@ swish_search:typeahead(store_content, Query, FileInfo, Options) :-
 	limit(25, search_store_content(Query, FileInfo, Options)).
 
 search_store_content(Query, FileInfo, Options) :-
-	setting(directory, Dir),
+	storage_dir(Dir),
 	gitty_file(Dir, File, Head),
 	gitty_data(Dir, Head, Data, Meta),
 	Meta.get(public) == true,
