@@ -119,7 +119,7 @@ swish_config:reply_logged_in(Options) :-
     option(user_info(Info), Options),
     known_profile(Info, ProfileID),
     !,
-    http_session_assert(profile_id(ProfileID)),
+    associate_profile(ProfileID),
     reply_html_page(
         title('Logged in'),
         [ h4('Welcome back'),
@@ -131,7 +131,7 @@ swish_config:reply_logged_in(Options) :-
     create_profile(Info, Info.get(identity_provider), User),
     !,
     http_open_session(_SessionID, []),
-    http_session_assert(profile_id(User)),
+    associate_profile(User),
     update_last_login(User),
     reply_html_page(
         title('Logged in'),
@@ -153,6 +153,15 @@ known_profile(Info, User) :-
     profile_default(IdProvider, Info, external_identity(ID)),
     profile_property(User, external_identity(ID)),
     profile_property(User, identity_provider(IdProvider)).
+
+%!  associate_profile(+ProfileID) is det.
+%
+%   Associate the current session with   the given ProfileID. Broadcasts
+%   SWISH event profile(ProfileID).
+
+associate_profile(ProfileID) :-
+    http_session_assert(profile_id(ProfileID)),
+    broadcast(swish(profile(ProfileID))).
 
 
 %!  create_profile(+UserInfo, +IDProvider, -User)
