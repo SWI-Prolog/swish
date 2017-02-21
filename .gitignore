@@ -1,9 +1,12 @@
 node_modules
 bower_components
 passwd
-storage
-storage.*
+data
 log
 *.log
 *~
 config-enabled
+config-local*
+https
+.gdbinit
+web/icons/noble
