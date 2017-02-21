@@ -37,10 +37,11 @@
 	  ]).
 :- use_module(library(pengines)).
 :- use_module(library(http/http_dispatch)).
-:- use_module(library(http/http_path)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
 
+:- use_module(lib/messages).
+:- use_module(lib/paths).
 :- use_module(lib/config, []).
 :- use_module(lib/page, []).
 :- use_module(lib/storage).
@@ -51,27 +52,6 @@
 :- use_module(lib/highlight).
 :- use_module(lib/markdown).
 :- use_module(lib/template_hint, []).
-
-
-		 /*******************************
-		 *	       PATHS		*
-		 *******************************/
-
-user:file_search_path(swish_web, swish(web)).
-user:file_search_path(js,        swish_web(js)).
-user:file_search_path(css,       swish_web(css)).
-user:file_search_path(icons,     swish_web(icons)).
-
-set_swish_path :-
-	absolute_file_name(swish('swish.pl'), _,
-			   [file_errors(fail), access(read)]), !.
-set_swish_path :-
-	prolog_load_context(directory, Dir),
-	asserta(user:file_search_path(swish, Dir)).
-
-:- set_swish_path.
-
-http:location(swish, root(.), [priority(-100)]).
 
 
 		 /*******************************
