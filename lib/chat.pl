@@ -513,14 +513,14 @@ dict_file_name(Dict, File) :-
 		 *	      EVENTS		*
 		 *******************************/
 
-:- unlisten(swish(_, _)),
-   listen(swish(Request, Event), swish_event(Event, Request)).
+:- unlisten(swish(_)),
+   listen(swish(Event), swish_event(Event)).
 
-%%	swish_event(+Event, +Request)
+%%	swish_event(+Event)
 %
 %	An event happened inside SWISH due to handling Request.
 
-swish_event(Event, _Request) :-
+swish_event(Event) :-
 	broadcast_event(Event),
 	http_session_id(Session),
 	debug(event, 'Event: ~p, session ~q', [Event, Session]),

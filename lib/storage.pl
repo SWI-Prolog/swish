@@ -168,7 +168,7 @@ storage(post, Request) :-
 	->  debug(storage, 'Created: ~p', [Commit]),
 	    storage_url(File, URL),
 
-	    broadcast(swish(Request, created(File))),
+	    broadcast(swish(created(File))),
 	    reply_json_dict(json{url:URL,
 				 file:File,
 				 meta:Commit.put(symbolic, "HEAD")
@@ -190,7 +190,7 @@ storage(put, Request) :-
 	      true),
 	(   var(Error)
 	->  debug(storage, 'Updated: ~p', [Commit]),
-	    broadcast(swish(Request, updated(File, Meta.previous, Commit))),
+	    broadcast(swish(updated(File, Meta.previous, Commit))),
 	    reply_json_dict(json{url:URL,
 				 file:File,
 				 meta:Commit.put(symbolic, "HEAD")
@@ -203,7 +203,7 @@ storage(delete, Request) :-
 	request_file(Request, Dir, File),
 	gitty_file(Dir, File, Previous),
 	gitty_update(Dir, File, "", Meta, Commit),
-	broadcast(swish(Request, deleted(File, Previous, Commit))),
+	broadcast(swish(deleted(File, Previous, Commit))),
 	reply_json_dict(true).
 
 %%	update_error(+Error, +Storage, +Data, +File, +URL)
@@ -317,7 +317,7 @@ storage_get(Request, swish, Options) :-
 storage_get(Request, Format, _) :-
 	storage_dir(Dir),
 	request_file_or_hash(Request, Dir, FileOrHash, Type),
-	broadcast(swish(Request, download(Dir, FileOrHash, Format))),
+	broadcast(swish(download(Dir, FileOrHash, Format))),
 	storage_get(Format, Dir, Type, FileOrHash, Request).
 
 storage_get(swish, Dir, _, FileOrHash, Request) :-
