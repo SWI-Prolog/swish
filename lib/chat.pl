@@ -58,6 +58,7 @@
 :- use_module(storage).
 :- use_module(gitty).
 :- use_module(config).
+:- use_module(login).
 :- use_module(avatar).
 :- use_module(noble_avatar).
 
@@ -87,20 +88,30 @@ swish_config:config(chat, true).
 
 :- http_handler(swish(chat), start_chat, [ id(swish_chat) ]).
 
+%!	start_chat(+Request)
+%
+%	Start  the  social  awareness  extensions.  This  establishes  a
+%	websocket connection where a user gets  an avatar and optionally
+%	a name.
+
 start_chat(Request) :-
-	swish_config:authenticate(Request, User), !, % must throw to deny access
-	start_chat(Request, [user(User)]).
+	swish_config:authenticate(Request, _User), !, % must throw to deny access
+	start_chat(Request, []).
 start_chat(Request) :-
 	start_chat(Request, []).
 
 start_chat(Request, Options) :-
+	(   logged_in(Request, Info)
+	->  Extra = [logged_in(Info)]
+	;   Extra = []
+	),
 	http_open_session(Session, []),
 	http_parameters(Request,
 			[ avatar(Avatar, [optional(true)])
 			]),
 	extend_options([avatar(Avatar)], Options, Options1),
 	http_upgrade_to_websocket(
-	    accept_chat(Session, Options1),
+	    accept_chat(Session, [Options1|Extra]),
 	    [ guarded(false),
 	      subprotocols([chat])
 	    ],
@@ -155,9 +166,15 @@ accept_chat(Session, Options, WebSocket) :-
 
 %%	create_visitor(+WSID, +Session, -TmpUser, -UserData, +Options)
 %
-%	Create a new visitor. The first   clause  deals with two windows
-%	opened from the same  browser  or   re-establishing  a  lost web
-%	socket.
+%	Create a new visitor  when  a   new  websocket  is  established.
+%	Options provides information we have about the user:
+%
+%	  - logged_in(+Info)
+%	  Already logged in user with given information
+%	  - avatar(Avatar)
+%	  Avatar remembered in the browser for this user.
+%
+%	@tbd: deal with existing federated login.
 
 create_visitor(WSID, Session, TmpUser, UserData, Options) :-
 	(   visitor_session(_, Session)
@@ -351,6 +368,8 @@ public_user_data(UID, Public) :-
 %
 %	@bug	This may check for avatar validity, which may take
 %		long.  Possibly we should do this in a thread.
+
+TBD
 
 get_visitor_data(Data, Options) :-
 	swish_config:config(user, UserData, Options), !,
