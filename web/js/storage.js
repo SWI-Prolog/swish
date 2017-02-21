@@ -356,6 +356,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 		                  });
 
 		   elem.tabbed('title', data.meta.name);
+		   $(".storage").storage('chat_status', true);
 		   history.push(reply);
 		 }
 	       },
