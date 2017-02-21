@@ -82,9 +82,9 @@ define([ "jquery", "modal", "config", "form", "laconic" ],
 		var span = elem.find("span.logout span.value");
 		var icon;
 
-		if ( obj.picture ) {
+		if ( obj.avatar ) {
 		  icon = $.el.img({ class: "profile-picture",
-				    src: obj.picture
+				    src: obj.avatar
 				  });
 		} else {
 		  icon = $.el.span({class:"glyphicon glyphicon-user"});
