@@ -579,6 +579,20 @@ swish_event(profile(ProfileID)) :- !,
 	session_user(Session, User),
 	update_visitor_data(User, Profile).
 
+%!	propagate_profile_change(+ProfileID, +Attribute, +Value)
+%
+%	Trap external changes to the profile.
+
+:- listen(user_profile(modified(ProfileID, Name, _Old, New)),
+          propagate_profile_change(ProfileID, Name, New)).
+
+propagate_profile_change(ProfileID, _, _) :-
+	http_current_session(Session, profile_id(ProfileID)),
+	session_user(Session, User),
+	current_profile(ProfileID, Profile),
+	update_visitor_data(User, Profile).
+
+
 %%	broadcast_event(+Event) is semidet.
 %
 %	If true, broadcast this event.
