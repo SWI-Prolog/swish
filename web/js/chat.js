@@ -198,6 +198,17 @@ define([ "jquery", "config", "preferences" ],
     },
 
     /**
+     * Replied if the profile associated with a visitor changes, for
+     * example after login
+     */
+
+    profile: function(e) {
+      var lia = $("#"+e.wsid+" > a");
+
+      lia.html("").append(avatar(e));
+    },
+
+    /**
      * Display a notification by some user.
      */
     notify: function(e) {
@@ -368,27 +379,28 @@ define([ "jquery", "config", "preferences" ],
     if ( !options.name )
       options.name = id;
 
-    function avatar(options) {
-      if ( options.avatar ) {
-	return $.el.img({ class:"avatar", src:options.avatar,
-			  title:options.name
-			});
-      } else {
-	return $.el.span({class:"avatar glyphicon glyphicon-user"})
-      }
-    }
-
     var li = $.el.li({class:"dropdown user", id:id},
 		     $.el.a({ class:"dropdown-toggle avatar",
 			      'data-toggle':"dropdown"
 			    },
-			    avatar(options),
-			    $.el.b({class:"caret"})),
+			    avatar(options)),
 		     $.el.ul({ class:"dropdown-menu pull-right",
 		               title:options.name
 			     }));
 
     return li;
+  }
+
+  // Private functions
+
+  function avatar(options) {
+    if ( options.avatar ) {
+      return $.el.img({ class:"avatar", src:options.avatar,
+			title:options.name
+		      });
+    } else {
+      return $.el.span({class:"avatar glyphicon glyphicon-user"})
+    }
   }
 
 

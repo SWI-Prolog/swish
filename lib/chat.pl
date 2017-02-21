@@ -3,8 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2016, VU University Amsterdam
-			 CWI Amsterdam
+    Copyright (C): 2016-2017, VU University Amsterdam
+			      CWI Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -49,9 +49,11 @@
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(debug)).
+:- use_module(library(uuid)).
 :- use_module(library(broadcast)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
+:- use_module(library(user_profile)).
 
 :- use_module(storage).
 :- use_module(gitty).
@@ -219,6 +221,39 @@ destroy_visitor_data(TmpUser) :-
 	;   true
 	).
 
+%!	update_visitor_data(+TmpUser, +Data) is det.
+%
+%	Update the user data for the visitor TmpUser to Data.
+
+update_visitor_data(TmpUser, Data) :-
+	retract(visitor_data(TmpUser, Old)), !,
+	ignore(release_avatar(Old.get(avatar))),
+	New = Old.put(Data),
+	assertz(visitor_data(TmpUser, New)),
+	inform_visitor_change(TmpUser).
+update_visitor_data(TmpUser, Data) :-
+	assertz(visitor_data(TmpUser, Data)),
+	inform_visitor_change(TmpUser).
+
+%!	inform_visitor_change(+TmpUser) is det.
+%
+%	Inform browsers showing  TmpUser  that   the  visitor  data  has
+%	changed.
+
+inform_visitor_change(TmpUser) :-
+	public_user_data(TmpUser, Data),
+	http_session_id(Session),
+	forall(visitor_session(WSID, Session),
+	       ( Message = json(_{type:"profile", wsid:WSID}.put(Data)),
+		 hub_send(WSID, Message),
+		 forall(viewing_same_file(WSID, Friend),
+			hub_send(Friend, Message)))).
+
+viewing_same_file(WSID, Friend) :-
+	subscription(WSID, gitty, File),
+	subscription(Friend, gitty, File),
+	Friend \== WSID.
+
 %%	subscribe(+WSID, +Channel) is det.
 
 subscribe(WSID, Channel) :-
@@ -234,7 +269,7 @@ unsubscribe(WSID, Channel) :-
 unsubscribe(WSID, Channel, SubChannel) :-
 	retractall(subscription(WSID, Channel, SubChannel)).
 
-%%	sync_gazers(WSID, Files:list(atom)) is det.
+%%	sync_gazers(+WSID, +Files:list(atom)) is det.
 %
 %	A browser signals it has Files open.   This happens when a SWISH
 %	instance is created as well  as   when  a SWISH instance changes
@@ -319,13 +354,13 @@ public_user_data(UID, Public) :-
 
 get_visitor_data(Data, Options) :-
 	swish_config:config(user, UserData, Options), !,
-	(   _{realname:Name, email:Email} :< UserData
+	(   _{name:Name, email:Email} :< UserData
 	->  email_avatar(Email, Avatar, Options),
 	    Extra = [ name(Name),
 		      email(email),
 		      avatar(Avatar)
 		    ]
-	;   _{realname:Name} :< UserData
+	;   _{name:Name} :< UserData
 	->  noble_avatar_url(Avatar, Options),
 	    Extra = [ name(Name),
 		      avatar(Avatar)
@@ -516,15 +551,20 @@ dict_file_name(Dict, File) :-
 :- unlisten(swish(_)),
    listen(swish(Event), swish_event(Event)).
 
-%%	swish_event(+Event)
+%%	swish_event(+Event) is semidet.
 %
-%	An event happened inside SWISH due to handling Request.
+%	Event happened inside SWISH.  Currently triggered events:
+%
+%	  - updated(+File, +From, +To)
+%	  File was updated from hash From to hash To.
+%	  - profile(+ProfileID)
+%	  Session was associated with user with profile ProfileID
 
 swish_event(Event) :-
 	broadcast_event(Event),
 	http_session_id(Session),
 	debug(event, 'Event: ~p, session ~q', [Event, Session]),
-	event_file(Event, File),
+	event_file(Event, File), !,
 	(   visitor_session(WSID, Session),
 	    subscription(WSID, gitty, File)
 	->  true
@@ -533,6 +573,11 @@ swish_event(Event) :-
 	;   WSID = undefined
 	),
 	session_broadcast_event(Event, File, Session, WSID).
+swish_event(profile(ProfileID)) :- !,
+	current_profile(ProfileID, Profile),
+	http_session_id(Session),
+	session_user(Session, User),
+	update_visitor_data(User, Profile).
 
 %%	broadcast_event(+Event) is semidet.
 %
