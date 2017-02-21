@@ -112,10 +112,14 @@ claim_avatar(I) :-
 claim_avatar(I) :-
 	assertz(used_avatar(I)).
 
-release_avatar(URL) :-
-	must_be(atom, URL),
-	avatar(I, URL),
-	retractall(used_avatar(I)).
+%!	release_avatar(+URL) is det.
+%
+%	Release the avatar to the pool of free avatars.
+
+release_avatar(URL0) :-
+	atom_string(URL, URL0),
+	forall(avatar(I, URL),
+	       retractall(used_avatar(I))).
 
 clean_avatar_cache :-
 	retractall(avatar_cache_size(_)),
