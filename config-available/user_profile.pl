@@ -73,7 +73,7 @@ user_profile:attribute(family_name,       string,           []).
 user_profile:attribute(nick_name,         string,           []).
 user_profile:attribute(email,             email,            []).
 user_profile:attribute(email_verified,    boolean,          [access(ro)]).
-user_profile:attribute(picture,           url(http),        []).
+user_profile:attribute(avatar,            url(http),        []).
 user_profile:attribute(home_page,         url(http),        []).
 user_profile:attribute(last_login,        time_stamp('%+'), [access(ro)]).
 user_profile:attribute(last_peer,         string,           [access(ro)]).
@@ -87,6 +87,7 @@ user_profile:attribute(external_identity, string,           [hidden(true)]).
 %   after a user was identified by IDProvider.
 
 user_profile:attribute_mapping(external_identity, _,     sub).
+user_profile:attribute_mapping(avatar,            _,     picture).
 user_profile:attribute_mapping(nick_name,         local, user).
 user_profile:attribute_mapping(external_identity, local, user).
 user_profile:attribute_mapping(Attr,              _,     Attr).
