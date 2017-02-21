@@ -80,6 +80,7 @@ swish_config:login_item(google, 10-Item) :-
     Item = img([ src(Img),
                  class('login-with'),
                  'data-server'(google),
+                 'data-frame'(popup),
                  title('Login with Google')
                ]).
 
