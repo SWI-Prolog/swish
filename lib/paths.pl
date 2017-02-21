@@ -62,6 +62,25 @@ set_swish_path :-
     prolog_load_context(directory, Dir),
     asserta(user:file_search_path(swish, Dir)).
 
+%!  attach_local_packs
+%
+%   Attach pack submodules from swish(pack)
+
+attach_local_packs :-
+    attach_packs(swish(pack), [duplicate(replace), search(first)]).
+
+% Built-in as of SWI-Prolog 7.5.2. Options ensure we get the local
+% version
+:- if(\+current_predicate(attach_packs/2)).
+attach_packs(Dir,_) :-
+	absolute_file_name(Dir, Path,
+			   [ file_type(directory),
+			     file_errors(fail)
+			   ]), !,
+	attach_packs(Path).
+attach_packs(_, _).
+:- endif.
+
 %!  set_data_path
 %
 %   Setup and possibly create a directory for storing dynamic data.
@@ -87,6 +106,7 @@ set_data_path :-
 
 initialize_paths :-
     set_swish_path,
+    attach_local_packs,
     set_data_path.
 
 % HTTP paths
