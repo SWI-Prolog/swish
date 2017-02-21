@@ -92,7 +92,7 @@ start_chat(Request) :-
 	start_chat(Request, []).
 
 start_chat(Request, Options) :-
-	http_session_id(Session),
+	http_open_session(Session, []),
 	http_parameters(Request,
 			[ avatar(Avatar, [optional(true)])
 			]),
