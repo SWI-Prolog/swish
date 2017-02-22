@@ -15,6 +15,10 @@ img.avatar
 { width: 38px;
 }
 
+li.myself
+{ border-bottom: 3px solid green;
+}
+
 /* http://www.cssarrowplease.com/ */
 
 .notify-arrow {
