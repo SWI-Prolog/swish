@@ -312,7 +312,7 @@ inform_friend_change(WSID, Data, Reason) :-
 			}.put(Data)),
 	hub_send(WSID, Message),
 	forall(viewing_same_file(WSID, Friend),
-	       hub_send(Friend, Message)).
+	       ignore(hub_send(Friend, Message))).
 
 viewing_same_file(WSID, Friend) :-
 	subscription(WSID, gitty, File),
