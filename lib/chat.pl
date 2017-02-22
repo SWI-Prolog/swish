@@ -373,7 +373,8 @@ public_user_data(UID, Public) :-
 %	  Possibly saved avatar
 %
 %	Data always contains an `avatar` key   and optionally contains a
-%	`name` and `email` key.
+%	`name` and `email` key. If the avatar is generated there is also
+%	a key `avatar_generated` with the value `true`.
 %
 %	@bug	This may check for avatar validity, which may take
 %		long.  Possibly we should do this in a thread.
@@ -390,16 +391,21 @@ visitor_property(UserData, _, name, Name) :-
 	).
 visitor_property(UserData, _, email, Email) :-
 	Email = UserData.get(email).
-visitor_property(UserData, Options, avatar, Avatar) :-
+visitor_property(UserData, Options, Name, Avatar) :-
 	(   Avatar = UserData.get(avatar)
-	->  true
+	->  Name = avatar
 	;   Email = UserData.get(email),
 	    email_gravatar(Email, Avatar),
 	    valid_gravatar(Avatar)
-	->  true
-	;   option(avatar(Avatar), Options)
-	->  true
-	;   noble_avatar_url(Avatar, Options)
+	->  Name = avatar
+	;   (   option(avatar(Avatar), Options)
+	    ->  true
+	    ;   noble_avatar_url(Avatar, Options)
+	    )
+	->  (   Name = avatar
+	    ;	Name = avatar_generated,
+		Avatar = true
+	    )
 	).
 
 

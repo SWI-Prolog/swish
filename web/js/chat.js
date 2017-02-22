@@ -173,7 +173,7 @@ define([ "jquery", "config", "preferences" ],
       data.wsid = e.wsid;
       if ( !e.name )
 	e.name = "Me";
-      if ( e.avatar )
+      if ( e.avatar && e.avatar_generated )
 	preferences.setVal("avatar", e.avatar);
 
       var li = this.chat('addUser', e);
