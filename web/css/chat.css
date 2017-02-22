@@ -8,7 +8,8 @@ div.notification
 }
 
 a.dropdown-toggle.avatar
-{ padding: 6px;
+{ padding: 6px 0px 4px 0px;
+  margin-left: 2px;
 }
 
 img.avatar

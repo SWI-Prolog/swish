@@ -301,7 +301,7 @@ define([ "jquery", "config", "preferences" ],
 
       if ( li.length == 0 )
       { li = $(li_user(options.wsid, options));
-	this.append(li);
+	this.prepend(li);
       }
 
       return li;
@@ -317,6 +317,9 @@ define([ "jquery", "config", "preferences" ],
 	$("#"+wsid).hide(400, function() {this.remove();});
     },
 
+    /**
+     * Browser `wsid` has opened `file`
+     */
     addUserFile: function(wsid, file) {
       var li = $("#"+wsid);
       var ul = li.find("ul.dropdown-menu");
@@ -329,8 +332,13 @@ define([ "jquery", "config", "preferences" ],
 	}
       });
 
-      if ( fli == undefined )
-	ul.append($.el.li({class:"file", "data-file":file}, file));
+      if ( fli == undefined ) {
+	var type = file.split(".").pop();
+	ul.append(
+	  $.el.li({class:"file", "data-file":file},
+		  $.el.a($.el.span({class: "dropdown-icon type-icon "+type}),
+			 file)));
+      }
 
       return this;
     },
