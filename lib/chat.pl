@@ -51,6 +51,7 @@
 :- use_module(library(debug)).
 :- use_module(library(uuid)).
 :- use_module(library(broadcast)).
+:- use_module(library(ordsets)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
 :- use_module(library(user_profile)).
@@ -101,8 +102,8 @@ start_chat(Request) :-
 	start_chat(Request, []).
 
 start_chat(Request, Options) :-
-	(   logged_in(Request, Info)
-	->  Extra = [logged_in(Info)]
+	(   current_user_info(Request, Info)
+	->  Extra = [current_user_info(Info)]
 	;   Extra = []
 	),
 	http_open_session(Session, []),
@@ -169,7 +170,7 @@ accept_chat(Session, Options, WebSocket) :-
 %	Create a new visitor  when  a   new  websocket  is  established.
 %	Options provides information we have about the user:
 %
-%	  - logged_in(+Info)
+%	  - current_user_info(+Info)
 %	  Already logged in user with given information
 %	  - avatar(Avatar)
 %	  Avatar remembered in the browser for this user.
@@ -364,41 +365,42 @@ public_user_data(UID, Public) :-
 
 %%	get_visitor_data(-Data:dict, +Options) is det.
 %
-%	Optain data for a new visitor.
+%	Optain data for a new visitor.  Options include:
+%
+%	  - current_user_info(+InfoDict)
+%	  Info as provided by current_user_info/2.
+%	  - avatar(+URL)
+%	  Possibly saved avatar
+%
+%	Data always contains an `avatar` key   and optionally contains a
+%	`name` and `email` key.
 %
 %	@bug	This may check for avatar validity, which may take
 %		long.  Possibly we should do this in a thread.
 
-TBD
-
 get_visitor_data(Data, Options) :-
-	swish_config:config(user, UserData, Options), !,
-	(   _{name:Name, email:Email} :< UserData
-	->  email_avatar(Email, Avatar, Options),
-	    Extra = [ name(Name),
-		      email(email),
-		      avatar(Avatar)
-		    ]
-	;   _{name:Name} :< UserData
-	->  noble_avatar_url(Avatar, Options),
-	    Extra = [ name(Name),
-		      avatar(Avatar)
-		    ]
-	;   _{user:Name} :< UserData
-	->  Extra = [ name(Name)
-		    ]
-	),
-	merge_options(Extra, Options, UserOptions),
-	dict_create(Data, u, UserOptions).
-get_visitor_data(u{avatar:Avatar}, Options) :-
-	noble_avatar_url(Avatar, Options).
+	option(current_user_info(UserData), Options, _{}),
+	findall(N-V, visitor_property(UserData, Options, N, V), Pairs),
+	dict_pairs(Data, v, Pairs).
 
-
-email_avatar(Email, Avatar, _) :-
-	email_gravatar(Email, Avatar),
-	valid_gravatar(Avatar), !.
-email_avatar(_, Avatar, Options) :-
-	noble_avatar(Avatar, Options).
+visitor_property(UserData, _, name, Name) :-
+	(   Name = UserData.get(name)
+	->  true
+	;   Name = UserData.get(user)
+	).
+visitor_property(UserData, _, email, Email) :-
+	Email = UserData.get(email).
+visitor_property(UserData, Options, avatar, Avatar) :-
+	(   Avatar = UserData.get(avatar)
+	->  true
+	;   Email = UserData.get(email),
+	    email_gravatar(Email, Avatar),
+	    valid_gravatar(Avatar)
+	->  true
+	;   option(avatar(Avatar), Options)
+	->  true
+	;   noble_avatar_url(Avatar, Options)
+	).
 
 
 		 /*******************************
