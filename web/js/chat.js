@@ -3,8 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2016, VU University Amsterdam
-			 CWI Amsterdam
+    Copyright (C): 2016-2017, VU University Amsterdam
+			      CWI Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,8 +42,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "preferences" ],
-       function($, config, preferences) {
+define([ "jquery", "config", "preferences", "utils" ],
+       function($, config, preferences, utils) {
 
 (function($) {
   var pluginName = 'chat';
@@ -175,6 +175,7 @@ define([ "jquery", "config", "preferences" ],
 	e.name = "Me";
       if ( e.avatar && e.avatar_generated )
 	preferences.setVal("avatar", e.avatar);
+      e.role = "self";
 
       var li = this.chat('addUser', e);
       $(li).addClass("myself");
@@ -198,14 +199,21 @@ define([ "jquery", "config", "preferences" ],
     },
 
     /**
-     * Replied if the profile associated with a visitor changes, for
-     * example after login
+     * Replied if the profile associated with a visitor changes.  A
+     * key `reason` carries the reason for the change.
      */
 
     profile: function(e) {
-      var lia = $("#"+e.wsid+" > a");
+      var li = $("#"+e.wsid);
 
-      lia.html("").append(avatar(e));
+      li.children("a").html("").append(avatar(e));
+      if ( e.name ) {
+	li.prop('title', e.name);
+	if ( e.reason == 'set-nick-name' ) {
+	  e.html = "Named <i>"+utils.htmlEncode(e.name)+"</i>";
+	  this.chat('notifyUser', e);
+	}
+      }
     },
 
     /**
@@ -383,18 +391,34 @@ define([ "jquery", "config", "preferences" ],
    */
   function li_user(id, options) {
     options = options||{};
+    var ul;
 
     if ( !options.name )
       options.name = id;
 
-    var li = $.el.li({class:"dropdown user", id:id},
+    var li = $.el.li({class:"dropdown user", id:id, title:options.name},
 		     $.el.a({ class:"dropdown-toggle avatar",
 			      'data-toggle':"dropdown"
 			    },
 			    avatar(options)),
-		     $.el.ul({ class:"dropdown-menu pull-right",
-		               title:options.name
+		  ul=$.el.ul({ class:"dropdown-menu pull-right"
 			     }));
+
+    if ( options.role == "self" ) {
+      var input = $.el.input({type:"text", placeholder:"Nick name"});
+      ul.append($.el.li(input));
+      $(input).keypress(function(ev) {
+	if ( ev.which == 13 ) {
+	  console.log(ev);
+	  $("#chat").trigger('send',
+			     { type:'set-nick-name',
+			       name: $(input).val()
+			     });
+	  console.log($(input).closest('.dropdown.open'));
+	  $(input).closest('.dropdown.open').removeClass('open');
+	}
+      });
+    }
 
     return li;
   }
@@ -403,8 +427,7 @@ define([ "jquery", "config", "preferences" ],
 
   function avatar(options) {
     if ( options.avatar ) {
-      return $.el.img({ class:"avatar", src:options.avatar,
-			title:options.name
+      return $.el.img({ class:"avatar", src:options.avatar
 		      });
     } else {
       return $.el.span({class:"avatar glyphicon glyphicon-user"})

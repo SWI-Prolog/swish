@@ -165,6 +165,15 @@ accept_chat(Session, Options, WebSocket) :-
 	visitor_data/2,			% TmpUser, Data
 	subscription/3.			% WSID, Channel, SubChannel
 
+%!	wsid_visitor(+WSID, -Visitor)
+%
+%	True when WSID is associated with Visitor
+
+wsid_visitor(WSID, Visitor) :-
+	visitor_session(WSID, Session),
+	session_user(Session, Visitor).
+
+
 %%	create_visitor(+WSID, +Session, -TmpUser, -UserData, +Options)
 %
 %	Create a new visitor  when  a   new  websocket  is  established.
@@ -239,11 +248,11 @@ destroy_visitor_data(TmpUser) :-
 	;   true
 	).
 
-%!	update_visitor_data(+TmpUser, +Data) is det.
+%!	update_visitor_data(+TmpUser, +Data, +Reason) is det.
 %
 %	Update the user data for the visitor TmpUser to Data.
 
-update_visitor_data(TmpUser, Data) :-
+update_visitor_data(TmpUser, Data, Reason) :-
 	retract(visitor_data(TmpUser, Old)), !,
 	(   _ = Old.get(anon_avatar)
 	->  Old1 = Old
@@ -251,9 +260,9 @@ update_visitor_data(TmpUser, Data) :-
 	->  Old1 = Old.put(anon_avatar, OldAvarat)
 	;   Old1 = Old
 	),
-	set_visitor_data(TmpUser, Old1.put(Data)).
-update_visitor_data(TmpUser, Data) :-
-	set_visitor_data(TmpUser, Data).
+	set_visitor_data(TmpUser, Old1.put(Data), Reason).
+update_visitor_data(TmpUser, Data, Reason) :-
+	set_visitor_data(TmpUser, Data, Reason).
 
 %!	update_visitor_data(+TmpUser) is det.
 %
@@ -265,28 +274,40 @@ update_visitor_data(TmpUser) :-
 	->  true
 	;   noble_avatar_url(OldAvarat, [])
 	),
-	set_visitor_data(TmpUser, v{avatar:OldAvarat}).
+	set_visitor_data(TmpUser, v{avatar:OldAvarat}, 'logout').
 update_visitor_data(TmpUser) :-
 	noble_avatar_url(OldAvarat, []),
-	set_visitor_data(TmpUser, v{avatar:OldAvarat}).
+	set_visitor_data(TmpUser, v{avatar:OldAvarat}, 'logout').
 
-set_visitor_data(TmpUser, Data) :-
+set_visitor_data(TmpUser, Data, Reason) :-
 	assertz(visitor_data(TmpUser, Data)),
-	inform_visitor_change(TmpUser).
+	inform_visitor_change(TmpUser, Reason).
 
-%!	inform_visitor_change(+TmpUser) is det.
+%!	inform_visitor_change(+TmpUser, +Reason) is det.
 %
 %	Inform browsers showing  TmpUser  that   the  visitor  data  has
-%	changed.
+%	changed. The first  clause  deals   with  forwarding  from  HTTP
+%	requests,  where  we  have  the  session  and  the  second  from
+%	websocket requests where we have the WSID.
 
-inform_visitor_change(TmpUser) :-
+inform_visitor_change(TmpUser, Reason) :-
+	http_in_session(Session), !,
 	public_user_data(TmpUser, Data),
-	http_session_id(Session),
 	forall(visitor_session(WSID, Session),
-	       ( Message = json(_{type:"profile", wsid:WSID}.put(Data)),
-		 hub_send(WSID, Message),
-		 forall(viewing_same_file(WSID, Friend),
-			hub_send(Friend, Message)))).
+	       inform_friend_change(WSID, Data, Reason)).
+inform_visitor_change(TmpUser, Reason) :-
+	b_getval(wsid, WSID),
+	public_user_data(TmpUser, Data),
+	inform_friend_change(WSID, Data, Reason).
+
+inform_friend_change(WSID, Data, Reason) :-
+	Message = json(_{ type:"profile",
+			  wsid:WSID,
+			  reason:Reason
+			}.put(Data)),
+	hub_send(WSID, Message),
+	forall(viewing_same_file(WSID, Friend),
+	       hub_send(Friend, Message)).
 
 viewing_same_file(WSID, Friend) :-
 	subscription(WSID, gitty, File),
@@ -526,7 +547,11 @@ handle_message(Message, _Room) :-
 	websocket{opcode:text} :< Message, !,
 	atom_json_dict(Message.data, JSON, []),
 	debug(chat(received), 'Received from ~p: ~p', [Message.client, JSON]),
-	json_message(JSON, Message.client).
+	WSID = Message.client,
+	setup_call_cleanup(
+	    b_setval(wsid, WSID),
+	    json_message(JSON, WSID),
+	    nb_delete(wsid)).
 handle_message(Message, _Room) :-
 	hub{joined:WSID} :< Message, !,
 	debug(chat(visitor), 'Joined: ~p', [WSID]).
@@ -557,6 +582,8 @@ handle_message(Message, _Room) :-
 %	  - has-open-files files
 %	  Executed after initiating the websocket to indicate loaded
 %	  files.
+%	  - set-nick-name name
+%	  User set nick name for anonymous identoty
 
 json_message(Dict, WSID) :-
 	_{ type: "subscribe",
@@ -585,6 +612,10 @@ json_message(Dict, WSID) :-
 	_{type: "has-open-files", files:FileDicts} :< Dict, !,
 	maplist(dict_file_name, FileDicts, Files),
 	sync_gazers(WSID, Files).
+json_message(Dict, WSID) :-
+	_{type: "set-nick-name", name:Name} :< Dict, !,
+	wsid_visitor(WSID, Visitor),
+	update_visitor_data(Visitor, _{name:Name}, 'set-nick-name').
 json_message(Dict, _WSID) :-
 	debug(chat(ignored), 'Ignoring JSON message ~p', [Dict]).
 
@@ -628,7 +659,7 @@ swish_event(profile(ProfileID)) :- !,
 	current_profile(ProfileID, Profile),
 	http_session_id(Session),
 	session_user(Session, User),
-	update_visitor_data(User, Profile).
+	update_visitor_data(User, Profile, 'login').
 swish_event(logout(_ProfileID)) :- !,
 	http_session_id(Session),
 	session_user(Session, User),
@@ -645,7 +676,7 @@ propagate_profile_change(ProfileID, _, _) :-
 	http_current_session(Session, profile_id(ProfileID)),
 	session_user(Session, User),
 	current_profile(ProfileID, Profile),
-	update_visitor_data(User, Profile).
+	update_visitor_data(User, Profile, 'profile-edit').
 
 
 %%	broadcast_event(+Event) is semidet.
