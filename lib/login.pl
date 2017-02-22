@@ -38,7 +38,7 @@
             login_continue_button//0,
             reply_logged_in/1,          % +Options
             reply_logged_in_page/1,     % +Options
-            logged_in/2                 % +Request, -UserInfo
+            current_user_info/2         % +Request, -UserInfo
           ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
@@ -248,18 +248,18 @@ swish_login(Request) :-
 %   protocol.
 
 user_info(Request) :-
-    logged_in(Request, Info),
+    current_user_info(Request, Info),
     !,
     reply_json_dict(Info).
 user_info(_Request) :-
     reply_json_dict(null).
 
-%!  logged_in(+Request, -Info) is semidet.
+%!  current_user_info(+Request, -Info) is semidet.
 %
 %   If there is a logged in user, Info is a dict with information about
 %   this user.
 
-logged_in(Request, Info) :-
+current_user_info(Request, Info) :-
     swish_config:user_info(Request, _Server, UserInfo),
     (   swish_config:user_profile(Request, Profile)
     ->  copy_fields([identity_provider, auth_method, logout_url],
