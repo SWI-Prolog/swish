@@ -100,6 +100,7 @@ profile:
 
 :- multifile
     swish_config:reply_logged_in/1,     % +Options
+    swish_config:reply_logged_out/1,    % +Options
     swish_config:user_profile/3.        % +Request, +ServerID, -Info
 
 
@@ -162,6 +163,20 @@ known_profile(Info, User) :-
 associate_profile(ProfileID) :-
     http_session_assert(profile_id(ProfileID)),
     broadcast(swish(profile(ProfileID))).
+
+
+%!  swish_config:reply_logged_out(+Options)
+%
+%   Perform a logout, removing the link to the session
+
+swish_config:reply_logged_out(Options) :-
+    http_in_session(_),
+    !,
+    forall(http_session_retract(profile_id(ProfileID)),
+           broadcast(swish(logout(ProfileID)))),
+    reply_logged_out_page(Options).
+swish_config:reply_logged_out(_) :-
+    broadcast(swish(logout(-))).        % ?
 
 
 %!  create_profile(+UserInfo, +IDProvider, -User)

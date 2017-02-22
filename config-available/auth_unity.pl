@@ -120,11 +120,8 @@ map_user_field(Field, Field).
 %   Logout by removing the session data
 
 unity_logout(_Request) :-
-    (   http_in_session(SessionID)
-    ->  http_close_session(SessionID)
-    ;   true
-    ),
-    reply_json_dict(true).
+    catch(session_remove_user_data, _, true),
+    reply_logged_out([]).
 
 session_remove_user_data :-
     http_session_retractall(oauth2(_,_)),

@@ -50,7 +50,6 @@
 :- use_module(library(settings)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
-:- use_module(library(http/http_session)).
 
 :- use_module(form).
 :- use_module(config).
@@ -70,8 +69,6 @@
 	   "HTTP authentication realm").
 :- setting(password_file, callable, passwd,
 	   "Location of the password file").
-
-:- http_set_session_options([create(noauto), timeout(3600)]).
 
 :- multifile
 	swish_config:config/2,
@@ -306,10 +303,6 @@ swish_config:user_info(Request, local, UserInfo) :-
 %   clearAuthenticationCache() from web/js/login.js
 
 http_logout(_Request) :-
-	(   http_in_session(SessionID)
-	->  http_close_session(SessionID)
-	;   true
-	),
 	throw(http_reply(authorise(basic('SWISH user')))).
 
 

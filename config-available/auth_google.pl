@@ -102,11 +102,8 @@ oauth2:login(_Request, google, TokenInfo) :-
 %   Logout by removing the session data
 
 google_logout(_Request) :-
-    (   http_in_session(SessionID)
-    ->  http_close_session(SessionID)
-    ;   true
-    ),
-    reply_json_dict(true).
+    catch(http_session_retractall(oauth2(_,_)), _, true),
+    reply_logged_out([]).
 
 %!  swish_config:user_info(+Request, ?Server, -Info:dict) is semidet.
 %

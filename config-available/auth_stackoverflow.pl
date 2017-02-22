@@ -209,11 +209,8 @@ read_reply2(Code, Type, In,
 %   Logout by removing the session data
 
 stackexchange_logout(_Request) :-
-    (   http_in_session(SessionID)
-    ->  http_close_session(SessionID)
-    ;   true
-    ),
-    reply_json_dict(true).
+    catch(session_remove_user_data, _, true),
+    reply_logged_out([]).
 
 %!  swish_config:user_info(+Request, ?Server, -Info:dict) is semidet.
 %

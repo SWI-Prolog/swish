@@ -64,16 +64,16 @@ define([ "jquery", "modal", "config", "form", "laconic" ],
 	});
 
 	elem.data(pluginName, data);
-	elem.login('update');
+	elem.login('update', "startup");
       });
     },
 
     /**
      * Update the status of the login element
      */
-    update: function() {
+    update: function(why) {
       var elem = $(this);
-      $.get(config.http.locations.user_info, {},
+      $.get(config.http.locations.user_info, {reason:why},
 	    function(obj) {
 	      if ( obj ) {
 		config.swish.user = obj;
@@ -155,7 +155,7 @@ define([ "jquery", "modal", "config", "form", "laconic" ],
      * User closed the login modal window.  Check the login.
      */
     logged_in: function() {
-      this.login('update');
+      this.login('update', "login");
     },
 
     /**
@@ -188,7 +188,7 @@ define([ "jquery", "modal", "config", "form", "laconic" ],
 	      $.ajax({ url: button.data("action"),
 	               success: function(obj) {
 			 button.closest(".modal").modal('hide');
-			 login.login('update');
+			 login.login('update', "profile");
 			 ev.preventDefault();
 			 return false;
 		       },
@@ -205,7 +205,7 @@ define([ "jquery", "modal", "config", "form", "laconic" ],
 		       success: function(obj) {
 			 if ( obj.status == "success" ) {
 			   button.closest(".modal").modal('hide');
-			   login.login('update');
+			   login.login('update', "profile");
 			   ev.preventDefault();
 			   return false;
 			 } else if ( obj.status == "error" ) {
@@ -239,7 +239,7 @@ define([ "jquery", "modal", "config", "form", "laconic" ],
 	if ( user.logout_url ) {
 	  $.ajax({ url: user.logout_url,
 	           success: function() {
-		     elem.login('update');
+		     elem.login('update', "logout_by_url");
 		   },
 		   error: function(jqXHDR) {
 		     modal.ajaxError(jqXHDR);
@@ -250,7 +250,7 @@ define([ "jquery", "modal", "config", "form", "laconic" ],
 	  clearAuthenticationCache(config.http.locations.http_logout,
 				   config.swish.user.auth_method,
 				   function() {
-				     elem.login('update');
+				     elem.login('update', "logout_by_http");
 				   });
 	} else {
 	  alert("Don't know how to logout");

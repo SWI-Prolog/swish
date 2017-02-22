@@ -245,11 +245,32 @@ destroy_visitor_data(TmpUser) :-
 
 update_visitor_data(TmpUser, Data) :-
 	retract(visitor_data(TmpUser, Old)), !,
-	ignore(release_avatar(Old.get(avatar))),
-	New = Old.put(Data),
-	assertz(visitor_data(TmpUser, New)),
-	inform_visitor_change(TmpUser).
+	(   _ = Old.get(anon_avatar)
+	->  Old1 = Old
+	;   OldAvarat = Old.get(avatar)
+	->  Old1 = Old.put(anon_avatar, OldAvarat)
+	;   Old1 = Old
+	),
+	set_visitor_data(TmpUser, Old1.put(Data)).
 update_visitor_data(TmpUser, Data) :-
+	set_visitor_data(TmpUser, Data).
+
+%!	update_visitor_data(+TmpUser) is det.
+%
+%	Update visitor data after a logout
+
+update_visitor_data(TmpUser) :-
+	retract(visitor_data(TmpUser, Old)), !,
+	(   OldAvarat = Old.anon_avatar
+	->  true
+	;   noble_avatar_url(OldAvarat, [])
+	),
+	set_visitor_data(TmpUser, v{avatar:OldAvarat}).
+update_visitor_data(TmpUser) :-
+	noble_avatar_url(OldAvarat, []),
+	set_visitor_data(TmpUser, v{avatar:OldAvarat}).
+
+set_visitor_data(TmpUser, Data) :-
 	assertz(visitor_data(TmpUser, Data)),
 	inform_visitor_change(TmpUser).
 
@@ -586,6 +607,9 @@ dict_file_name(Dict, File) :-
 %	  File was updated from hash From to hash To.
 %	  - profile(+ProfileID)
 %	  Session was associated with user with profile ProfileID
+%	  - logout(+ProfileID)
+%	  User logged out. If the login was based on HTTP authentication
+%	  ProfileID equals `http`.
 
 swish_event(Event) :-
 	broadcast_event(Event),
@@ -605,6 +629,10 @@ swish_event(profile(ProfileID)) :- !,
 	http_session_id(Session),
 	session_user(Session, User),
 	update_visitor_data(User, Profile).
+swish_event(logout(_ProfileID)) :- !,
+	http_session_id(Session),
+	session_user(Session, User),
+	update_visitor_data(User).
 
 %!	propagate_profile_change(+ProfileID, +Attribute, +Value)
 %

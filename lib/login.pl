@@ -38,6 +38,8 @@
             login_continue_button//0,
             reply_logged_in/1,          % +Options
             reply_logged_in_page/1,     % +Options
+            reply_logged_out/1,         % +Options
+            reply_logged_out_page/1,    % +Options
             current_user_info/2         % +Request, -UserInfo
           ]).
 :- use_module(library(http/http_dispatch)).
@@ -48,6 +50,7 @@
 :- use_module(library(option)).
 :- use_module(library(apply)).
 :- use_module(library(pairs)).
+:- use_module(library(broadcast)).
 
 :- use_module(config, []).
 :- use_module(bootstrap).
@@ -55,6 +58,7 @@
 :- multifile
     swish_config:profile_field/3,       % +Field, -Order, -Type
     swish_config:reply_logged_in/1,     % +Options
+    swish_config:reply_logged_out/1,    % +Options
     swish_config:user_info/3,           % +Request, -Server, -Info
     swish_config:user_profile/2.        % +Request, -Info
 
@@ -225,6 +229,20 @@ if ( !inIframe() ) {
 
 
 
+%!  reply_logged_out(+Options)
+%
+%   Perform pluggable logout
+
+reply_logged_out(Options) :-
+    swish_config:reply_logged_out(Options),
+    !.
+reply_logged_out(Options) :-
+    reply_logged_out_page(Options).
+
+reply_logged_out_page(_) :-
+    reply_json_dict(true).
+
+
 		 /*******************************
 		 *          HTTP HANDLERS	*
 		 *******************************/
@@ -245,14 +263,20 @@ swish_login(Request) :-
 %
 %   HTTP handler to obtain information on  the currently logged in user.
 %   This handler tries the clauses  dealing   with  login for a specific
-%   protocol.
+%   protocol.  This is called by login.update() from login.js.
 
 user_info(Request) :-
-    current_user_info(Request, Info),
-    !,
-    reply_json_dict(Info).
-user_info(_Request) :-
-    reply_json_dict(null).
+    http_parameters(Request,
+                    [ reason(Reason, [optional(true)])
+                    ]),
+    (   current_user_info(Request, Info)
+    ->  reply_json_dict(Info)
+    ;   (   Reason == logout_by_http
+        ->  broadcast(swish(logout(http)))
+        ;   true
+        ),
+        reply_json_dict(null)
+    ).
 
 %!  current_user_info(+Request, -Info) is semidet.
 %
