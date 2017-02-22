@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2015, VU University Amsterdam
+    Copyright (C): 2014-2017, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -49,8 +49,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "typeahead" ],
-       function($, config) {
+define([ "jquery", "config", "utils", "typeahead" ],
+       function($, config, utils) {
 
 (function($) {
   var pluginName = 'search';
@@ -94,7 +94,7 @@ define([ "jquery", "config", "typeahead" ],
 	          + filetype(f.name)
 	          + "\">"
 		  + "<span class=\"tt-label\">"
-		  + htmlEncode(filebase(f.name));
+		  + utils.htmlEncode(filebase(f.name));
 	          + "</span>";
 
 	  if ( f.tags ) {
@@ -102,7 +102,7 @@ define([ "jquery", "config", "typeahead" ],
 	    for(var i=0; i<f.tags.length; i++) {
 	      var tag = f.tags[i];
 	      str += "<span class=\"tt-tag\">"
-		   + htmlEncode(tag)
+		   + utils.htmlEncode(tag)
 		   + "</span>";
 	    }
 	    str += "</span>";
@@ -110,7 +110,7 @@ define([ "jquery", "config", "typeahead" ],
 
 	  if ( f.title )
 	    str += "<div class=\"tt-title file\">"
-		 + htmlEncode(f.title)
+		 + utils.htmlEncode(f.title)
 		 + "</div>";
 	  str += "</div>";
 
@@ -146,7 +146,7 @@ define([ "jquery", "config", "typeahead" ],
 	    currentAlias = hit.alias;
 	    str = "<div class=\"tt-file-header type-icon "+ext+"\">"
 		+ "<span class=\"tt-path-file\">"
-		+ htmlEncode(hit.file)
+		+ utils.htmlEncode(hit.file)
 		+ "</span>"
 		+ "</div>";
 	  }
@@ -185,9 +185,9 @@ define([ "jquery", "config", "typeahead" ],
 	    currentAlias = hit.alias;
 	    str = "<div class=\"tt-file-header type-icon "+hit.ext+"\">"
 	        + "<span class=\"tt-path-alias\">"
-	        + htmlEncode(hit.alias)
+	        + utils.htmlEncode(hit.alias)
 		+ "</span>(<span class=\"tt-path-file\">"
-		+ htmlEncode(hit.file)
+		+ utils.htmlEncode(hit.file)
 		+ ")</span>"
 		+ "</div>";
 	  }
@@ -238,7 +238,7 @@ define([ "jquery", "config", "typeahead" ],
 
 	  str += "\">"
                + "<span class=\"tt-label\">"
-	       + htmlEncode(p.name)
+	       + utils.htmlEncode(p.name)
 	       + "/"
 	       + p.arity
 	       + "</span>";
@@ -252,7 +252,7 @@ define([ "jquery", "config", "typeahead" ],
 
 	  if ( p.summary )
 	    str += "<div class=\"tt-title file\">"
-		 + htmlEncode(p.summary)
+		 + utils.htmlEncode(p.summary)
 		 + "</div>";
 	  str += "</div>";
 
@@ -306,7 +306,7 @@ define([ "jquery", "config", "typeahead" ],
 		  + hit.line
 		  + "</span>"
 		  + "<span class=\"tt-text\">"
-		  + htmlEncode(text)
+		  + utils.htmlEncode(text)
 	          + "</span>"
 	          + "</span>"
 		  + "</div>";
@@ -442,20 +442,6 @@ define([ "jquery", "config", "typeahead" ],
 	    "Please select from auto completion list");
     }
   }; // methods
-
-  function htmlEncode(html) {
-    if ( !html ) return "";
-    return document.createElement('a')
-                   .appendChild(document.createTextNode(html))
-		   .parentNode
-		   .innerHTML;
-  };
-
-  if (typeof String.prototype.startsWith != 'function') {
-    String.prototype.startsWith = function(str) {
-      return this.lastIndexOf(str, 0) === 0;
-    };
-  }
 
   function bloodHoundURL(url, query) {
     var url = url.replace('%QUERY',
