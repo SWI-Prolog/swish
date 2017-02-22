@@ -366,9 +366,10 @@ save_profile_field(User, Name-Value) :-
     ),
     update_profile_field(User, Name, Old, Value).
 
-update_profile_field(User, Name, _Old, "") :-
+update_profile_field(User, Name, Old, "") :-
     !,
-    profile_remove(User, Name).
+    profile_remove(User, Name),
+    broadcast(user_profile(modified(User, Name, Old, ""))).
 update_profile_field(User, Name, Old, New0) :-
     profile_canonical_value(Name, New0, New),
     (   Old == New
