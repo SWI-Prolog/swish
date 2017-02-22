@@ -89,10 +89,19 @@ define([ "jquery", "config", "preferences", "utils" ],
       var elem = this;
       var data = this.data(pluginName);
       var url  = window.location.host + config.http.locations.swish_chat;
-      var avatar = preferences.getVal("avatar");
+      var lead = "?";
 
-      if ( avatar )
-	url += "?avatar=" + encodeURIComponent(avatar);
+      function add_pref_param(name, pname) {
+	var value = preferences.getVal(pname);
+
+	if ( value ) {
+	  url += lead + name + "=" + encodeURIComponent(value);
+	  lead = "&";
+	}
+      }
+
+      add_pref_param("avatar",   "anon-avatar");
+      add_pref_param("nickname", "nick-name");
 
       data.connection = new WebSocket("ws://" + url, ['chat']);
 
@@ -171,10 +180,8 @@ define([ "jquery", "config", "preferences", "utils" ],
       var data = $(this).data(pluginName);
 
       data.wsid = e.wsid;
-      if ( !e.name )
-	e.name = "Me";
       if ( e.avatar && e.avatar_generated )
-	preferences.setVal("avatar", e.avatar);
+	preferences.setVal("anon-avatar", e.avatar);
       e.role = "self";
 
       var li = this.chat('addUser', e);
@@ -392,11 +399,14 @@ define([ "jquery", "config", "preferences", "utils" ],
   function li_user(id, options) {
     options = options||{};
     var ul;
+    var name = options.name;
 
-    if ( !options.name )
-      options.name = id;
+    if ( !name && options.role == "self" )
+      name = "Me";
+    if ( !name )
+      name = id;
 
-    var li = $.el.li({class:"dropdown user", id:id, title:options.name},
+    var li = $.el.li({class:"dropdown user", id:id, title:name},
 		     $.el.a({ class:"dropdown-toggle avatar",
 			      'data-toggle':"dropdown"
 			    },
@@ -405,16 +415,22 @@ define([ "jquery", "config", "preferences", "utils" ],
 			     }));
 
     if ( options.role == "self" ) {
-      var input = $.el.input({type:"text", placeholder:"Nick name"});
+      var input = $.el.input({ type:"text",
+			       placeholder:"Nick name",
+			       value:options.name||""
+			     });
       ul.append($.el.li(input));
       $(input).keypress(function(ev) {
 	if ( ev.which == 13 ) {
-	  console.log(ev);
-	  $("#chat").trigger('send',
-			     { type:'set-nick-name',
-			       name: $(input).val()
-			     });
-	  console.log($(input).closest('.dropdown.open'));
+	  var name = $(input).val().trim();
+
+	  if ( name != "" ) {
+	    $("#chat").trigger('send',
+			       { type:'set-nick-name',
+				 name: name
+			       });
+	    preferences.setVal("nick-name", name);
+	  }
 	  $(input).closest('.dropdown.open').removeClass('open');
 	}
       });

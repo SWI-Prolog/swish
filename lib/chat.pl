@@ -103,16 +103,19 @@ start_chat(Request) :-
 
 start_chat(Request, Options) :-
 	(   current_user_info(Request, Info)
-	->  Extra = [current_user_info(Info)]
-	;   Extra = []
+	->  ChatOptions = [current_user_info(Info)|Options1]
+	;   ChatOptions = Options1
 	),
 	http_open_session(Session, []),
 	http_parameters(Request,
-			[ avatar(Avatar, [optional(true)])
+			[ avatar(Avatar, [optional(true)]),
+			  nickname(NickName, [optional(true)])
 			]),
-	extend_options([avatar(Avatar)], Options, Options1),
+	extend_options([ avatar(Avatar),
+			 nick_name(NickName)
+		       ], Options, Options1),
 	http_upgrade_to_websocket(
-	    accept_chat(Session, [Options1|Extra]),
+	    accept_chat(Session, ChatOptions),
 	    [ guarded(false),
 	      subprotocols([chat])
 	    ],
@@ -183,6 +186,8 @@ wsid_visitor(WSID, Visitor) :-
 %	  Already logged in user with given information
 %	  - avatar(Avatar)
 %	  Avatar remembered in the browser for this user.
+%	  - nick_name(NickName)
+%	  Nick name remembered in the browser for this user.
 %
 %	@tbd: deal with existing federated login.
 
@@ -426,27 +431,28 @@ get_visitor_data(Data, Options) :-
 	findall(N-V, visitor_property(UserData, Options, N, V), Pairs),
 	dict_pairs(Data, v, Pairs).
 
-visitor_property(UserData, _, name, Name) :-
+visitor_property(UserData, Options, name, Name) :-
 	(   Name = UserData.get(name)
 	->  true
 	;   Name = UserData.get(user)
+	->  true
+	;   option(nick_name(Name), Options)
 	).
 visitor_property(UserData, _, email, Email) :-
 	Email = UserData.get(email).
-visitor_property(UserData, Options, Name, Avatar) :-
+visitor_property(UserData, Options, Name, Value) :-
 	(   Avatar = UserData.get(avatar)
-	->  Name = avatar
+	->  Name = avatar, Value = Avatar
 	;   Email = UserData.get(email),
 	    email_gravatar(Email, Avatar),
 	    valid_gravatar(Avatar)
-	->  Name = avatar
+	->  Name = avatar, Value = Avatar
 	;   (   option(avatar(Avatar), Options)
 	    ->  true
 	    ;   noble_avatar_url(Avatar, Options)
 	    )
-	->  (   Name = avatar
-	    ;	Name = avatar_generated,
-		Avatar = true
+	->  (   Name = avatar, Value = Avatar
+	    ;	Name = avatar_generated, Value = true
 	    )
 	).
 
@@ -537,7 +543,10 @@ chat_exception(E) :-
 
 swish_chat_event(Room) :-
 	thread_get_message(Room.queues.event, Message),
-	handle_message(Message, Room).
+	(   handle_message(Message, Room)
+	->  true
+	;   print_message(warning, goal_failed(handle_message(Message, Room)))
+	).
 
 %%	handle_message(+Message, +Room)
 %
