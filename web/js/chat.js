@@ -333,6 +333,39 @@ define([ "jquery", "config", "preferences", "utils" ],
     },
 
     /**
+     * Get the set of visible users.  The return is an object holding
+     * a key `self` and a key `users` bound to an array of users.
+     * `self` points to the user of this browser.
+     * param {Array} [fields] lists the keys we want to have in the
+     * user objects.  Default is all we have.
+     */
+    users: function(fields) {
+      var users = [];
+      var rc = {users:users};
+
+      this.find("li.user[id]").each(function() {
+	var elem = $(this);
+	var user = {};
+
+	if ( !fields || fields.indexOf('id') >= 0 )
+	  user.id = elem.attr("id");
+	if ( !fields || fields.indexOf('name') >= 0 )
+	  user.name = elem.prop("title");
+	if ( !fields || fields.indexOf('avatar') >= 0 )
+	  user.avatar = elem.find("img.avatar").attr("src");
+
+	if ( elem.hasClass("myself") ) {
+	  user.is_self = true;
+	  rc.self = user;
+	}
+
+	users.push(user);
+      });
+
+      return rc;
+    },
+
+    /**
      * Browser `wsid` has opened `file`
      */
     addUserFile: function(wsid, file) {
