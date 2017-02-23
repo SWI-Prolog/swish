@@ -631,8 +631,9 @@ json_message(Dict, WSID) :-
 	update_visitor_data(Visitor, _{name:Name}, 'set-nick-name').
 json_message(Dict, _WSID) :-
 	_{type: "chat-message", users:Users} :< Dict, !,
+	del_dict(users, Dict, _, Message),
 	forall(member(User, Users),
-	       send_chat(User, Dict)).
+	       send_chat(User, Message)).
 json_message(Dict, _WSID) :-
 	debug(chat(ignored), 'Ignoring JSON message ~p', [Dict]).
 
@@ -650,8 +651,9 @@ dict_file_name(Dict, File) :-
 
 send_chat(User, Message) :-
 	atom_string(WSID, User.get(id)),
-	debug(chat(chat), 'Forwarding to ~p: ~p', [WSID, Message]),
-	ignore(hub_send(WSID, json(Message))).
+	UMsg = Message.put(user, User),
+	debug(chat(chat), 'Forwarding to ~p: ~p', [WSID, UMsg]),
+	ignore(hub_send(WSID, json(UMsg))).
 
 
 

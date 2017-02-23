@@ -82,7 +82,7 @@ define([ "jquery", "laconic" ],
       msg.text = ta.val().trim();
 
       if ( msg.text != "" ) {
-	msg.users = $("#chat").chat('users', ['id']).users;
+	msg.users = $("#chat").chat('users').users;
 	ta.val("");
 	$("#chat").chat('send', msg);
       }
@@ -90,16 +90,23 @@ define([ "jquery", "laconic" ],
 
     /**
      * Add a chat object to the conversation.
-     * @param {Object} options
-     * @param {String} options.html is the HTML content of the object
-     * @param {String} options.text is the ext of the object
-     * @param {String} options.user is the user (wsid) id of the sender
+     * @param {Object} msg
+     * @param {String} msg.html is the HTML content of the object
+     * @param {String} msg.text is the ext of the object
+     * @param {Object} msg.user Sender description
      */
-    add: function(options) {
-      elem = $.el.div({class:"chat-message"}, options.text||"");
+    add: function(msg) {
+      user = msg.user;
+      elem = $($.el.div({class:"chat-message"+(user.is_self ? " self" : "")}));
 
-      if ( options.html )
-	$(elem).html(options.html);
+      elem.append($.el.span({class:"chat-sender"},
+			    user.is_self ? "Me" : user.name));
+
+      if ( msg.html )
+	elem.html(msg.html);
+      else if ( msg.text )
+	elem.append($.el.span(msg.text));
+
       this.find(".chat-conversation").append(elem);
 
       return this;
