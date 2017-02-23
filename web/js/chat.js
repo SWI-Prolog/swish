@@ -230,6 +230,14 @@ define([ "jquery", "config", "preferences", "utils" ],
       this.chat('notifyUser', e);
     },
 
+    /**
+     * Add incomming chat messages to the chatroom.  If there is no
+     * chatroom we should warn/open it
+     */
+    "chat-message": function(e) {
+      $("div.chatroom").chatroom('add', e);
+    },
+
 
 		 /*******************************
 		 *	        UI		*

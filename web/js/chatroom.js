@@ -77,11 +77,15 @@ define([ "jquery", "laconic" ],
     },
 
     send: function() {
-      var msg = {};
+      var msg = {type:"chat-message"};
       var ta = this.find("textarea");
-      msg.text = ta.val();
-      ta.val("");
-      this.chatroom('add', msg);
+      msg.text = ta.val().trim();
+
+      if ( msg.text != "" ) {
+	msg.users = $("#chat").chat('users', ['id']).users;
+	ta.val("");
+	$("#chat").chat('send', msg);
+      }
     },
 
     /**

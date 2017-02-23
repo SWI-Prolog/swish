@@ -168,13 +168,17 @@ accept_chat(Session, Options, WebSocket) :-
 	visitor_data/2,			% TmpUser, Data
 	subscription/3.			% WSID, Channel, SubChannel
 
-%!	wsid_visitor(+WSID, -Visitor)
+%!	wsid_visitor(?WSID, ?Visitor)
 %
 %	True when WSID is associated with Visitor
 
 wsid_visitor(WSID, Visitor) :-
+	nonvar(WSID), !,
 	visitor_session(WSID, Session),
 	session_user(Session, Visitor).
+wsid_visitor(WSID, Visitor) :-
+	session_user(Session, Visitor),
+	visitor_session(WSID, Session).
 
 
 %%	create_visitor(+WSID, +Session, -TmpUser, -UserData, +Options)
@@ -626,10 +630,29 @@ json_message(Dict, WSID) :-
 	wsid_visitor(WSID, Visitor),
 	update_visitor_data(Visitor, _{name:Name}, 'set-nick-name').
 json_message(Dict, _WSID) :-
+	_{type: "chat-message", users:Users} :< Dict, !,
+	forall(member(User, Users),
+	       send_chat(User, Dict)).
+json_message(Dict, _WSID) :-
 	debug(chat(ignored), 'Ignoring JSON message ~p', [Dict]).
 
 dict_file_name(Dict, File) :-
 	atom_string(File, Dict.get(file)).
+
+
+		 /*******************************
+		 *	   CHAT MESSAGES	*
+		 *******************************/
+
+%!	send_chat(+User, +Message)
+%
+%	Relay a chat message to a user.
+
+send_chat(User, Message) :-
+	atom_string(WSID, User.get(id)),
+	debug(chat(chat), 'Forwarding to ~p: ~p', [WSID, Message]),
+	ignore(hub_send(WSID, json(Message))).
+
 
 
 		 /*******************************
