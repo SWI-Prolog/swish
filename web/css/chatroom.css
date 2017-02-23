@@ -1,0 +1,50 @@
+div.chatroom
+{ width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+div.chatroom span.glyphicon
+{ position: absolute;
+  font-size: 1.5em;
+  top: 5px;
+  right: 5px;
+  opacity: 0.2;
+}
+
+div.chatroom span.glyphicon:hover
+{ opacity: 0.8;
+}
+
+div.chat-conversation
+{ width: 100%;
+  height: calc(100% - 4em);
+  padding: 5px;
+}
+
+div.chat-input
+{ width: 100%;
+  height: 4em;
+  padding: 5px;
+}
+
+textarea.chat-input
+{ width: calc(100% - 4em);
+  height: 100%;
+  background: #ff8;
+}
+
+div.chatroom button
+{ position: absolute;
+  bottom: 5px;
+  right: 5px;
+}
+
+div.chatroom div.chat-message
+{ font-style: italic; color: blue; font-size: 90%;
+  margin-left: 10%;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 0px 5px;
+}

@@ -62,6 +62,7 @@ define([ "jquery",
 	 "term",
 	 "laconic",
 	 "login",
+	 "chatroom",
 	 "d3",
 	 "c3",
 	 "svg-pan-zoom"
@@ -92,6 +93,9 @@ preferences.setDefault("emacs-keybinding", false);
 	"Share": "--",
 	"Download": function() {
 	  menuBroadcast("download");
+	},
+	"Chat ...": function() {
+	  $("body").swish('start_chat');
 	},
 	"Start TogetherJS ...": function() {
 	  $("body").swish('collaborate');
@@ -540,6 +544,14 @@ preferences.setDefault("emacs-keybinding", false);
       }
 
       return false;
+    },
+
+    start_chat: function() {
+      var chat = $.el.div({class:"chatroom"});
+
+      $(chat).chatroom();
+      $(".prolog-runners").tile('split', chat, "above", "20%");
+      return this;
     },
 
     /**
