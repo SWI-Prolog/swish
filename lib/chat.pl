@@ -645,15 +645,14 @@ dict_file_name(Dict, File) :-
 		 *	   CHAT MESSAGES	*
 		 *******************************/
 
-%!	send_chat(+User, +Message)
+%!	send_chat(+Self, +User, +Message)
 %
 %	Relay a chat message to a user.
 
 send_chat(User, Message) :-
 	atom_string(WSID, User.get(id)),
-	UMsg = Message.put(user, User),
-	debug(chat(chat), 'Forwarding to ~p: ~p', [WSID, UMsg]),
-	ignore(hub_send(WSID, json(UMsg))).
+	debug(chat(chat), 'Forwarding to ~p: ~p', [WSID, Message]),
+	ignore(hub_send(WSID, json(Message))).
 
 
 

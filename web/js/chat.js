@@ -343,8 +343,9 @@ define([ "jquery", "config", "preferences", "utils" ],
     /**
      * Get the set of visible users.  The return is an object holding
      * a key `self` and a key `users` bound to an array of users.
-     * `self` points to the user of this browser.
-     * param {Array} [fields] lists the keys we want to have in the
+     * `self` points to the user of this browser.  Self always has
+     * all keys
+     * @param {Array} [fields] lists the keys we want to have in the
      * user objects.  Default is all we have.
      */
     users: function(fields) {
@@ -354,23 +355,28 @@ define([ "jquery", "config", "preferences", "utils" ],
       this.find("li.user[id]").each(function() {
 	var elem = $(this);
 	var user = {};
+	var self = elem.hasClass("myself");
 
-	if ( !fields || fields.indexOf('id') >= 0 )
+	if ( self || !fields || fields.indexOf('id') >= 0 )
 	  user.id = elem.attr("id");
-	if ( !fields || fields.indexOf('name') >= 0 )
+	if ( self || !fields || fields.indexOf('name') >= 0 )
 	  user.name = elem.prop("title");
-	if ( !fields || fields.indexOf('avatar') >= 0 )
+	if ( self || !fields || fields.indexOf('avatar') >= 0 )
 	  user.avatar = elem.find("img.avatar").attr("src");
 
-	if ( elem.hasClass("myself") ) {
+	if ( self ) {
+	  rc.self = $.extend({}, user);
 	  user.is_self = true;
-	  rc.self = user;
 	}
 
 	users.push(user);
       });
 
       return rc;
+    },
+
+    self: function() {
+      return this.find("li.user.myself[id]").attr("id");
     },
 
     /**

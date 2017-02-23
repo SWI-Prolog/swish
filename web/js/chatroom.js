@@ -82,8 +82,12 @@ define([ "jquery", "laconic" ],
       msg.text = ta.val().trim();
 
       if ( msg.text != "" ) {
-	msg.users = $("#chat").chat('users').users;
+	var users = $("#chat").chat('users');
+
 	ta.val("");
+
+	msg.users = users.users;
+	msg.user  = users.self;
 	$("#chat").chat('send', msg);
       }
     },
@@ -96,11 +100,14 @@ define([ "jquery", "laconic" ],
      * @param {Object} msg.user Sender description
      */
     add: function(msg) {
+      var self = $("#chat").chat('self');
       user = msg.user;
-      elem = $($.el.div({class:"chat-message"+(user.is_self ? " self" : "")}));
+      var is_self = (user.id == self);
+
+      elem = $($.el.div({class:"chat-message"+(is_self ? " self" : "")}));
 
       elem.append($.el.span({class:"chat-sender"},
-			    user.is_self ? "Me" : user.name));
+			    is_self ? "Me" : user.name));
 
       if ( msg.html )
 	elem.html(msg.html);
