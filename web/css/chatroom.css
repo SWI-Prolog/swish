@@ -44,18 +44,27 @@ div.chatroom button
 }
 
 div.chatroom div.chat-message
-{ font-size: 90%;
+{ position:relative;
+  font-size: 90%;
   margin-right: 10%;
   margin-bottom: 1ex;
   background-color: #eee;
   border: 1px solid #ccc;
   border-radius: 5px;
-  padding: 0px 5px;
+  padding: 3px 5px;
 }
 
 div.chatroom div.chat-message.self
 { margin-right: 0px;
   margin-left: 10%;
+}
+
+div.chat-message img.avatar
+{ position: absolute;
+  top: 0px;
+  right: 0px;
+  border-radius: 5px;
+  width: 24px;
 }
 
 span.chat-sender
