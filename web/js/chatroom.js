@@ -56,13 +56,16 @@ define([ "jquery", "laconic" ],
 	var data = {};			/* private data */
 	var btn;
 	var close;
+	var text;
 
 	elem.addClass("chatroom");
-	elem.append($.el.div({class:"chat-conversation"}),
+	elem.append($.el.div({class:"chat-conversation"},
+			     $.el.div({class:"stretch"}),
+			     $.el.div({class:"inner"})),
 	    close = $.el.span({class:"glyphicon glyphicon-remove-circle"}),
 		    $.el.div({class:"chat-input"},
-			     $.el.textarea({ class:"chat-input",
-					     placeholder:"Chat"
+		      text = $.el.textarea({ class:"chat-input",
+					     placeholder:"Type chat message here ..."
 					   }),
 		       btn = $.el.button({class:"btn btn-primary btn-xs"}, "Send")));
 
@@ -72,6 +75,17 @@ define([ "jquery", "laconic" ],
 	$(close).on("click", function() {
 	  elem.tile('close');
 	});
+	$(text).keypress(function(ev) {
+	  if ( ev.which == 13 ) {
+	    elem.chatroom('send');
+	    ev.preventDefault();
+	    return false;
+	  }
+	});
+	elem.on("pane.resize", function() {
+	  elem.chatroom('scrollToBottom', true);
+	});
+
 	elem.data(pluginName, data);	/* store with element */
       });
     },
@@ -114,11 +128,28 @@ define([ "jquery", "laconic" ],
       else if ( msg.text )
 	elem.append($.el.span(msg.text));
 
-      this.find(".chat-conversation").append(elem);
+      this.find(".inner").append(elem);
+      this.chatroom('scrollToBottom');
+
+      return this;
+    },
+
+    scrollToBottom: function(onlydown) {
+      this.each(function() {
+	var elem = $(this);
+	inner = elem.find("div.inner");
+	conv  = elem.find(".chat-conversation");
+	var height = inner.height();
+	var room   = conv.height() - height - 4 - 2;
+
+	if ( room > 0 || onlydown !== true ) {
+	  conv.find("div.stretch").height(room > 0 ? room : 0);
+	  conv.scrollTop(height);
+	}
+      });
 
       return this;
     }
-
   }; // methods
 
   /**
