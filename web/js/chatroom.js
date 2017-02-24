@@ -89,6 +89,14 @@ define([ "jquery", "form", "laconic" ],
 	  "Message": function() {
 	    this.chatroom('send');
 	  },
+	  "Send my query": function() {
+	    var query = $(".prolog-query-editor").queryEditor('getQuery');
+	    if ( query.trim() != "" ) {
+	      this.chatroom('send', {query:query});
+	    } else {
+	      modal.alert("Your query editor is empty");
+	    }
+	  }
 	});
 	$(close).on("click", function() {
 	  elem.tile('close');
@@ -112,12 +120,18 @@ define([ "jquery", "form", "laconic" ],
       });
     },
 
-    send: function() {
+    /**
+     * Send a chat message.
+     * @param {Object} [extra] provides additional fields to attach
+     * to the message
+     */
+    send: function(extra) {
       var msg = {type:"chat-message"};
       var ta = this.find("textarea");
       msg.text = ta.val().trim();
 
-      if ( msg.text != "" ) {
+      if ( msg.text != "" || extra ) {
+	msg = $.extend(msg, extra||{});
 	var users = $("#chat").chat('users');
 
 	ta.val("");
@@ -151,6 +165,19 @@ define([ "jquery", "form", "laconic" ],
 	elem.html(msg.html);
       else if ( msg.text )
 	elem.append($.el.span(msg.text));
+
+      if ( msg.query ) {
+	var query = msg.query;
+	var btn = $.el.button({ class:"btn btn-xs btn-primary"
+			      },
+			      "Query ",
+			      form.widgets.glyphIcon("download"));
+	$(btn).on("click", function() {
+	  $(".prolog-query-editor").queryEditor('setQuery', query);
+	});
+
+	elem.append($.el.br(), btn);
+      }
 
       this.find(".inner").append(elem);
       this.chatroom('scrollToBottom');
