@@ -184,7 +184,7 @@ define([ "jquery", "splitter" ],
      * Remove a tile from the DOM, causing the remaining half to occupy
      * the whole space.  Again, `this` is the content pane.
      */
-    close() {
+     close: function() {
       var pane = this;
       var splitContainer = pane.closest(".pane-container");
 
