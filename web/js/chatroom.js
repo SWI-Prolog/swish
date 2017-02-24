@@ -42,8 +42,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "form", "laconic" ],
-       function($, form) {
+define([ "jquery", "form", "cm/lib/codemirror", "laconic" ],
+       function($, form, CodeMirror) {
 
 (function($) {
   var pluginName = 'chatroom';
@@ -92,7 +92,7 @@ define([ "jquery", "form", "laconic" ],
 	  "Send my query": function() {
 	    var query = $(".prolog-query-editor").queryEditor('getQuery');
 	    if ( query.trim() != "" ) {
-	      this.chatroom('send', {query:query});
+	      this.chatroom('send', [{type:"query", query:query}]);
 	    } else {
 	      modal.alert("Your query editor is empty");
 	    }
@@ -125,19 +125,19 @@ define([ "jquery", "form", "laconic" ],
      * @param {Object} [extra] provides additional fields to attach
      * to the message
      */
-    send: function(extra) {
+    send: function(payload) {
       var msg = {type:"chat-message"};
       var ta = this.find("textarea");
       msg.text = ta.val().trim();
 
-      if ( msg.text != "" || extra ) {
-	msg = $.extend(msg, extra||{});
+      if ( msg.text != "" || payload !== undefined ) {
 	var users = $("#chat").chat('users');
 
 	ta.val("");
 
-	msg.users = users.users;
-	msg.user  = users.self;
+	msg.payload = payload;
+	msg.users   = users.users;
+	msg.user    = users.self;
 	$("#chat").chat('send', msg);
       }
     },
@@ -166,17 +166,14 @@ define([ "jquery", "form", "laconic" ],
       else if ( msg.text )
 	elem.append($.el.span(msg.text));
 
-      if ( msg.query ) {
-	var query = msg.query;
-	var btn = $.el.button({ class:"btn btn-xs btn-primary"
-			      },
-			      "Query ",
-			      form.widgets.glyphIcon("download"));
-	$(btn).on("click", function() {
-	  $(".prolog-query-editor").queryEditor('setQuery', query);
-	});
-
-	elem.append($.el.br(), btn);
+      if ( msg.payload ) {
+	for(var i=0; i<msg.payload.length; i++) {
+	  var pl = msg.payload[i];
+	  if ( payload_handlers[pl.type] )
+	    payload_handlers[pl.type].call(elem, pl);
+	  else
+	    console.log(pl);
+	}
       }
 
       this.find(".inner").append(elem);
@@ -202,6 +199,42 @@ define([ "jquery", "form", "laconic" ],
       return this;
     }
   }; // methods
+
+
+		 /*******************************
+		 *	 PAYLOAD HANDLERS	*
+		 *******************************/
+
+  var payload_handlers = {
+    query: function(query) {
+      var btn = $($.el.button({ class:"btn btn-xs btn-primary"
+			      },
+			      "Query ",
+			      form.widgets.glyphIcon("download")));
+      btn.on("click", function() {
+	$(".prolog-query-editor").queryEditor('setQuery', query.query);
+      });
+      sourceToolTop(btn, query.query);
+
+      this.append(" ", btn, " ");
+    }
+  };
+
+
+  // private functions
+
+  function sourceToolTop(elem, src) {
+    var pre = $.el.pre({class:"cm-s-prolog"});
+
+    CodeMirror.runMode(src, "prolog", pre);
+
+    elem.attr("title", $.el.div(pre).innerHTML);
+    elem.data("html", true);
+    elem.data("placement", "bottom");
+    elem.data("trigger", "hover");
+    elem.tooltip();
+  }
+
 
   /**
    * <Class description>
