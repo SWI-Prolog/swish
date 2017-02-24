@@ -94,9 +94,6 @@ preferences.setDefault("emacs-keybinding", false);
 	"Download": function() {
 	  menuBroadcast("download");
 	},
-	"Chat ...": function() {
-	  $("body").swish('start_chat');
-	},
 	"Start TogetherJS ...": function() {
 	  $("body").swish('collaborate');
 	},

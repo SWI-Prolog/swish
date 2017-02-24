@@ -42,8 +42,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "preferences", "utils" ],
-       function($, config, preferences, utils) {
+define([ "jquery", "config", "preferences", "form", "utils" ],
+       function($, config, preferences, form, utils) {
 
 (function($) {
   var pluginName = 'chat';
@@ -397,7 +397,7 @@ define([ "jquery", "config", "preferences", "utils" ],
       if ( fli == undefined ) {
 	var type = file.split(".").pop();
 	ul.append(
-	  $.el.li({class:"file", "data-file":file},
+	  $.el.li({class:"file", "data-file":file, title:"Shared file"},
 		  $.el.a($.el.span({class: "dropdown-icon type-icon "+type}),
 			 file)));
       }
@@ -446,6 +446,7 @@ define([ "jquery", "config", "preferences", "utils" ],
   function li_user(id, options) {
     options = options||{};
     var ul;
+    var a;
     var name = options.name;
 
     if ( !name && options.role == "self" )
@@ -454,17 +455,21 @@ define([ "jquery", "config", "preferences", "utils" ],
       name = id;
 
     var li = $.el.li({class:"dropdown user", id:id, title:name},
-		     $.el.a({ class:"dropdown-toggle avatar",
+		   a=$.el.a({ class:"dropdown-toggle avatar",
 			      'data-toggle':"dropdown"
 			    },
 			    avatar(options)),
-		  ul=$.el.ul({ class:"dropdown-menu pull-right"
+		  ul=$.el.ul({ class:"dropdown-menu pull-right",
+			       title:""
 			     }));
 
     if ( options.role == "self" ) {
+      $(a).append($.el.b({class:"caret"}));
+
       var input = $.el.input({ type:"text",
 			       placeholder:"Nick name",
-			       value:options.name||""
+			       value:options.name||"",
+			       title:"Nick name"
 			     });
       ul.append($.el.li(input));
       $(input).keypress(function(ev) {
@@ -481,6 +486,14 @@ define([ "jquery", "config", "preferences", "utils" ],
 	  $(input).closest('.dropdown.open').removeClass('open');
 	}
       });
+
+      form.widgets.populateMenu($(li), $("#chat"), {
+	"Chat ...": function() {
+	  $("body").swish('start_chat');
+	},
+      });
+
+      ul.append($.el.li({class:"divider"}));
     }
 
     return li;
