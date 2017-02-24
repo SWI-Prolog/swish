@@ -626,6 +626,17 @@ json_message(Dict, WSID) :-
 	maplist(dict_file_name, FileDicts, Files),
 	sync_gazers(WSID, Files).
 json_message(Dict, WSID) :-
+	_{type: "reloaded", file:FileS, commit:Hash} :< Dict, !,
+	atom_string(File, FileS),
+	event_html(reloaded(File), HTML),
+	Message = _{ type:notify,
+		     wsid:WSID,
+		     html:HTML,
+		     event:reloaded,
+		     argv:[File,Hash]
+		   },
+	chat_broadcast(Message, gitty/File).
+json_message(Dict, WSID) :-
 	_{type: "set-nick-name", name:Name} :< Dict, !,
 	wsid_visitor(WSID, Visitor),
 	update_visitor_data(Visitor, _{name:Name}, 'set-nick-name').
@@ -759,6 +770,8 @@ event_html(Event, HTML) :-
 
 event_message(created(File)) -->
 	html([ 'Created ', \file(File) ]).
+event_message(reloaded(File)) -->
+	html([ 'Reloaded ', \file(File) ]).
 event_message(updated(File, _From, _To)) -->
 	html([ 'Saved ', \file(File) ]).
 event_message(deleted(File, _From, _To)) -->

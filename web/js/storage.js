@@ -123,6 +123,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	elem.on("revert", function(ev) {
 	  onStorage(ev, 'revert');
 	});
+	elem.on("reload", function(ev) {
+	  onStorage(ev, 'reload');
+	});
 	elem.on("activate-tab", function(ev) {
 						/* TBD: What exactly? */
 	});
@@ -254,6 +257,11 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 		 reply.st_type = "gitty";
 		 reply.noHistory = true;
 		 elem.storage('setSource', reply);
+		 $("#chat").trigger('send',
+				    { type:'reloaded',
+				      file:data.file,
+				      commit:reply.meta.commit
+				    });
 	       },
 	       error: function(jqXHR) {
 		 modal.ajaxError(jqXHR);

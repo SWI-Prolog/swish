@@ -177,6 +177,7 @@ define([ "jquery", "splitter" ],
 		     onDragEnd:   function() { parent.tile('resize_save'); }
 		   });
       parent.tile('resize_save');
+      panes.trigger("pane.resize");
     },
 
     /**
