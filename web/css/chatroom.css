@@ -75,3 +75,24 @@ span.chat-sender
 span.chat-sender::after
 { content: ": ";
 }
+
+/* Tooltip styling */
+
+.chat-message .tooltip
+{ z-index: 5000;
+  position: fixed;
+}
+
+.chat-message .tooltip-inner
+{ background: #ffd;
+  padding: 5px 5px;
+  border: 1px solid #888;
+  border-radius: 5px;
+}
+
+.chat-message .tooltip-inner pre.cm-s-prolog
+{ padding: 0px 5px;
+  background: transparent;
+  border: 0px;
+  margin: 0px;
+}
