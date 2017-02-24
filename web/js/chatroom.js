@@ -42,8 +42,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "laconic" ],
-       function() {
+define([ "jquery", "form", "laconic" ],
+       function($, form) {
 
 (function($) {
   var pluginName = 'chatroom';
@@ -63,6 +63,17 @@ define([ "jquery", "laconic" ],
 	elem.addClass("chatroom");
 
 					/* build DOM */
+
+	btn  = $.el.div({class:"btn-group"},
+			$.el.button({ type:"button",
+				      class:"btn btn-primary btn-xs "+
+				            "dropdown-toggle",
+				      'data-toggle':"dropdown"
+				    },
+				    "Send ",
+				    $.el.span({class:"caret"})),
+		   ul = $.el.ul({class:"dropdown-menu pull-right"}));
+
 	elem.append($.el.div({class:"chat-conversation"},
 			     $.el.div({class:"stretch"}),
 			     $.el.div({class:"inner"})),
@@ -71,11 +82,13 @@ define([ "jquery", "laconic" ],
 		      text = $.el.textarea({ class:"chat-input",
 					     placeholder:"Type chat message here ..."
 					   }),
-		       btn = $.el.button({class:"btn btn-primary btn-xs"}, "Send")));
+			     btn));
 
 					/* event handling */
-	$(btn).on("click", function(ev) {
-	  elem.chatroom('send');
+	form.widgets.populateMenu($(btn), elem, {
+	  "Message": function() {
+	    this.chatroom('send');
+	  },
 	});
 	$(close).on("click", function() {
 	  elem.tile('close');
