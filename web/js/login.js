@@ -97,10 +97,10 @@ define([ "jquery", "modal", "config", "form", "laconic" ],
 		  client: elem,
 		  actions: {
 		    "Logout":  function() {
-		      if ( this.login ) this.login('logout');
+		      this.login('logout');
 		    },
 		    "Profile": function() {
-		      if ( this.login ) this.login('profile');
+		      this.login('profile');
 		    }
 		  }
 		}));

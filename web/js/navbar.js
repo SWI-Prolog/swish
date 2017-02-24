@@ -188,7 +188,7 @@ define([ "jquery", "preferences", "laconic" ],
 	a = $.el.a(label);
       }
 
-      $(a).data('action', options);
+      $(a).data('navbar-action', options);
       if ( options.name )
 	$(a).attr("id", options.name);
 
@@ -225,7 +225,7 @@ define([ "jquery", "preferences", "laconic" ],
 	dropdown.append($.el.li($.el.a({class:"trigger right-caret"}, label),
 				submenu));
 	if ( options.action )
-	  $(submenu).data('action', options.action);
+	  $(submenu).data('navbar-action', options.action);
 	if ( options.items ) {
 	  for(var i=0; i<options.items.length; i++) {
 	    $(submenu).append($.el.li($.el.a(options.items[i])));
@@ -252,8 +252,8 @@ define([ "jquery", "preferences", "laconic" ],
     if ( $(a).hasClass("trigger") ) {
       clickSubMenu.call(a, ev);
     } else {
-      var action = ($(a).data('action') ||
-		    $(a).parents("ul").data('action'));
+      var action = ($(a).data('navbar-action') ||
+		    $(a).parents("ul").data('navbar-action'));
 
       clickNotSubMenu.call(a, ev);
 
