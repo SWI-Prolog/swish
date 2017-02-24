@@ -438,16 +438,17 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
     },
 
     widgets: {
+      glyphIcon: function(glyph) {
+	return $.el.span({class:"glyphicon glyphicon-"+glyph});
+      },
+
       glyphIconButton: function(glyph, options) {
 	var attrs = {class:"btn btn-info", type:"button"};
 
 	if ( options.action ) attrs['data-action'] = options.action;
 	if ( options.title )  attrs.title          = options.title;
 
-	elem =
-	$.el.button(attrs,
-		    $.el.span({class:"glyphicon "+glyph}));
-	return elem;
+	return $.el.button(attrs, form.widgets.glyphIcon(glyph));
       },
 
       /**
