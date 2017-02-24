@@ -77,7 +77,7 @@ images, please include the following acknowledgements:
 
 user:file_search_path(noble,		       icons(noble)).
 user:file_search_path(noble_avatar_components, noble(components)).
-user:file_search_path(noble_avatar,	       noble(avatars)).
+user:file_search_path(noble_avatar,	       data(avatars)).
 
 :- dynamic
 	noble_dir/1,				% Directory
