@@ -154,9 +154,10 @@ define([ "jquery", "form", "cm/lib/codemirror", "laconic" ],
       user = msg.user;
       var is_self = (user.id == self);
 
-      elem = $($.el.div({class:"chat-message"+(is_self ? " self" : "")}));
+      elem = $($.el.div({class:"chat-message"+(is_self ? " self" : ""),
+			 'data-userid':user.id}));
       if ( !is_self && user.avatar ) {
-	elem.append($.el.img({class:"avatar", src:user.avatar}));
+	elem.append($.el.img({ class:"avatar", src:user.avatar }));
       }
       elem.append($.el.span({class:"chat-sender"},
 			    is_self ? "Me" : user.name));

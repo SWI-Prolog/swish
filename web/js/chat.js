@@ -214,6 +214,9 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       var li = $("#"+e.wsid);
 
       li.children("a").html("").append(avatar(e));
+      if ( e.avatar )
+	$("*[data-userid="+e.wsid+"] img.avatar").attr("src", e.avatar);
+
       if ( e.name ) {
 	li.prop('title', e.name);
 	if ( e.reason == 'set-nick-name' ) {
