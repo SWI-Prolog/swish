@@ -142,7 +142,7 @@ define([ "jquery", "splitter" ],
      * @param {String} [rel] is one of above/below/left/right.
      * Default is `"below"`
      */
-    split: function(pane, rel, pos) {
+    split: function(pane, rel, pos, minheight) {
       rel = rel||"below";
       pos = pos||"50%";
 
@@ -157,6 +157,14 @@ define([ "jquery", "splitter" ],
 	parent.prepend(pane);
       else
 	parent.append(pane);
+
+      if ( minheight ) {
+	sumh = this.height();
+	left = sumh * parseInt(pos.replace(/([0-9]+)%/, "$1")) / 100;
+	if ( left < minheight && minheight < sumh*0.9 ) {
+	  pos = (minheight*100/sumh) + "%";
+	}
+      }
 
       var panes = $(relto).add(pane);
       panes.wrap('<div class="pane-wrapper"></div>');

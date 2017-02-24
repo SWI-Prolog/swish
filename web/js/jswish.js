@@ -550,7 +550,7 @@ preferences.setDefault("emacs-keybinding", false);
       var chat = $.el.div({class:"chatroom"});
 
       $(chat).chatroom();
-      $(".prolog-runners").tile('split', chat, "above", "20%");
+      $(".prolog-runners").tile('split', chat, "above", "20%", 150);
       return this;
     },
 
