@@ -151,7 +151,7 @@ define([ "jquery", "laconic" ],
 	inner = elem.find("div.inner");
 	conv  = elem.find(".chat-conversation");
 	var height = inner.height();
-	var room   = conv.height() - height - 4 - 2;
+	var room   = conv.height() - height - 4 - 4;
 
 	if ( room > 0 || onlydown !== true ) {
 	  conv.find("div.stretch").height(room > 0 ? room : 0);
