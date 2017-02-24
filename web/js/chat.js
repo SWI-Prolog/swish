@@ -234,8 +234,39 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
      * Add incomming chat messages to the chatroom.  If there is no
      * chatroom we should warn/open it
      */
-    "chat-message": function(e) {
-      $("div.chatroom").chatroom('add', e);
+    'chat-message': function(e) {
+      var room = $("div.chatroom");
+
+      if ( room.length > 0 ) {
+	room.chatroom('add', e);
+      } else {
+	if ( $("#"+e.user.id).length > 0 ) {
+	  msg = $.extend({}, e);
+	  msg.wsid = e.user.id;
+	  msg.html = "Wants to chat";
+	  this.chat('notifyUser', msg);
+	  this.chat('queue_chat_message', e);
+	}
+      }
+    },
+
+    queue_chat_message: function(msg) {
+      var data = this.data(pluginName);
+
+      if ( !data.chat_messages )
+	data.chat_messages = [];
+      data.chat_messages.push(msg);
+      return this;
+    },
+
+    queued_chat_messages: function(truncate) {
+      var data = this.data(pluginName);
+      var queue = data.chat_messages||[];
+
+      if ( truncate )
+	data.chat_messages = [];
+
+      return queue;
     },
 
 

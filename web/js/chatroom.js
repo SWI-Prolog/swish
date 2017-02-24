@@ -58,7 +58,11 @@ define([ "jquery", "laconic" ],
 	var close;
 	var text;
 
+
+	elem.data(pluginName, data);	/* store with element */
 	elem.addClass("chatroom");
+
+					/* build DOM */
 	elem.append($.el.div({class:"chat-conversation"},
 			     $.el.div({class:"stretch"}),
 			     $.el.div({class:"inner"})),
@@ -69,6 +73,7 @@ define([ "jquery", "laconic" ],
 					   }),
 		       btn = $.el.button({class:"btn btn-primary btn-xs"}, "Send")));
 
+					/* event handling */
 	$(btn).on("click", function(ev) {
 	  elem.chatroom('send');
 	});
@@ -86,7 +91,11 @@ define([ "jquery", "laconic" ],
 	  elem.chatroom('scrollToBottom', true);
 	});
 
-	elem.data(pluginName, data);	/* store with element */
+					/* add pending messages */
+	var pending = $("#chat").chat('queued_chat_messages', true);
+	for(var i=0; i<pending.length; i++) {
+	  elem.chatroom('add', pending[i]);
+	}
       });
     },
 
