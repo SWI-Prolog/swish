@@ -77,7 +77,7 @@ define([ "jquery", "form", "laconic" ],
 	elem.append($.el.div({class:"chat-conversation"},
 			     $.el.div({class:"stretch"}),
 			     $.el.div({class:"inner"})),
-	    close = $.el.span({class:"glyphicon glyphicon-remove-circle"}),
+	    close = $.el.span({class:"glyphicon menu glyphicon-remove-circle"}),
 		    $.el.div({class:"chat-input"},
 		      text = $.el.textarea({ class:"chat-input",
 					     placeholder:"Type chat message here ..."
