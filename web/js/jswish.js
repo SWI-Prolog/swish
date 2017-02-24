@@ -154,6 +154,9 @@ preferences.setDefault("emacs-keybinding", false);
 	"Editor ...": function() {
 	  menuBroadcast("help", {file:"editor.html"});
 	},
+	"Chat ...": function() {
+	  menuBroadcast("help", {file:"chat.html"});
+	},
 	"Background": "--",
 	"Limitations ...": function() {
 	  menuBroadcast("help", {file:"beware.html"});

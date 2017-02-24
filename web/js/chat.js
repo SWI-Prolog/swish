@@ -379,6 +379,17 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       return this.find("li.user.myself[id]").attr("id");
     },
 
+    start_chat: function() {
+      var users = this.chat('users', ['id']);
+
+      if ( users.users.length <= 1 ) {
+	$(".swish-event-receiver").trigger("help", {file:"chat.html"});
+      }
+
+      $("body").swish('start_chat');
+      return this;
+    },
+
     /**
      * Browser `wsid` has opened `file`
      */
@@ -440,6 +451,8 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
     }
   }; // methods
 
+  // Private functions
+
   /**
    * Add an entry for a user to the notification area
    */
@@ -489,7 +502,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 
       form.widgets.populateMenu($(li), $("#chat"), {
 	"Chat ...": function() {
-	  $("body").swish('start_chat');
+	  this.chat('start_chat');
 	},
       });
 
@@ -498,8 +511,6 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 
     return li;
   }
-
-  // Private functions
 
   function avatar(options) {
     if ( options.avatar ) {
