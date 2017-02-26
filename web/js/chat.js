@@ -217,6 +217,11 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 
       var li = this.chat('addUser', e);
       $(li).addClass("myself");
+      this.chat('userCount', e.visitors);
+    },
+
+    userCount: function(cnt) {
+      $("#user-count").text(cnt);
     },
 
     /**
@@ -422,6 +427,8 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 	wsid = {wsid:wsid};
       }
 
+      if ( wsid.visitors !== undefined )
+	this.chat('userCount', wsid.visitors);
       var li = $("#"+wsid.wsid);
       if ( li.length == 0 )
 	return this;

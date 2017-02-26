@@ -5,21 +5,31 @@ div.notification
   background: #cff;
   padding: 5px 1em;
   display: none;
+  z-index: 1000;
 }
 
 a.dropdown-toggle.avatar
-{ padding: 6px 0px 4px 0px;
+{ padding: 0px;
   margin-left: 2px;
 }
 
 img.avatar
 { width: 24px;
-  margin-top: 6px;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
 
 img.avatar:hover
-{ width: 38px;
+{ width: 32px;
   margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+div.user-count
+{ text-align:center;
+  color: #888;
+  font-style: italic;
+  font-size: 75%;
 }
 
 li.myself

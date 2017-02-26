@@ -58,6 +58,7 @@
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
 :- use_module(library(user_profile)).
+:- use_module(library(aggregate)).
 
 :- use_module(storage).
 :- use_module(gitty).
@@ -147,13 +148,16 @@ accept_chat(Session, Options, WebSocket) :-
 	),
 	hub_add(swish_chat, WebSocket, WSID),
 	create_visitor(WSID, Session, Token, TmpUser, UserData, Options),
+	visitor_count(Visitors),
 	Msg = _{ type:welcome,
 		 uid:TmpUser,
 		 wsid:WSID,
-		 reconnect:Token
+		 reconnect:Token,
+		 visitors:Visitors
 	       },
 	hub_send(WSID, json(UserData.put(Msg))),
 	chat_broadcast(UserData.put(_{type:Reason,
+				      visitors:Visitors,
 				      wsid:WSID})).
 
 
@@ -185,6 +189,27 @@ accept_chat(Session, Options, WebSocket) :-
 	session_user/2,			% Session, TmpUser
 	visitor_data/2,			% TmpUser, Data
 	subscription/3.			% WSID, Channel, SubChannel
+
+%!	visitor(?WSID) is nondet
+%
+%	True when WSID should be considered an active visitor.
+
+visitor(WSID) :-
+	visitor_session(WSID, _Session, _Token),
+	\+ inactive(WSID).
+
+visitor_count(Count) :-
+	aggregate_all(count, visitor(_), Count).
+
+%!	inactive(+WSID) is semidet.
+%
+%	True if WSID is inactive. This means   we lost the connection at
+%	least 5 minutes ago.
+
+inactive(WSID) :-
+	visitor_status(WSID, lost(Lost)),
+	get_time(Now),
+	Now - Lost > 5*60.
 
 %!	visitor_session(?WSID, ?Session) is nondet.
 %
@@ -257,9 +282,11 @@ destroy_visitor(WSID) :-
 	;   get_time(Now),
 	    assertz(visitor_status(WSID, lost(Now)))
 	),
+	visitor_count(Count),
 	chat_broadcast(_{ type:removeUser,
 			  wsid:WSID,
-			  reason:Reason
+			  reason:Reason,
+			  visitors:Count
 			}).
 
 destroy_reason(WSID, Reason) :-
@@ -862,6 +889,12 @@ event_file(download(Store, FileOrHash, _Format), File) :-
 %	web/js/chat.js
 
 notifications(_Options) -->
-	html(ul([ class([nav, 'navbar-nav', 'pull-right']),
-		  id(chat)
-		], [])).
+	html(div(class(chat),
+		 [ ul([ class([nav, 'navbar-nav', 'pull-right']),
+			id(chat)
+		      ], []),
+		   div(class('user-count'),
+		       [ span(id('user-count'), '?'),
+			 ' users'
+		       ])
+		 ])).
