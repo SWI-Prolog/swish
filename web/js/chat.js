@@ -103,10 +103,19 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       add_pref_param("avatar",   "anon-avatar");
       add_pref_param("nickname", "nick-name");
 
+      if ( data.wsid ) {			/* reconnecting */
+	url += lead + "wsid" + "=" + encodeURIComponent(data.wsid);
+	lead = "&";
+      }
+
       data.connection = new WebSocket("ws://" + url, ['chat']);
 
       data.connection.onerror = function(error) {
-	console.log('WebSocket Error ' + error);
+	console.log('WebSocket error', error);
+      };
+      data.connection.onclose = function(ev) {
+	console.log('WebSocket close', ev);
+	elem.chat('connect');
       };
       data.connection.onmessage = function(e) {
 	var msg = JSON.parse(e.data);
@@ -117,8 +126,19 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 	  console.log(e);
       };
       data.connection.onopen = function() {
+	elem.chat('empty_queue');
 	$(".storage").storage('chat_status');
       };
+    },
+
+    empty_queue: function() {
+      var data = this.data(pluginName);
+
+      while(data.queue && data.queue != [] && data.connection.readyState == 1) {
+	console.log("Sending: "+str);
+	var str = shift(data.queue);
+	data.connection.send(str);
+      }
     },
 
     disconnect: function() {
@@ -143,8 +163,19 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
     send: function(msg) {
       var data = $(this).data(pluginName);
 
-      if ( data && data.connection )
-	data.connection.send(JSON.stringify(msg));
+      if ( data && data.connection ) {
+	var str = JSON.stringify(msg);
+
+	if ( data.connection.readyState != 1 ) {
+	  if ( !data.queue )
+	    data.queue = [str];
+	  else
+	    data.queue.push(str);
+	  methods.connect();
+	} else {
+	  data.connection.send(str);
+	}
+      }
 
       return this;
     },
@@ -224,6 +255,15 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 	  this.chat('notifyUser', e);
 	}
       }
+    },
+
+    /**
+     * A user has joined.  This is particularly the case if we lost the
+     * connection and the connection was re-established.  We could also
+     * use this to show all users (e.g., for small installations)
+     */
+    joined: function(e) {
+      $("#"+e.wsid).removeClass("lost");
     },
 
     /**
@@ -359,19 +399,36 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       if ( li.length == 0 )
       { li = $(li_user(options.wsid, options));
 	this.prepend(li);
+      } else {
+	li.removeClass("lost");
       }
 
       return li;
     },
 
+    /**
+     * Remove a user avatar.  If a notification is pending we delay
+     * removal until the notification times out
+     */
     removeUser: function(wsid) {
-      if ( typeof wsid != "string" )
-	wsid = wsid.wsid;		/* allow for an object */
+      if ( typeof wsid == "string" ) {
+	wsid = {wsid:wsid};
+      }
 
-      if ( $("#ntf-"+wsid).length > 0 )
-	$("#"+wsid).addClass("removed");
-      else
-	$("#"+wsid).hide(400, function() {this.remove();});
+      if ( wsid.reason != "close" ) {
+	if ( $("#ntf-"+wsid.wsid).length > 0 )	/* notification pending */
+	  $("#"+wsid.wsid).addClass("removed");
+	else
+	  $("#"+wsid.wsid).hide(400, function() {this.remove();});
+      } else {					/* connection was lost */
+	$("#"+wsid.wsid).addClass("lost");
+	setTimeout(function() {
+	  if ( $("#"+wsid.wsid).hasClass("lost") )
+	    $("#"+wsid.wsid).remove();
+	}, 60000);
+      }
+
+      return this;
     },
 
     /**

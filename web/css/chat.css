@@ -26,6 +26,10 @@ li.myself
 { border-bottom: 3px solid green;
 }
 
+li.user.lost
+{ opacity: 0.5;
+}
+
 /* http://www.cssarrowplease.com/ */
 
 .notify-arrow {

@@ -109,10 +109,12 @@ start_chat(Request, Options) :-
 	http_open_session(Session, []),
 	http_parameters(Request,
 			[ avatar(Avatar, [optional(true)]),
-			  nickname(NickName, [optional(true)])
+			  nickname(NickName, [optional(true)]),
+			  wsid(WSID, [optional(true)])
 			]),
 	extend_options([ avatar(Avatar),
-			 nick_name(NickName)
+			 nick_name(NickName),
+			 wsid(WSID)
 		       ], Options, Options1),
 	http_upgrade_to_websocket(
 	    accept_chat(Session, ChatOptions),
@@ -129,15 +131,22 @@ extend_options([_|T0], Options, T) :-
 	extend_options(T0, Options, T).
 
 
+%!	accept_chat(+Session, +Options, +WebSocket)
+
+accept_chat(_Session, Options, _WebSocket) :-
+	option(wsid(WSID), Options),
+	visitor_session(WSID, _), !,
+	permission_error(reuse, wsid, WSID).
 accept_chat(Session, Options, WebSocket) :-
 	create_chat_room,
-	hub_add(swish_chat, WebSocket, Id),
-	create_visitor(Id, Session, TmpUser, UserData, Options),
+	option(wsid(WSID), Options, _),
+	hub_add(swish_chat, WebSocket, WSID),
+	create_visitor(WSID, Session, TmpUser, UserData, Options),
 	Msg = _{ type:welcome,
 		 uid:TmpUser,
-		 wsid:Id
+		 wsid:WSID
 	       },
-	hub_send(Id, json(UserData.put(Msg))).
+	hub_send(WSID, json(UserData.put(Msg))).
 
 
 		 /*******************************
@@ -163,6 +172,7 @@ accept_chat(Session, Options, WebSocket) :-
 %	about this user.
 
 :- dynamic
+	visitor_status/2,		% WSID, Status
 	visitor_session/2,		% WSID, Session
 	session_user/2,			% Session, TmpUser
 	visitor_data/2,			% TmpUser, Data
@@ -196,13 +206,19 @@ wsid_visitor(WSID, Visitor) :-
 %	@tbd: deal with existing federated login.
 
 create_visitor(WSID, Session, TmpUser, UserData, Options) :-
-	(   visitor_session(_, Session)
-	->  true
-	;   OneDay is 24*60*60,
-	    http_set_session(Session, timeout(OneDay))
-	),
 	assertz(visitor_session(WSID, Session)),
 	create_session_user(Session, TmpUser, UserData, Options).
+
+%!	inform_joined(+WSID)
+%
+%	A user has joined. Inform others. Hmm. We don't have link to the
+%	session yet, so we can only send the wsid to reactivate users in
+%	`lost` state. May be we should send this from accept_chat/3?
+
+inform_joined(WSID) :-
+	chat_broadcast(_{ type:joined,
+			  wsid:WSID
+			}).
 
 %%	destroy_visitor(+WSID)
 %
@@ -217,15 +233,17 @@ create_visitor(WSID, Session, TmpUser, UserData, Options) :-
 
 destroy_visitor(WSID) :-
 	must_be(atom, WSID),
-	retract(visitor_session(WSID, Session)),
-	(   visitor_session(_, Session)
-	->  true
-	;   http_set_session(Session, timeout(300))
-	),
+	retract(visitor_session(WSID, _Session)),
+	destroy_reason(WSID, Reason),
 	chat_broadcast(_{ type:removeUser,
-			  wsid:WSID
+			  wsid:WSID,
+			  reason:Reason
 			}).
 
+destroy_reason(WSID, Reason) :-
+	retract(visitor_status(WSID, unload)), !,
+	Reason = unload.
+destroy_reason(_, close).
 
 %%	create_session_user(+Session, -User, -UserData, +Options)
 %
@@ -567,6 +585,7 @@ handle_message(Message, _Room) :-
 	    nb_delete(wsid)).
 handle_message(Message, _Room) :-
 	hub{joined:WSID} :< Message, !,
+	inform_joined(WSID),
 	debug(chat(visitor), 'Joined: ~p', [WSID]).
 handle_message(Message, _Room) :-
 	hub{left:WSID} :< Message, !,
@@ -620,7 +639,8 @@ json_message(Dict, WSID) :-
 	unsubscribe(WSID, Channel).
 json_message(Dict, WSID) :-
 	_{type: "unload"} :< Dict, !,	% clean close/reload
-	sync_gazers(WSID, []).
+	sync_gazers(WSID, []),
+	assertz(visitor_status(WSID, unload)).
 json_message(Dict, WSID) :-
 	_{type: "has-open-files", files:FileDicts} :< Dict, !,
 	maplist(dict_file_name, FileDicts, Files),
