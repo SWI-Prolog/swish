@@ -207,6 +207,10 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
     welcome: function(e) {
       var data = $(this).data(pluginName);
 
+      if ( data.wsid && data.wsid != e.wsid ) {
+	this.html("");				/* server restart? */
+      }
+
       data.wsid = e.wsid;
       data.reconnect = e.reconnect;		/* reconnection token */
       if ( e.avatar && e.avatar_generated )

@@ -138,12 +138,8 @@ extend_options([_|T0], Options, T) :-
 
 accept_chat(Session, Options, WebSocket) :-
 	create_chat_room,
-	(   option(reconnect(Token), Options)
-	->  (   visitor_session(WSID, _, Token)
-	    ->	retractall(visitor_status(WSID, lost(_)))
-	    ;	existence_error(reconnect_token, Token)
-	    ),
-	    Reason = rejoined
+	(   reconnect_token(WSID, Token, Options)
+	->  Reason = rejoined
 	;   Reason = joined
 	),
 	hub_add(swish_chat, WebSocket, WSID),
@@ -159,6 +155,10 @@ accept_chat(Session, Options, WebSocket) :-
 	chat_broadcast(UserData.put(_{type:Reason,
 				      visitors:Visitors,
 				      wsid:WSID})).
+
+reconnect_token(WSID, Token, Options) :-
+	option(reconnect(Token), Options),
+	visitor_session(WSID, _, Token), !.
 
 
 		 /*******************************
