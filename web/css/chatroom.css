@@ -61,6 +61,7 @@ div.chatroom div.chat-message.self
 
 div.chat-message img.avatar
 { position: absolute;
+  margin-top: 0px;
   top: 0px;
   right: 0px;
   border-radius: 5px;
