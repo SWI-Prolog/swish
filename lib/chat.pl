@@ -50,6 +50,9 @@
 :- use_module(library(option)).
 :- use_module(library(debug)).
 :- use_module(library(uuid)).
+:- use_module(library(random)).
+:- use_module(library(base64)).
+:- use_module(library(apply)).
 :- use_module(library(broadcast)).
 :- use_module(library(ordsets)).
 :- use_module(library(http/html_write)).
@@ -91,9 +94,8 @@ swish_config:config(chat, true).
 
 %!	start_chat(+Request)
 %
-%	Start  the  social  awareness  extensions.  This  establishes  a
-%	websocket connection where a user gets  an avatar and optionally
-%	a name.
+%	HTTP handler that establishes  a   websocket  connection where a
+%	user gets an avatar and optionally a name.
 
 start_chat(Request) :-
 	swish_config:authenticate(Request, _User), !, % must throw to deny access
@@ -110,11 +112,11 @@ start_chat(Request, Options) :-
 	http_parameters(Request,
 			[ avatar(Avatar, [optional(true)]),
 			  nickname(NickName, [optional(true)]),
-			  wsid(WSID, [optional(true)])
+			  reconnect(Token, [optional(true)])
 			]),
 	extend_options([ avatar(Avatar),
 			 nick_name(NickName),
-			 wsid(WSID)
+			 reconnect(Token)
 		       ], Options, Options1),
 	http_upgrade_to_websocket(
 	    accept_chat(Session, ChatOptions),
@@ -133,27 +135,33 @@ extend_options([_|T0], Options, T) :-
 
 %!	accept_chat(+Session, +Options, +WebSocket)
 
-accept_chat(_Session, Options, _WebSocket) :-
-	option(wsid(WSID), Options),
-	visitor_session(WSID, _), !,
-	permission_error(reuse, wsid, WSID).
 accept_chat(Session, Options, WebSocket) :-
 	create_chat_room,
-	option(wsid(WSID), Options, _),
+	(   option(reconnect(Token), Options)
+	->  (   visitor_session(WSID, _, Token)
+	    ->	retractall(visitor_status(WSID, lost(_)))
+	    ;	existence_error(reconnect_token, Token)
+	    ),
+	    Reason = rejoined
+	;   Reason = joined
+	),
 	hub_add(swish_chat, WebSocket, WSID),
-	create_visitor(WSID, Session, TmpUser, UserData, Options),
+	create_visitor(WSID, Session, Token, TmpUser, UserData, Options),
 	Msg = _{ type:welcome,
 		 uid:TmpUser,
-		 wsid:WSID
+		 wsid:WSID,
+		 reconnect:Token
 	       },
-	hub_send(WSID, json(UserData.put(Msg))).
+	hub_send(WSID, json(UserData.put(Msg))),
+	chat_broadcast(UserData.put(_{type:Reason,
+				      wsid:WSID})).
 
 
 		 /*******************************
 		 *	        DATA		*
 		 *******************************/
 
-%%	visitor_session(?WSId, ?Session).
+%%	visitor_session(?WSId, ?Session, ?Token).
 %%	session_user(?Session, ?TmpUser).
 %%	visitor_data(?TmpUser, ?UserData:dict).
 %%	subscription(?Session, ?Channel, ?SubChannel).
@@ -173,10 +181,17 @@ accept_chat(Session, Options, WebSocket) :-
 
 :- dynamic
 	visitor_status/2,		% WSID, Status
-	visitor_session/2,		% WSID, Session
+	visitor_session/3,		% WSID, Session, Token
 	session_user/2,			% Session, TmpUser
 	visitor_data/2,			% TmpUser, Data
 	subscription/3.			% WSID, Channel, SubChannel
+
+%!	visitor_session(?WSID, ?Session) is nondet.
+%
+%	True if websocket WSID is associated with Session.
+
+visitor_session(WSID, Session) :-
+	visitor_session(WSID, Session, _Token).
 
 %!	wsid_visitor(?WSID, ?Visitor)
 %
@@ -191,7 +206,7 @@ wsid_visitor(WSID, Visitor) :-
 	visitor_session(WSID, Session).
 
 
-%%	create_visitor(+WSID, +Session, -TmpUser, -UserData, +Options)
+%%	create_visitor(+WSID, +Session, ?Token, -TmpUser, -UserData, +Options)
 %
 %	Create a new visitor  when  a   new  websocket  is  established.
 %	Options provides information we have about the user:
@@ -202,23 +217,26 @@ wsid_visitor(WSID, Visitor) :-
 %	  Avatar remembered in the browser for this user.
 %	  - nick_name(NickName)
 %	  Nick name remembered in the browser for this user.
-%
-%	@tbd: deal with existing federated login.
 
-create_visitor(WSID, Session, TmpUser, UserData, Options) :-
-	assertz(visitor_session(WSID, Session)),
+create_visitor(WSID, Session, Token, TmpUser, UserData, _Options) :-
+	nonvar(Token),
+	visitor_session(WSID, Session, Token),
+	session_user(Session, TmpUser),
+	visitor_data(TmpUser, UserData), !.
+create_visitor(WSID, Session, Token, TmpUser, UserData, Options) :-
+	generate_key(Token),
+	assertz(visitor_session(WSID, Session, Token)),
 	create_session_user(Session, TmpUser, UserData, Options).
 
-%!	inform_joined(+WSID)
+%!  generate_key(-Key) is det.
 %
-%	A user has joined. Inform others. Hmm. We don't have link to the
-%	session yet, so we can only send the wsid to reactivate users in
-%	`lost` state. May be we should send this from accept_chat/3?
+%   Generate a random confirmation key
 
-inform_joined(WSID) :-
-	chat_broadcast(_{ type:joined,
-			  wsid:WSID
-			}).
+generate_key(Key) :-
+	length(Codes, 16),
+	maplist(random_between(0,255), Codes),
+	phrase(base64url(Codes), Encoded),
+	atom_codes(Key, Encoded).
 
 %%	destroy_visitor(+WSID)
 %
@@ -233,8 +251,12 @@ inform_joined(WSID) :-
 
 destroy_visitor(WSID) :-
 	must_be(atom, WSID),
-	retract(visitor_session(WSID, _Session)),
 	destroy_reason(WSID, Reason),
+	(   Reason == unload
+	->  retract(visitor_session(WSID, _Session, _Token))
+	;   get_time(Now),
+	    assertz(visitor_status(WSID, lost(Now)))
+	),
 	chat_broadcast(_{ type:removeUser,
 			  wsid:WSID,
 			  reason:Reason
@@ -585,8 +607,14 @@ handle_message(Message, _Room) :-
 	    nb_delete(wsid)).
 handle_message(Message, _Room) :-
 	hub{joined:WSID} :< Message, !,
-	inform_joined(WSID),
 	debug(chat(visitor), 'Joined: ~p', [WSID]).
+handle_message(Message, _Room) :-
+	hub{left:WSID, reason:write(Lost)} :< Message, !,
+	(   destroy_visitor(WSID)
+	->  debug(chat(visitor), 'Left ~p due to write error for ~p',
+		  [WSID, Lost])
+	;   true
+	).
 handle_message(Message, _Room) :-
 	hub{left:WSID} :< Message, !,
 	(   destroy_visitor(WSID)

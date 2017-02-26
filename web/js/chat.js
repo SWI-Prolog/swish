@@ -103,8 +103,8 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       add_pref_param("avatar",   "anon-avatar");
       add_pref_param("nickname", "nick-name");
 
-      if ( data.wsid ) {			/* reconnecting */
-	url += lead + "wsid" + "=" + encodeURIComponent(data.wsid);
+      if ( data.reconnect ) {			/* reconnecting */
+	url += lead + "reconnect" + "=" + encodeURIComponent(data.reconnect);
 	lead = "&";
       }
 
@@ -135,7 +135,6 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       var data = this.data(pluginName);
 
       while(data.queue && data.queue != [] && data.connection.readyState == 1) {
-	console.log("Sending: "+str);
 	var str = shift(data.queue);
 	data.connection.send(str);
       }
@@ -211,6 +210,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       var data = $(this).data(pluginName);
 
       data.wsid = e.wsid;
+      data.reconnect = e.reconnect;		/* reconnection token */
       if ( e.avatar && e.avatar_generated )
 	preferences.setVal("anon-avatar", e.avatar);
       e.role = "self";
@@ -258,12 +258,19 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
     },
 
     /**
-     * A user has joined.  This is particularly the case if we lost the
-     * connection and the connection was re-established.  We could also
-     * use this to show all users (e.g., for small installations)
+     * A user has rejoined. This is the case if we lost the
+     * connection and the connection was re-established.
+     */
+    rejoined: function(e) {
+      var avatars = $("#"+e.wsid);
+
+      this.chat('lost', avatars, false);
+    },
+
+    /**
+     * A new user has joined.
      */
     joined: function(e) {
-      $("#"+e.wsid).removeClass("lost");
     },
 
     /**
@@ -400,7 +407,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       { li = $(li_user(options.wsid, options));
 	this.prepend(li);
       } else {
-	li.removeClass("lost");
+	this.chat('lost', li, false);
       }
 
       return li;
@@ -415,20 +422,50 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 	wsid = {wsid:wsid};
       }
 
+      var li = $("#"+wsid.wsid);
+      if ( li.length == 0 )
+	return this;
+
       if ( wsid.reason != "close" ) {
 	if ( $("#ntf-"+wsid.wsid).length > 0 )	/* notification pending */
-	  $("#"+wsid.wsid).addClass("removed");
+	  li.addClass("removed");
 	else
-	  $("#"+wsid.wsid).hide(400, function() {this.remove();});
+	  li.hide(400, function() {this.remove();});
       } else {					/* connection was lost */
-	$("#"+wsid.wsid).addClass("lost");
-	setTimeout(function() {
-	  if ( $("#"+wsid.wsid).hasClass("lost") )
-	    $("#"+wsid.wsid).remove();
-	}, 60000);
+	this.chat('lost', li, true);
       }
 
       return this;
+    },
+
+    /**
+     * Set/clear lost-connection state of users.
+     * @param {jQuery} li set of items to set/clear
+     * @param {Boolean} lost is `true` if we lost the connection
+     */
+    lost: function(li, lost) {
+      if ( lost ) {
+	li.addClass("lost");
+      } else {
+	li.removeClass("lost");
+      }
+
+      li.each(function() {
+	var elem = $(this);
+	if ( lost ) {
+	  elem.data('lost-timer',
+		    setTimeout(function() {
+		      if ( $("#"+wsid.wsid).hasClass("lost") )
+			$("#"+wsid.wsid).remove();
+		    }, 60000));
+	} else {
+	  var tmo = elem.data('lost-timer');
+	  if ( tmo ) {
+	    clearTimeout(tmo);
+	    elem.data('lost-timer', undefined);
+	  }
+	}
+      });
     },
 
     /**
