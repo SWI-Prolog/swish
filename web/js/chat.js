@@ -111,10 +111,8 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       data.connection = new WebSocket("ws://" + url, ['chat']);
 
       data.connection.onerror = function(error) {
-	console.log('WebSocket error', error);
       };
       data.connection.onclose = function(ev) {
-	console.log('WebSocket close', ev);
 	elem.chat('connect');
       };
       data.connection.onmessage = function(e) {
@@ -351,8 +349,8 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 
 	$("body").append(div);
 	$(div).html(options.html)
-	      .css({ left: epos.left+user_li.width()-$(div).outerWidth()-5,
-		     top:  epos.top+user_li.height()+5
+	      .css({ left: epos.left+user_li.width()-$(div).outerWidth()+15,
+		     top:  epos.top+user_li.height()+12
 		   })
 	      .on("click", function(){$(div).remove();})
 	      .show(options.fadeIn||400);
