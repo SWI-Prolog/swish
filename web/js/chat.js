@@ -268,12 +268,16 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       var avatars = $("#"+e.wsid);
 
       this.chat('lost', avatars, false);
+      if ( e.visitors )
+	this.chat('userCount', e.visitors);
     },
 
     /**
      * A new user has joined.
      */
     joined: function(e) {
+      if ( e.visitors )
+	this.chat('userCount', e.visitors);
     },
 
     /**
