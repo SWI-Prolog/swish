@@ -163,9 +163,9 @@ installations you probably want to create   the  minified JavaScript and
 CSS files to reduce network traffic and startup time. You need some more
 tools for that:
 
-    % [sudo] npm install -g jsdoc
-    % [sudo] npm install -g requirejs
-    % [sudo] npm install -g clean-css
+    % sudo npm install -g jsdoc
+    % sudo npm install -g requirejs
+    % sudo npm install -g clean-css-cli
 
 You also need GNU make installed as   `make`  and SWI-Prolog as `swipl`.
 With all that in  place,  the   following  command  creates the minified
