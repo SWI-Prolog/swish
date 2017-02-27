@@ -6,7 +6,6 @@
   ],
   "dependencies":
   { "jquery": "*",
-    "jquery-ui": "*",
     "jquery.splitter": "0.15",
     "bootstrap": "*",
     "typeahead.js": "0.10.5",
