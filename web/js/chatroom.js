@@ -42,8 +42,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "form", "cm/lib/codemirror", "laconic" ],
-       function($, form, CodeMirror) {
+define([ "jquery", "form", "cm/lib/codemirror", "utils", "laconic" ],
+       function($, form, CodeMirror, utils) {
 
 (function($) {
   var pluginName = 'chatroom';
@@ -213,7 +213,10 @@ define([ "jquery", "form", "cm/lib/codemirror", "laconic" ],
 			      "Query ",
 			      form.widgets.glyphIcon("download")));
       btn.on("click", function() {
-	$(".prolog-query-editor").queryEditor('setQuery', query.query);
+	var qe = $(".prolog-query-editor");
+
+	qe.queryEditor('setQuery', query.query);
+	utils.flash(qe.find(".CodeMirror"));
       });
       sourceToolTip(btn, query.query);
 
