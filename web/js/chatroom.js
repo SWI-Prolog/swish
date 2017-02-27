@@ -215,7 +215,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "laconic" ],
       btn.on("click", function() {
 	$(".prolog-query-editor").queryEditor('setQuery', query.query);
       });
-      sourceToolTop(btn, query.query);
+      sourceToolTip(btn, query.query);
 
       this.append(" ", btn, " ");
     }
@@ -224,7 +224,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "laconic" ],
 
   // private functions
 
-  function sourceToolTop(elem, src) {
+  function sourceToolTip(elem, src) {
     var pre = $.el.pre({class:"cm-s-prolog"});
 
     CodeMirror.runMode(src, "prolog", pre);
