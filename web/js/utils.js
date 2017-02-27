@@ -56,6 +56,11 @@ define(["jquery"],
                      .appendChild(document.createTextNode(text))
 		     .parentNode
 		     .innerHTML;
+    },
+
+    flash: function(obj) {
+      obj.addClass("flash");
+      setTimeout(function() { obj.removeClass("flash"); }, 1500);
     }
   }
 
