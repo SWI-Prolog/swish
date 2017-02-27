@@ -8,5 +8,5 @@
    @CONFIG@
 
    name: "swish",
-   out: "swish-min.js"
+   out: "swish-min.js.new"
 })

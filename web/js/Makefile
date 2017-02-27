@@ -1,6 +1,8 @@
-JS=editor.js navbar.js answer.js pane.js query.js runner.js swish.js \
-   config.js jswish.js search.js history.js preferences.js tabbed.js storage.js \
-   notebook.js prolog.js
+JS=answer.js diffview.js jswish.js preferences.js tabbed.js download.js \
+   links.js prolog.js term.js chat.js editor.js login.js query.js utils.js \
+   chatroom.js modal.js runner.js config.js form.js navbar.js search.js \
+   diff.js gitty.js notebook.js storage.js difflib.js history.js pane.js \
+   swish.js
 CM=$(shell find codemirror -name '*.js')
 JQ=jquery.jsdoc
 CONF=conf.json
@@ -17,7 +19,9 @@ doc::	$(CONF) $(JQ) $(JS)
 min:	swish-min.js swish-min.js.gz
 
 swish-min.js:	build.js $(JS) $(CM)
+	rm -f swish-min.js.new
 	r.js -o build.js
+	mv swish-min.js.new swish-min.js
 
 swish-min.js.gz: swish-min.js
 	gzip < $< > $@
@@ -29,4 +33,4 @@ require.js: ../bower_components/requirejs/require.js
 	cp -p $< $@
 
 clean:
-	rm -f require.js swish-min.js swish-min.js.gz
+	rm -f *~ require.js swish-min.js swish-min.js.new swish-min.js.gz
