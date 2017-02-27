@@ -521,13 +521,20 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
     },
 
     start_chat: function() {
-      var users = this.chat('users', ['id']);
+      var chat = $(".chatroom");
 
-      if ( users.users.length <= 1 ) {
-	$(".swish-event-receiver").trigger("help", {file:"chat.html"});
+      if ( chat.length > 0 ) {
+	utils.flash(chat);
+      } else {
+	var users = this.chat('users', ['id']);
+
+	if ( users.users.length <= 1 ) {
+	  $(".swish-event-receiver").trigger("help", {file:"chat.html"});
+	}
+
+	$("body").swish('start_chat');
       }
 
-      $("body").swish('start_chat');
       return this;
     },
 
