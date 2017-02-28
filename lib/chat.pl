@@ -137,6 +137,13 @@ extend_options([_|T0], Options, T) :-
 %!	accept_chat(+Session, +Options, +WebSocket)
 
 accept_chat(Session, Options, WebSocket) :-
+	catch(accept_chat_(Session, Options, WebSocket), E,
+	      print_message(warning, E)), !.
+accept_chat(Session, Options, WebSocket) :-
+	print_message(warning,
+		      goal_failed(accept_chat(Session, Options, WebSocket))).
+
+accept_chat_(Session, Options, WebSocket) :-
 	create_chat_room,
 	(   reconnect_token(WSID, Token, Options)
 	->  Reason = rejoined
