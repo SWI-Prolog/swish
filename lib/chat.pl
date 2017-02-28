@@ -93,6 +93,8 @@ swish_config:config(chat, true).
 
 :- http_handler(swish(chat), start_chat, [ id(swish_chat) ]).
 
+:- meta_predicate must_succeed(0).
+
 %!	start_chat(+Request)
 %
 %	HTTP handler that establishes  a   websocket  connection where a
@@ -137,20 +139,18 @@ extend_options([_|T0], Options, T) :-
 %!	accept_chat(+Session, +Options, +WebSocket)
 
 accept_chat(Session, Options, WebSocket) :-
-	catch(accept_chat_(Session, Options, WebSocket), E,
-	      print_message(warning, E)), !.
-accept_chat(Session, Options, WebSocket) :-
-	print_message(warning,
-		      goal_failed(accept_chat(Session, Options, WebSocket))).
+	must_succeed(accept_chat_(Session, Options, WebSocket)).
 
 accept_chat_(Session, Options, WebSocket) :-
 	create_chat_room,
-	(   reconnect_token(WSID, Token, Options)
+	(   reconnect_token(WSID, Token, Options),
+	    existing_visitor(WSID, Session, Token, TmpUser, UserData)
 	->  Reason = rejoined
-	;   Reason = joined
+	;   must_succeed(create_visitor(WSID, Session, Token,
+					TmpUser, UserData, Options)),
+	    Reason = joined
 	),
 	hub_add(swish_chat, WebSocket, WSID),
-	create_visitor(WSID, Session, Token, TmpUser, UserData, Options),
 	visitor_count(Visitors),
 	Msg = _{ type:welcome,
 		 uid:TmpUser,
@@ -159,13 +159,18 @@ accept_chat_(Session, Options, WebSocket) :-
 		 visitors:Visitors
 	       },
 	hub_send(WSID, json(UserData.put(Msg))),
-	chat_broadcast(UserData.put(_{type:Reason,
-				      visitors:Visitors,
-				      wsid:WSID})).
+	must_succeed(chat_broadcast(UserData.put(_{type:Reason,
+						   visitors:Visitors,
+						   wsid:WSID}))).
 
 reconnect_token(WSID, Token, Options) :-
 	option(reconnect(Token), Options),
 	visitor_session(WSID, _, Token), !.
+
+must_succeed(Goal) :-
+	catch(Goal, E, print_message(warning, E)), !.
+must_succeed(Goal) :-
+	print_message(warning, goal_failed(Goal)).
 
 
 		 /*******************************
@@ -238,6 +243,16 @@ wsid_visitor(WSID, Visitor) :-
 	visitor_session(WSID, Session).
 
 
+%!	existing_visitor(+WSID, +Session, +Token, -TmpUser, -UserData) is semidet.
+%
+%	True if we are dealing with  an   existing  visitor for which we
+%	lost the connection.
+
+existing_visitor(WSID, Session, Token, TmpUser, UserData) :-
+	visitor_session(WSID, Session, Token),
+	session_user(Session, TmpUser),
+	visitor_data(TmpUser, UserData), !.
+
 %%	create_visitor(+WSID, +Session, ?Token, -TmpUser, -UserData, +Options)
 %
 %	Create a new visitor  when  a   new  websocket  is  established.
@@ -250,11 +265,6 @@ wsid_visitor(WSID, Visitor) :-
 %	  - nick_name(NickName)
 %	  Nick name remembered in the browser for this user.
 
-create_visitor(WSID, Session, Token, TmpUser, UserData, _Options) :-
-	nonvar(Token),
-	visitor_session(WSID, Session, Token),
-	session_user(Session, TmpUser),
-	visitor_data(TmpUser, UserData), !.
 create_visitor(WSID, Session, Token, TmpUser, UserData, Options) :-
 	generate_key(Token),
 	assertz(visitor_session(WSID, Session, Token)),
