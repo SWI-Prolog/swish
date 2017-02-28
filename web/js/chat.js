@@ -47,6 +47,8 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 
 (function($) {
   var pluginName = 'chat';
+  var reconnect_delay = 10;
+  var last_open = null;
 
   /** @lends $.fn.chat */
   var methods = {
@@ -113,7 +115,18 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       data.connection.onerror = function(error) {
       };
       data.connection.onclose = function(ev) {
-	elem.chat('connect');
+	if ( last_open == null ) {
+	  if ( reconnect_delay < 60000 )
+	    reconnect_delay *= 2;
+	} else {
+	  if ( getTime() - last_open > 300000 )
+	    reconnect_delay = 10;
+	  else if ( reconnect_delay < 300000 )
+	    reconnect_delay *= 2;
+	}
+	setTimeout(function() {
+	  elem.chat('connect');
+	}, reconnect_delay);
       };
       data.connection.onmessage = function(e) {
 	var msg = JSON.parse(e.data);
@@ -126,6 +139,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       data.connection.onopen = function() {
 	elem.chat('empty_queue');
 	$(".storage").storage('chat_status');
+	last_open = getTime();
       };
     },
 
@@ -669,6 +683,13 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
     }
   }
 
+  /**
+   * @return {Number} time since 1/1/1970 in milliseconds
+   */
+  function getTime() {
+    var d = new Date();
+    return d.getTime();
+  }
 
   /**
    * <Class description>
