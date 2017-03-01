@@ -66,6 +66,7 @@
 :- use_module(login).
 :- use_module(avatar).
 :- use_module(noble_avatar).
+:- use_module(chatstore).
 
 /** <module> The SWISH collaboration backbone
 
@@ -774,8 +775,8 @@ json_message(Dict, WSID) :-
 	update_visitor_data(Visitor, _{name:Name}, 'set-nick-name').
 json_message(Dict, _WSID) :-
 	_{type: "chat-message", docid:DocID} :< Dict, !,
-	atom_concat('gitty:', File, DocID),
-	chat_broadcast(Dict, gitty/File).
+	get_time(Now),
+	send_chat(DocID, Dict.put(time, Now)).
 json_message(Dict, _WSID) :-
 	debug(chat(ignored), 'Ignoring JSON message ~p', [Dict]).
 
@@ -787,15 +788,14 @@ dict_file_name(Dict, File) :-
 		 *	   CHAT MESSAGES	*
 		 *******************************/
 
-%!	send_chat(+Self, +User, +Message)
+%!	send_chat(+DocID, +Message)
 %
-%	Relay a chat message to a user.
+%	Relay a chat message about DocID.
 
-send_chat(User, Message) :-
-	atom_string(WSID, User.get(id)),
-	debug(chat(chat), 'Forwarding to ~p: ~p', [WSID, Message]),
-	ignore(hub_send(WSID, json(Message))).
-
+send_chat(DocID, Message) :-
+	atom_concat("gitty:", File, DocID),
+	chat_store(Message),
+	chat_broadcast(Message, gitty/File).
 
 
 		 /*******************************
