@@ -520,10 +520,14 @@ preferences.setDefault("emacs-keybinding", false);
      * hamburger` class.
      */
     fullscreen: function(node, main) {
-      var data = this.data(pluginName);
       var content = this.find(".container.swish");
 
       if ( !content.hasClass("fullscreen") ) {
+	var data = this.data("fullscreen");
+	if ( !data ) {
+	  data = {};
+	  this.data("fullscreen", data);
+	}
 	content.addClass("fullscreen");
 	main = main||node;
 	main.addClass("fullscreen hamburger");
@@ -531,6 +535,8 @@ preferences.setDefault("emacs-keybinding", false);
 	data.fullscreen_main = main[0];
 	$(content.children()[0]).hide();
 	content.append(node);
+	if ( node.hasClass("tile") )
+	  node.tile('resize');
       }
 
       return this;
@@ -542,10 +548,10 @@ preferences.setDefault("emacs-keybinding", false);
      * @return {Boolean} `true` if successful.
      */
     exitFullscreen: function() {
-      var data = this.data(pluginName);
       var content = this.find(".container.swish");
 
       if ( content.hasClass("fullscreen") ) {
+	var data = this.data("fullscreen");
 	var node = $(content.children()[1]);
 	content.removeClass("fullscreen");
 	$(data.fullscreen_main).removeClass("fullscreen hamburger");
@@ -553,6 +559,8 @@ preferences.setDefault("emacs-keybinding", false);
 	data.fullscreen_origin = null;
 	data.fullscreen_main = null;
 	$(content.children()[0]).show();
+	if ( node.hasClass("tile") )
+	  node.tile('resize');
 
 	return true;
       }
