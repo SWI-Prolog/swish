@@ -496,12 +496,30 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
     },
 
     /**
+     * Get info about a specific user.
+     * @param {Array} [fields] lists the keys we want to have in the
+     * user objects.  Default is all we have.
+     */
+    user_info: function(li, fields) {
+      var li = $(this);
+      var user = {};
+      var self = li.hasClass("myself");
+
+      if ( self || !fields || fields.indexOf('id') >= 0 )
+	user.id = li.attr("id");
+      if ( self || !fields || fields.indexOf('name') >= 0 )
+	user.name = li.prop("title");
+      if ( self || !fields || fields.indexOf('avatar') >= 0 )
+	user.avatar = li.find("img.avatar").attr("src");
+
+      return user;
+    },
+
+    /**
      * Get the set of visible users.  The return is an object holding
      * a key `self` and a key `users` bound to an array of users.
      * `self` points to the user of this browser.  Self always has
      * all keys
-     * @param {Array} [fields] lists the keys we want to have in the
-     * user objects.  Default is all we have.
      */
     users: function(fields) {
       var users = [];
@@ -509,15 +527,8 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 
       this.find("li.user[id]").each(function() {
 	var elem = $(this);
-	var user = {};
 	var self = elem.hasClass("myself");
-
-	if ( self || !fields || fields.indexOf('id') >= 0 )
-	  user.id = elem.attr("id");
-	if ( self || !fields || fields.indexOf('name') >= 0 )
-	  user.name = elem.prop("title");
-	if ( self || !fields || fields.indexOf('avatar') >= 0 )
-	  user.avatar = elem.find("img.avatar").attr("src");
+	var user = elem.chat('user_info', fields);
 
 	if ( self ) {
 	  rc.self = $.extend({}, user);
@@ -530,8 +541,13 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       return rc;
     },
 
-    self: function() {
-      return this.find("li.user.myself[id]").attr("id");
+    /**
+     * Get info on the _self_ user.
+     */
+    self: function(fields) {
+      var li = this.find("li.user.myself[id]");
+
+      return li.chat('user_info', fields);
     },
 
     start_chat: function() {

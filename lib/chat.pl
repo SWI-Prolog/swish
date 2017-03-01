@@ -773,10 +773,9 @@ json_message(Dict, WSID) :-
 	wsid_visitor(WSID, Visitor),
 	update_visitor_data(Visitor, _{name:Name}, 'set-nick-name').
 json_message(Dict, _WSID) :-
-	_{type: "chat-message", users:Users} :< Dict, !,
-	del_dict(users, Dict, _, Message),
-	forall(member(User, Users),
-	       send_chat(User, Message)).
+	_{type: "chat-message", docid:DocID} :< Dict, !,
+	atom_concat('gitty:', File, DocID),
+	chat_broadcast(Dict, gitty/File).
 json_message(Dict, _WSID) :-
 	debug(chat(ignored), 'Ignoring JSON message ~p', [Dict]).
 

@@ -50,6 +50,11 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "laconic" ],
 
   /** @lends $.fn.chatroom */
   var methods = {
+    /**
+     * {Object} [options]
+     * {String} [options.docid] Document identifier
+     */
+
     _init: function(options) {
       return this.each(function() {
 	var elem = $(this);
@@ -58,8 +63,9 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "laconic" ],
 	var close;
 	var text;
 
-
+	data.docid = options.docid;
 	elem.data(pluginName, data);	/* store with element */
+
 	elem.addClass("chatroom");
 
 					/* build DOM */
@@ -127,18 +133,17 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "laconic" ],
      * to the message
      */
     send: function(payload) {
+      var data = this.data(pluginName);
       var msg = {type:"chat-message"};
       var ta = this.find("textarea");
       msg.text = ta.val().trim();
 
       if ( msg.text != "" || payload !== undefined ) {
-	var users = $("#chat").chat('users');
-
 	ta.val("");
 
 	msg.payload = payload;
-	msg.users   = users.users;
-	msg.user    = users.self;
+	msg.docid   = data.docid;
+	msg.user    = $("#chat").chat('self');
 	$("#chat").chat('send', msg);
       }
     },
@@ -151,7 +156,12 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "laconic" ],
      * @param {Object} msg.user Sender description
      */
     add: function(msg) {
-      var self = $("#chat").chat('self');
+      var data = this.data(pluginName);
+
+      if ( msg.docid != data.docid )
+	return this;
+
+      var self = $("#chat").chat('self', ['id']).id;
       user = msg.user;
       var is_self = (user.id == self);
 
