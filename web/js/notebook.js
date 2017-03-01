@@ -303,10 +303,13 @@ var cellTypes = {
       if ( val == undefined )		/* default: toggle */
 	val = !this.hasClass("fullscreen");
 
-      if ( val )
-	$("body.swish").swish('fullscreen', this);
-      else
+      if ( val ) {
+	var chat_container = this.closest(".chat-container");
+	var node = chat_container.length == 1 ? chat_container : this;
+	$("body.swish").swish('fullscreen', node, this);
+      } else {
 	$("body.swish").swish('exitFullscreen');
+      }
 
       return this;
     },

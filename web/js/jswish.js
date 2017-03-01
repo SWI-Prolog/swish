@@ -514,17 +514,21 @@ preferences.setDefault("emacs-keybinding", false);
 
     /**
      * Make DOM element fullscreen
-     * @param {DOM} node is the element to turn into fullscreen.
+     * @param {jQuery} node is the element to turn into fullscreen.
      * Currently this only works for a notebook.
+     * @patam {jQuery} main is the node getting the `fullscreen
+     * hamburger` class.
      */
-    fullscreen: function(node) {
+    fullscreen: function(node, main) {
       var data = this.data(pluginName);
       var content = this.find(".container.swish");
 
       if ( !content.hasClass("fullscreen") ) {
 	content.addClass("fullscreen");
-	node.addClass("fullscreen hamburger");
+	main = main||node;
+	main.addClass("fullscreen hamburger");
 	data.fullscreen_origin = node.parent()[0];
+	data.fullscreen_main = main[0];
 	$(content.children()[0]).hide();
 	content.append(node);
       }
@@ -544,9 +548,10 @@ preferences.setDefault("emacs-keybinding", false);
       if ( content.hasClass("fullscreen") ) {
 	var node = $(content.children()[1]);
 	content.removeClass("fullscreen");
-	node.removeClass("fullscreen hamburger");
+	$(data.fullscreen_main).removeClass("fullscreen hamburger");
 	$(data.fullscreen_origin).append(node);
 	data.fullscreen_origin = null;
+	data.fullscreen_main = null;
 	$(content.children()[0]).show();
 
 	return true;
