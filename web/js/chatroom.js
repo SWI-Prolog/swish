@@ -160,9 +160,10 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       if ( msg.docid != data.docid )
 	return this;
 
-      var self = $("#chat").chat('self', ['id']).id;
+      var self = $("#chat").chat('self', []);
       user = msg.user;
-      var is_self = (user.id == self);
+      var is_self = ( user.id == self.id ||
+		      user.avatar == self.avatar );
 
       elem = $($.el.div({class:"chat-message"+(is_self ? " self" : ""),
 			 'data-userid':user.id}));
