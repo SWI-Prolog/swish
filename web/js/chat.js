@@ -320,28 +320,8 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 	  msg.wsid = e.user.id;
 	  msg.html = "Wants to chat";
 	  this.chat('notifyUser', msg);
-	  this.chat('queue_chat_message', e);
 	}
       }
-    },
-
-    queue_chat_message: function(msg) {
-      var data = this.data(pluginName);
-
-      if ( !data.chat_messages )
-	data.chat_messages = [];
-      data.chat_messages.push(msg);
-      return this;
-    },
-
-    queued_chat_messages: function(truncate) {
-      var data = this.data(pluginName);
-      var queue = data.chat_messages||[];
-
-      if ( truncate )
-	data.chat_messages = [];
-
-      return queue;
     },
 
 
@@ -548,24 +528,6 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       var li = this.find("li.user.myself[id]");
 
       return li.chat('user_info', fields);
-    },
-
-    start_chat: function() {
-      var chat = $(".chatroom");
-
-      if ( chat.length > 0 ) {
-	utils.flash(chat);
-      } else {
-	var users = this.chat('users', ['id']);
-
-	if ( users.users.length <= 1 ) {
-	  $(".swish-event-receiver").trigger("help", {file:"chat.html"});
-	}
-
-	$("body").swish('start_chat');
-      }
-
-      return this;
     },
 
     /**
