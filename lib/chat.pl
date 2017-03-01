@@ -145,13 +145,14 @@ accept_chat_(Session, Options, WebSocket) :-
 	create_chat_room,
 	(   reconnect_token(WSID, Token, Options),
 	    retractall(visitor_status(WSID, lost(_))),
-	    existing_visitor(WSID, Session, Token, TmpUser, UserData)
+	    existing_visitor(WSID, Session, Token, TmpUser, UserData),
+	    hub_add(swish_chat, WebSocket, WSID)
 	->  Reason = rejoined
-	;   must_succeed(create_visitor(WSID, Session, Token,
+	;   hub_add(swish_chat, WebSocket, WSID),
+	    must_succeed(create_visitor(WSID, Session, Token,
 					TmpUser, UserData, Options)),
 	    Reason = joined
 	),
-	hub_add(swish_chat, WebSocket, WSID),
 	visitor_count(Visitors),
 	Msg = _{ type:welcome,
 		 uid:TmpUser,
@@ -297,7 +298,7 @@ destroy_visitor(WSID) :-
 	must_be(atom, WSID),
 	destroy_reason(WSID, Reason),
 	(   Reason == unload
-	->  retract(visitor_session(WSID, _Session, _Token))
+	->  reclaim_visitor(WSID)
 	;   get_time(Now),
 	    assertz(visitor_status(WSID, lost(Now)))
 	),
@@ -344,6 +345,7 @@ do_gc_visitors :-
 	       reclaim_visitor(WSID)).
 
 reclaim_visitor(WSID) :-
+	debug(chat(gc), 'Reclaiming idle ~p', [WSID]),
 	retractall(visitor_session(WSID, _Session, _Token)),
 	retractall(visitor_status(WSID, _Status)),
 	unsubscribe(WSID, _).
