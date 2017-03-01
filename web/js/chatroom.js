@@ -73,16 +73,17 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "laconic" ],
 				    "Send ",
 				    $.el.span({class:"caret"})),
 		   ul = $.el.ul({class:"dropdown-menu pull-right"}));
+	text = $.el.textarea({ placeholder:"Type chat message here ..."
+			     }),
 
 	elem.append($.el.div({class:"chat-conversation"},
 			     $.el.div({class:"stretch"}),
 			     $.el.div({class:"inner"})),
 	    close = $.el.span({class:"glyphicon menu glyphicon-remove-circle"}),
 		    $.el.div({class:"chat-input"},
-		      text = $.el.textarea({ class:"chat-input",
-					     placeholder:"Type chat message here ..."
-					   }),
-			     btn));
+			     $.el.table({class:"chat-input"},
+					$.el.tr($.el.td({class:"chat-text"}, text),
+						$.el.td({class:"chat-send"}, btn)))));
 
 					/* event handling */
 	form.widgets.populateMenu($(btn), elem, {
