@@ -6,7 +6,7 @@ html, body {
   overflow: hidden;
 }
 
-nav.navbar { margin-bottom: 5px; }
+nav.navbar { margin-bottom: 0px; }
 
 #content { width: 100%; height: calc(100% - 55px);
 	   padding: 0px;
