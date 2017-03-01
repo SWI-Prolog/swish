@@ -144,6 +144,7 @@ accept_chat(Session, Options, WebSocket) :-
 accept_chat_(Session, Options, WebSocket) :-
 	create_chat_room,
 	(   reconnect_token(WSID, Token, Options),
+	    retractall(visitor_status(WSID, lost(_))),
 	    existing_visitor(WSID, Session, Token, TmpUser, UserData)
 	->  Reason = rejoined
 	;   must_succeed(create_visitor(WSID, Session, Token,
