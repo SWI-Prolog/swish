@@ -96,6 +96,9 @@ preferences.setDefault("emacs-keybinding", false);
 	"Download": function() {
 	  menuBroadcast("download");
 	},
+	"Chat ...": function() {
+	  menuBroadcast("chat-about-file");
+	},
 	"Start TogetherJS ...": function() {
 	  $("body").swish('collaborate');
 	},
@@ -546,14 +549,6 @@ preferences.setDefault("emacs-keybinding", false);
       }
 
       return false;
-    },
-
-    start_chat: function() {
-      var chat = $.el.div({class:"chatroom"});
-
-      $(chat).chatroom();
-      $(".prolog-runners").tile('split', chat, "above", "20%", 150);
-      return this;
     },
 
     /**

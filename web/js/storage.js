@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2016, VU University Amsterdam
+    Copyright (C): 2014-2017, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -125,6 +125,9 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	});
 	elem.on("reload", function(ev) {
 	  onStorage(ev, 'reload');
+	});
+	elem.on("chat-about-file", function(ev) {
+	  onStorage(ev, 'chat');
 	});
 	elem.on("activate-tab", function(ev) {
 						/* TBD: What exactly? */
@@ -811,6 +814,41 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       form.showDialog({ title: "Changes since " + baseName[data.cleanCheckpoint],
 			body:  infoBody
 		      });
+
+      return this;
+    },
+
+    /**
+     * @return {String} identifier for the document
+     */
+    docid: function() {
+      var data = this.data(pluginName);
+      var meta = data.meta||{};
+
+      if ( data.st_type == "gitty" ) {
+	return "gitty:"+meta.name;
+/*    } else if ( data.st_type == "filesys" ) {
+	return "filesys:"+meta.path;
+      } else if ( data.st_type == "external" ) {
+	return "url:"+data.url;
+*/
+      }
+    },
+
+    /**
+     * Open the chat window for the current file
+     */
+    chat: function() {
+      var docid = this.storage('docid');
+
+      if ( docid ) {
+	var chat = $.el.div({class:"chatroom"});
+
+	$(chat).chatroom({docid:docid});
+	this.tile('split', chat, "below", 20, 150);
+      } else {
+	modal.alert("Sorry, can only chat about files");
+      }
 
       return this;
     },

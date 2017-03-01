@@ -663,9 +663,10 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       });
 
       form.widgets.populateMenu($(li), $("#chat"), {
-	"Chat ...": function() {
+/*	"Chat ...": function() {
 	  this.chat('start_chat');
-	},
+	}
+*/
       });
 
       ul.append($.el.li({class:"divider"}));
