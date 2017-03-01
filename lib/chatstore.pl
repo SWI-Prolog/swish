@@ -1,0 +1,128 @@
+/*  Part of SWISH
+
+    Author:        Jan Wielemaker
+    E-mail:        J.Wielemaker@cs.vu.nl
+    WWW:           http://www.swi-prolog.org
+    Copyright (C): 2017, VU University Amsterdam
+			 CWI Amsterdam
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+
+    2. Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in
+       the documentation and/or other materials provided with the
+       distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
+*/
+
+:- module(chat_store,
+          [ chat_store/1,               % +Message
+            chat_messages/2             % +DocID, -Messages
+          ]).
+:- use_module(library(settings)).
+:- use_module(library(filesex)).
+:- use_module(library(readutil)).
+:- use_module(library(sha)).
+:- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_parameters)).
+:- use_module(library(http/http_json)).
+
+:- http_handler(swish(chat/messages), chat_messages, [ id(chat_messages) ]).
+
+:- setting(directory, callable, data(chat),
+	   'The directory for storing chat messages.').
+
+/** <module> Store chat messages
+*/
+
+:- initialization open_chatstore.
+
+:- dynamic  storage_dir/1.
+:- volatile storage_dir/1.
+
+open_chatstore :-
+	setting(directory, Spec),
+	absolute_file_name(Spec, Dir,
+			   [ file_type(directory),
+			     access(write),
+			     file_errors(fail)
+			   ]), !,
+	asserta(storage_dir(Dir)).
+open_chatstore :-
+	setting(directory, Spec),
+	absolute_file_name(Spec, Dir,
+			   [ solutions(all)
+			   ]),
+	\+ exists_directory(Dir),
+	catch(make_directory(Dir),
+	      error(permission_error(create, directory, Dir), _),
+	      fail), !,
+	asserta(storage_dir(Dir)).
+
+chat_file(DocID, File) :-
+    sha_hash(DocID, Bin, []),
+    hash_atom(Bin, Hash),
+    sub_atom(Hash, 0, 2, _, D1),
+    sub_atom(Hash, 2, 2, _, D2),
+    sub_atom(Hash, 4, _, 0, Name),
+    storage_dir(Dir),
+    atomic_list_concat([Dir, D1, D2], /, Path),
+    make_directory_path(Path),
+    atomic_list_concat([Path, Name], /, File).
+
+%!  chat_store(+Message:dict)
+%
+%   Add a chat message to the chat store.
+
+chat_store(Message) :-
+    chat{docid:DocID} :< Message,
+    chat_file(DocID, File),
+    with_mutex(chat_store,
+               setup_call_cleanup(
+                   open(File, append, Out, [encoding(utf8)]),
+                   format(Out, '~q.~n', [Message]),
+                   close(Out))).
+
+%!  chat_messages(+DocID, -Messages:list) is det.
+%
+%   Get all messages associated with DocID
+
+chat_messages(DocID, Messages) :-
+    chat_file(DocID, File),
+    (   exists_file(File)
+    ->  read_file_to_terms(File, Messages, [encoding(utf8)])
+    ;   Messages = []
+    ).
+
+		 /*******************************
+		 *              HTTP		*
+		 *******************************/
+
+%!  chat_messages(+Request)
+%
+%   HTTP handler that returns chat messages for a document
+
+chat_messages(Request) :-
+    http_parameters(Request,
+                    [ docid(DocID, [])
+                    ]),
+    chat_messages(DocID, Messages),
+    reply_json_dict(Messages).
