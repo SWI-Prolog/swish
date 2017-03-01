@@ -842,10 +842,16 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       var docid = this.storage('docid');
 
       if ( docid ) {
-	var chat = $.el.div({class:"chatroom"});
+	var chat = this.find(".chatroom");
 
-	$(chat).chatroom({docid:docid});
-	this.tile('split', chat, "below", 20, 150);
+	if ( chat.length > 0 ) {
+	  utils.flash(chat);
+	} else {
+	  chat = $($.el.div({class:"chatroom"}));
+
+	  chat.chatroom({docid:docid});
+	  this.tile('split', chat, "below", 20, 150);
+	}
       } else {
 	modal.alert("Sorry, can only chat about files");
       }
