@@ -850,7 +850,8 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	  chat = $($.el.div({class:"chatroom"}));
 
 	  chat.chatroom({docid:docid});
-	  this.tile('split', chat, "below", 20, 150);
+	  this.tile('split', chat, "below", 20, 150)
+	      .addClass("chat-container");
 	}
       } else {
 	modal.alert("Sorry, can only chat about files");

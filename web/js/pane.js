@@ -145,6 +145,8 @@ define([ "jquery", "splitter" ],
      * the new pane
      * @param {Number} [minheight] is the minimum height of the new tab
      * in the case of a vertical split.
+     * @return {jQuery} parent `pane-container` that hold me and the note
+     * that was added next to me.
      */
     split: function(pane, rel, pos, minheight) {
       rel = rel||"below";
@@ -190,6 +192,8 @@ define([ "jquery", "splitter" ],
 		   });
       parent.tile('resize_save');
       panes.trigger("pane.resize");
+
+      return parent;
     },
 
     /**

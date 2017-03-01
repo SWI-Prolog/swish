@@ -518,12 +518,13 @@ preferences.setDefault("emacs-keybinding", false);
      * Currently this only works for a notebook.
      */
     fullscreen: function(node) {
+      var data = this.data(pluginName);
       var content = this.find(".container.swish");
 
       if ( !content.hasClass("fullscreen") ) {
 	content.addClass("fullscreen");
 	node.addClass("fullscreen hamburger");
-	node.data("fullscreen_origin", node.parent()[0]);
+	data.fullscreen_origin = node.parent()[0];
 	$(content.children()[0]).hide();
 	content.append(node);
       }
@@ -537,14 +538,15 @@ preferences.setDefault("emacs-keybinding", false);
      * @return {Boolean} `true` if successful.
      */
     exitFullscreen: function() {
+      var data = this.data(pluginName);
       var content = this.find(".container.swish");
 
       if ( content.hasClass("fullscreen") ) {
 	var node = $(content.children()[1]);
 	content.removeClass("fullscreen");
 	node.removeClass("fullscreen hamburger");
-	$(node.data("fullscreen_origin")).append(node);
-	$.removeData(node, "fullscreen_origin");
+	$(data.fullscreen_origin).append(node);
+	data.fullscreen_origin = null;
 	$(content.children()[0]).show();
 
 	return true;
