@@ -137,36 +137,36 @@ preferences.setDefault("emacs-keybinding", false);
 	$("body").swish('populateExamples', navbar, dropdown);
       },
       "Help":
-      { "About ...": function() {
+      { "About": function() {
 	  menuBroadcast("help", {file:"about.html"});
 	},
 	"Topics": "--",
-	"Help ...": function() {
+	"Help": function() {
 	  menuBroadcast("help", {file:"help.html"});
 	},
-	"Runner ...": function() {
+	"Runner": function() {
 	  menuBroadcast("help", {file:"runner.html"});
 	},
-	"Debugging ...": function() {
+	"Debugging": function() {
 	  menuBroadcast("help", {file:"debug.html"});
 	},
-	"Notebook ...": function() {
+	"Notebook": function() {
 	  menuBroadcast("help", {file:"notebook.html"});
 	},
-	"Editor ...": function() {
+	"Editor": function() {
 	  menuBroadcast("help", {file:"editor.html"});
 	},
-	"Chat ...": function() {
+	"Chat": function() {
 	  menuBroadcast("help", {file:"chat.html"});
 	},
 	"Background": "--",
-	"Limitations ...": function() {
+	"Limitations": function() {
 	  menuBroadcast("help", {file:"beware.html"});
 	},
-	"Caveats ...": function() {
+	"Caveats": function() {
 	  menuBroadcast("help", {file:"caveats.html"});
 	},
-	"Background ...": function() {
+	"Background": function() {
 	  menuBroadcast("help", {file:"background.html"});
 	},
       }
