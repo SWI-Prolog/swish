@@ -162,7 +162,8 @@ accept_chat_(Session, Options, WebSocket) :-
 	hub_send(WSID, json(UserData.put(Msg))),
 	must_succeed(chat_broadcast(UserData.put(_{type:Reason,
 						   visitors:Visitors,
-						   wsid:WSID}))).
+						   wsid:WSID}))),
+	gc_visitors.
 
 reconnect_token(WSID, Token, Options) :-
 	option(reconnect(Token), Options),
@@ -312,6 +313,42 @@ destroy_reason(WSID, Reason) :-
 	Reason = unload.
 destroy_reason(_, close).
 
+%!	gc_visitors
+%
+%	Reclaim all visitors with whom we   have lost the connection and
+%	the browser did not reclaim the selection within 5 minutes.
+
+:- dynamic last_gc/1.
+
+gc_visitors :-
+	last_gc(Last),
+	get_time(Now),
+	Now-Last < 300, !.
+gc_visitors :-
+	with_mutex(gc_visitors, gc_visitors_sync).
+
+gc_visitors_sync :-
+	get_time(Now),
+	(   last_gc(Last),
+	    Now-Last < 300
+	->  true
+	;   retractall(last_gc(_)),
+	    asserta(last_gc(Now)),
+	    do_gc_visitors
+	).
+
+do_gc_visitors :-
+	forall(( visitor_session(WSID, _Session, _Token),
+		 inactive(WSID)
+	       ),
+	       reclaim_visitor(WSID)).
+
+reclaim_visitor(WSID) :-
+	retractall(visitor_session(WSID, _Session, _Token)),
+	retractall(visitor_status(WSID, _Status)),
+	unsubscribe(WSID, _).
+
+
 %%	create_session_user(+Session, -User, -UserData, +Options)
 %
 %	Associate a user with the session. The user id is a UUID that is
@@ -332,8 +369,8 @@ create_session_user(Session, TmpUser, UserData, Options) :-
 	assertz(visitor_data(TmpUser, UserData)).
 
 destroy_session_user(Session) :-
-	retract(session_user(Session, TmpUser)),
-	destroy_visitor_data(TmpUser).
+	forall(retract(session_user(Session, TmpUser)),
+	       destroy_visitor_data(TmpUser)).
 
 destroy_visitor_data(TmpUser) :-
 	(   retract(visitor_data(TmpUser, Data)),
