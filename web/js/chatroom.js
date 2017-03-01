@@ -64,7 +64,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "laconic" ],
 
 					/* build DOM */
 
-	btn  = $.el.div({class:"btn-group"},
+	btn  = $.el.div({class:"btn-group dropup"},
 			$.el.button({ type:"button",
 				      class:"btn btn-primary btn-xs "+
 				            "dropdown-toggle",
