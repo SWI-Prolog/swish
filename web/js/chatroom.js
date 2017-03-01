@@ -42,8 +42,11 @@
  * @requires jquery
  */
 
-define([ "jquery", "form", "cm/lib/codemirror", "utils", "laconic" ],
-       function($, form, CodeMirror, utils) {
+define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
+	 "modal",
+	 "laconic"
+       ],
+       function($, form, CodeMirror, utils, config, modal) {
 
 (function($) {
   var pluginName = 'chatroom';
@@ -119,11 +122,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "laconic" ],
 	  elem.chatroom('scrollToBottom', true);
 	});
 
-					/* add pending messages */
-	var pending = $("#chat").chat('queued_chat_messages', true);
-	for(var i=0; i<pending.length; i++) {
-	  elem.chatroom('add', pending[i]);
-	}
+	elem.chatroom('load_from_server');
       });
     },
 
@@ -190,6 +189,24 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "laconic" ],
 
       this.find(".inner").append(elem);
       this.chatroom('scrollToBottom');
+
+      return this;
+    },
+
+    load_from_server: function() {
+      var data = this.data(pluginName);
+      var elem = $(this);
+
+      $.get(config.http.locations.chat_messages,
+	    { docid: data.docid
+	    },
+	    function(messages) {
+	      for(var i=0; i<messages.length; i++) {
+		elem.chatroom('add', messages[i]);
+	      }
+	    }).fail(function(jqXHR, textStatus, errorThrown) {
+	      modal.ajaxError(jqXHR);
+	    });
 
       return this;
     },
