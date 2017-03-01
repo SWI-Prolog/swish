@@ -163,19 +163,19 @@ define([ "jquery", "splitter" ],
       else if ( pos > 90 )
 	pos = 90;
 
-      if ( rel == "above" || rel == "left" ) {
-	parent.prepend(pane);
-      } else {
-	pos = 100 - pos;
-	parent.append(pane);
-      }
-
       if ( minheight && dir == "horizontal" ) {
 	sumh = this.height();
 	left = sumh*pos/100;
 	if ( left < minheight && minheight < sumh*0.9 ) {
 	  pos = (minheight*100/sumh);
 	}
+      }
+
+      if ( rel == "above" || rel == "left" ) {
+	parent.prepend(pane);
+      } else {
+	pos = 100 - pos;
+	parent.append(pane);
       }
 
       var panes = $(relto).add(pane);
