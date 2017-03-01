@@ -139,12 +139,15 @@ define([ "jquery", "splitter" ],
      * splitted pane.  `this` must be the pane content!
      * @param {Element} pane is a `<div>` element providing the content
      * for the new tile.
-     * @param {String} [rel] is one of above/below/left/right.
+     * @param {String} [rel] is one of `above`/`below`/`left`/`right`.
      * Default is `"below"`
+     * @param {Number} [pos] is percentage of the height/width taken by
+     * the new pane
+     * @param {Number} [minheight] is the minimum height of the new tab
+     * in the case of a vertical split.
      */
     split: function(pane, rel, pos, minheight) {
       rel = rel||"below";
-      pos = pos||"50%";
 
       var relto  = this;
       var dir    = (rel == "above" || rel == "below") ? "horizontal" : "vertical";
@@ -153,16 +156,25 @@ define([ "jquery", "splitter" ],
 			      '></div>')
                         .parent();
 
-      if ( rel == "above" || rel == "left" )
-	parent.prepend(pane);
-      else
-	parent.append(pane);
+      if ( pos == undefined )
+	pos = 50;
+      else if ( pos < 10 )
+	pos = 10;
+      else if ( pos > 90 )
+	pos = 90;
 
-      if ( minheight ) {
+      if ( rel == "above" || rel == "left" ) {
+	parent.prepend(pane);
+      } else {
+	pos = 100 - pos;
+	parent.append(pane);
+      }
+
+      if ( minheight && dir == "horizontal" ) {
 	sumh = this.height();
-	left = sumh * parseInt(pos.replace(/([0-9]+)%/, "$1")) / 100;
+	left = sumh*pos/100;
 	if ( left < minheight && minheight < sumh*0.9 ) {
-	  pos = (minheight*100/sumh) + "%";
+	  pos = (minheight*100/sumh);
 	}
       }
 
@@ -170,7 +182,7 @@ define([ "jquery", "splitter" ],
       panes.wrap('<div class="pane-wrapper"></div>');
 
       parent.split({ orientation:dir,
-		     position:pos,
+		     position:pos+"%",
 		     limit:10,
 		     onDragStart: function() { parent.tile('resize_start'); },
 		     onDrag:      function() { panes.trigger("pane.resize"); },
