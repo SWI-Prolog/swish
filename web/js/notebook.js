@@ -494,7 +494,7 @@ var cellTypes = {
      * @param {Object} options
      * @param {Boolean} [options.skipEmpty=false] if `true`, do not save
      *		        empty cells.
-     * @param {Boolean} [options.fullscren] if `true', go fullscreen.
+     * @param {Boolean} [options.fullscreen] if `true', go fullscreen.
      * Default is `true` if the toplevel `div.notebook` has a class
      * `fullscreen`.
      * @param [String] val is an HTML string that represents
