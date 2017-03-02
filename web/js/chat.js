@@ -139,7 +139,6 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       data.connection.onopen = function() {
 	elem.chat('empty_queue');
 	$(".storage").storage('chat_status');
-	last_open = getTime();
       };
     },
 
@@ -234,6 +233,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       var li = this.chat('addUser', e);
       $(li).addClass("myself");
       this.chat('userCount', e.visitors);
+      last_open = getTime();
     },
 
     userCount: function(cnt) {
