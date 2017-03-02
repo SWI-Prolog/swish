@@ -113,6 +113,7 @@ start_chat(Request, Options) :-
 	;   ChatOptions = Options1
 	),
 	http_open_session(Session, []),
+	check_flooding,
 	http_parameters(Request,
 			[ avatar(Avatar, [optional(true)]),
 			  nickname(NickName, [optional(true)]),
@@ -136,6 +137,26 @@ extend_options([H|T0], Options, [H|T]) :-
 extend_options([_|T0], Options, T) :-
 	extend_options(T0, Options, T).
 
+
+%!	check_flooding
+%
+%	See whether the client associated with  a session is flooding us
+%	and if so, return a resource error.
+
+check_flooding :-
+	get_time(Now),
+	(   http_session_retract(websocket(Score, Last))
+	->  Passed is Now-Last,
+	    NewScore is Score*(2**(-Passed/60)) + 10
+	;   NewScore = 10,
+	    Passed = 0
+	),
+	http_session_assert(websocket(NewScore, Now)),
+	(   NewScore > 50
+	->  throw(http_reply(resource_error(
+				 websocket(reconnect(Passed, NewScore)))))
+	;   true
+	).
 
 %!	accept_chat(+Session, +Options, +WebSocket)
 
@@ -954,3 +975,15 @@ notifications(_Options) -->
 			 ' users'
 		       ])
 		 ])).
+
+
+		 /*******************************
+		 *	      MESSAGES		*
+		 *******************************/
+
+:- multifile
+	prolog:message//1.
+
+prolog:message(websocket(reconnect(Passed, Score))) -->
+	[ 'WebSocket: too frequent reconnect requests (~1f sec; score = ~1f)'-
+	  [Passed, Score] ].
