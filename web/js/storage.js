@@ -190,6 +190,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       if ( !src.url       ) src.url = config.http.locations.swish;
       if ( !src.noHistory ) history.push(src);
 
+      this.storage('chat', 'update');
       $(".storage").storage('chat_status', true);
 
       return this;
@@ -851,26 +852,38 @@ define([ "jquery", "config", "modal", "form", "gitty",
     /**
      * Open the chat window for the current file
      */
-    chat: function() {
+    chat: function(action) {
       var docid = this.storage('docid', 'gitty');
 
       if ( docid ) {
 	var chat = this.closest(".pane-container").find(".chatroom");
 
 	if ( chat.length > 0 ) {
-	  utils.flash(chat);
-	} else {
+	  if ( action == 'update' )
+	    chat.chatroom('docid', docid, 'close');
+	  else
+	    utils.flash(chat);
+	} else if ( action != 'update' ) {
 	  chat = $($.el.div({class:"chatroom"}));
 
 	  chat.chatroom({docid:docid});
 	  this.tile('split', chat, "below", 20, 150)
 	      .addClass("chat-container");
 	}
+      } else if ( action == 'update' ) {
+	this.storage('close_chat');
       } else {
 	modal.alert("Sorry, can only chat about files");
       }
 
       return this;
+    },
+
+    /**
+     * Close associated chat
+     */
+    close_chat: function() {
+      this.closest(".pane-container").find(".chatroom").chatroom('close');
     },
 
     /**

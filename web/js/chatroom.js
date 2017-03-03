@@ -126,6 +126,10 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       });
     },
 
+    close: function() {
+      return this.tile('close');
+    },
+
     /**
      * Send a chat message.
      * @param {Object} [extra] provides additional fields to attach
@@ -194,7 +198,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       return this;
     },
 
-    load_from_server: function() {
+    load_from_server: function(ifempty) {
       var data = this.data(pluginName);
       var elem = $(this);
 
@@ -202,14 +206,31 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	    { docid: data.docid
 	    },
 	    function(messages) {
-	      for(var i=0; i<messages.length; i++) {
-		elem.chatroom('add', messages[i]);
+	      if ( ifempty && messages.length == 0 ) {
+		elem.chatroom('close');
+	      } else {
+		for(var i=0; i<messages.length; i++) {
+		  elem.chatroom('add', messages[i]);
+		}
 	      }
 	    }).fail(function(jqXHR, textStatus, errorThrown) {
 	      modal.ajaxError(jqXHR);
 	    });
 
       return this;
+    },
+
+    /**
+     * Associate with a new document
+     */
+    docid: function(docid, ifempty) {
+      var data = this.data(pluginName);
+
+      if ( data.docid != docid ) {
+	this.find(".inner").html("");
+	data.docid = docid;
+	this.chatroom('load_from_server', ifempty);
+      }
     },
 
     /**
