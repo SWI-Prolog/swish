@@ -401,8 +401,8 @@ random_char(Char) :-
 		 *******************************/
 
 %%	storage_file(?File) is semidet.
-%%	storage_file(?File, -Data, -Meta) is semidet.
-%%	storage_meta_data(?File, -Meta) is semidet.
+%%	storage_file(+File, -Data, -Meta) is semidet.
+%%	storage_meta_data(+File, -Meta) is semidet.
 %
 %	True if File is known in the store.
 %
