@@ -623,9 +623,6 @@ preferences.setDefault("emacs-keybinding", false);
   function setupPanes() {
     $(".tile").tile();
     $(window).resize(function() { $(".tile").tile('resize'); });
-    $('body').on("click", "button.close-pane", function() {
-      closePane($(this).parent());
-    });
     $(".tabbed").tabbed();
   }
 
