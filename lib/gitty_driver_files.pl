@@ -52,6 +52,7 @@
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
 :- use_module(library(apply)).
+:- use_module(library(error)).
 :- use_module(library(dcg/basics)).
 
 /** <module> Gitty plain files driver
@@ -75,11 +76,13 @@ to rounding the small objects to disk allocation units.
 :- dynamic
 	head/3,				% Store, Name, Hash
 	store/2,			% Store, Updated
+	commit/3,			% Store, Hash, Meta
 	heads_input_stream_cache/2.	% Store, Stream
 :- volatile
 	head/3,
 	store/2,
-	heads_input_stream_cache/2.	% Store, Stream
+	commit/3,
+	heads_input_stream_cache/2.
 
 % enable/disable syncing remote servers running on  the same file store.
 % This facility requires shared access to files and thus doesn't work on
@@ -118,8 +121,14 @@ gitty_file(Store, Head, Hash) :-
 %	Load the commit data as a dict.
 
 load_plain_commit(Store, Hash, Meta) :-
+	must_be(atom, Store),
+	must_be(atom, Hash),
+	commit(Store, Hash, Meta), !.
+load_plain_commit(Store, Hash, Meta) :-
 	load_object(Store, Hash, String, _, _),
-	term_string(Meta, String, []).
+	term_string(Meta0, String, []),
+	assertz(commit(Store, Hash, Meta0)),
+	Meta = Meta0.
 
 %%	store_object(+Store, +Hash, +Header:string, +Data:string) is det.
 %
