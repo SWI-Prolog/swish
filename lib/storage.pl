@@ -34,7 +34,8 @@
 
 :- module(web_storage,
 	  [ storage_file/1,			% ?File
-	    storage_file/3			% +File, -Data, -Meta
+	    storage_file/3,			% +File, -Data, -Meta
+	    storage_meta_data/2			% +File, -Meta
 	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
@@ -401,8 +402,12 @@ random_char(Char) :-
 
 %%	storage_file(?File) is semidet.
 %%	storage_file(?File, -Data, -Meta) is semidet.
+%%	storage_meta_data(?File, -Meta) is semidet.
 %
 %	True if File is known in the store.
+%
+%	@arg Data is a string holding the content of the file
+%	@arg Meta is a dict holding the meta data about the file.
 
 storage_file(File) :-
 	storage_dir(Dir),
@@ -411,6 +416,10 @@ storage_file(File) :-
 storage_file(File, Data, Meta) :-
 	storage_dir(Dir),
 	gitty_data(Dir, File, Data, Meta).
+
+storage_meta_data(File, Meta) :-
+	storage_dir(Dir),
+	gitty_commit(Dir, File, Meta).
 
 
 		 /*******************************
