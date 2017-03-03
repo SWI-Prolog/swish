@@ -135,6 +135,10 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
 	elem.on("data-is-clean", function(ev, clean) {
 	  elem.storage('markClean', clean);
 	});
+	elem.on("fullscreen", function(ev, val) {
+	  if ( !val )
+	    elem.storage('update_tab_title');
+	});
 
 	$(window).bind("beforeunload", function(ev) {
 	  return elem.storage('unload', "beforeunload", ev);
@@ -188,20 +192,28 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       data.cleanData       = src.data;
       data.cleanCheckpoint = src.cleanCheckpoint || "load";
 
-      function basename(path) {
-	return path ? path.split('/').pop() : null;
-      }
+      this.storage('update_tab_title');
+
+      if ( !src.url       ) src.url = config.http.locations.swish;
+      if ( !src.noHistory ) history.push(src);
+
+      $(".storage").storage('chat_status', true);
+
+      return this;
+    },
+
+    /**
+     * Update the label and icon shown in the tab
+     */
+    update_tab_title: function() {
+      var data = this.data(pluginName);
+      var type = tabbed.tabTypes[data.typeName];
+
       var title = (filebase(data.file) ||
-		   filebase(basename(src.url)) ||
+		   filebase(basename(data.url)) ||
 		   type.label);
 
-      if ( !src.url )
-	src.url = config.http.locations.swish;
-
       this.tabbed('title', title, type.dataType);
-      if ( !src.noHistory )
-	history.push(src);
-      $(".storage").storage('chat_status', true);
 
       return this;
     },
