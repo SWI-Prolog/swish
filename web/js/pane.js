@@ -74,6 +74,10 @@ define([ "jquery", "splitter" ],
 		     onDragEnd: function() { elem.tile('resize_save'); }
 	           });
 	elem.tile('resize_save');
+
+	elem.on('fullscreen', function(ev, val) {
+	  elem.tile('resize');
+	});
       });
     },
 
