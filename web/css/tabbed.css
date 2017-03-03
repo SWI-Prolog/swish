@@ -46,11 +46,11 @@ span.tab-dirty {
   display: inline-block;
 }
 
-span.tab-chat {
+a.tab-chat {
   display: none;
 }
 
-span.tab-chat.chat-alert {
+a.tab-chat.chat-alert {
   position: relative;
   vertical-align: middle;
   display: inline-block;
@@ -58,7 +58,7 @@ span.tab-chat.chat-alert {
   width: 22px;
 }
 
-span.tab-chat .glyphicon {
+a.tab-chat .glyphicon {
   line-height: 24px;
   margin-top: 3px;
   font-size: 140%;

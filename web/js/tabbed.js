@@ -392,6 +392,7 @@ var tabbed = {
      */
     tabLabel: function(id, label, close, type) {
       var close_button;
+      var chat;
 
       if ( close )
       { close_button = glyphicon("remove", "xclose");
@@ -404,12 +405,20 @@ var tabbed = {
 		      $.el.span({class:"tab-dirty",
 		                 title:"Tab is modified. "+
 				       "See File/Save and Edit/View changes"}),
-		      $.el.span({class:"tab-chat"},
-				form.widgets.glyphIcon("bell"),
-				$.el.span({class:"tab-chat-count"})),
+	       chat = $.el.a({class:"tab-chat",
+			      title:"Chat messages available"
+			     },
+			     form.widgets.glyphIcon("bell"),
+			     $.el.span({class:"tab-chat-count"})),
 		      $.el.span({class:"tab-title"}, label),
 		      close_button);
       var li = $.el.li({role:"presentation"}, a1);
+
+      $(chat).on("click", function(ev) {
+	var id = $(ev.target).closest("a.compact").data("id");
+	$("#"+id).find(".storage").storage('chat');
+	return false;
+      });
 
       return li;
     },
