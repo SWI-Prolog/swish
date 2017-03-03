@@ -43,11 +43,11 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
-
+define([ "jquery", "config", "modal", "form", "gitty",
+	 "history", "tabbed", "utils",
 	 "laconic", "diff"
        ],
-       function($, config, modal, form, gitty, history, tabbed) {
+       function($, config, modal, form, gitty, history, tabbed, utils) {
 
 (function($) {
   var pluginName = 'storage';
@@ -860,7 +860,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
       var docid = this.storage('docid', 'gitty');
 
       if ( docid ) {
-	var chat = this.find(".chatroom");
+	var chat = this.closest(".pane-container").find(".chatroom");
 
 	if ( chat.length > 0 ) {
 	  utils.flash(chat);
