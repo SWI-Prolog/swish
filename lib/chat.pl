@@ -615,11 +615,21 @@ visitor_property(UserData, Options, Name, Value) :-
 
 %%	reply_avatar(+Request)
 %
-%	HTTP handler for Noble Avatar images.
+%	HTTP handler for Noble  Avatar   images.  Using  create_avatar/2
+%	re-creates avatars from the file name,  so we can safely discard
+%	the avatar file store.
 
 reply_avatar(Request) :-
 	option(path_info(Local), Request),
-	http_reply_file(noble_avatar(Local), [], Request).
+	(   absolute_file_name(noble_avatar(Local), Path,
+			       [ access(read),
+				 file_errors(fail)
+			       ])
+	->  true
+	;   create_avatar(Local, Path)
+	),
+	http_reply_file(Path, [unsafe(true)], Request).
+
 
 noble_avatar_url(HREF, Options) :-
 	option(avatar(HREF), Options), !.

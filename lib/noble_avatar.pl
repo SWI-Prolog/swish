@@ -36,6 +36,7 @@
 :- module(noble_avatar,
 	  [ noble_avatar/2,			% ?Gender, -File
 	    noble_avatar/3,			% ?Gender, -File, ?New
+	    create_avatar/2,			% +PNG, -File
 
 	    existing_noble_avatar/2		% -Gender, -File
 	  ]).
@@ -113,6 +114,19 @@ noble_avatar(Gender, Image, true) :- !,
 	    noble_avatar(Gender, Image, New),
 	    New == true, !.
 
+%!	create_avatar(+PNG, -Image) is det.
+%
+%	(Re-)create avatar with basename PNG.
+
+create_avatar(PNG, Image) :-
+	file_name_extension(Base, png, PNG),
+	atom_codes(Base, Codes),
+	maplist(plus(0'a), IDs, Codes),
+	avatar_components(_Gender, IDs, Components),
+	with_mutex(noble_avatar,
+		   create_avatar_sync(Components,
+				      noble_avatar, PNG, Image, _New)).
+
 %%	existing_noble_avatar(-Gender, -Image) is nondet.
 %
 %	True when Image is the image file of a previously generated
@@ -173,7 +187,10 @@ avatar_components(Gender, [GID|IDs], Files) :-
 
 files([], _, [], []).
 files([P:H-Gender|T], Gender, [I|IDs], [File|Files]) :-
-	maybe(P),
+	(   var(I), I \== 0
+	->  maybe(P)
+	;   true
+	),
 	file(H, Gender, I, File), !,
 	files(T, Gender, IDs, Files).
 files([_|T], Gender, [0|IDs], Files) :-
