@@ -795,9 +795,8 @@ json_message(Dict, WSID) :-
 	wsid_visitor(WSID, Visitor),
 	update_visitor_data(Visitor, _{name:Name}, 'set-nick-name').
 json_message(Dict, _WSID) :-
-	_{type: "chat-message", docid:DocID} :< Dict, !,
-	get_time(Now),
-	send_chat(DocID, Dict.put(time, Now)).
+	_{type: "chat-message", docid:_} :< Dict, !,
+	chat_relay(Dict).
 json_message(Dict, _WSID) :-
 	debug(chat(ignored), 'Ignoring JSON message ~p', [Dict]).
 
@@ -809,13 +808,34 @@ dict_file_name(Dict, File) :-
 		 *	   CHAT MESSAGES	*
 		 *******************************/
 
-%!	send_chat(+DocID, +Message)
+%!	chat_relay(+Messsage) is det.
 %
-%	Relay a chat message about DocID.
+%	Store and relay a chat message.
 
-send_chat(DocID, Message) :-
-	atom_concat("gitty:", File, DocID),
-	chat_store(Message),
+chat_relay(Message) :-
+	chat_enrich(Message, Message1),
+	chat_send(Message1).
+
+%!	chat_enrich(+Message0, -Message) is det.
+%
+%	Add time and identifier to the chat message.
+
+chat_enrich(Message0, Message) :-
+	get_time(Now),
+	uuid(ID),
+	Message = Message0.put(_{time:Now, id:ID}).
+
+%!	chat_send(+Message)
+%
+%	Relay the chat message Message. If  the message has a `volatile`
+%	property it is broadcasted, but not stored.
+
+chat_send(Message) :-
+	atom_concat("gitty:", File, Message.docid),
+	(   Message.get(volatile) == true
+	->  true
+	;   chat_store(Message)
+	),
 	chat_broadcast(Message, gitty/File).
 
 
