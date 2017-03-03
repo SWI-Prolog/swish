@@ -76,6 +76,10 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	var elem = $(this);
 	var data = $.extend({}, defaults, options);
 
+	elem.data(pluginName, data);	/* store with element */
+	elem.addClass("storage");
+	elem.storage('update_tab_title');
+
 	/**
 	 * Execute a method on the storage plugin. This particularly
 	 * avoids handling events that have bubbled up from children
@@ -93,16 +97,6 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	      return;
 	  }
 	  ev.stopPropagation();
-	}
-
-	elem.addClass("storage");
-	if ( options.title||options.file||options.url ) {
-	  var file = options.file;
-	  if ( !file && options.url )
-	    file = options.url.split("/").pop();
-	  elem.tabbed('title',
-		      options.title||filebase(file),
-		      file ? file.split('.').pop() : "pl");
 	}
 
 	elem.on("source", function(ev, src) {
@@ -143,8 +137,6 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	$(window).bind("beforeunload", function(ev) {
 	  return elem.storage('unload', "beforeunload", ev);
 	});
-
-	elem.data(pluginName, data);	/* store with element */
       });
     },
 
@@ -184,8 +176,9 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	data.file = null;
 	data.meta = null;
       }
-      data.url     = src.url     || undefined;
-      data.st_type = src.st_type || undefined;
+      data.url     = src.url;
+      data.st_type = src.st_type;
+      data.chats   = src.chats;
 
       data.setValue(src);
       data.cleanGeneration = data.changeGen();
@@ -214,6 +207,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 		   type.label);
 
       this.tabbed('title', title, type.dataType);
+      this.tabbed('chats', data.chats);
 
       return this;
     },

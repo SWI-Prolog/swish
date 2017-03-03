@@ -190,6 +190,7 @@ var cellTypes = {
 	  copyData("title");
 	  copyData("meta");
 	  copyData("st_type");
+	  copyData("chats");
 
 	  var docid = elem.storage('docid', undefined, storage);
 	  var prefs = preferences.getVal(docid)||{fullscreen:true};

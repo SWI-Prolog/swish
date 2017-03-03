@@ -251,6 +251,7 @@ define([ "cm/lib/codemirror",
 	  copyData("title");
 	  copyData("meta");
 	  copyData("st_type");
+	  copyData("chats");
 
 	  data.cm = CodeMirror.fromTextArea(ta, options);
 	} else {
