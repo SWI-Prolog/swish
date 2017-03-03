@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2015, VU University Amsterdam
+    Copyright (C): 2014-2017, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -402,7 +402,11 @@ var tabbed = {
       var a1 = $.el.a({class:"compact", href:"#"+id, "data-id":id},
 		      $.el.span({class:"tab-icon type-icon "+type}),
 		      $.el.span({class:"tab-dirty",
-		                 title:"Tab is modified.  See File/Save and Edit/View changes"}),
+		                 title:"Tab is modified. "+
+				       "See File/Save and Edit/View changes"}),
+		      $.el.span({class:"tab-chat"},
+				form.widgets.glyphIcon("bell"),
+				$.el.span({class:"tab-chat-count"})),
 		      $.el.span({class:"tab-title"}, label),
 		      close_button);
       var li = $.el.li({role:"presentation"}, a1);
@@ -411,19 +415,15 @@ var tabbed = {
     },
 
     /**
-     * This method is typically _not_ called on the tab, but on some
-     * inner element of the tab.  It changes the title of the tab.
-     * @param {String} title is the new title for the tab.
-     * @param {String} [type="pl"] is the new type for the tab.
+     * Calling obj.tabbed('anchor') finds the <a> element
+     * represeting the tab label from the node obj that appears
+     * somewhere on the tab
      */
-    title: function(title, type) {
+    anchor: function() {
       var tab    = this.closest(".tab-pane");
 
-      /* if no tab, we might be in fullscreen mode */
       if ( tab.length == 0 ) {
-	fsorg = this.data("fullscreen_origin");
-	if ( fsorg )
-	  tab = $(fsorg).closest(".tab-pane");
+	return undefined;		/* e.g., fullscreen mode */
       }
 
       var tabbed = tab.closest(".tabbed");
@@ -431,14 +431,51 @@ var tabbed = {
       var ul	 = tabbed.tabbed('navTabs');
       var a      = ul.find("a[data-id="+id+"]");
 
-      a.find(".tab-title").text(title);
-      if ( type ) {
-	var icon = a.find(".tab-icon");
-	icon.removeClass();
-	icon.addClass("tab-icon type-icon "+type);
+      return a;
+    },
+
+
+    /**
+     * This method is typically _not_ called on the tab, but on some
+     * inner element of the tab.  It changes the title of the tab.
+     * @param {String} title is the new title for the tab.
+     * @param {String} [type="pl"] is the new type for the tab.
+     */
+    title: function(title, type) {
+      var a = this.tabbed('anchor');
+
+      if ( a ) {
+	a.find(".tab-title").text(title);
+	if ( type ) {
+	  var icon = a.find(".tab-icon");
+	  icon.removeClass();
+	  icon.addClass("tab-icon type-icon "+type);
+	}
       }
 
-      return tabbed;
+      return this;
+    },
+
+    /**
+     * Set the chat message feedback for this tab
+     * @param {Object} [chats]
+     * @param {Number} [chats.count] number of pending chat messages
+     */
+    chats: function(chats) {
+      var a = this.tabbed('anchor');
+
+      if ( a ) {
+	var span = a.find(".tab-chat");
+
+	if ( chats && chats.count ) {
+	  span.find(".tab-chat-count").text(chats.count);
+	  span.addClass('chat-alert');
+	} else {
+	  span.removeClass('chat-alert');
+	}
+      }
+
+      return this;
     },
 
     /**

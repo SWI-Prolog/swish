@@ -46,6 +46,36 @@ span.tab-dirty {
   display: inline-block;
 }
 
+span.tab-chat {
+  display: none;
+}
+
+span.tab-chat.chat-alert {
+  position: relative;
+  vertical-align: middle;
+  display: inline-block;
+  height: 30px;
+  width: 22px;
+}
+
+span.tab-chat .glyphicon {
+  line-height: 24px;
+  margin-top: 3px;
+  font-size: 140%;
+  color: #f00;
+}
+
+span.tab-chat-count {
+  position: absolute;
+  display: block;
+  top: 7px;
+  left: 4px;
+  font-size: 80%;
+  font-weight: bold;
+  color: #fff;
+  z-index: 10;
+}
+
 .tabbed-select: {
   width: 100%;
 }
