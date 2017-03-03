@@ -541,7 +541,7 @@ notebooks(swinb, Options) -->
 	  download_source(Spec, NoteBookText, Options),
 	  phrase(source_data_attrs(Options), Extra)
 	},
-	html(div([ class('notebook fullscreen'),
+	html(div([ class('notebook'),
 		   'data-label'('Notebook')		% Use file?
 		 ],
 		 [ pre([ class('notebook-data'),

@@ -831,19 +831,25 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
     },
 
     /**
+     * Get a document identification string for chats, status, etc.
+     * @param {String} [type] defines the type of storage supported
+     * @param {Object} [data] is the data object from which to derive
+     * the id.
      * @return {String} identifier for the document
      */
-    docid: function() {
-      var data = this.data(pluginName);
-      var meta = data.meta||{};
+    docid: function(type, data) {
+      data = data||this.data(pluginName);
 
-      if ( data.st_type == "gitty" ) {
-	return "gitty:"+meta.name;
-/*    } else if ( data.st_type == "filesys" ) {
-	return "filesys:"+meta.path;
-      } else if ( data.st_type == "external" ) {
-	return "url:"+data.url;
-*/
+      if ( !type || type == data.st_type ) {
+	var meta = data.meta||{};
+
+	if ( data.st_type == "gitty" ) {
+	  return "gitty:"+meta.name;
+	} else if ( data.st_type == "filesys" ) {
+	  return "filesys:"+meta.path;
+	} else if ( data.st_type == "external" ) {
+	  return "url:"+data.url;
+	}
       }
     },
 
@@ -851,7 +857,7 @@ define([ "jquery", "config", "modal", "form", "gitty", "history", "tabbed",
      * Open the chat window for the current file
      */
     chat: function() {
-      var docid = this.storage('docid');
+      var docid = this.storage('docid', 'gitty');
 
       if ( docid ) {
 	var chat = this.find(".chatroom");

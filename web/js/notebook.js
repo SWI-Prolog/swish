@@ -191,8 +191,11 @@ var cellTypes = {
 	  copyData("meta");
 	  copyData("st_type");
 
+	  var docid = elem.storage('docid', undefined, storage);
+	  var prefs = preferences.getVal(docid)||{fullscreen:true};
+
 	  elem.notebook('value', content.text(),
-			{ fullscreen: elem.hasClass("fullscreen")
+			{ fullscreen: prefs.fullscreen
 			});
 	  content.remove();
 	} else {
@@ -206,6 +209,11 @@ var cellTypes = {
 	    ev.stopPropagation();
 	    return false;
 	  }
+	});
+	elem.on("fullscreen", function(ev, val) {
+	  var prefs = preferences.getVal(docid)||{};
+	  prefs.fullscreen = val;
+	  preferences.setVal(docid, prefs);
 	});
       }); /* end .each() */
     },
