@@ -212,6 +212,23 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       return this;
     },
 
+    /**
+     * @param {String} docid docid of rooms we are looking for
+     * @returns {jQuery} set of chatrooms pointing at document id
+     */
+    rooms: function(docid) {
+      var rooms = [];
+
+      this.each(function() {
+	var room = $(this);
+	var data = room.data(pluginName);
+	if ( data.docid == docid )
+	  rooms.push(this);
+      });
+
+      return $(rooms);
+    },
+
     scrollToBottom: function(onlydown) {
       this.each(function() {
 	var elem = $(this);

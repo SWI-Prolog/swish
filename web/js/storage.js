@@ -199,17 +199,18 @@ define([ "jquery", "config", "modal", "form", "gitty",
      * Update the label and icon shown in the tab
      */
     update_tab_title: function() {
-      var data = this.data(pluginName);
-      var type = tabbed.tabTypes[data.typeName];
+      return this.each(function() {
+	var elem = $(this);
+	var data = elem.data(pluginName);
+	var type = tabbed.tabTypes[data.typeName];
 
-      var title = (filebase(data.file) ||
-		   filebase(basename(data.url)) ||
-		   type.label);
+	var title = (filebase(data.file) ||
+		     filebase(basename(data.url)) ||
+		     type.label);
 
-      this.tabbed('title', title, type.dataType);
-      this.tabbed('chats', data.chats);
-
-      return this;
+	elem.tabbed('title', title, type.dataType);
+	elem.tabbed('chats', data.chats);
+      });
     },
 
     /**
@@ -870,6 +871,28 @@ define([ "jquery", "config", "modal", "form", "gitty",
       }
 
       return this;
+    },
+
+    /**
+     * Act upon the arrival of a chat message.  Update the tab title.
+     */
+    chat_message: function(msg) {
+      return this.each(function() {
+	var elem = $(this);
+
+	console.log(msg, elem);
+
+	if ( msg.docid == elem.storage('docid') ) {
+	  var data = elem.data(pluginName);
+
+	  if ( data.chats && data.chats.count )
+	    data.chats.count++;
+	  else
+	    data.chats = {count:1};
+
+	  elem.storage('update_tab_title');
+	}
+      });
     },
 
     /**

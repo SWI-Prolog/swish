@@ -310,10 +310,10 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
      * chatroom we should warn/open it
      */
     'chat-message': function(e) {
-      var room = $("div.chatroom");
+      var rooms = $("div.chatroom").chatroom('rooms', e.docid);
 
-      if ( room.length > 0 ) {
-	room.chatroom('add', e);
+      if ( rooms.length > 0 ) {
+	rooms.chatroom('add', e);
       } else {
 	if ( $("#"+e.user.id).length > 0 ) {
 	  msg = $.extend({}, e);
@@ -322,6 +322,8 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 	  this.chat('notifyUser', msg);
 	}
       }
+
+      $(".storage").storage('chat_message', e);
     },
 
 
