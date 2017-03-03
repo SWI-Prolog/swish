@@ -141,7 +141,8 @@ swish_reply3(raw, Options) :-
 swish_reply3(json, Options) :-
 	option(code(Code), Options), !,
 	option(meta(Meta), Options, _{}),
-	reply_json_dict(json{data:Code, meta:Meta}).
+	option(chat_count(Count), Options, 0),
+	reply_json_dict(json{data:Code, meta:Meta, chats:_{count:Count}}).
 swish_reply3(_, Options) :-
 	swish_config:reply_page(Options), !.
 swish_reply3(_, Options) :-
@@ -381,6 +382,8 @@ swish_logo(_Options) -->
 %
 %	  - source(HREF)
 %	  Load initial source from HREF
+%	  - chat_count(Count)
+%	  Indicate the presense of Count chat messages
 
 swish_content(Options) -->
 	{ document_type(Type, Options)
@@ -475,7 +478,8 @@ source_data_attrs(Options) -->
 	(source_url_data(Options) -> [] ; []),
 	(source_title_data(Options) -> [] ; []),
 	(source_meta_data(Options) -> [] ; []),
-	(source_st_type_data(Options) -> [] ; []).
+	(source_st_type_data(Options) -> [] ; []),
+	(source_chat_data(Options) -> [] ; []).
 
 source_file_data(Options) -->
 	{ option(file(File), Options) },
@@ -494,6 +498,11 @@ source_meta_data(Options) -->
 	  atom_json_dict(Text, Meta, [])
 	},
 	['data-meta'(Text)].
+source_chat_data(Options) -->
+	{ option(chat_count(Count), Options),
+	  atom_json_term(JSON, _{count:Count}, [as(string)])
+	},
+	['data-chats'(JSON)].
 
 %%	background(+Options)//
 %

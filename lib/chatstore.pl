@@ -53,6 +53,9 @@
 /** <module> Store chat messages
 */
 
+:- multifile
+    swish_config:chat_count_about/2.	% +DocID, -Count
+
 :- initialization open_chatstore.
 
 :- dynamic  storage_dir/1.
@@ -111,6 +114,15 @@ chat_messages(DocID, Messages) :-
     ->  read_file_to_terms(File, Messages, [encoding(utf8)])
     ;   Messages = []
     ).
+
+%!  swish_config:chat_count_about(+DocID, -Count)
+%
+%   True when Count is the number of messages about DocID
+
+swish_config:chat_count_about(DocID, Count) :-
+    chat_messages(DocID, Messages),
+    length(Messages, Count).
+
 
 		 /*******************************
 		 *              HTTP		*

@@ -109,7 +109,8 @@ web_storage(Request) :-
 	storage(Method, Request).
 
 :- multifile
-	swish_config:authenticate/2.
+	swish_config:authenticate/2,
+	swish_config:chat_count_about/2.
 
 storage(get, Request) :-
 	(   swish_config:authenticate(Request, User)
@@ -323,7 +324,13 @@ storage_get(Request, Format, _) :-
 
 storage_get(swish, Dir, _, FileOrHash, Request) :-
 	gitty_data(Dir, FileOrHash, Code, Meta),
-	swish_reply([code(Code),file(FileOrHash),st_type(gitty),meta(Meta)],
+	chat_count(Meta, Count),
+	swish_reply([ code(Code),
+		      file(FileOrHash),
+		      st_type(gitty),
+		      meta(Meta),
+		      chat_count(Count)
+		    ],
 		    Request).
 storage_get(raw, Dir, _, FileOrHash, _Request) :-
 	gitty_data(Dir, FileOrHash, Code, Meta),
@@ -332,7 +339,8 @@ storage_get(raw, Dir, _, FileOrHash, _Request) :-
 	format('~s', [Code]).
 storage_get(json, Dir, _, FileOrHash, _Request) :-
 	gitty_data(Dir, FileOrHash, Code, Meta),
-	reply_json_dict(json{data:Code, meta:Meta}).
+	chat_count(Meta, Count),
+	reply_json_dict(json{data:Code, meta:Meta, chats:_{count:Count}}).
 storage_get(history(Depth, Includes), Dir, _, File, _Request) :-
 	gitty_history(Dir, File, History, [depth(Depth),includes(Includes)]),
 	reply_json_dict(History).
@@ -351,6 +359,16 @@ request_file_or_hash(Request, Dir, FileOrHash, Type) :-
 	->  Type = hash
 	;   http_404([], Request)
 	).
+
+%!	chat_count(+Meta, -ChatCount) is det.
+%
+%	True when ChatCount is the number of chat messages available
+%	about Meta.
+
+chat_count(Meta, Chats) :-
+	atom_concat('gitty:', Meta.get(name), DocID),
+	swish_config:chat_count_about(DocID, Chats), !.
+chat_count(_, 0).
 
 %%	authentity(+Request, -Authentity:dict) is det.
 %
