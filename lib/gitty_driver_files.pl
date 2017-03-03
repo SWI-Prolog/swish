@@ -200,10 +200,7 @@ gitty_rescan(Store) :-
 
 gitty_scan(Store) :-
 	store(Store, _), !,
-	(   remote_sync(true)
-	->  with_mutex(gitty, remote_updates(Store))
-	;   true
-	).
+	remote_updates(Store).
 gitty_scan(Store) :-
 	with_mutex(gitty, gitty_scan_sync(Store)).
 
@@ -336,7 +333,35 @@ gitty_update_head_sync2(Store, Name, OldCommit, NewCommit) :-
 	    )
 	).
 
+%!	remote_updates(+Store)
+%
+%	Watch for remote updates to the store. We only do this if we did
+%	not do so the last second.
+
+:- dynamic
+	last_remote_sync/2.
+
+remote_updates(_) :-
+	remote_sync(false), !.
 remote_updates(Store) :-
+	remote_up_to_data(Store), !.
+remote_updates(Store) :-
+	with_mutex(gitty, remote_updates_sync(Store)).
+
+remote_updates_sync(Store) :-
+	remote_up_to_data(Store), !.
+remote_updates_sync(Store) :-
+	retractall(last_remote_sync(Store, _)),
+	get_time(Now),
+	asserta(last_remote_sync(Store, Now)),
+	remote_update(Store).
+
+remote_up_to_data(Store) :-
+	last_remote_sync(Store, Last),
+	get_time(Now),
+	Now-Last < 1.
+
+remote_update(Store) :-
 	remote_updates(Store, List),
 	maplist(update_head(Store), List).
 
