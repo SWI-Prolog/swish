@@ -1,0 +1,11 @@
+--- jquery.splitter-0.15.0.js~	2017-03-04 09:17:24.607019101 +0100
++++ jquery.splitter-0.15.0.js	2017-03-04 09:17:24.611019088 +0100
+@@ -225,7 +225,7 @@
+         if (splitters.length == 0) { // first time bind events to document
+             $(window).bind('resize.splitter', function() {
+                 $.each(splitters, function(i, splitter) {
+-                    splitter.refresh();
++                    if ( splitter ) splitter.refresh();
+                 });
+             });
+             $(document.documentElement).bind('mousedown.splitter touchstart.splitter', function(e) {

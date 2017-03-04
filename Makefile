@@ -13,6 +13,7 @@ js::
 	@$(MAKE) -C web/js
 
 src::
+	@$(MAKE) -C web patch
 	@$(MAKE) -C web/js src
 
 clean::
