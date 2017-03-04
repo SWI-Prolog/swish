@@ -239,43 +239,40 @@ var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
      */
     get_profile: function(fields) {
       var info = {};
+      var obj = config.swish.user||{};
 
-      if ( config.swish.user ) {
-	var obj = config.swish.user;
-
-	function set_from_chat(key, chat_key) {
-	  var chat = $("#chat");
-	  if ( chat.length == 1 ) {
-	    var v = chat.chat('user_info', [chat_key]);
-	    if ( v ) obj[key] = v;
-	  }
+      function set_from_chat(key, chat_key) {
+	var chat = $("#chat");
+	if ( chat.length == 1 ) {
+	  var v = chat.chat('self', [chat_key]);
+	  if ( v[chat_key] ) info[key] = v[chat_key];
 	}
+      }
 
-	fields = fields||DEFAULT_USER_FIELDS;
-	for(var i=0; i<fields.length; i++) {
-	  var key = fields[i];
+      fields = fields||DEFAULT_USER_FIELDS;
+      for(var i=0; i<fields.length; i++) {
+	var key = fields[i];
 
-	  if ( obj[key] ) {
-	    info[key] = obj[key];
-	  } else if ( key == 'display_name' ) {
-	    if ( obj.name )
-	      info.display_name = obj.name;
-	    else if ( obj.given_name && obj.family_name )
-	      info.display_name = obj.given_name + " " + obj.family_name;
-	    else if ( obj.family_name )
-	      info.display_name = obj.family_name;
-	    else if ( obj.given_name )
-	      info.display_name = obj.given_name;
-	    else if ( obj.nick_name )
-	      info.display_name = obj.nick_name;
-	    else
-	      set_from_chat('display_name', 'name');
-	  } else if ( key == 'identity' ) {
-	    if ( obj.external_identity )
-	      info.identity = obj.external_identity;
-	  } else if ( key == 'avatar' ) {
-	    set_from_chat('avatar', 'avatar');
-	  }
+	if ( obj[key] ) {
+	  info[key] = obj[key];
+	} else if ( key == 'display_name' ) {
+	  if ( obj.name )
+	    info.display_name = obj.name;
+	  else if ( obj.given_name && obj.family_name )
+	    info.display_name = obj.given_name + " " + obj.family_name;
+	  else if ( obj.family_name )
+	    info.display_name = obj.family_name;
+	  else if ( obj.given_name )
+	    info.display_name = obj.given_name;
+	  else if ( obj.nick_name )
+	    info.display_name = obj.nick_name;
+	  else
+	    set_from_chat('display_name', 'name');
+	} else if ( key == 'identity' ) {
+	  if ( obj.external_identity )
+	    info.identity = obj.external_identity;
+	} else if ( key == 'avatar' ) {
+	  set_from_chat('avatar', 'avatar');
 	}
       }
 

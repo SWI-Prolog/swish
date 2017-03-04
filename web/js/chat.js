@@ -482,16 +482,15 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
      * @param {Array} [fields] lists the keys we want to have in the
      * user objects.  Default is all we have.
      */
-    user_info: function(li, fields) {
+    user_info: function(fields) {
       var li = $(this);
       var user = {};
-      var self = li.hasClass("myself");
 
-      if ( self || !fields || fields.indexOf('id') >= 0 )
+      if ( !fields || fields.indexOf('id') >= 0 )
 	user.id = li.attr("id");
-      if ( self || !fields || fields.indexOf('name') >= 0 )
+      if ( !fields || fields.indexOf('name') >= 0 )
 	user.name = li.prop("title");
-      if ( self || !fields || fields.indexOf('avatar') >= 0 )
+      if ( !fields || fields.indexOf('avatar') >= 0 )
 	user.avatar = li.find("img.avatar").attr("src");
 
       return user;
@@ -510,7 +509,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       this.find("li.user[id]").each(function() {
 	var elem = $(this);
 	var self = elem.hasClass("myself");
-	var user = elem.chat('user_info', fields);
+	var user = elem.chat('user_info', self ? undefined : fields);
 
 	if ( self ) {
 	  rc.self = $.extend({}, user);
