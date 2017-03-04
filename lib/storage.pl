@@ -281,10 +281,9 @@ filter_meta(Dict0, Dict) :-
 	dict_pairs(Dict, Tag, Pairs).
 
 filter_pairs([], []).
-filter_pairs([H|T0], [H|T]) :-
-	H = K-V,
+filter_pairs([K-V0|T0], [K-V|T]) :-
 	meta_allowed(K, Type),
-	is_of_type(Type, V), !,
+	filter_type(Type, V0, V), !,
 	filter_pairs(T0, T).
 filter_pairs([_|T0], T) :-
 	filter_pairs(T0, T).
@@ -300,6 +299,16 @@ meta_allowed(tags,	     list(string)).
 meta_allowed(description,    string).
 meta_allowed(commit_message, string).
 meta_allowed(modify,	     list(atom)).
+
+filter_type(Type, V, V) :-
+	is_of_type(Type, V), !.
+filter_type(list(Type), V0, V) :-
+	is_list(V0),
+	maplist(filter_type(Type), V0, V).
+filter_type(atom, V0, V) :-
+	atomic(V0),
+	atom_string(V, V0).
+
 
 %%	storage_get(+Request, +Format, +Options) is det.
 %
