@@ -289,7 +289,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
        * Provide checkboxes for determining who may save a new version
        * of this file
        */
-      modify: function(who, identity) {
+      modify: function(who, canmodify) {
 	var fields = [];
 	var opts = { name:"modify", label:"Can save new version",
 		     type:"array"
@@ -298,8 +298,8 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 	function add(key, label) {
 	  fields.push({ name:key,
 			label:label,
-			value:identity ? who.indexOf(key) != -1 : true,
-			readonly: !identity
+			value:who.indexOf(key) != -1,
+			readonly: !canmodify
 		      });
 	}
 
@@ -307,8 +307,8 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 	add("login", "Logged in users");
 	add("owner", "Only me");
 
-	if ( !identity )
-	  opts.title = "Only logged in users can set permissions";
+	if ( !canmodify )
+	  opts.title = "Only logged in users and owners can set permissions";
 
 	return form.fields.checkboxes(fields, opts);
       },

@@ -404,8 +404,9 @@ define([ "jquery", "config", "modal", "form", "gitty",
       var fork    = data.meta && meta.symbolic != "HEAD";
       var type    = tabbed.tabTypes[data.typeName];
       var profile = $("#login").login('get_profile', ["display_name", "avatar", "identity"]);
-      var author  = profile.display_name||meta.author;
+      var author  = profile.display_name;
       var modify  = meta.modify;
+      var canmodify;
 
       if ( meta.public === undefined )
 	meta.public = true;
@@ -417,29 +418,33 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  modify = ["any", "login", "owner"];
       }
 
+      canmodify = ( profile.identity == meta.identity ||
+		    (profile.identity && !(meta.identity||meta.user)) );
+
       options = options||{};
 
       function saveAsBody() {
-	this.append($.el.form({class:"form-horizontal"},
-			      form.fields.hidden("identity", profile.identity),
-			      profile.identity ? undefined :
-			      form.fields.hidden("avatar", profile.avatar),
-			      form.fields.fileName(fork ? null: data.file,
-						   meta.public, meta.example),
-			      form.fields.title(meta.title),
-			      form.fields.author(author, profile.identity),
-			      update ? form.fields.commit_message() : undefined,
-			      form.fields.tags(meta.tags),
-			      form.fields.modify(modify, profile.identity),
-			      form.fields.buttons(
-				{ label: fork   ? "Fork "+type.label :
-					 update ? "Update "+type.label :
-						  "Save "+type.label,
-				  action: function(ev, as) {
-				            editor.storage('save', as);
-					    return false;
-				          }
-				})));
+	this.append($.el.form(
+          { class:"form-horizontal"},
+	    form.fields.hidden("identity", profile.identity),
+	    profile.identity ? undefined :
+			       form.fields.hidden("avatar", profile.avatar),
+	    form.fields.fileName(fork ? null: data.file,
+				 meta.public, meta.example),
+	    form.fields.title(meta.title),
+	    form.fields.author(author, profile.identity),
+	    update ? form.fields.commit_message() : undefined,
+	    form.fields.tags(meta.tags),
+	    form.fields.modify(modify, canmodify),
+	    form.fields.buttons(
+	      { label: fork   ? "Fork "+type.label :
+		       update ? "Update "+type.label :
+				"Save "+type.label,
+		action: function(ev, as) {
+			  editor.storage('save', as);
+			  return false;
+			}
+	      })));
       }
 
       form.showDialog({ title: options.title ? options.title :
