@@ -299,6 +299,7 @@ meta_allowed(title,	     string).
 meta_allowed(tags,	     list(string)).
 meta_allowed(description,    string).
 meta_allowed(commit_message, string).
+meta_allowed(modify,	     list(atom)).
 
 %%	storage_get(+Request, +Format, +Options) is det.
 %
