@@ -425,7 +425,7 @@ update_visitor_data(TmpUser, Data, Reason) :-
 
 update_visitor_data(TmpUser) :-
 	retract(visitor_data(TmpUser, Old)), !,
-	(   OldAvarat = Old.anon_avatar
+	(   OldAvarat = Old.get(anon_avatar)
 	->  true
 	;   noble_avatar_url(OldAvarat, [])
 	),
