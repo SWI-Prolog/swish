@@ -76,6 +76,8 @@ their own version.
 :- volatile storage_dir/1.
 
 open_gittystore :-
+	storage_dir(_), !.
+open_gittystore :-
 	setting(directory, Spec),
 	absolute_file_name(Spec, Dir,
 			   [ file_type(directory),
