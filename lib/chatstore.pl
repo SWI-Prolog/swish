@@ -80,7 +80,7 @@ open_chatstore :-
 	      fail), !,
 	asserta(storage_dir(Dir)).
 
-chat_file(DocID, File) :-
+chat_dir_file(DocID, Path, File) :-
     sha_hash(DocID, Bin, []),
     hash_atom(Bin, Hash),
     sub_atom(Hash, 0, 2, _, D1),
@@ -88,8 +88,11 @@ chat_file(DocID, File) :-
     sub_atom(Hash, 4, _, 0, Name),
     storage_dir(Dir),
     atomic_list_concat([Dir, D1, D2], /, Path),
-    make_directory_path(Path),
     atomic_list_concat([Path, Name], /, File).
+
+chat_file(DocID, File) :-
+    chat_dir_file(DocID, Dir, File),
+    make_directory_path(Dir).
 
 %!  chat_store(+Message:dict)
 %
@@ -106,10 +109,10 @@ chat_store(Message) :-
 
 %!  chat_messages(+DocID, -Messages:list) is det.
 %
-%   Get all messages associated with DocID
+%   Get all messages associated with DocID.
 
 chat_messages(DocID, Messages) :-
-    chat_file(DocID, File),
+    chat_dir_file(DocID, _, File),
     (   exists_file(File)
     ->  read_file_to_terms(File, Messages, [encoding(utf8)])
     ;   Messages = []
