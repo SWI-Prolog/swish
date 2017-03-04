@@ -206,8 +206,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 					     {placeholder:"Name (leave empty for generated random name)",
 					      title:"Public name of your program",
 					      value:name,
-					      disabled:disabled})),
-			  helpBlock("Make saved file public or give it a meaningful name")));
+					      disabled:disabled}))));
 	return elem;
       },
 
