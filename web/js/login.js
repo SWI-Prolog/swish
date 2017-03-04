@@ -45,6 +45,8 @@
 define([ "jquery", "modal", "config", "form", "laconic" ],
        function($, modal, config, form) {
 
+var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
+
 (function($) {
   var pluginName = 'login';
 
@@ -226,6 +228,58 @@ define([ "jquery", "modal", "config", "form", "laconic" ],
 	  });
 	}
       });
+    },
+
+    /**
+     * Get information about the current user. If possible we get this
+     * from the logged in user.  Else we get the name and avatar from
+     * #chat.
+     * @param [fields] is an array with fields we want to have
+     * @return {Object} info about current user
+     */
+    get_profile: function(fields) {
+      var info = {};
+
+      if ( config.swish.user ) {
+	var obj = config.swish.user;
+
+	function set_from_chat(key, chat_key) {
+	  var chat = $("#chat");
+	  if ( chat.length == 1 ) {
+	    var v = chat.chat('user_info', [chat_key]);
+	    if ( v ) obj[key] = v;
+	  }
+	}
+
+	fields = fields||DEFAULT_USER_FIELDS;
+	for(var i=0; i<fields.length; i++) {
+	  var key = fields[i];
+
+	  if ( obj[key] ) {
+	    info[key] = obj[key];
+	  } else if ( key == 'display_name' ) {
+	    if ( obj.name )
+	      info.display_name = obj.name;
+	    else if ( obj.given_name && obj.family_name )
+	      info.display_name = obj.given_name + " " + obj.family_name;
+	    else if ( obj.family_name )
+	      info.display_name = obj.family_name;
+	    else if ( obj.given_name )
+	      info.display_name = obj.given_name;
+	    else if ( obj.nick_name )
+	      info.display_name = obj.nick_name;
+	    else
+	      set_from_chat('display_name', 'name');
+	  } else if ( key == 'identity' ) {
+	    if ( obj.external_identity )
+	      info.identity = obj.external_identity;
+	  } else if ( key == 'avatar' ) {
+	    set_from_chat('avatar', 'avatar');
+	  }
+	}
+      }
+
+      return info;
     },
 
     /**
