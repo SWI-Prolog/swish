@@ -405,9 +405,17 @@ define([ "jquery", "config", "modal", "form", "gitty",
       var type    = tabbed.tabTypes[data.typeName];
       var profile = $("#login").login('get_profile', ["display_name", "avatar", "identity"]);
       var author  = profile.display_name||meta.author;
+      var modify  = meta.modify;
 
       if ( meta.public === undefined )
 	meta.public = true;
+
+      if ( !modify ) {
+	if ( profile.identity )
+	  modify = ["login", "owner"];
+	else
+	  modify = ["any", "login", "owner"];
+      }
 
       options = options||{};
 
@@ -422,6 +430,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 			      form.fields.author(author, profile.identity),
 			      update ? form.fields.commit_message() : undefined,
 			      form.fields.tags(meta.tags),
+			      form.fields.modify(modify, profile.identity),
 			      form.fields.buttons(
 				{ label: fork   ? "Fork "+type.label :
 					 update ? "Update "+type.label :
