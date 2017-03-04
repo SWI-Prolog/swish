@@ -308,8 +308,22 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 
 	if ( !canmodify )
 	  opts.title = "Only logged in users and owners can set permissions";
+	else
+	  opts.title = "Specify who can save an updated version of this file";
 
 	return form.fields.checkboxes(fields, opts);
+      },
+
+      follow: function(email) {
+	return form.fields.checkboxes(
+		 [ { name: "follow", label: "Follow this document",
+		     value:!!email, readonly:!email
+		   }
+		 ],
+		 { name:"options", label:"",
+		   title: "Notify about activity (updates, chat)\n"+
+			  "Requires being logged in with valid email"
+		 });
       },
 
       projection: function(projection) {

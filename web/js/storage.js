@@ -403,7 +403,10 @@ define([ "jquery", "config", "modal", "form", "gitty",
       var update  = Boolean(data.file);
       var fork    = data.meta && meta.symbolic != "HEAD";
       var type    = tabbed.tabTypes[data.typeName];
-      var profile = $("#login").login('get_profile', ["display_name", "avatar", "identity"]);
+      var profile = $("#login").login('get_profile',
+				      ["display_name", "avatar", "identity",
+				       "email"
+				      ]);
       var author  = profile.display_name;
       var modify  = meta.modify;
       var canmodify;
@@ -436,6 +439,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	    update ? form.fields.commit_message() : undefined,
 	    form.fields.tags(meta.tags),
 	    form.fields.modify(modify, canmodify),
+	    form.fields.follow(profile.email),
 	    form.fields.buttons(
 	      { label: fork   ? "Fork "+type.label :
 		       update ? "Update "+type.label :
