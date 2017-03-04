@@ -402,7 +402,8 @@ authentity(Request) -->
 
 user(Request) -->
 	{ pengines:authentication_hook(Request, swish, User),
-	  ground(User)
+	  ground(User),
+	  User \== anonymous
 	},
 	[ user-User ].
 peer(Request) -->
