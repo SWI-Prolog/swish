@@ -510,7 +510,7 @@ add_gazing(WSID, Files) :-
 
 inform_me_about_existing_gazers(WSID, Files) :-
 	findall(Gazer, files_gazer(Files, Gazer), Gazers),
-	hub_send(WSID, json(_{type:"gazers", gazers:Gazers})).
+	ignore(hub_send(WSID, json(_{type:"gazers", gazers:Gazers}))).
 
 files_gazer(Files, Gazer) :-
 	member(File, Files),
