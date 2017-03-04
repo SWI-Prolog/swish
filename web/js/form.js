@@ -58,7 +58,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
      * @returns {Object} holding the name/value pairs of the form
      */
     serializeAsObject: function(form, ignore_empty) {
-      var arr = form.serializeArray(0);
+      var arr = form.serializeArray();
       var obj = {};
 
       for(var i=0; i<arr.length; i++) {
@@ -198,13 +198,23 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 	return elem;
       },
 
-      author: function(author) {
+      /**
+       * @param {String} [identity] if provided, this indicates that the
+       * author cannot be changed.
+       */
+      author: function(author, identity) {
+	var options = { placeholder:"Your name", value:author };
+
+	if ( author && identity ) {
+	  options.readonly = true;
+	  options.title    = "Verified author name";
+	}
+
 	var elem =
 	$.el.div({class:"form-group"},
 		 label("author", "Author"),
 		 $.el.div({class:"col-xs-10"},
-			  textInput("author",
-				    {placeholder:"Your name", value:author})));
+			  textInput("author", options)));
 	return elem;
       },
 
@@ -365,6 +375,11 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 				    {placeholder:"File name",
 				     value:name})));
 	return elem;
+      },
+
+      hidden: function(name, value) {
+	if ( value !== undefined )
+	  return $.el.input({type:"hidden", name:name, value:value});
       },
 
       /**
@@ -541,6 +556,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
     if ( options.title )       attrs.title       = options.title;
     if ( options.value )       attrs.value       = options.value;
     if ( options.disabled )    attrs.disabled    = options.disabled;
+    if ( options.readonly )    attrs.readonly    = options.readonly;
     if ( options.type )        attrs.type        = options.type;
     return $.el.input(attrs);
   }

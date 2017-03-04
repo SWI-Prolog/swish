@@ -290,6 +290,8 @@ filter_pairs([_|T0], T) :-
 meta_allowed(public,	     boolean).
 meta_allowed(example,	     boolean).
 meta_allowed(author,	     string).
+meta_allowed(identity,       string).
+meta_allowed(avatar,         string).
 meta_allowed(email,	     string).
 meta_allowed(title,	     string).
 meta_allowed(tags,	     list(string)).

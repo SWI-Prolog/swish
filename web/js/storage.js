@@ -403,12 +403,8 @@ define([ "jquery", "config", "modal", "form", "gitty",
       var update  = Boolean(data.file);
       var fork    = data.meta && meta.symbolic != "HEAD";
       var type    = tabbed.tabTypes[data.typeName];
-      var author  = config.swish.user ?
-        ( config.swish.user.name && config.swish.user.email ?
-	    config.swish.user.name + " <" + config.swish.user.email + ">" :
-	    config.swish.user.name||config.swish.user.user
-        ) :
-	meta.author;
+      var profile = $("#login").login('get_profile', ["display_name", "avatar", "identity"]);
+      var author  = profile.display_name||meta.author;
 
       if ( meta.public === undefined )
 	meta.public = true;
@@ -417,10 +413,13 @@ define([ "jquery", "config", "modal", "form", "gitty",
 
       function saveAsBody() {
 	this.append($.el.form({class:"form-horizontal"},
+			      form.fields.hidden("identity", profile.identity),
+			      profile.identity ? undefined :
+			      form.fields.hidden("avatar", profile.avatar),
 			      form.fields.fileName(fork ? null: data.file,
 						   meta.public, meta.example),
 			      form.fields.title(meta.title),
-			      form.fields.author(author),
+			      form.fields.author(author, profile.identity),
 			      update ? form.fields.commit_message() : undefined,
 			      form.fields.tags(meta.tags),
 			      form.fields.buttons(
@@ -892,8 +891,6 @@ define([ "jquery", "config", "modal", "form", "gitty",
     chat_message: function(msg) {
       return this.each(function() {
 	var elem = $(this);
-
-	console.log(msg, elem);
 
 	if ( msg.docid == elem.storage('docid') ) {
 	  var data = elem.data(pluginName);
