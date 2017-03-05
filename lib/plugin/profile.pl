@@ -101,7 +101,7 @@ profile:
 :- multifile
     swish_config:reply_logged_in/1,     % +Options
     swish_config:reply_logged_out/1,    % +Options
-    swish_config:user_profile/3.        % +Request, +ServerID, -Info
+    swish_config:user_profile/2.        % +Request, -Info
 
 
 		 /*******************************

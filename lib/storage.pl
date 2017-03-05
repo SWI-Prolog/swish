@@ -112,7 +112,8 @@ web_storage(Request) :-
 
 :- multifile
 	swish_config:authenticate/2,
-	swish_config:chat_count_about/2.
+	swish_config:chat_count_about/2,
+	swish_config:user_profile/2.		% +Request, -Profile
 
 storage(get, Request) :-
 	(   swish_config:authenticate(Request, User)
@@ -256,11 +257,12 @@ storage_url(File, HREF) :-
 %%	meta_data(+Request, +Dict, -Meta) is det.
 %%	meta_data(+Request, +Store, +Dict, -Meta) is det.
 %
-%	Gather meta-data from the  Request   (user,  peer)  and provided
-%	meta-data. Illegal and unknown values are ignored.
+%	Gather meta-data from the  Request   (user,  peer, identity) and
+%	provided meta-data. Illegal and unknown values are ignored.
 
 meta_data(Request, Dict, Meta) :-
-	authentity(Request, Meta0),	% user, peer
+	authentity(Request, Meta0),	% user, identity, peer
+	debug(storage, 'Anthentication: ~p', [Meta0]),
 	(   filter_meta(Dict.get(meta), Meta1)
 	->  Meta = Meta0.put(Meta1)
 	;   Meta = Meta0
@@ -291,7 +293,6 @@ filter_pairs([_|T0], T) :-
 meta_allowed(public,	     boolean).
 meta_allowed(example,	     boolean).
 meta_allowed(author,	     string).
-meta_allowed(identity,       string).
 meta_allowed(avatar,         string).
 meta_allowed(email,	     string).
 meta_allowed(title,	     string).
@@ -386,8 +387,11 @@ chat_count(_, 0).
 
 %%	authentity(+Request, -Authentity:dict) is det.
 %
-%	Provide authentication meta-information.  Currently user by
+%	Provide  authentication  meta-information.  Currently   user  by
 %	exploiting the pengine authentication hook and peer.
+%
+%	@error Will throw a permission error   if  login is required for
+%	all actions and not granted.
 
 authentity(Request, Authentity) :-
 	phrase(authentity(Request), Pairs),
@@ -395,7 +399,8 @@ authentity(Request, Authentity) :-
 
 authentity(Request) -->
 	(user(Request)->[];[]),
-	(peer(Request)->[];[]).
+	(peer(Request)->[];[]),
+	(identity(Request)->[];[]).
 
 :- multifile
 	pengines:authentication_hook/3.
@@ -409,6 +414,13 @@ user(Request) -->
 peer(Request) -->
 	{ http_peer(Request, Peer) },
 	[ peer-Peer ].
+
+identity(Request) -->
+	{ swish_config:user_profile(Request, Profile),
+	  Identity = Profile.get(external_identity)
+	},
+	[ identity-Identity ].
+
 
 %%	random_filename(-Name) is det.
 %
