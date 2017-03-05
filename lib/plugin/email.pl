@@ -35,6 +35,7 @@
 
 :- module(swish_email,
           [ smtp_send_mail/3,           % +To, :Goal, +Options
+            smtp_send_html/3,           % +To, :Content, +Options
             email_confirm/4,            % +To, :Message, :Action, +Options
             email_cleanup_db/0
           ]).
