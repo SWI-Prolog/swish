@@ -268,7 +268,11 @@ storage_url(File, HREF) :-
 
 meta_data(Dict, Meta, Options) :-
 	option(identity(Auth), Options),
-	(   filter_meta(Dict.get(meta), Meta1)
+	(   _ = Auth.get(identity)
+	->  HasIdentity = true
+	;   HasIdentity = false
+	),
+	(   filter_meta(Dict.get(meta), HasIdentity, Meta1)
 	->  Meta = Auth.put(Meta1)
 	;   Meta = Auth
 	).
@@ -282,29 +286,29 @@ meta_data(Store, Dict, Meta, Options) :-
 	;   Meta = Meta1
 	).
 
-filter_meta(Dict0, Dict) :-
+filter_meta(Dict0, HasID, Dict) :-
 	dict_pairs(Dict0, Tag, Pairs0),
-	filter_pairs(Pairs0, Pairs),
+	filter_pairs(Pairs0, HasID, Pairs),
 	dict_pairs(Dict, Tag, Pairs).
 
-filter_pairs([], []).
-filter_pairs([K-V0|T0], [K-V|T]) :-
-	meta_allowed(K, Type),
+filter_pairs([], _, []).
+filter_pairs([K-V0|T0], HasID, [K-V|T]) :-
+	meta_allowed(K, HasID, Type),
 	filter_type(Type, V0, V), !,
-	filter_pairs(T0, T).
-filter_pairs([_|T0], T) :-
-	filter_pairs(T0, T).
+	filter_pairs(T0, HasID, T).
+filter_pairs([_|T0], HasID, T) :-
+	filter_pairs(T0, HasID, T).
 
-meta_allowed(public,	     boolean).
-meta_allowed(example,	     boolean).
-meta_allowed(author,	     string).
-meta_allowed(avatar,         string).
-meta_allowed(email,	     string).
-meta_allowed(title,	     string).
-meta_allowed(tags,	     list(string)).
-meta_allowed(description,    string).
-meta_allowed(commit_message, string).
-meta_allowed(modify,	     list(atom)).
+meta_allowed(public,	     _,	    boolean).
+meta_allowed(example,	     _,	    boolean).
+meta_allowed(author,	     _,	    string).
+meta_allowed(avatar,	     false, string).
+meta_allowed(email,	     _,	    string).
+meta_allowed(title,	     _,	    string).
+meta_allowed(tags,	     _,	    list(string)).
+meta_allowed(description,    _,	    string).
+meta_allowed(commit_message, _,	    string).
+meta_allowed(modify,	     _,	    list(atom)).
 
 filter_type(Type, V, V) :-
 	is_of_type(Type, V), !.
