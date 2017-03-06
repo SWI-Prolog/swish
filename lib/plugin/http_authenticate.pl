@@ -33,7 +33,7 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-:- module(swish_authenticate,
+:- module(swish_http_authenticate,
 	  [ login/2,                    % +Request, -User
             swish_add_user/3,		% +User, +Passwd, +Fields
 	    swish_add_user/1,		% +Dict

@@ -20,7 +20,7 @@ involved with using authenticated access.  In a nutshell:
 :- multifile swish_config:config/2.
 swish_config:config(public_access, false).
 
-:- use_module(swish(lib/authenticate), []).
+:- use_module(swish(lib/plugin/http_authenticate), []).
 
 % Can be set to `basic` when HTTPS is used.  Using `basic` saves
 % one round trip but requires HTTPS to avoid exchanging the password
