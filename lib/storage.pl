@@ -265,6 +265,9 @@ storage_url(File, HREF) :-
 %
 %	Gather meta-data from the  Request   (user,  peer, identity) and
 %	provided meta-data. Illegal and unknown values are ignored.
+%
+%	@param Dict is the meta-data  dict   provided  by the client for
+%	save and update requests.
 
 meta_data(Request, Dict, Meta) :-
 	authentity(Request, Meta0),	% user, identity, peer
