@@ -70,7 +70,7 @@ their own version.
 
 :- http_handler(swish('p/'), web_storage, [ id(web_storage), prefix ]).
 
-:- initialization open_gittystore.
+:- initialization open_gittystore.		% TBD: make this lazy?
 
 :- dynamic  storage_dir/1.
 :- volatile storage_dir/1.
@@ -156,7 +156,6 @@ storage(post, Request) :-
 	option(data(Data), Dict, ""),
 	option(type(Type), Dict, pl),
 	storage_dir(Dir),
-	make_directory_path(Dir),
 	meta_data(Request, Dir, Dict, Meta),
 	(   atom_string(Base, Dict.get(meta).get(name))
 	->  file_name_extension(Base, Type, File),
