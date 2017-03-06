@@ -66,7 +66,8 @@ authenticate(Request, Auth) :-
     http_peer(Request, Peer),
     http_auth(Request, Auth0),
     profile_auth(Request, Auth1),
-    Auth = Auth0.put(Auth1).put(peer, Peer).
+    Auth1 = Auth0.put(Auth1).put(peer, Peer),
+    identity(Auth1, Auth).
 
 :- multifile
     swish_config:authenticate/2,
@@ -87,4 +88,14 @@ profile_auth(Request, Auth) :-
     !.
 profile_auth(_, auth{}).
 
-
+identity(Auth0, Auth) :-
+    _{identity_provider:Provider, external_identity:ExtID} :< Auth0,
+    !,
+    atomic_list_concat([Provider,ExtID], :, Identity),
+    Auth = Auth0.put(identity, Identity).
+identity(Auth0, Auth) :-
+    _{user:User} :< Auth0,
+    !,
+    atom_concat('local:', User, Identity),
+    Auth = Auth0.put(identity, Identity).
+identity(Auth, Auth).
