@@ -116,7 +116,7 @@ create_store(Dir) :-
 web_storage(Request) :-
 	authenticate(Request, Auth),
 	option(method(Method), Request),
-	storage(Method, Request, [authentity(Auth)]).
+	storage(Method, Request, [identity(Auth)]).
 
 :- multifile
 	swish_config:authenticate/2,
@@ -267,8 +267,7 @@ storage_url(File, HREF) :-
 %	save and update requests.
 
 meta_data(Dict, Meta, Options) :-
-	option(authentity(Auth), Options),
-	debug(storage, 'Anthentication: ~p', [Auth]),
+	option(identity(Auth), Options),
 	(   filter_meta(Dict.get(meta), Meta1)
 	->  Meta = Auth.put(Meta1)
 	;   Meta = Auth

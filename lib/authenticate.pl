@@ -37,6 +37,7 @@
           [ authenticate/2                      % +Request, -Authentity
           ]).
 :- use_module(library(http/http_wrapper)).
+:- use_module(library(debug)).
 
 :- use_module(config).
 
@@ -48,7 +49,7 @@ based on the HTTP request.
 @see pep.pl for _authorization_ issues.
 */
 
-%!  authenticate(+Request, -Authentity:dict) is det.
+%!  authenticate(+Request, -Identity:dict) is det.
 %
 %   Establish the identity behind  the  HTTP   Request.  There  are  two
 %   scenarios.
@@ -67,7 +68,8 @@ authenticate(Request, Auth) :-
     http_auth(Request, Auth0),
     profile_auth(Request, Auth1),
     Auth1 = Auth0.put(Auth1).put(peer, Peer),
-    identity(Auth1, Auth).
+    identity(Auth1, Auth),
+    debug(authenticate, 'Identity: ~p', [Auth]).
 
 :- multifile
     swish_config:authenticate/2,
