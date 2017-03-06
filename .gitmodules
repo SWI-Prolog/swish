@@ -4,3 +4,6 @@
 [submodule "pack/smtp"]
 	path = pack/smtp
 	url = https://github.com/JanWielemaker/smtp.git
+[submodule "pack/rserve_client"]
+	path = pack/rserve_client
+	url = https://github.com/JanWielemaker/rserve_client
