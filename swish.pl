@@ -54,7 +54,6 @@
 :- use_module(lib/chat, []).
 :- use_module(lib/template_hint, []).
 
-:- debug(chat(_)).
 
 		 /*******************************
 		 *	       CORS		*
