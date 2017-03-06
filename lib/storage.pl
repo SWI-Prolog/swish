@@ -40,7 +40,6 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
-:- use_module(library(http/http_wrapper)).
 :- use_module(library(http/mimetype)).
 :- use_module(library(lists)).
 :- use_module(library(settings)).
@@ -56,6 +55,7 @@
 :- use_module(patch).
 :- use_module(config).
 :- use_module(search).
+:- use_module(authenticate).
 
 /** <module> Store files on behalve of web clients
 
@@ -114,19 +114,16 @@ create_store(Dir) :-
 %	methods =GET=, =POST=, =PUT= and =DELETE=.
 
 web_storage(Request) :-
+	authenticate(Request, Auth),
 	option(method(Method), Request),
-	storage(Method, Request).
+	storage(Method, Request, [authentity(Auth)]).
 
 :- multifile
 	swish_config:authenticate/2,
 	swish_config:chat_count_about/2,
 	swish_config:user_profile/2.		% +Request, -Profile
 
-storage(get, Request) :-
-	(   swish_config:authenticate(Request, User)
-	->  Options = [user(User)]
-	;   Options = []
-	),
+storage(get, Request, Options) :-
 	http_parameters(Request,
 			[ format(Fmt,  [ oneof([swish,raw,json,history,diff]),
 					 default(swish),
@@ -151,12 +148,12 @@ storage(get, Request) :-
 	),
 	storage_get(Request, Format, Options).
 
-storage(post, Request) :-
+storage(post, Request, Options) :-
 	http_read_json_dict(Request, Dict),
 	option(data(Data), Dict, ""),
 	option(type(Type), Dict, pl),
 	storage_dir(Dir),
-	meta_data(Request, Dir, Dict, Meta),
+	meta_data(Dir, Dict, Meta, Options),
 	(   atom_string(Base, Dict.get(meta).get(name))
 	->  file_name_extension(Base, Type, File),
 	    (	catch(gitty_create(Dir, File, Data, Meta, Commit),
@@ -186,7 +183,7 @@ storage(post, Request) :-
 				})
 	;   reply_json_dict(Error)
 	).
-storage(put, Request) :-
+storage(put, Request, Options) :-
 	http_read_json_dict(Request, Dict),
 	storage_dir(Dir),
 	request_file(Request, Dir, File),
@@ -194,7 +191,7 @@ storage(put, Request) :-
 	->  gitty_data(Dir, File, Data, _OldMeta)
 	;   option(data(Data), Dict, "")
 	),
-	meta_data(Request, Dir, Dict, Meta),
+	meta_data(Dir, Dict, Meta, Options),
 	storage_url(File, URL),
 	catch(gitty_update(Dir, File, Data, Meta, Commit),
 	      Error,
@@ -208,9 +205,9 @@ storage(put, Request) :-
 			    })
 	;   update_error(Error, Dir, Data, File, URL)
 	).
-storage(delete, Request) :-
-	authentity(Request, Meta),
+storage(delete, Request, Options) :-
 	storage_dir(Dir),
+	meta_data(Dir, _{}, Meta, Options),
 	request_file(Request, Dir, File),
 	gitty_file(Dir, File, Previous),
 	gitty_update(Dir, File, "", Meta, Commit),
@@ -260,8 +257,8 @@ request_file(Request, Dir, File) :-
 storage_url(File, HREF) :-
 	http_link_to_id(web_storage, path_postfix(File), HREF).
 
-%%	meta_data(+Request, +Dict, -Meta) is det.
-%%	meta_data(+Request, +Store, +Dict, -Meta) is det.
+%%	meta_data(+Dict, -Meta, +Options) is det.
+%%	meta_data(+Store, +Dict, -Meta, +Options) is det.
 %
 %	Gather meta-data from the  Request   (user,  peer, identity) and
 %	provided meta-data. Illegal and unknown values are ignored.
@@ -269,16 +266,16 @@ storage_url(File, HREF) :-
 %	@param Dict is the meta-data  dict   provided  by the client for
 %	save and update requests.
 
-meta_data(Request, Dict, Meta) :-
-	authentity(Request, Meta0),	% user, identity, peer
-	debug(storage, 'Anthentication: ~p', [Meta0]),
+meta_data(Dict, Meta, Options) :-
+	option(authentity(Auth), Options),
+	debug(storage, 'Anthentication: ~p', [Auth]),
 	(   filter_meta(Dict.get(meta), Meta1)
-	->  Meta = Meta0.put(Meta1)
-	;   Meta = Meta0
+	->  Meta = Auth.put(Meta1)
+	;   Meta = Auth
 	).
 
-meta_data(Request, Store, Dict, Meta) :-
-	meta_data(Request, Dict, Meta1),
+meta_data(Store, Dict, Meta, Options) :-
+	meta_data(Dict, Meta1, Options),
 	(   atom_string(Previous, Dict.get(previous)),
 	    is_gitty_hash(Previous),
 	    gitty_commit(Store, Previous, _PrevMeta)
@@ -393,42 +390,6 @@ chat_count(Meta, Chats) :-
 	atom_concat('gitty:', Meta.get(name), DocID),
 	swish_config:chat_count_about(DocID, Chats), !.
 chat_count(_, 0).
-
-%%	authentity(+Request, -Authentity:dict) is det.
-%
-%	Provide  authentication  meta-information.  Currently   user  by
-%	exploiting the pengine authentication hook and peer.
-%
-%	@error Will throw a permission error   if  login is required for
-%	all actions and not granted.
-
-authentity(Request, Authentity) :-
-	phrase(authentity(Request), Pairs),
-	dict_pairs(Authentity, _, Pairs).
-
-authentity(Request) -->
-	(user(Request)->[];[]),
-	(peer(Request)->[];[]),
-	(identity(Request)->[];[]).
-
-:- multifile
-	pengines:authentication_hook/3.
-
-user(Request) -->
-	{ pengines:authentication_hook(Request, swish, User),
-	  ground(User),
-	  User \== anonymous
-	},
-	[ user-User ].
-peer(Request) -->
-	{ http_peer(Request, Peer) },
-	[ peer-Peer ].
-
-identity(Request) -->
-	{ swish_config:user_profile(Request, Profile),
-	  Identity = Profile.get(external_identity)
-	},
-	[ identity-Identity ].
 
 
 %%	random_filename(-Name) is det.

@@ -227,15 +227,16 @@ update_last_login(User) :-
     set_profile(User, last_peer(Peer)),
     set_profile(User, last_login(NowInt)).
 
-% ! swish_config:user_profile(+Request, -Profile) is semidet.
+%!  swish_config:user_profile(+Request, -Profile) is semidet.
 %
-%   Provide the profile for the current user.
+%   Provide the profile for the current  user. The Profile dict contains
+%   the profile keys and the `profile_id` key.
 
 swish_config:user_profile(_Request, Profile) :-
     http_in_session(_SessionID),
     http_session_data(profile_id(User)),
     current_profile(User, Profile0),
-    Profile = Profile0.put(user_id, User).
+    Profile = Profile0.put(profile_id, User).
 
 
 		 /*******************************
