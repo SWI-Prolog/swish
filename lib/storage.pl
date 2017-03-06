@@ -92,11 +92,18 @@ open_gittystore :-
 			   [ solutions(all)
 			   ]),
 	\+ exists_directory(Dir),
-	catch(make_directory(Dir),
-	      error(permission_error(create, directory, Dir), _),
-	      fail), !,
+	create_store(Dir), !,
 	gitty_open(Dir, []),
 	asserta(storage_dir(Dir)).
+
+create_store(Dir) :-
+	exists_directory('storage/ref'), !,
+	print_message(informational, moved_old_store(storage, Dir)),
+	rename_file(storage, Dir).
+create_store(Dir) :-
+	catch(make_directory(Dir),
+	      error(permission_error(create, directory, Dir), _),
+	      fail), !.
 
 
 %%	web_storage(+Request) is det.
@@ -531,3 +538,12 @@ search_file(File, Meta, Data, Query, FileInfo, Options) :-
 	FileInfo = Meta.put(_{type:"store", file:File,
 			      line:LineNo, text:Line, query:Query
 			     }).
+
+		 /*******************************
+		 *	      MESSAGES		*
+		 *******************************/
+
+:- multifile prolog:message//1.
+
+prolog:message(moved_old_store(Old, New)) -->
+	[ 'Moving SWISH file store from ~p to ~p'-[Old, New] ].
