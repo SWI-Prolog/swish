@@ -56,6 +56,7 @@
 :- use_module(config).
 :- use_module(search).
 :- use_module(authenticate).
+:- use_module(pep).
 
 /** <module> Store files on behalve of web clients
 
@@ -153,10 +154,11 @@ storage(post, Request, Options) :-
 	option(data(Data), Dict, ""),
 	option(type(Type), Dict, pl),
 	storage_dir(Dir),
-	meta_data(Dir, Dict, Meta, Options),
+	meta_data(Dir, Dict, _, Meta, Options),
 	(   atom_string(Base, Dict.get(meta).get(name))
 	->  file_name_extension(Base, Type, File),
-	    (	catch(gitty_create(Dir, File, Data, Meta, Commit),
+	    (	authorized(create(file(File,named,Meta)), Options),
+		catch(gitty_create(Dir, File, Data, Meta, Commit),
 		      error(gitty(file_exists(File)),_),
 		      fail)
 	    ->	true
@@ -166,6 +168,7 @@ storage(post, Request, Options) :-
 	;   (   repeat,
 	        random_filename(Base),
 		file_name_extension(Base, Type, File),
+		authorized(create(file(File,random,Meta)), Options),
 		catch(gitty_create(Dir, File, Data, Meta, Commit),
 		      error(gitty(file_exists(File)),_),
 		      fail)
@@ -191,8 +194,9 @@ storage(put, Request, Options) :-
 	->  gitty_data(Dir, File, Data, _OldMeta)
 	;   option(data(Data), Dict, "")
 	),
-	meta_data(Dir, Dict, Meta, Options),
+	meta_data(Dir, Dict, PrevMeta, Meta, Options),
 	storage_url(File, URL),
+	authorized(update(file(File,PrevMeta,Meta)), Options),
 	catch(gitty_update(Dir, File, Data, Meta, Commit),
 	      Error,
 	      true),
@@ -207,8 +211,9 @@ storage(put, Request, Options) :-
 	).
 storage(delete, Request, Options) :-
 	storage_dir(Dir),
-	meta_data(Dir, _{}, Meta, Options),
+	meta_data(Dir, _{}, PrevMeta, Meta, Options),
 	request_file(Request, Dir, File),
+	authorized(delete(file(File,PrevMeta)), Options),
 	gitty_file(Dir, File, Previous),
 	gitty_update(Dir, File, "", Meta, Commit),
 	broadcast(swish(deleted(File, Previous, Commit))),
@@ -258,13 +263,13 @@ storage_url(File, HREF) :-
 	http_link_to_id(web_storage, path_postfix(File), HREF).
 
 %%	meta_data(+Dict, -Meta, +Options) is det.
-%%	meta_data(+Store, +Dict, -Meta, +Options) is det.
+%%	meta_data(+Store, +Dict, -PrevMeta, -Meta, +Options) is det.
 %
 %	Gather meta-data from the  Request   (user,  peer, identity) and
 %	provided meta-data. Illegal and unknown values are ignored.
 %
-%	@param Dict is the meta-data  dict   provided  by the client for
-%	save and update requests.
+%	@param Dict represents the JSON document posted and contains the
+%	content (`data`) and meta data (`meta`).
 
 meta_data(Dict, Meta, Options) :-
 	option(identity(Auth), Options),
@@ -277,11 +282,11 @@ meta_data(Dict, Meta, Options) :-
 	;   Meta = Auth
 	).
 
-meta_data(Store, Dict, Meta, Options) :-
+meta_data(Store, Dict, PrevMeta, Meta, Options) :-
 	meta_data(Dict, Meta1, Options),
 	(   atom_string(Previous, Dict.get(previous)),
 	    is_gitty_hash(Previous),
-	    gitty_commit(Store, Previous, _PrevMeta)
+	    gitty_commit(Store, Previous, PrevMeta)
 	->  Meta = Meta1.put(previous, Previous)
 	;   Meta = Meta1
 	).
@@ -340,9 +345,11 @@ filter_type(atom, V0, V) :-
 
 storage_get(Request, swish, Options) :-
 	swish_reply_config(Request, Options), !.
-storage_get(Request, Format, _) :-
+storage_get(Request, Format, Options) :-
 	storage_dir(Dir),
 	request_file_or_hash(Request, Dir, FileOrHash, Type),
+	Obj =.. [Type,FileOrHash],
+	authorized(download(Obj, Format), Options),
 	broadcast(swish(download(Dir, FileOrHash, Format))),
 	storage_get(Format, Dir, Type, FileOrHash, Request).
 
