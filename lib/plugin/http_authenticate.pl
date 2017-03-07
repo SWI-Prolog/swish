@@ -51,10 +51,10 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
 
-:- use_module(form).
-:- use_module(config).
-:- use_module(login).
-:- use_module(page, []).
+:- use_module('../form').
+:- use_module('../config').
+:- use_module('../login').
+:- use_module('../page', []).
 
 :- if(exists_source(library(http/http_digest))).
 :- use_module(library(http/http_digest)).
