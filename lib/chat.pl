@@ -912,16 +912,18 @@ propagate_profile_change(ProfileID, _, _) :-
 broadcast_event(updated(_File, _From, _To)).
 
 
-%%	broadcast_event(+Event, +File, +WSID)
+%%	broadcast_event(+Event, +File, +WSID) is det.
 %
-%	Event happened that is related to  File in WSID. Broadcast it
-%	to subscribed users as a notification.
+%	Event happened that is related to File  in WSID. Broadcast it to
+%	subscribed users as a notification. Always succeeds, also if the
+%	message cannot be delivered.
 %
 %	@tbd	Extend the structure to allow other browsers to act.
 
 broadcast_event(Event, File, WSID) :-
 	visitor_session(WSID, Session),
-	session_broadcast_event(Event, File, Session, WSID).
+	session_broadcast_event(Event, File, Session, WSID), !.
+broadcast_event(_, _, _).
 
 session_broadcast_event(Event, File, Session, WSID) :-
 	session_user(Session, UID),
