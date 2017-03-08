@@ -157,7 +157,7 @@ storage(post, Request, Options) :-
 	meta_data(Dir, Dict, _, Meta, Options),
 	(   atom_string(Base, Dict.get(meta).get(name))
 	->  file_name_extension(Base, Type, File),
-	    (	authorized(create(file(File,named,Meta)), Options),
+	    (	authorized(gitty(create(File,named,Meta)), Options),
 		catch(gitty_create(Dir, File, Data, Meta, Commit),
 		      error(gitty(file_exists(File)),_),
 		      fail)
@@ -168,7 +168,7 @@ storage(post, Request, Options) :-
 	;   (   repeat,
 	        random_filename(Base),
 		file_name_extension(Base, Type, File),
-		authorized(create(file(File,random,Meta)), Options),
+		authorized(gitty(create(File,random,Meta)), Options),
 		catch(gitty_create(Dir, File, Data, Meta, Commit),
 		      error(gitty(file_exists(File)),_),
 		      fail)
@@ -196,7 +196,7 @@ storage(put, Request, Options) :-
 	),
 	meta_data(Dir, Dict, PrevMeta, Meta, Options),
 	storage_url(File, URL),
-	authorized(update(file(File,PrevMeta,Meta)), Options),
+	authorized(gitty(update(File,PrevMeta,Meta)), Options),
 	catch(gitty_update(Dir, File, Data, Meta, Commit),
 	      Error,
 	      true),
@@ -213,7 +213,7 @@ storage(delete, Request, Options) :-
 	storage_dir(Dir),
 	meta_data(Dir, _{}, PrevMeta, Meta, Options),
 	request_file(Request, Dir, File),
-	authorized(delete(file(File,PrevMeta)), Options),
+	authorized(gitty(delete(File,PrevMeta)), Options),
 	gitty_file(Dir, File, Previous),
 	gitty_update(Dir, File, "", Meta, Commit),
 	broadcast(swish(deleted(File, Previous, Commit))),
@@ -349,7 +349,7 @@ storage_get(Request, Format, Options) :-
 	storage_dir(Dir),
 	request_file_or_hash(Request, Dir, FileOrHash, Type),
 	Obj =.. [Type,FileOrHash],
-	authorized(download(Obj, Format), Options),
+	authorized(gitty(download(Obj), Format), Options),
 	broadcast(swish(download(Dir, FileOrHash, Format))),
 	storage_get(Format, Dir, Type, FileOrHash, Request).
 
