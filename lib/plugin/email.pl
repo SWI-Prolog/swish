@@ -37,7 +37,8 @@
           [ smtp_send_mail/3,           % +To, :Goal, +Options
             smtp_send_html/3,           % +To, :Content, +Options
             email_confirm/4,            % +To, :Message, :Action, +Options
-            email_cleanup_db/0
+            email_cleanup_db/0,
+            public_url/4                % +To, +Query, -URL, +Options
           ]).
 :- use_module(library(smtp)).           % from pack smtp
 :- use_module(library(option)).
@@ -125,12 +126,9 @@ email_cleanup_db_sync :-
 
 email_confirm(To, Message, Action, Options) :-
     email_open_db,
-    host_url(HostURL, Options),
     generate_key(Key),
-    http_link_to_id(email_confirm, path_postfix(Key), Confirm0),
-    http_link_to_id(email_decline, path_postfix(Key), Decline0),
-    atom_concat(HostURL, Confirm0, Confirm),
-    atom_concat(HostURL, Decline0, Decline),
+    public_url(email_confirm, path_postfix(Key), Confirm, Options),
+    public_url(email_decline, path_postfix(Key), Decline, Options),
     merge_options(Options, [subject("Confirmation request")], MailOptions),
     smtp_send_html(To, \body(Message, Confirm, Decline), MailOptions),
     setting(timeout, TMODef),
@@ -140,18 +138,28 @@ email_confirm(To, Message, Action, Options) :-
     with_mutex(swish_email,
                assert_request(Key, Deadline, Action)).
 
+body(Message, Confirm, Decline) -->
+    html(Message),
+    html(ul([ li(['To confirm, visit ', a(href(Confirm),Confirm)]),
+              li(['To decline, visit ', a(href(Decline),Decline)])
+            ])).
+
+
+%!  public_url(+To, +Query, -URL, +Options) is det.
+%
+%   True when URL is a link to handler To with Query
+
+public_url(To, Query, URL, Options) :-
+    http_link_to_id(To, Query, RequestURI),
+    host_url(HostURL, Options),
+    atom_concat(HostURL, RequestURI, URL).
+
 host_url(HostURL, Options) :-
     option(host_url(HostURL), Options),
     !.
 host_url(HostURL, _Options) :-
     http_current_request(Request),
     http_public_host_url(Request, HostURL).
-
-body(Message, Confirm, Decline) -->
-    html(Message),
-    html(ul([ li(['To confirm, visit ', a(href(Confirm),Confirm)]),
-              li(['To decline, visit ', a(href(Decline),Decline)])
-            ])).
 
 
 %!  smtp_send_html(+To, :Content, +Options)
