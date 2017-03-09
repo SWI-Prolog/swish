@@ -486,12 +486,17 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       var li = $(this);
       var user = {};
 
-      if ( !fields || fields.indexOf('id') >= 0 )
+      if ( !fields || fields.indexOf('id') >= 0 ) {
 	user.id = li.attr("id");
-      if ( !fields || fields.indexOf('name') >= 0 )
-	user.name = li.prop("title");
-      if ( !fields || fields.indexOf('avatar') >= 0 )
+      }
+      if ( !fields || fields.indexOf('name') >= 0 ) {
+	var name = li.prop("title");
+	if ( name && name !== "Me" )
+	  user.name = name;
+      }
+      if ( !fields || fields.indexOf('avatar') >= 0 ) {
 	user.avatar = li.find("img.avatar").attr("src");
+      }
 
       return user;
     },
