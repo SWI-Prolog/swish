@@ -86,7 +86,7 @@ Examples are:
 %   we generate a JSON error object?
 
 authorized(Action, _Options) :-
-    \+ ground(Action),
+    var(Action),
     !,
     instantiation_error(Action).
 authorized(Action, Options) :-
