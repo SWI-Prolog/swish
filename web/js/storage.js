@@ -318,7 +318,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       }
 
       if ( data.file &&
-	   (!meta || !meta.name || meta.name == data.file) ) {
+	   (!meta || meta.name == data.file) ) {
 	url += encodeURI(data.file);
 	method = "PUT";
       }
@@ -383,6 +383,8 @@ define([ "jquery", "config", "modal", "form", "gitty",
 		 if ( jqXHR.status == 409 ) {
 		   elem.storage('resolveEditConflict',
 				JSON.parse(jqXHR.responseText));
+		 } else if ( jqXHR.status == 403 ) {
+		   modal.alert("Permission denied.  Please try a different name");
 		 } else {
 		   alert('Save failed; click "ok" to try again');
 		   elem.storage('saveAs');
