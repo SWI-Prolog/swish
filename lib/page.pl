@@ -705,7 +705,7 @@ swish_rest_reply(put, Request, Options) :-
 	option(content_type(String), Request),
 	http_parse_header_value(content_type, String, Type),
 	read_data(Type, Request, Data, Meta),
-	authorized(update(file(File,Meta)), Options1),
+	authorized(file(update(File,Meta)), Options1),
 	setup_call_cleanup(
 	    open(File, write, Out),
 	    format(Out, '~s', [Data]),

@@ -82,7 +82,7 @@ Examples are:
 %       - gitty(delete(File,Meta))
 %         Delete File that has the given meta data.
 %     * File actions
-%       - update(file(File,Meta))
+%       - file(update(File,Meta))
 %         Update (save) a physical file outside the versioned gitty
 %         store.
 %
@@ -123,6 +123,8 @@ approve(gitty(update(_File,PrevMeta,_Meta)), Auth) :- !,
         user_property(Auth, identity(Id))
     ).
 approve(gitty(_), _).
+approve(file(update(_File, _Meta)), Auth) :-
+    user_property(Auth, login(local)).
 approve(run(any, _), Auth) :-
     user_property(Auth, login(local)).
 
