@@ -110,6 +110,16 @@ chart(hour, [pengines,d_cpu], Chart).
 </div>
 
 <div class="nb-cell markdown">
+### Number of threads and visitors
+
+Threads are used as HTTP workers, pengines and some adminstrative tasks.  Visitors is the number of open websockets, which reflects the number of browser windows watching this page.
+</div>
+
+<div class="nb-cell query">
+chart(hour, [threads,visitors], Chart).
+</div>
+
+<div class="nb-cell markdown">
 ### Memory usage over the past hour
 
 *rss* is the total (_resident_) memory usage as reported by Linux.  *stack* is the memory occupied by all Prolog stacks.

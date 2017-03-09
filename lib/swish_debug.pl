@@ -290,7 +290,8 @@ get_stats(Wrap, Stats) :-
 	RSS = Stat.rss,
 	swish_statistics(pengines(Pengines)),
 	swish_statistics(pengines_created(PenginesCreated)),
-	add_fordblks(Wrap, Stats0, Stats).
+	add_fordblks(Wrap, Stats0, Stats1),
+	add_visitors(Stats1, Stats).
 
 :- if(current_predicate(mallinfo/1)).
 add_fordblks(Wrap, Stats0, Stats) :-
@@ -304,6 +305,11 @@ add_fordblks(Wrap, Stats0, Stats) :-
 	Stats = Stats0.put(fordblks, FordBlks).
 :- endif.
 add_fordblks(_, Stats, Stats).
+
+add_visitors(Stats0, Stats) :-
+	broadcast_request(swish(visitor_count(C))), !,
+	Stats = Stats0.put(visitors, C).
+add_visitors(Stats, Stats).
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
