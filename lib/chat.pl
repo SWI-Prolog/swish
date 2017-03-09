@@ -857,9 +857,9 @@ chat_send(Message) :-
 		 *******************************/
 
 :- unlisten(swish(_)),
-   listen(swish(Event), swish_event(Event)).
+   listen(swish(Event), chat_event(Event)).
 
-%%	swish_event(+Event) is semidet.
+%%	chat_event(+Event) is semidet.
 %
 %	Event happened inside SWISH.  Currently triggered events:
 %
@@ -871,7 +871,7 @@ chat_send(Message) :-
 %	  User logged out. If the login was based on HTTP authentication
 %	  ProfileID equals `http`.
 
-swish_event(Event) :-
+chat_event(Event) :-
 	broadcast_event(Event),
 	http_session_id(Session),
 	debug(event, 'Event: ~p, session ~q', [Event, Session]),
@@ -884,15 +884,18 @@ swish_event(Event) :-
 	;   WSID = undefined
 	),
 	session_broadcast_event(Event, File, Session, WSID).
-swish_event(profile(ProfileID)) :- !,
+chat_event(profile(ProfileID)) :- !,
 	current_profile(ProfileID, Profile),
 	http_session_id(Session),
 	session_user(Session, User),
 	update_visitor_data(User, Profile, 'login').
-swish_event(logout(_ProfileID)) :- !,
+chat_event(logout(_ProfileID)) :- !,
 	http_session_id(Session),
 	session_user(Session, User),
 	update_visitor_data(User).
+chat_event(visitor_count(Count)) :-
+	visitor_count(Count).
+
 
 %!	propagate_profile_change(+ProfileID, +Attribute, +Value)
 %
