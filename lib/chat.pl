@@ -999,9 +999,10 @@ event_file(download(Store, FileOrHash, _Format), File) :-
 
 notifications(_Options) -->
 	html(div(class(chat),
-		 [ ul([ class([nav, 'navbar-nav', 'pull-right']),
-			id(chat)
-		      ], []),
+		 [ div(class('chat-users'),
+		       ul([ class([nav, 'navbar-nav', 'pull-right']),
+			    id(chat)
+			  ], [])),
 		   div(class('user-count'),
 		       [ span(id('user-count'), '?'),
 			 ' users'
