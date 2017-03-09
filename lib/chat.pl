@@ -36,6 +36,7 @@
 :- module(swish_chat,
 	  [ chat_broadcast/1,		% +Message
 	    chat_broadcast/2,		% +Message, +Channel
+	    chat_to_profile/2,		% +ProfileID, :HTML
 
 	    notifications//1		% +Options
 	  ]).
@@ -67,6 +68,8 @@
 :- use_module(avatar).
 :- use_module(noble_avatar).
 :- use_module(chatstore).
+
+:- html_meta(chat_to_profile(+, html)).
 
 /** <module> The SWISH collaboration backbone
 
@@ -987,6 +990,35 @@ event_file(download(Store, FileOrHash, _Format), File) :-
 	    File = Meta.name
 	;   File = FileOrHash
 	).
+
+
+		 /*******************************
+		 *	   NOTIFICATION		*
+		 *******************************/
+
+%!	chat_to_profile(ProfileID, :HTML) is det.
+%
+%	Send a HTML notification to users logged in using ProfileID.
+
+chat_to_profile(ProfileID, HTML) :-
+	(   http_current_session(Session, profile_id(ProfileID)),
+	    visitor_session(WSID, Session),
+	    html_string(HTML, String),
+	    hub_send(WSID, json(_{ wsid:WSID,
+				   type:notify,
+				   html:String
+				 })),
+	    fail
+	;   true
+	).
+
+html_string(HTML, String) :-
+	phrase(html(HTML), Tokens),
+	delete(Tokens, nl(_), SingleLine),
+	with_output_to(string(String), print_html(SingleLine)).
+
+
+
 
 		 /*******************************
 		 *	       UI		*
