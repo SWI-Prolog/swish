@@ -269,8 +269,8 @@ var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
 	  else
 	    set_from_chat('display_name', 'name');
 	} else if ( key == 'identity' ) {
-	  if ( obj.external_identity )
-	    info.identity = obj.external_identity;
+	  if ( obj.external_identity && obj.identity_provider )
+	    info.identity = obj.identity_provider + ":" + obj.external_identity;
 	} else if ( key == 'avatar' ) {
 	  set_from_chat('avatar', 'avatar');
 	}

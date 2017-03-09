@@ -404,7 +404,8 @@ define([ "jquery", "config", "modal", "form", "gitty",
       var fork    = data.meta && meta.symbolic != "HEAD";
       var type    = tabbed.tabTypes[data.typeName];
       var profile = $("#login").login('get_profile',
-				      ["display_name", "avatar", "email"
+				      [ "display_name", "avatar", "email",
+					"identity"
 				      ]);
       var author  = profile.display_name;
       var modify  = meta.modify;
