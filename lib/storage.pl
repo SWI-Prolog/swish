@@ -181,6 +181,7 @@ storage(post, Request, Options) :-
 	    storage_url(File, URL),
 
 	    broadcast(swish(created(File))),
+	    follow(Commit, Dict),
 	    reply_json_dict(json{url:URL,
 				 file:File,
 				 meta:Commit.put(symbolic, "HEAD")
@@ -204,6 +205,7 @@ storage(put, Request, Options) :-
 	(   var(Error)
 	->  debug(storage, 'Updated: ~p', [Commit]),
 	    broadcast(swish(updated(File, Meta.previous, Commit))),
+	    follow(Commit, Dict),
 	    reply_json_dict(json{ url:URL,
 				  file:File,
 				  meta:Commit.put(symbolic, "HEAD")
@@ -252,6 +254,23 @@ patch_status(status(killed(Signal)), Dict, Dict.put(patch_killed, Signal)) :- !.
 patch_status(stderr(""), Dict, Dict) :- !.
 patch_status(stderr(Errors), Dict, Dict.put(patch_errors, Errors)) :- !.
 
+%!	follow(+Commit, +SaveDict) is det.
+%
+%	Broadcast follow(DocID, ProfileID, []) if the user wishes to
+%	follow the file associated with Commit.
+
+follow(Commit, Dict) :-
+	Dict.get(follow) == true,
+	_{name:File, profile_id:ProfileID} :< Commit, !,
+	atom_concat('gitty:', File, DocID),
+	broadcast(swish(follow(DocID, ProfileID, []))).
+follow(_, _).
+
+%!	request_file(+Request, +GittyDir, -File) is det.
+%
+%	Extract the gitty file referenced from the HTTP Request.
+%
+%	@error HTTP 404 exception
 
 request_file(Request, Dir, File) :-
 	option(path_info(File), Request),
