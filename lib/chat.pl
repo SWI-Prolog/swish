@@ -236,20 +236,20 @@ must_succeed(Goal) :-
 
 visitor(WSID) :-
 	visitor_session(WSID, _Session, _Token),
-	\+ inactive(WSID).
+	\+ inactive(WSID, 30).
 
 visitor_count(Count) :-
 	aggregate_all(count, visitor(_), Count).
 
-%!	inactive(+WSID) is semidet.
+%!	inactive(+WSID, +Timeout) is semidet.
 %
 %	True if WSID is inactive. This means   we lost the connection at
-%	least 5 minutes ago.
+%	least Timeout seconds ago.
 
-inactive(WSID) :-
+inactive(WSID, Timeout) :-
 	visitor_status(WSID, lost(Lost)),
 	get_time(Now),
-	Now - Lost > 5*60.
+	Now - Lost > Timeout.
 
 %!	visitor_session(?WSID, ?Session) is nondet.
 %
@@ -365,7 +365,7 @@ gc_visitors_sync :-
 
 do_gc_visitors :-
 	forall(( visitor_session(WSID, _Session, _Token),
-		 inactive(WSID)
+		 inactive(WSID, 5*60)
 	       ),
 	       reclaim_visitor(WSID)).
 
