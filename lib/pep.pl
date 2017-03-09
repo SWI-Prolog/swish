@@ -102,3 +102,19 @@ authorized(Action, Options) :-
 %!  approve(+Action, +Id)
 
 approve(gitty(_), _).
+approve(run(any, _), Auth) :-
+    local == Auth.get(identity_provider).
+
+		 /*******************************
+		 *           PENGINES		*
+		 *******************************/
+
+%!  pengines:not_sandboxed(+User, +Application) is semidet.
+%
+%   Called by Pengines to  see  whether   User  may  call  non-sandboxed
+%   operations in Application.
+
+:- multifile pengines:not_sandboxed/2.
+
+pengines:not_sandboxed(User, Application) :-
+    authorized(run(any, Application), [identity(User)]).

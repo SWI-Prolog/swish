@@ -101,3 +101,18 @@ identity(Auth0, Auth) :-
     atom_concat('local:', User, Identity),
     Auth = Auth0.put(identity, Identity).
 identity(Auth, Auth).
+
+
+		 /*******************************
+		 *        PENGINE HOOKS		*
+		 *******************************/
+
+%!  pengines:authentication_hook(+Request, +Application, -User)
+%
+%   Is called from the /pengine/create request   to establish the logged
+%   in user.
+
+:- multifile pengines:authentication_hook/3.
+
+pengines:authentication_hook(Request, _Application, User) :-
+    authenticate(Request, User).

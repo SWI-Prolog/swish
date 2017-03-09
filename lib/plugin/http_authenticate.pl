@@ -171,24 +171,6 @@ swish_config:config(user, Dict, Options) :-
 	).
 
 
-%%	pengines:authentication_hook(+Request, +Application, -User)
-%
-%	Is called from the  /pengine/create   request  to  establish the
-%	logged in user.
-
-pengines:authentication_hook(Request, _Application, User) :-
-	(   swish_config(public_access, true)
-        ->  (   logged_in(Request, User)
-            ->  true
-            ;   User = anonymous
-            )
-        ;   login(Request, User)
-        ).
-
-pengines:not_sandboxed(User, _Application) :-
-	User \== anonymous.
-
-
 %%	swish_config:authenticate(+Request, -User)
 %
 %	Called for all SWISH  actions.  May   be  used  to  restrict all
@@ -197,7 +179,6 @@ pengines:not_sandboxed(User, _Application) :-
 swish_config:authenticate(Request, User) :-
 	\+ swish_config(public_access, true),
 	login(Request, User).
-
 
 %%	update_auth_type(+File)
 %
