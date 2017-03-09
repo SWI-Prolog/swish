@@ -35,7 +35,8 @@
 :- module(web_storage,
 	  [ storage_file/1,			% ?File
 	    storage_file/3,			% +File, -Data, -Meta
-	    storage_meta_data/2			% +File, -Meta
+	    storage_meta_data/2,		% +File, -Meta
+	    storage_meta_property/2	        % +Meta, ?Property
 	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
@@ -203,10 +204,10 @@ storage(put, Request, Options) :-
 	(   var(Error)
 	->  debug(storage, 'Updated: ~p', [Commit]),
 	    broadcast(swish(updated(File, Meta.previous, Commit))),
-	    reply_json_dict(json{url:URL,
-				 file:File,
-				 meta:Commit.put(symbolic, "HEAD")
-			    })
+	    reply_json_dict(json{ url:URL,
+				  file:File,
+				  meta:Commit.put(symbolic, "HEAD")
+				})
 	;   update_error(Error, Dir, Data, File, URL)
 	).
 storage(delete, Request, Options) :-
@@ -278,8 +279,8 @@ meta_data(Dict, Meta, Options) :-
 	;   HasIdentity = false
 	),
 	(   filter_meta(Dict.get(meta), HasIdentity, Meta1)
-	->  Meta = Auth.put(Meta1)
-	;   Meta = Auth
+	->  Meta = meta{}.put(Auth).put(Meta1)
+	;   Meta = meta{}.put(Auth)
 	).
 
 meta_data(Store, Dict, PrevMeta, Meta, Options) :-
@@ -444,7 +445,39 @@ storage_file(File, Data, Meta) :-
 
 storage_meta_data(File, Meta) :-
 	storage_dir(Dir),
+	(   var(File)
+	->  gitty_file(Dir, File, _Head)
+	;   true
+	),
 	gitty_commit(Dir, File, Meta).
+
+%!	storage_meta_property(+Meta, -Property)
+%
+%	True when Meta has Property. Defined properties are:
+%
+%	  - peer(Atom)
+%	  Peer address that last saved the file
+%	  -
+
+storage_meta_property(Meta, Property) :-
+	current_meta_property(Property, How),
+	meta_property(Property, How, Meta).
+
+meta_property(Property, dict, Identity) :-
+	Property =.. [Name,Value],
+	Value = Identity.get(Name).
+meta_property(modify(Modify), _, Meta) :-
+	(   Modify0 = Meta.get(modify)
+	->  Modify = Modify0
+	;   Modify = [any,login,owner]
+	).
+
+current_meta_property(peer(_Atom),     dict).
+current_meta_property(public(_Bool),   dict).
+current_meta_property(time(_Seconds),  dict).
+current_meta_property(author(_String), dict).
+current_meta_property(avatar(_String), dict).
+current_meta_property(modify(_List),   derived).
 
 
 		 /*******************************

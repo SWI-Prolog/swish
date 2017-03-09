@@ -34,7 +34,8 @@
 */
 
 :- module(swish_authenticate,
-          [ authenticate/2                      % +Request, -Authentity
+          [ authenticate/2,                     % +Request, -Authentity
+            user_property/2                     % +Authentity, ?Property
           ]).
 :- use_module(library(http/http_wrapper)).
 :- use_module(library(debug)).
@@ -101,6 +102,43 @@ identity(Auth0, Auth) :-
     atom_concat('local:', User, Identity),
     Auth = Auth0.put(identity, Identity).
 identity(Auth, Auth).
+
+
+%!  user_property(+Identity, ?Property) is nondet.
+%
+%   True when Identity has Property. Defined properties are:
+%
+%     - peer(Atom)
+%     Remote IP address
+%     - identity(Atom)
+%     Identity as provided by some identity provider
+%     - identity_provider(Atom)
+%     Subsystem that identified the user
+%     - external_identity(Atom)
+%     Identity as provided by the identity_provider
+%     - profile_id(Atom)
+%     Identifier of the profile we have on this user.
+%     - login(Atom)
+%     Same as identity_provider(Atom)
+
+user_property(Identity, Property) :-
+    current_user_property(Property, How),
+    user_property_impl(Property, How, Identity).
+
+user_property_impl(Property, dict, Identity) :-
+    Property =.. [Name,Value],
+    Value = Identity.get(Name).
+user_property_impl(login(By), _, Identity) :-
+    By = Identity.get(identity_provider).
+
+
+current_user_property(peer(_Atom),                dict).
+current_user_property(identity(_Atom),            dict).
+current_user_property(external_identity(_String), dict).
+current_user_property(identity_provider(_Atom),   dict).
+current_user_property(profile_id(_Atom),          dict).
+
+current_user_property(login(_IdProvider),         derived).
 
 
 		 /*******************************

@@ -41,6 +41,8 @@
 :- use_module(library(error)).
 :- use_module(library(http/http_wrapper)).
 
+:- use_module(authenticate).
+:- use_module(storage).
 :- use_module(config).
 
 /** <module> SWISH PEP (Policy Enforcement Point)
@@ -54,7 +56,9 @@ Examples are:
   - Access to users (profile management)
 */
 
-:- multifile swish_config:authorized/2.
+:- multifile
+    swish_config:approve/2,
+    swish_config:deny/2.
 
 %!  authorized(+Action, +Options) is det.
 %
@@ -91,7 +95,7 @@ authorized(Action, _Options) :-
     instantiation_error(Action).
 authorized(Action, Options) :-
     option(identity(Id), Options),
-    (   approve(Action, Id)
+    (   authorize(Action, Id)
     ->  debug(pep, 'Approved gitty action ~p to ~p', [Action, Id])
     ;   debug(pep, 'Denied action ~p to ~p', [Action, Id]),
         http_current_request(Request),
@@ -99,11 +103,33 @@ authorized(Action, Options) :-
         throw(http_reply(forbidden(Path)))
     ).
 
+:- multifile
+    approve/2,
+    deny/2.
+
+authorize(Action, Id) :-
+    approve(Action, Id), !,
+    \+ deny(Action, Id).
+
 %!  approve(+Action, +Id)
 
+approve(gitty(update(_File,PrevMeta,_Meta)), Auth) :- !,
+    storage_meta_property(PrevMeta, modify(Modify)),
+    (   memberchk(any, Modify)
+    ->  true
+    ;   memberchk(login, Modify)
+    ->  user_property(Auth, login(_))
+    ;   storage_meta_property(PrevMeta, identity(Id)),
+        user_property(Auth, identity(Id))
+    ).
 approve(gitty(_), _).
 approve(run(any, _), Auth) :-
-    local == Auth.get(identity_provider).
+    user_property(Auth, login(local)).
+
+%!  deny(+Auth, +Id)
+
+
+
 
 		 /*******************************
 		 *           PENGINES		*
