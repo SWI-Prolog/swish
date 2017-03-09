@@ -74,7 +74,6 @@
 	swish_config:config/2,
 	swish_config:config/3,
 	swish_config:authenticate/2,
-	swish_config:verify_write_access/3,
         swish_config:login_item/2,		% -Server, -HTML_DOM
         swish_config:login/2,			% +Server, +Request
 	swish_config:user_info/3.		% +Request, -Server, -UserInfo
@@ -189,11 +188,6 @@ pengines:authentication_hook(Request, _Application, User) :-
 pengines:not_sandboxed(User, _Application) :-
 	User \== anonymous.
 
-
-%%	swish_config:verify_write_access(+Request, +File, +Options)
-
-swish_config:verify_write_access(Request, _File, _Options) :-
-	login(Request, _User), !.
 
 %%	swish_config:authenticate(+Request, -User)
 %
