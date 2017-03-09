@@ -39,6 +39,7 @@
           ]).
 :- use_module(library(settings)).
 :- use_module(library(persistency)).
+:- use_module(library(broadcast)).
 
 :- use_module(library(user_profile)).
 :- use_module(email).
@@ -77,31 +78,63 @@ notify_open_db :-
 %   Assert that DocID is being followed by ProfileID using Options.
 
 follow(DocID, ProfileID, Options) :-
+    to_atom(DocID, DocIDA),
+    to_atom(ProfileID, ProfileIDA),
     notify_open_db,
-    assert_follower(DocID, ProfileID, Options).
+    (   follower(DocIDA, ProfileIDA, OldOptions)
+    ->  (   OldOptions == Options
+        ->  true
+        ;   retractall_follower(DocIDA, ProfileIDA, _),
+            assert_follower(DocIDA, ProfileIDA, Options)
+        )
+    ;   assert_follower(DocIDA, ProfileIDA, Options)
+    ).
 
 %!  notify(+DocID, +Action) is det.
 %
 %   Action has been executed on DocID.  Notify all interested users.
 
 notify(DocID, Action) :-
+    to_atom(DocID, DocIDA),
     notify_open_db,
-    forall(follower(DocID, Profile, Options),
+    forall(follower(DocIDA, Profile, Options),
            notify_user(Profile, Action, Options)).
+
+to_atom(Text, Atom) :-
+    atom_string(Atom, Text).
 
 %!  notify_user(+Profile, +Action, +Options)
 %
 %   Notify the user belonging to Profile about Action.
 
 notify_user(Profile, Action, Options) :-
-    notify_chat(Profile, Action, Options),
-    notify_by_mail(Profile, Action, Options).
+    ignore(notify_chat(Profile, Action, Options)),
+    ignore(notify_by_mail(Profile, Action, Options)).
+
+
+		 /*******************************
+		 *         BROADCAST API	*
+		 *******************************/
+
+:- unlisten(swish(_)),
+   listen(swish(Event), notify_event(Event)).
+
+notify_event(follow(DocID, ProfileID, Options)) :-
+    follow(DocID, ProfileID, Options).
+notify_event(updated(File, _PrevCommitID, Commit)) :-
+    atom_concat('gitty:', File, DocID),
+    notify(DocID, updated(Commit)).
+
 
 		 /*******************************
 		 *            CHAT		*
 		 *******************************/
 
+notify_chat(ProfileID, Action, _Options) :-
+    chat_to_profile(ProfileID, \chat(Action)).
 
+chat(updated(Commit)) -->
+    html([\committer(Commit), ' updated ', \file_name(Commit)]).
 
 
 		 /*******************************
@@ -114,7 +147,77 @@ notify_by_mail(Profile, Action, _Options) :-
     string_codes(Subject, Codes),
     smtp_send_html(Email, \message(Profile, Action), [subject(Subject)]).
 
-message(Profile, Action) -->
-    dear(Profile),
-    body(Action),
+subject(Action) -->
+    subject_prefix,
+    subject_action(Action).
+
+subject_prefix -->
+    "[SWISH] ".
+
+subject_action(updated(Commit)) -->
+    txt_commit_file(Commit), "updated by ", txt_committer(Commit).
+
+
+		 /*******************************
+		 *            HTML BODY		*
+		 *******************************/
+
+message(ProfileID, Action) -->
+    dear(ProfileID),
+    notification(Action),
     signature.
+
+dear(ProfileID) -->
+    html(h4(["Dear ", \profile_name(ProfileID), ","])).
+
+profile_name(ProfileID) -->
+    html(ProfileID.get(name)).
+
+signature -->
+    { public_url(swish, [], HREF, []) },
+    html(address(['SWISH at ', a(href(HREF),HREF)])).
+
+notification(updated(Commit)) -->
+    html(p(['The file ', \file_name(Commit),
+            ' has been updated by ', \committer(Commit), '.'])).
+
+file_name(Commit) -->
+    { public_url(web_storage, path_postfix(Commit.name), HREF, []) },
+    html(a(href(HREF), Commit.name)).
+
+committer(Commit) -->
+    { ProfileID = Commit.get(profile_id) }, !,
+    profile_name(ProfileID).
+committer(Commit) -->
+    html(Commit.get(owner)).
+
+
+		 /*******************************
+		 *  TEXT RULES ON GITTY COMMITS	*
+		 *******************************/
+
+txt_commit_file(Commit) -->
+    write(Commit.name).
+
+txt_committer(Commit) -->
+    { ProfileID = Commit.get(profile_id) }, !,
+    txt_profile_name(ProfileID).
+txt_committer(Commit) -->
+    write(Commit.get(owner)), !.
+
+
+
+		 /*******************************
+		 *    RULES ON GITTY COMMITS	*
+		 *******************************/
+
+txt_profile_name(ProfileID) -->
+    write(ProfileID.get(name)).
+
+
+		 /*******************************
+		 *            BASICS		*
+		 *******************************/
+
+write(Term, Head, Tail) :-
+    format(codes(Head, Tail), '~w', [Term]).
