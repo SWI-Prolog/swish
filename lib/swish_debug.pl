@@ -274,6 +274,7 @@ get_stats(Wrap, Stats) :-
 			rss:RSS,
 			stack:Stack,
 			pengines:Pengines,
+			threads:Threads,
 			pengines_created:PenginesCreated,
 			time:Time
 		      },
@@ -283,6 +284,7 @@ get_stats(Wrap, Stats) :-
 	statistics(cputime, MyCPU),
 	CPU is PCPU-MyCPU,
 	statistics(stack, Stack),
+	statistics(threads, Threads),
 	catch(procps_stat(Stat), _,
 	      Stat = stat{rss:0}),
 	RSS = Stat.rss,
