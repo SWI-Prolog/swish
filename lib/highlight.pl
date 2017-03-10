@@ -48,6 +48,7 @@
 :- use_module(library(prolog_xref)).
 :- use_module(library(memfile)).
 :- use_module(library(prolog_colour)).
+:- use_module(library(lazy_lists)).
 :- if(exists_source(library(helpidx))).
 :- use_module(library(helpidx), [predicate/5]).
 :- endif.
