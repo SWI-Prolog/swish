@@ -41,6 +41,7 @@
 :- use_module(library(persistency)).
 :- use_module(library(broadcast)).
 :- use_module(library(lists)).
+:- use_module(library(readutil)).
 :- use_module(library(http/html_write)).
 
 :- use_module(library(user_profile)).
