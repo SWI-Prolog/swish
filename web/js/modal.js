@@ -276,13 +276,15 @@ define([ "config", "preferences", "links", "jquery", "laconic", "bootstrap" ],
     $(button)
 	.html("&times;")
 	.on("click", function(ev) {
-	  var modalel = $(this).parents(".modal");
-	  var input   = modalel.find("[data-notagain]");
 	  ev.preventDefault();
-	  if ( input && input.prop('checked') ) {
-	    var id = input.attr("data-notagain");
-	    preferences.setNotAgain(id);
-	  }
+	  $(ev.target).closest(".modal")
+	              .find("[data-notagain]")
+		      .each(function() {
+	    if ( $(this).prop("checked") ) {
+	      preferences.setNotAgain($(this).attr("data-notagain"));
+	      return false;
+	    }
+	  });
 	});
 
     return button;
