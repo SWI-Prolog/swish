@@ -180,7 +180,7 @@ storage(post, Request, Options) :-
 	->  debug(storage, 'Created: ~p', [Commit]),
 	    storage_url(File, URL),
 
-	    broadcast(swish(created(File))),
+	    broadcast(swish(created(File, Commit))),
 	    follow(Commit, Dict),
 	    reply_json_dict(json{url:URL,
 				 file:File,
@@ -204,7 +204,7 @@ storage(put, Request, Options) :-
 	      true),
 	(   var(Error)
 	->  debug(storage, 'Updated: ~p', [Commit]),
-	    broadcast(swish(updated(File, Meta.previous, Commit))),
+	    broadcast(swish(updated(File, Commit))),
 	    follow(Commit, Dict),
 	    reply_json_dict(json{ url:URL,
 				  file:File,
@@ -217,9 +217,8 @@ storage(delete, Request, Options) :-
 	meta_data(Dir, _{}, PrevMeta, Meta, Options),
 	request_file(Request, Dir, File),
 	authorized(gitty(delete(File,PrevMeta)), Options),
-	gitty_file(Dir, File, Previous),
 	gitty_update(Dir, File, "", Meta, Commit),
-	broadcast(swish(deleted(File, Previous, Commit))),
+	broadcast(swish(deleted(File, Commit))),
 	reply_json_dict(true).
 
 %%	update_error(+Error, +Storage, +Data, +File, +URL)
@@ -256,14 +255,14 @@ patch_status(stderr(Errors), Dict, Dict.put(patch_errors, Errors)) :- !.
 
 %!	follow(+Commit, +SaveDict) is det.
 %
-%	Broadcast follow(DocID, ProfileID, []) if the user wishes to
-%	follow the file associated with Commit.
+%	Broadcast follow(DocID, ProfileID, [update,chat])   if  the user
+%	wishes to follow the file associated with Commit.
 
 follow(Commit, Dict) :-
 	Dict.get(follow) == true,
 	_{name:File, profile_id:ProfileID} :< Commit, !,
 	atom_concat('gitty:', File, DocID),
-	broadcast(swish(follow(DocID, ProfileID, []))).
+	broadcast(swish(follow(DocID, ProfileID, [update,chat]))).
 follow(_, _).
 
 %!	request_file(+Request, +GittyDir, -File) is det.

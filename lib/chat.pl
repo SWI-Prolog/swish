@@ -947,6 +947,7 @@ chat_enrich(Message0, Message) :-
 
 chat_send(Message) :-
 	atom_concat("gitty:", File, Message.docid),
+	broadcast(swish(chat(Message))),
 	(   Message.get(volatile) == true
 	->  true
 	;   chat_store(Message)
@@ -995,7 +996,7 @@ chat_event(logout(_ProfileID)) :- !,
 	http_session_id(Session),
 	session_user(Session, User),
 	update_visitor_data(User, _, logout).
-chat_event(visitor_count(Count)) :-
+chat_event(visitor_count(Count)) :-		% request
 	visitor_count(Count).
 
 
@@ -1086,9 +1087,9 @@ file(File) -->
 %
 %	True when Event is associated with File.
 
-event_file(created(File), File).
-event_file(updated(File, _From, _To), File).
-event_file(deleted(File, _From, _To), File).
+event_file(created(File, _Commit), File).
+event_file(updated(File, _Commit), File).
+event_file(deleted(File, _Commit), File).
 event_file(download(Store, FileOrHash, _Format), File) :-
 	(   is_gitty_hash(FileOrHash)
 	->  gitty_commit(Store, FileOrHash, Meta),

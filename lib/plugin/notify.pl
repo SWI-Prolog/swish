@@ -42,7 +42,9 @@
 :- use_module(library(broadcast)).
 
 :- use_module(library(user_profile)).
+
 :- use_module(email).
+:- use_module('../storage').
 
 
 /** <module> SWISH notifications
@@ -50,6 +52,14 @@
 This module keeps track of which users wish to track which notifications
 and sending the notifications to the user.  If the target user is online
 we will notify using an avatar.  Otherwise we send an email.
+
+A user has the following options to control notifications:
+
+  * Per (gitty) file
+    - Notify update
+    - Notify chat
+  * By profile
+    - Notify by E-mail: never/immediate/daily
 */
 
 :- setting(database, callable, swish('data/notify.db'),
@@ -93,6 +103,16 @@ follow(DocID, ProfileID, Options) :-
 %!  notify(+DocID, +Action) is det.
 %
 %   Action has been executed on DocID.  Notify all interested users.
+%   Actions that may be notified:
+%
+%   - updated(Commit)
+%     Gitty file was updated
+%   - deleted(Commit)
+%     Gitty file was deleted
+%   - forked(Commit)
+%     Gitty file was forked
+%   - chat(Message)
+%     A chat message was sent.  Message is the JSON content as a dict.
 
 notify(DocID, Action) :-
     to_atom(DocID, DocIDA),
@@ -119,11 +139,23 @@ notify_user(Profile, Action, Options) :-
 :- unlisten(swish(_)),
    listen(swish(Event), notify_event(Event)).
 
+% request to follow this file
 notify_event(follow(DocID, ProfileID, Options)) :-
     follow(DocID, ProfileID, Options).
-notify_event(updated(File, _PrevCommitID, Commit)) :-
+% events on gitty files
+notify_event(updated(File, Commit)) :-
     atom_concat('gitty:', File, DocID),
     notify(DocID, updated(Commit)).
+notify_event(deleted(File, Commit)) :-
+    atom_concat('gitty:', File, DocID),
+    notify(DocID, deleted(Commit)).
+notify_event(created(_File, Commit)) :-
+    storage_meta_data(Commit.get(previous), Meta),
+    atom_concat('gitty:', Meta.name, DocID),
+    notify(DocID, forked(Commit)).
+% chat message
+notify_event(chat(Message)) :-
+    notify(Message.docid, chat(Message)).
 
 
 		 /*******************************
