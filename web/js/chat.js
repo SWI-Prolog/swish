@@ -226,7 +226,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 
       data.wsid = e.wsid;
       data.reconnect = e.reconnect;		/* reconnection token */
-      if ( e.avatar && e.avatar_generated )
+      if ( e.avatar && e.avatar_source == 'generated' )
 	preferences.setVal("anon-avatar", e.avatar);
       e.role = "self";
 
@@ -266,8 +266,11 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       var li = $("#"+e.wsid);
 
       li.children("a").html("").append(avatar(e));
-      if ( e.avatar )
+      if ( e.avatar ) {
 	$("*[data-userid="+e.wsid+"] img.avatar").attr("src", e.avatar);
+	if ( e.avatar_source == 'generated' )
+	  preferences.setVal("anon-avatar", e.avatar);
+      }
 
       if ( e.name ) {
 	li.prop('title', e.name);

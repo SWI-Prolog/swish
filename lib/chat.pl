@@ -68,6 +68,8 @@
 :- use_module(avatar).
 :- use_module(noble_avatar).
 :- use_module(chatstore).
+:- use_module(authenticate).
+:- use_module(pep).
 
 :- html_meta(chat_to_profile(+, html)).
 
@@ -105,16 +107,11 @@ swish_config:config(chat, true).
 %	user gets an avatar and optionally a name.
 
 start_chat(Request) :-
-	swish_config:authenticate(Request, _User), !, % must throw to deny access
-	start_chat(Request, []).
-start_chat(Request) :-
-	start_chat(Request, []).
+	authenticate(Request, Identity),
+	start_chat(Request, [identity(Identity)]).
 
 start_chat(Request, Options) :-
-	(   current_user_info(Request, Info)
-	->  ChatOptions = [current_user_info(Info)|Options1]
-	;   ChatOptions = Options1
-	),
+	authorized(chat, Options),
 	http_open_session(Session, []),
 	check_flooding,
 	http_parameters(Request,
@@ -125,7 +122,7 @@ start_chat(Request, Options) :-
 	extend_options([ avatar(Avatar),
 			 nick_name(NickName),
 			 reconnect(Token)
-		       ], Options, Options1),
+		       ], Options, ChatOptions),
 	http_upgrade_to_websocket(
 	    accept_chat(Session, ChatOptions),
 	    [ guarded(false),
@@ -408,36 +405,132 @@ destroy_visitor_data(TmpUser) :-
 
 %!	update_visitor_data(+TmpUser, +Data, +Reason) is det.
 %
-%	Update the user data for the visitor TmpUser to Data.
+%	Update the user data for the visitor   TmpUser  to Data. This is
+%	rather complicates due to all the   defaulting  rules. Reason is
+%	one of:
+%
+%	  - login
+%	  - logout
+%	  - 'set-nick-name'
+%	  - 'profile-edit'
+%
+%	@tbd Create a more declarative description  on where the various
+%	attributes must come from.
 
+update_visitor_data(TmpUser, _Data, logout) :- !,
+	anonymise_user_data(TmpUser, NewData),
+	set_visitor_data(TmpUser, NewData, logout).
 update_visitor_data(TmpUser, Data, Reason) :-
-	retract(visitor_data(TmpUser, Old)), !,
-	(   _ = Old.get(anon_avatar)
-	->  Old1 = Old
-	;   OldAvarat = Old.get(avatar)
-	->  Old1 = Old.put(anon_avatar, OldAvarat)
-	;   Old1 = Old
+	profile_reason(Reason), !,
+	(   visitor_data(TmpUser, Old)
+	;   Old = v{}
 	),
-	set_visitor_data(TmpUser, Old1.put(Data), Reason).
+	copy_profile([name,avatar,email], Data, Old, New),
+	set_visitor_data(TmpUser, New, Reason).
+update_visitor_data(TmpUser, _{name:Name}, 'set-nick-name') :- !,
+	visitor_data(TmpUser, Old),
+	set_nick_name(Old, Name, New),
+	set_visitor_data(TmpUser, New, 'set-nick-name').
 update_visitor_data(TmpUser, Data, Reason) :-
 	set_visitor_data(TmpUser, Data, Reason).
 
-%!	update_visitor_data(+TmpUser) is det.
-%
-%	Update visitor data after a logout
+profile_reason('profile-edit').
+profile_reason('login').
 
-update_visitor_data(TmpUser) :-
-	retract(visitor_data(TmpUser, Old)), !,
-	(   OldAvarat = Old.get(anon_avatar)
+copy_profile([], _, Data, Data).
+copy_profile([H|T], New, Data0, Data) :-
+	copy_profile_field(H, New, Data0, Data1),
+	copy_profile(T, New, Data1, Data).
+
+copy_profile_field(avatar, New, Data0, Data) :-	!,
+	(   Data1 = Data0.put(avatar,New.get(avatar))
+	->  Data  = Data1.put(avatar_source, profile)
+	;   email_gravatar(New.get(email), Avatar),
+	    valid_gravatar(Avatar)
+	->  Data = Data0.put(_{avatar:Avatar,avatar_source:email})
+	;   Avatar = Data0.get(anonymous_avatar)
+	->  Data = Data0.put(_{avatar:Avatar,avatar_source:client})
+	;   noble_avatar_url(Avatar, []),
+	    Data = Data0.put(_{avatar:Avatar,avatar_source:generated,
+			       anonymous_avatar:Avatar
+			      })
+	).
+copy_profile_field(email, New, Data0, Data) :- !,
+	(   NewMail = New.get(email)
+	->  update_avatar_from_email(NewMail, Data0, Data1),
+	    Data = Data1.put(email, NewMail)
+	;   update_avatar_from_email('', Data0, Data1),
+	    (	del_dict(email, Data1, _, Data)
+	    ->	true
+	    ;	Data = Data1
+	    )
+	).
+copy_profile_field(F, New, Data0, Data) :-
+	(   Data = Data0.put(F, New.get(F))
 	->  true
-	;   noble_avatar_url(OldAvarat, [])
-	),
-	set_visitor_data(TmpUser, v{avatar:OldAvarat}, 'logout').
-update_visitor_data(TmpUser) :-
-	noble_avatar_url(OldAvarat, []),
-	set_visitor_data(TmpUser, v{avatar:OldAvarat}, 'logout').
+	;   del_dict(F, Data0, _, Data)
+	->  true
+	;   Data = Data0
+	).
+
+set_nick_name(Data0, Name, Data) :-
+	Data = Data0.put(_{name:Name, anonymous_name:Name}).
+
+%!	update_avatar_from_email(+Email, +DataIn, -Data)
+%
+%	Update the avatar after a change  of   the  known  email. If the
+%	avatar comes from the profile, no action is needed. If Email has
+%	a gravatar, use that. Else  use  the   know  or  a new generated
+%	avatar.
+
+update_avatar_from_email(_, Data, Data) :-
+	Data.get(avatar_source) == profile, !.
+update_avatar_from_email('', Data0, Data) :-
+	Data0.get(avatar_source) == email, !,
+	noble_avatar_url(Avatar, []),
+	Data = Data0.put(_{avatar:Avatar, anonymous_avatar:Avatar,
+			   avatar_source:generated}).
+update_avatar_from_email(Email, Data0, Data) :-
+	email_gravatar(Email, Avatar),
+	valid_gravatar(Avatar), !,
+	Data = Data0.put(avatar, Avatar).
+update_avatar_from_email(_, Data0, Data) :-
+	(   Avatar = Data0.get(anonymous_avatar)
+	->  Data = Data0.put(_{avatar:Avatar, avatar_source:client})
+	;   noble_avatar_url(Avatar, []),
+	    Data = Data0.put(_{avatar:Avatar, anonymous_avatar:Avatar,
+			       avatar_source:generated})
+	).
+
+%!	anonymise_user_data(TmpUser, Data)
+%
+%	Create anonymous user profile.
+
+anonymise_user_data(TmpUser, Data) :-
+	visitor_data(TmpUser, Old),
+	(   _{anonymous_name:AName, anonymous_avatar:AAvatar} :< Old
+	->  Data = _{anonymous_name:AName, anonymous_avatar:AAvatar,
+		     name:AName, avatar:AAvatar, avatar_source:client}
+	;   _{anonymous_avatar:AAvatar} :< Old
+	->  Data = _{anonymous_avatar:AAvatar,
+		     avatar:AAvatar, avatar_source:client}
+	;   _{anonymous_name:AName} :< Old
+	->  noble_avatar_url(Avatar, []),
+	    Data = _{anonymous_name:AName, anonymous_avatar:Avatar,
+		     name:AName, avatar:Avatar, avatar_source:generated}
+	), !.
+anonymise_user_data(_, Data) :-
+	noble_avatar_url(Avatar, []),
+	Data = _{anonymous_avatar:Avatar,
+		 avatar:Avatar, avatar_source:generated}.
+
+%!	set_visitor_data(+TmpUser, +Data, +Reason) is det.
+%
+%	Update the user data for the   session  user TmpUser and forward
+%	the changes.
 
 set_visitor_data(TmpUser, Data, Reason) :-
+	retractall(visitor_data(TmpUser, _)),
 	assertz(visitor_data(TmpUser, Data)),
 	inform_visitor_change(TmpUser, Reason).
 
@@ -567,10 +660,13 @@ public_user_data(UID, Public) :-
 %
 %	Optain data for a new visitor.  Options include:
 %
-%	  - current_user_info(+InfoDict)
-%	  Info as provided by current_user_info/2.
+%	  - identity(+Identity)
+%	  Identity information provided by authenticate/2.  Always
+%	  present.
 %	  - avatar(+URL)
-%	  Possibly saved avatar
+%	  Avatar provided by the user
+%	  - nick_name(+Name)
+%	  Nick name provided by the user.
 %
 %	Data always contains an `avatar` key   and optionally contains a
 %	`name` and `email` key. If the avatar is generated there is also
@@ -580,34 +676,37 @@ public_user_data(UID, Public) :-
 %		long.  Possibly we should do this in a thread.
 
 get_visitor_data(Data, Options) :-
-	option(current_user_info(UserData), Options, _{}),
-	findall(N-V, visitor_property(UserData, Options, N, V), Pairs),
+	option(identity(Identity), Options),
+	findall(N-V, visitor_property(Identity, Options, N, V), Pairs),
 	dict_pairs(Data, v, Pairs).
 
-visitor_property(UserData, Options, name, Name) :-
-	(   Name = UserData.get(name)
-	->  true
-	;   Name = UserData.get(user)
+visitor_property(Identity, Options, name, Name) :-
+	(   user_property(Identity, name(Name))
 	->  true
 	;   option(nick_name(Name), Options)
 	).
-visitor_property(UserData, _, email, Email) :-
-	Email = UserData.get(email).
-visitor_property(UserData, Options, Name, Value) :-
-	(   Avatar = UserData.get(avatar)
-	->  Name = avatar, Value = Avatar
-	;   Email = UserData.get(email),
+visitor_property(Identity, _, email, Email) :-
+	user_property(Identity, email(Email)).
+visitor_property(Identity, Options, Name, Value) :-
+	(   user_property(Identity, avatar(Avatar))
+	->  avatar_property(Avatar, profile, Name, Value)
+	;   user_property(Identity, email(Email)),
 	    email_gravatar(Email, Avatar),
 	    valid_gravatar(Avatar)
-	->  Name = avatar, Value = Avatar
-	;   (   option(avatar(Avatar), Options)
-	    ->  true
-	    ;   noble_avatar_url(Avatar, Options)
-	    )
-	->  (   Name = avatar, Value = Avatar
-	    ;	Name = avatar_generated, Value = true
-	    )
+	->  avatar_property(Avatar, email, Name, Value)
+	;   option(avatar(Avatar), Options)
+	->  avatar_property(Avatar, client, Name, Value)
+	;   noble_avatar_url(Avatar, Options),
+	    avatar_property(Avatar, generated, Name, Value)
 	).
+visitor_property(_, Options, anonymous_name, Name) :-
+	option(nick_name(Name), Options).
+visitor_property(_, Options, anonymous_avatar, Avatar) :-
+	option(avatar(Avatar), Options).
+
+
+avatar_property(Avatar, _Source, avatar,        Avatar).
+avatar_property(_Avatar, Source, avatar_source, Source).
 
 
 		 /*******************************
@@ -888,11 +987,11 @@ chat_event(profile(ProfileID)) :- !,
 	current_profile(ProfileID, Profile),
 	http_session_id(Session),
 	session_user(Session, User),
-	update_visitor_data(User, Profile, 'login').
+	update_visitor_data(User, Profile, login).
 chat_event(logout(_ProfileID)) :- !,
 	http_session_id(Session),
 	session_user(Session, User),
-	update_visitor_data(User).
+	update_visitor_data(User, _, logout).
 chat_event(visitor_count(Count)) :-
 	visitor_count(Count).
 

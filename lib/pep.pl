@@ -85,6 +85,9 @@ Examples are:
 %       - file(update(File,Meta))
 %         Update (save) a physical file outside the versioned gitty
 %         store.
+%     * Social options
+%       - chat
+%         Open websocket chat channel
 %
 %   @throws http_reply(forbidden(URL)) if the action is not allowed. Can
 %   we generate a JSON error object?
@@ -127,6 +130,7 @@ approve(file(update(_File, _Meta)), Auth) :-
     user_property(Auth, login(local)).
 approve(run(any, _), Auth) :-
     user_property(Auth, login(local)).
+approve(chat, _).
 
 %!  deny(+Auth, +Id)
 
