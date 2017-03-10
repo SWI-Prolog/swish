@@ -277,6 +277,9 @@ existing_visitor(WSID, Session, Token, TmpUser, UserData) :-
 	visitor_session(WSID, Session, Token),
 	session_user(Session, TmpUser),
 	visitor_data(TmpUser, UserData), !.
+existing_visitor(WSID, Session, Token, _, _) :-
+	retractall(visitor_session(WSID, Session, Token)),
+	fail.
 
 %%	create_visitor(+WSID, +Session, ?Token, -TmpUser, -UserData, +Options)
 %
