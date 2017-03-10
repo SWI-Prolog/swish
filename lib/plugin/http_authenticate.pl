@@ -48,6 +48,7 @@
 :- use_module(library(http/http_authenticate)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
+:- use_module(library(broadcast)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
 
@@ -225,6 +226,14 @@ swish_current_user(User,
 swish_logged_in(Request, User, UserData) :-
 	logged_in(Request, User),
 	swish_current_user(User, UserData).
+
+:- listen(identity_property(Identity, Property),
+          from_passwd_file(Identity, Property)).
+
+from_passwd_file(Identity, Property) :-
+	swish_current_user(Identity.get(user), Dict),
+	Property =.. [Name,Value],
+	Value = Dict.get(Name).
 
 
 		 /*******************************

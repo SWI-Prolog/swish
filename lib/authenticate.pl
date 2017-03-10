@@ -39,6 +39,7 @@
           ]).
 :- use_module(library(http/http_wrapper)).
 :- use_module(library(debug)).
+:- use_module(library(broadcast)).
 
 :- use_module(config).
 
@@ -120,14 +121,20 @@ identity(Auth, Auth).
 %     Identifier of the profile we have on this user.
 %     - login(Atom)
 %     Same as identity_provider(Atom)
+%     - name(Atom)
+%     Name associated with the identity
+%     - email(Atom)
+%     Email associated with the identity
 
 user_property(Identity, Property) :-
     current_user_property(Property, How),
     user_property_impl(Property, How, Identity).
 
-user_property_impl(Property, dict, Identity) :-
+user_property_impl(Property, dict, Identity) :- !,
     Property =.. [Name,Value],
     Value = Identity.get(Name).
+user_property_impl(Property, broadcast, Identity) :-
+    broadcast_request(identity_property(Identity, Property)).
 user_property_impl(login(By), _, Identity) :-
     By = Identity.get(identity_provider).
 
@@ -139,6 +146,8 @@ current_user_property(identity_provider(_Atom),   dict).
 current_user_property(profile_id(_Atom),          dict).
 
 current_user_property(login(_IdProvider),         derived).
+current_user_property(name(_Name),                broadcast).
+current_user_property(email(_Email),              broadcast).
 
 
 		 /*******************************

@@ -33,7 +33,9 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-:- module(swish_plugin_user_profile, []).
+:- module(swish_plugin_user_profile,
+          [
+          ]).
 :- use_module(library(option)).
 :- use_module(library(user_profile)).
 :- use_module(library(http/http_dispatch)).
@@ -422,3 +424,14 @@ delete_profile(_Request) :-
     http_close_session(SessionID),      % effectively logout
     profile_remove(User),
     reply_json_dict(true).
+
+
+		 /*******************************
+		 *           PROPERTIES		*
+		 *******************************/
+
+:- listen(identity_property(Identity, Property),
+          from_profile(Identity, Property)).
+
+from_profile(Identity, Property) :-
+    profile_property(Identity.get(profile_id), Property).
