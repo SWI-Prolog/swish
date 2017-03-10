@@ -40,12 +40,16 @@
 :- use_module(library(settings)).
 :- use_module(library(persistency)).
 :- use_module(library(broadcast)).
+:- use_module(library(lists)).
+:- use_module(library(http/html_write)).
 
 :- use_module(library(user_profile)).
 
 :- use_module(email).
 :- use_module('../storage').
 
+:- initialization
+    start_mail_scheduler.
 
 /** <module> SWISH notifications
 
@@ -60,10 +64,18 @@ A user has the following options to control notifications:
     - Notify chat
   * By profile
     - Notify by E-mail: never/immediate/daily
+
+@tbd    Allow user to update Profile value nicely
+@tbd	Allow user to edit options for a file.  This dialog
+	may also update the profile?
 */
 
 :- setting(database, callable, swish('data/notify.db'),
            "Database holding notifications").
+:- setting(queue, callable, swish('data/notify-queue.db'),
+           "File holding queued messages").
+:- setting(daily, compound, 04:00,
+           "Time at which to send daily messages").
 
 
 		 /*******************************
@@ -73,7 +85,7 @@ A user has the following options to control notifications:
 :- persistent
         follower(docid:string,
                  profile:string,
-                 options:list(atom)).
+                 options:list(oneof([update,chat]))).
 
 notify_open_db :-
     db_attached(_),
@@ -82,6 +94,105 @@ notify_open_db :-
     setting(database, Spec),
     absolute_file_name(Spec, Path, [access(write)]),
     db_attach(Path, [sync(close)]).
+
+%!  queue_event(+Profile, +Action) is det.
+%!  queue_event(+Profile, +Action, +Status) is det.
+%
+%   Queue an email notification for  Profile,   described  by Action. We
+%   simply append these events as Prolog terms to a file.
+
+queue_event(Profile, Action) :-
+    queue_event(Profile, Action, new).
+queue_event(Profile, Action, Status) :-
+    queue_file(Path),
+    with_mutex(swish_notify,
+               queue_event_sync(Path, Profile, Action, Status)).
+
+queue_event_sync(Path, Profile, Action, Status) :-
+    setup_call_cleanup(
+        open(Path, append, Out, [encoding(utf8)]),
+        format(Out, '~q.~n', [notify(Profile, Action, Status)]),
+        close(Out)).
+
+queue_file(Path) :-
+    setting(queue, Spec),
+    absolute_file_name(Spec, Path, [access(write)]).
+
+%!  send_queued_mails is det.
+%
+%   Send possible queued emails.
+
+send_queued_mails :-
+    queue_file(Path),
+    exists_file(Path), !,
+    atom_concat(Path, '.sending', Tmp),
+    with_mutex(swish_notify, rename_file(Path, Tmp)),
+    read_file_to_terms(Tmp, Terms, [encoding(utf8)]),
+    forall(member(Term, Terms),
+           send_queued(Term)),
+    delete_file(Tmp).
+send_queued_mails.
+
+send_queued(notify(Profile, Action, Status)) :-
+    profile_property(Profile, email(Email)),
+    profile_property(Profile, email_notifications(When)),
+    When \== never, !,
+    (   catch(send_notification_mail(Profile, Email, Action),
+              Error, true)
+    ->  (   var(Error)
+        ->  true
+        ;   update_status(Status, Error, NewStatus)
+        ->  queue_event(Profile, Action, NewStatus)
+        ;   true
+        )
+    ;   update_status(Status, failed, NewStatus)
+    ->  queue_event(Profile, Action, NewStatus)
+    ;   true
+    ).
+
+update_status(new, Status, retry(3, Status)).
+update_status(retry(Count0, _), Status, retry(Count, Status)) :-
+    Count0 > 0,
+    Count is Count0 - 1.
+
+%!  start_mail_scheduler
+%
+%   Start a thread that schedules queued mail handling.
+
+start_mail_scheduler :-
+    catch(thread_create(mail_main, _,
+                        [ alias(mail_scheduler),
+                          detached(true)
+                        ]),
+          error(permission_error(create, thread, mail_scheduler), _),
+          true).
+
+%!  mail_main
+%
+%   Infinite loop that schedules sending queued messages.
+
+mail_main :-
+    repeat,
+    next_send_queue_time(T),
+    get_time(Now),
+    Sleep is T-Now,
+    sleep(Sleep),
+    thread_create(send_queued_mails, _,
+                  [ detached(true),
+                    alias(send_queued_mails)
+                  ]),
+    fail.
+
+next_send_queue_time(T) :-
+    get_time(Now),
+    stamp_date_time(Now, date(Y,M,D0,H0,_M,_S,Off,TZ,DST), local),
+    setting(daily, HH:MM),
+    (   H0 @< HH
+    ->  D = D0
+    ;   D is D0+1
+    ),
+    date_time_stamp(date(Y,M,D,HH,MM,0,Off,TZ,DST), T).
+
 
 %!  follow(+DocID, +ProfileID, +Options) is det.
 %
@@ -173,11 +284,39 @@ chat(updated(Commit)) -->
 		 *            EMAIL		*
 		 *******************************/
 
-notify_by_mail(Profile, Action, _Options) :-
+%!  notify_by_mail(+Profile, +Action, +FollowOptions) is semidet.
+%
+%   Send a notification by mail. Optionally  schedules the message to be
+%   send later.
+%
+%   @tbd: if sending fails, should we queue the message?
+
+notify_by_mail(Profile, Action, Options) :-
     profile_property(Profile, email(Email)),
+    profile_property(Profile, email_notifications(When)),
+    When \== never,
+    must_notify(Action, Options),
+    (   When == immediate
+    ->  send_notification_mail(Profile, Email, Action)
+    ;   queue_event(Profile, Action)
+    ).
+
+must_notify(chat(_), Options) :- !,
+    memberchk(chat, Options).
+must_notify(_, Options) :-
+    memberchk(update, Options).
+
+%!  send_notification_mail(+Profile, +Action) is semidet.
+%
+%   Actually send a notification mail.  Fails   if  Profile  has no mail
+%   address or does not want to be notified by email.
+
+send_notification_mail(Profile, Email, Action) :-
     phrase(subject(Action), Codes),
     string_codes(Subject, Codes),
-    smtp_send_html(Email, \message(Profile, Action), [subject(Subject)]).
+    smtp_send_html(Email, \message(Profile, Action),
+                   [ subject(Subject)
+                   ]).
 
 subject(Action) -->
     subject_prefix,
