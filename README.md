@@ -13,6 +13,12 @@ your programs online for at least multiple years.
 
 ## Installation
 
+### Get submodules
+
+cd to your swish root directory and 
+
+git submodule update --init
+
 ### Get JavaScript requirements
 
 #### Using bower
