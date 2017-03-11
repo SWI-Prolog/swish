@@ -259,7 +259,7 @@ patch_status(stderr(Errors), Dict, Dict.put(patch_errors, Errors)) :- !.
 %	wishes to follow the file associated with Commit.
 
 follow(Commit, Dict) :-
-	Dict.get(follow) == true,
+	Dict.get(meta).get(follow) == true,
 	_{name:File, profile_id:ProfileID} :< Commit, !,
 	atom_concat('gitty:', File, DocID),
 	broadcast(swish(follow(DocID, ProfileID, [update,chat]))).
