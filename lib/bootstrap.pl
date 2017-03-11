@@ -41,6 +41,7 @@
           ]).
 :- use_module(library(option)).
 :- use_module(library(occurs)).
+:- use_module(library(error)).
 :- use_module(library(http/html_write)).
 
 /** <module> Bootstrap form generator
@@ -105,6 +106,11 @@ bt_form_element(input(Name, Type, IOptions), Options) -->
              [ \bt_label(Name, IOptions, Options),
                \bt_input(Name, Type, IOptions, Options)
              ])).
+bt_form_element(select(Name, Values, IOptions), Options) -->
+    html(div(class('form-group'),
+             [ \bt_label(Name, IOptions, Options),
+               \bt_select(Name, Values, IOptions, Options)
+             ])).
 bt_form_element(button(Name, Type, IOptions), Options) -->
     bt_button(Name, Type, IOptions, Options).
 bt_form_element(button_group(Buttons, IOptions), Options) -->
@@ -135,18 +141,26 @@ label_attr(_) --> [].
 %     - value(+Value)
 %     Initial value of the input
 %     - disabled(+Boolean)
+%     If `true`, the input is inactive.
+%     - readonly(+Boolean)
 %     If `true`, the input cannot be edited.
 
+:- html_meta(horizontal_input(html, +, ?, ?)).
+
 bt_input(Name, Type, InputOptions, FormOptions) -->
+    horizontal_input(\bt_input_elem(Name, Type, InputOptions, FormOptions),
+                     FormOptions),
+    !.
+bt_input(Name, Type, InputOptions, FormOptions) -->
+    bt_input_elem(Name, Type, InputOptions, FormOptions).
+
+horizontal_input(HTML, FormOptions) -->
     { form_style(horizontal, FormOptions),
       option(label_columns(Size-Count), FormOptions, sm-2),
       FieldCols is 12-Count,
       atomic_list_concat([col,Size,FieldCols], -, Class)
     },
-    html(div(class(Class),
-             \bt_input_elem(Name, Type, InputOptions, FormOptions))).
-bt_input(Name, Type, InputOptions, FormOptions) -->
-    bt_input_elem(Name, Type, InputOptions, FormOptions).
+    html(div(class(Class), HTML)).
 
 bt_input_elem(Name, checkbox, InputOptions, _FormOptions) -->
     !,
@@ -158,7 +172,8 @@ bt_input_elem(Name, Type, InputOptions, _FormOptions) -->
 
 checkbox_attr(Options) -->
     ( checkbox_value(Options) -> [] ; [] ),
-    ( input_disabled(Options) -> [] ; [] ).
+    ( input_disabled(Options) -> [] ; [] ),
+    ( input_readonly(Options) -> [] ; [] ).
 
 checkbox_value(Options) -->
     { option(value(true), Options) },
@@ -174,6 +189,51 @@ input_value(Options) -->
 input_disabled(Options) -->
     { option(disabled(true), Options) },
     [ disabled(disabled) ].
+input_readonly(Options) -->
+    { option(readonly(true), Options) },
+    [ readonly(readonly) ].
+
+%!  bt_select(+Name, +Values, +SelectOptions, +FormOptions)//
+%
+%   Emit a <select> element.  SelectOptions:
+%
+%     - value(Value)
+%       If present, provides the preselected value
+%     - size(Size)
+%       Provides the number of visible options.
+
+bt_select(Name, Values, SelectOptions, FormOptions) -->
+    horizontal_input(\bt_select_elem(Name, Values, SelectOptions, FormOptions),
+                     FormOptions).
+
+bt_select_elem(Name, Values, SelectOptions, _FormOptions) -->
+    { option(value(Value), SelectOptions, _),
+      (   option(size(Size), SelectOptions)
+      ->  Opts = [size(Size)]
+      ;   Opts = []
+      )
+    },
+    html(select([name(Name),class('form-control')|Opts],
+                \select_options(Values, Value, SelectOptions))).
+
+select_options([], _, _) -->
+    [].
+select_options([H|T], Value, Options) -->
+    select_option_1(H, Value, Options),
+    select_options(T, Value, Options).
+
+select_option_1(Value, Selected, _Options) -->
+    { (atom(Value) ; string(Value)),
+      !,
+      name_label(Value, Label),
+      (   Value == Selected
+      ->  Opts = [selected(selected)]
+      ;   Opts = []
+      )
+    },
+    html(option([value(Value)|Opts], Label)).
+select_option_1(Value, _, _) -->
+    { domain_error(bt_select_option, Value) }.
 
 
 %!  bt_button_group(+Buttons, +ButtonOptions, +FormOptions)//

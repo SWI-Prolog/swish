@@ -265,10 +265,20 @@ user_profile(_Request) :-
                    label_columns(sm-3)
                  ])).
 
-bt_field(Profile, Name, input(Name, IType, Options)) :-
+bt_field(Profile, Name, Field) :-
     user_profile:attribute(Name, Type, AOptions),
-    input_type(Type, IType),
+    !,
     \+ option(hidden(true), AOptions),
+    bt_field(Profile, Name, Type, AOptions, Field).
+
+bt_field(Profile, Name, Type, AOptions, select(Name, Values, Options)) :-
+    Type = oneof(Values),
+    !,
+    phrase(( (value_opt(Profile, Type, Name) -> [] ; []),
+             (access_opt(AOptions)           -> [] ; [])
+           ), Options).
+bt_field(Profile, Name, Type, AOptions, input(Name, IType, Options)) :-
+    input_type(Type, IType),
     phrase(( (value_opt(Profile, Type, Name) -> [] ; []),
              (access_opt(AOptions)           -> [] ; []),
              (data_type_opt(Type)            -> [] ; [])
