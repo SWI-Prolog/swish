@@ -42,12 +42,14 @@
 :- use_module(library(broadcast)).
 :- use_module(library(lists)).
 :- use_module(library(readutil)).
+:- use_module(library(debug)).
 :- use_module(library(http/html_write)).
 
 :- use_module(library(user_profile)).
 
 :- use_module(email).
 :- use_module('../storage').
+:- use_module('../chat').
 
 :- initialization
     start_mail_scheduler.
@@ -84,8 +86,8 @@ A user has the following options to control notifications:
 		 *******************************/
 
 :- persistent
-        follower(docid:string,
-                 profile:string,
+        follower(docid:atom,
+                 profile:atom,
                  options:list(oneof([update,chat]))).
 
 notify_open_db :-
@@ -239,9 +241,19 @@ to_atom(Text, Atom) :-
 %
 %   Notify the user belonging to Profile about Action.
 
+:- meta_predicate try(0).
+
 notify_user(Profile, Action, Options) :-
-    ignore(notify_chat(Profile, Action, Options)),
-    ignore(notify_by_mail(Profile, Action, Options)).
+    try(notify_chat(Profile, Action, Options)),
+    try(notify_by_mail(Profile, Action, Options)).
+
+try(Goal) :-
+    catch(Goal, Error, print_message(error, Error)),
+    !.
+try(Goal) :-
+    print_message(error, goal_failed(Goal)).
+
+
 
 
 		 /*******************************
@@ -298,8 +310,10 @@ notify_by_mail(Profile, Action, Options) :-
     When \== never,
     must_notify(Action, Options),
     (   When == immediate
-    ->  send_notification_mail(Profile, Email, Action)
-    ;   queue_event(Profile, Action)
+    ->  debug(notify(email), 'Sending notification mail to ~p', [Profile]),
+        send_notification_mail(Profile, Email, Action)
+    ;   debug(notify(email), 'Queing notification mail to ~p', [Profile]),
+        queue_event(Profile, Action)
     ).
 
 must_notify(chat(_), Options) :- !,
@@ -327,7 +341,7 @@ subject_prefix -->
     "[SWISH] ".
 
 subject_action(updated(Commit)) -->
-    txt_commit_file(Commit), "updated by ", txt_committer(Commit).
+    txt_commit_file(Commit), " updated by ", txt_committer(Commit).
 
 
 		 /*******************************
@@ -340,10 +354,13 @@ message(ProfileID, Action) -->
     signature.
 
 dear(ProfileID) -->
-    html(h4(["Dear ", \profile_name(ProfileID), ","])).
+    html(h4(["Dear ", \profile_name(ProfileID), ","])), !.
+dear(_) -->
+    [].
 
 profile_name(ProfileID) -->
-    html(ProfileID.get(name)).
+    { profile_property(ProfileID, name(Name)) },
+    html(Name).
 
 signature -->
     { public_url(swish, [], HREF, []) },
@@ -351,7 +368,8 @@ signature -->
 
 notification(updated(Commit)) -->
     html(p(['The file ', \file_name(Commit),
-            ' has been updated by ', \committer(Commit), '.'])).
+            ' has been updated by ', \committer(Commit), '.'])),
+    commit_message(Commit).
 
 file_name(Commit) -->
     { public_url(web_storage, path_postfix(Commit.name), HREF, []) },
@@ -362,6 +380,13 @@ committer(Commit) -->
     profile_name(ProfileID).
 committer(Commit) -->
     html(Commit.get(owner)).
+
+commit_message(Commit) -->
+    { Message = Commit.get(commit_message) }, !,
+    html(p(class('commit-message'), Message)).
+commit_message(_Commit) -->
+    html(p(class('no-commit-message'), 'No message')).
+
 
 
 		 /*******************************
@@ -384,7 +409,8 @@ txt_committer(Commit) -->
 		 *******************************/
 
 txt_profile_name(ProfileID) -->
-    write(ProfileID.get(name)).
+    { profile_property(ProfileID, name(Name)) },
+    write(Name).
 
 
 		 /*******************************

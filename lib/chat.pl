@@ -1114,6 +1114,7 @@ chat_to_profile(ProfileID, HTML) :-
 				   type:notify,
 				   html:String
 				 })),
+	    debug(notify(chat), 'Notify to ~p: ~p', [ProfileID, String]),
 	    fail
 	;   true
 	).
