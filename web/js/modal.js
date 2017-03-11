@@ -243,16 +243,19 @@ define([ "jquery", "config", "preferences", "links", "form",
      */
 
     server_form: function(options) {
+      var modalel = $(this);
+
       return this.swishModal('show', {
 	title: options.title,
 	body: function() {
 	  elem = $(this);
 	  $.ajax({ url: options.url,
+		   data: options.data,
 		   success: function(data) {
 		     elem.append(data);
 		   },
 		   error: function(jqXHDR) {
-		     modal.ajaxError(jqXHDR);
+		     modalel.swishModal('showAjaxError', jqXHDR);
 		   }
 	         });
 
@@ -271,7 +274,7 @@ define([ "jquery", "config", "preferences", "links", "form",
 			 return false;
 		       },
 		       error: function(jqXHDR) {
-			 modal.ajaxError(jqXHDR);
+			 modalel.swishModal('showAjaxError', jqXHDR);
 		       }
 	      });
 	    } else {
@@ -295,7 +298,7 @@ define([ "jquery", "config", "preferences", "links", "form",
 			 }
 		       },
 		       error: function(jqXHDR) {
-			 modal.ajaxError(jqXHDR);
+			 modalel.swishModal('showAjaxError', jqXHDR);
 		       }
 	      });
 	    }
