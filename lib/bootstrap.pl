@@ -208,13 +208,19 @@ bt_select(Name, Values, SelectOptions, FormOptions) -->
 
 bt_select_elem(Name, Values, SelectOptions, _FormOptions) -->
     { option(value(Value), SelectOptions, _),
-      (   option(size(Size), SelectOptions)
-      ->  Opts = [size(Size)]
-      ;   Opts = []
-      )
+      phrase(( (select_size(SelectOptions)     -> [] ; []),
+               (select_multiple(SelectOptions) -> [] ; [])
+             ), Opts)
     },
     html(select([name(Name),class('form-control')|Opts],
                 \select_options(Values, Value, SelectOptions))).
+
+select_size(Options) -->
+    { option(size(Size), Options) },
+    [ size(Size) ].
+select_multiple(Options) -->
+    { option(multiple(true), Options) },
+    [ multiple(multiple) ].
 
 select_options([], _, _) -->
     [].
