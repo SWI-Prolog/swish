@@ -187,8 +187,9 @@ validate_step(integer, Value0, Value) :-
 validate_step(float, Value0, Value) :-
 	number_string(Value1, Value0),
 	Value is float(Value1).
-validate_step(oneof(List), Value, Value) :-
-	memberchk(Value, List).
+validate_step(oneof(List), Value0, Value) :-
+	member(Value, List),
+	string_value(Value0, Value), !.
 validate_step(password, Value, Value) :-
 	string_length(Value, Len),
 	Len >= 6.
@@ -264,6 +265,20 @@ is_scheme(http, https).
 valid_authority(Components) :-
 	uri_data(authority, Components, Authority),
 	nonvar(Authority).
+
+%!	string_value(+String, +Value) is semidet.
+%
+%	True if String can be  considered   the  stringified  version of
+%	Value.
+
+string_value(Value, Value) :- !.
+string_value(String, Value) :-
+	atom(Value),
+	atom_string(Value, String), !.
+string_value(String, Value) :-
+	number(Value),
+	number_string(String, Value1),
+	Value1 =:= Value.
 
 validate_failed(H, _Value0, Field) :-
 	input_error(Field, H).

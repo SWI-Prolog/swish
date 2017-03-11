@@ -345,10 +345,11 @@ save_profile(Request) :-
     http_in_session(_SessionID),
     http_session_data(profile_id(User)),
     dict_pairs(Dict, _, Pairs),
-    maplist(validate_term, Pairs, Validate),
+    maplist(validate_term, Pairs, VPairs, Validate),
     catch(validate_form(Dict, Validate), E, true),
     (   var(E)
-    ->  save_profile(User, Dict),
+    ->  dict_pairs(VDict, _, VPairs),
+        save_profile(User, VDict),
         current_profile(User, Profile),
         reply_json_dict(_{status:success, profile:Profile})
     ;   message_to_string(E, Msg),
@@ -356,7 +357,8 @@ save_profile(Request) :-
         reply_json_dict(_{status:error, error:Error})
     ).
 
-validate_term(Name-_, field(Name, _Value, [strip,default("")|Options])) :-
+validate_term(Name-_, Name-Value,
+              field(Name, Value, [strip,default("")|Options])) :-
     user_profile:attribute(Name, Type, FieldOptions),
     (   (   option(access(ro), FieldOptions)
         ;   option(hidden(true), FieldOptions)
