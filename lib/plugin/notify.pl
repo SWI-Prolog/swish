@@ -465,7 +465,7 @@ follow_file_options(Request) :-
     user_profile:attribute/3.
 
 follow_file_widgets(When, Follow,
-    [ select(follow, [update,chat], [value(Follow), multiple(true)]),
+    [ checkboxes(follow, [update,chat], [value(Follow)]),
       select(email_notifications, NotificationOptions, [value(When)])
     | Buttons
     ]) :-

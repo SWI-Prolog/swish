@@ -111,6 +111,11 @@ bt_form_element(select(Name, Values, IOptions), Options) -->
              [ \bt_label(Name, IOptions, Options),
                \bt_select(Name, Values, IOptions, Options)
              ])).
+bt_form_element(checkboxes(Name, Values, IOptions), Options) -->
+    html(div(class('form-group'),
+             [ \bt_label(Name, IOptions, Options),
+               \bt_checkboxes(Name, Values, IOptions, Options)
+             ])).
 bt_form_element(button(Name, Type, IOptions), Options) -->
     bt_button(Name, Type, IOptions, Options).
 bt_form_element(button_group(Buttons, IOptions), Options) -->
@@ -145,22 +150,22 @@ label_attr(_) --> [].
 %     - readonly(+Boolean)
 %     If `true`, the input cannot be edited.
 
-:- html_meta(horizontal_input(html, +, ?, ?)).
+:- html_meta(horizontal_input(html, +, +, +, ?, ?)).
 
 bt_input(Name, Type, InputOptions, FormOptions) -->
     horizontal_input(\bt_input_elem(Name, Type, InputOptions, FormOptions),
-                     FormOptions),
+                     [], [], FormOptions),
     !.
 bt_input(Name, Type, InputOptions, FormOptions) -->
     bt_input_elem(Name, Type, InputOptions, FormOptions).
 
-horizontal_input(HTML, FormOptions) -->
+horizontal_input(HTML, Classes, Attrs, FormOptions) -->
     { form_style(horizontal, FormOptions),
       option(label_columns(Size-Count), FormOptions, sm-2),
       FieldCols is 12-Count,
       atomic_list_concat([col,Size,FieldCols], -, Class)
     },
-    html(div(class(Class), HTML)).
+    html(div([class([Class|Classes])|Attrs], HTML)).
 
 bt_input_elem(Name, checkbox, InputOptions, _FormOptions) -->
     !,
@@ -204,7 +209,7 @@ input_readonly(Options) -->
 
 bt_select(Name, Values, SelectOptions, FormOptions) -->
     horizontal_input(\bt_select_elem(Name, Values, SelectOptions, FormOptions),
-                     FormOptions).
+                     [], [], FormOptions).
 
 bt_select_elem(Name, Values, SelectOptions, _FormOptions) -->
     { option(value(Value), SelectOptions, _),
@@ -240,6 +245,35 @@ select_option_1(Value, Selected, _Options) -->
     html(option([value(Value)|Opts], Label)).
 select_option_1(Value, _, _) -->
     { domain_error(bt_select_option, Value) }.
+
+%!  bt_checkboxes(+Name, +Values, +SelectOptions, +FormOptions)//
+%
+%   Set of checkboxes reported as an array that is a subset of Values.
+
+bt_checkboxes(Name, Values, CBOptions, FormOptions) -->
+    horizontal_input(\checkboxes(Values, CBOptions),
+                     [checkboxes, array], name(Name), FormOptions).
+
+checkboxes([], _) -->
+    [].
+checkboxes([H|T], Options) -->
+    checkbox(H, Options),
+    checkboxes(T, Options).
+
+checkbox(Value, Options) -->
+    { name_label(Value, Label),
+      (   option(value(Selected), Options),
+          memberchk(Value, Selected)
+      ->  Opts = [checked(checked)]
+      ;   Opts = []
+      )
+    },
+    html(label(class('checkbox-inline'),
+               [ input([ type(checkbox), name(Value), autocomplete(false)
+                       | Opts
+                       ]),
+                 Label
+               ])).
 
 
 %!  bt_button_group(+Buttons, +ButtonOptions, +FormOptions)//
