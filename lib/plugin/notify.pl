@@ -44,10 +44,15 @@
 :- use_module(library(readutil)).
 :- use_module(library(debug)).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/http_session)).
+:- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_parameters)).
+:- use_module(library(http/http_json)).
 
 :- use_module(library(user_profile)).
 
 :- use_module(email).
+:- use_module('../bootstrap').
 :- use_module('../storage').
 :- use_module('../chat').
 
@@ -419,3 +424,78 @@ txt_profile_name(ProfileID) -->
 
 write(Term, Head, Tail) :-
     format(codes(Head, Tail), '~w', [Term]).
+
+
+		 /*******************************
+		 *        HTTP HANDLING		*
+		 *******************************/
+
+:- http_handler(swish(follow/options), follow_file_options,
+                [ id(follow_file_options) ]).
+:- http_handler(swish(follow/save), save_follow_file,
+                [ id(save_follow_file) ]).
+
+%!  follow_file_options(+Request)
+%
+%   Edit the file following options for the current user.
+
+follow_file_options(Request) :-
+    http_parameters(Request,
+                    [ docid(DocID, [atom])
+                    ]),
+    http_in_session(_SessionID),
+    http_session_data(profile_id(ProfileID)),
+    profile_property(ProfileID, email_notifications(When)),
+
+    (   follower(DocID, ProfileID, Follow)
+    ->  true
+    ;   Follow = []
+    ),
+
+    follow_file_widgets(When, Follow, Widgets),
+
+    reply_html_page(
+        title('Follow file options'),
+        \bt_form(Widgets,
+                 [ class('form-horizontal'),
+                   label_columns(sm-3)
+                 ])).
+
+:- multifile
+    user_profile:attribute/3.
+
+follow_file_widgets(When, Follow,
+    [ select(follow, [update,chat], [value(Follow), multiple(true)]),
+      select(email_notifications, NotificationOptions, [value(When)])
+    | Buttons
+    ]) :-
+    user_profile:attribute(email_notifications, oneof(NotificationOptions), _),
+    buttons(Buttons).
+
+buttons(
+    [ button_group(
+          [ button(save, submit,
+                   [ type(primary),
+                     data([action(SaveHREF)])
+                   ]),
+            button(cancel, button,
+                   [ type(danger),
+                     data([dismiss(modal)])
+                   ])
+          ],
+          [
+          ])
+    ]) :-
+    http_link_to_id(save_follow_file, [], SaveHREF).
+
+%!  save_follow_file(+Request)
+%
+%   Save the follow file options
+
+save_follow_file(Request) :-
+    http_read_json_dict(Request, Dict),
+    debug(profile(update), 'Got ~p', [Dict]),
+    http_in_session(_SessionID),
+    http_session_data(profile_id(_ProfileID)),
+    debug(notify(options), 'Set follow options to ~p', [Dict]),
+    reply_json_dict(_{status:success}).

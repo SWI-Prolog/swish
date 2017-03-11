@@ -123,6 +123,9 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	elem.on("chat-about-file", function(ev) {
 	  onStorage(ev, 'chat');
 	});
+	elem.on("follow-file", function(ev) {
+	  onStorage(ev, 'follow');
+	});
 	elem.on("activate-tab", function(ev) {
 						/* TBD: What exactly? */
 	});
@@ -923,6 +926,24 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  elem.storage('update_tab_title');
 	}
       });
+    },
+
+    /**
+     * Edit the _follow_ options for this file.
+     */
+
+    follow: function() {
+      var docid = this.storage('docid', 'gitty');
+
+      if ( docid ) {
+	modal.server_form({
+	  title: "Follow file options",
+	  url:   config.http.locations.follow_file_options,
+	  data:  {docid: docid}
+	});
+      } else {
+	modal.alert("Sorry, can only follow files");
+      }
     },
 
     /**

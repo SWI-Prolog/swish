@@ -99,6 +99,9 @@ preferences.setDefault("emacs-keybinding", false);
 	"Chat ...": function() {
 	  menuBroadcast("chat-about-file");
 	},
+	"Follow ...": function() {
+	  menuBroadcast("follow-file");
+	},
 	"Start TogetherJS ...": function() {
 	  $("body").swish('collaborate');
 	},
