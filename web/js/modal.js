@@ -42,8 +42,9 @@
  * @requires jquery
  */
 
-define([ "config", "preferences", "links", "jquery", "laconic", "bootstrap" ],
-       function(config, preferences, links) {
+define([ "jquery", "config", "preferences", "links", "form",
+	 "laconic", "bootstrap" ],
+       function($, config, preferences, links, form) {
 
 (function($) {
   var pluginName = 'swishModal';
@@ -86,6 +87,9 @@ define([ "config", "preferences", "links", "jquery", "laconic", "bootstrap" ],
 	});
 	elem.on("show", function(ev, options) {
 	  elem.swishModal('show', options);
+	});
+	elem.on("server_form", function(ev, options) {
+	  elem.swishModal('server_form', options);
 	});
       });
     },
@@ -228,6 +232,82 @@ define([ "config", "preferences", "links", "jquery", "laconic", "bootstrap" ],
     },
 
     /**
+     * Show a server-generated form and act on the buttons.
+     * @arg {Object} options
+     * @arg {String} options.url is the URL that generates the form
+     * content
+     * @arg {String} options.title sets the title of the form.
+     * @arg {Function} options.onreply is called after the form has
+     * been submitted.  `this` points at the submitting button and
+     * the first argument contains the server reply.
+     */
+
+    server_form: function(options) {
+      return this.swishModal('show', {
+	title: options.title,
+	body: function() {
+	  elem = $(this);
+	  $.ajax({ url: options.url,
+		   success: function(data) {
+		     elem.append(data);
+		   },
+		   error: function(jqXHDR) {
+		     modal.ajaxError(jqXHDR);
+		   }
+	         });
+
+	  elem.on("click", "button[data-action]", function(ev) {
+	    var formel = $(ev.target).closest("form");
+	    var data   = form.serializeAsObject(formel, true);
+	    var button = $(ev.target).closest("button");
+
+	    if ( button.data("form_data") == false ) {
+	      $.ajax({ url: button.data("action"),
+	               success: function(obj) {
+			 button.closest(".modal").modal('hide');
+			 if ( options.onreply )
+			   options.onreply.call(button[0], obj);
+			 ev.preventDefault();
+			 return false;
+		       },
+		       error: function(jqXHDR) {
+			 modal.ajaxError(jqXHDR);
+		       }
+	      });
+	    } else {
+	      $.ajax({ url: button.data("action"),
+		       data: JSON.stringify(data),
+		       dataType: "json",
+		       contentType: "application/json",
+		       type: "POST",
+		       success: function(obj) {
+			 if ( obj.status == "success" ) {
+			   button.closest(".modal").modal('hide');
+			   if ( options.onreply )
+			     options.onreply.call(button[0], obj);
+			   ev.preventDefault();
+			   return false;
+			 } else if ( obj.status == "error" ) {
+			   form.formError(formel, obj.error);
+			 } else {
+			   alert("Updated failed: " +
+				 JSON.serializeAsObject(obj));
+			 }
+		       },
+		       error: function(jqXHDR) {
+			 modal.ajaxError(jqXHDR);
+		       }
+	      });
+	    }
+
+	    ev.preventDefault();
+	    return false;
+	  });
+	}
+      });
+    },
+
+    /**
      * Display information about an ajax error
      */
     showAjaxError: function(jqXHR) {
@@ -367,6 +447,9 @@ define([ "config", "preferences", "links", "jquery", "laconic", "bootstrap" ],
     },
     show: function(options) {
       $(".swish-event-receiver").trigger("show", options);
+    },
+    server_form: function(options) {
+      $(".swish-event-receiver").trigger("server_form", options);
     }
   };
 });

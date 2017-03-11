@@ -167,66 +167,11 @@ var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
     profile: function() {
       var login = $(this);
 
-      modal.show({
+      modal.server_form({
 	title: "User profile",
-	body: function() {
-	  elem = $(this);
-	  $.ajax({ url: config.swish.user.swish_profile_url ||
-			config.http.locations.user_profile,
-		   success: function(data) {
-		     elem.append(data);
-		   },
-		   error: function(jqXHDR) {
-		     modal.ajaxError(jqXHDR);
-		   }
-	         });
-
-	  elem.on("click", "button[data-action]", function(ev) {
-	    var formel = $(ev.target).closest("form");
-	    var data   = form.serializeAsObject(formel, true);
-	    var button = $(ev.target).closest("button");
-
-	    if ( button.data("form_data") == false ) {
-	      $.ajax({ url: button.data("action"),
-	               success: function(obj) {
-			 button.closest(".modal").modal('hide');
-			 login.login('update', "profile");
-			 ev.preventDefault();
-			 return false;
-		       },
-		       error: function(jqXHDR) {
-			 modal.ajaxError(jqXHDR);
-		       }
-	      });
-	    } else {
-	      $.ajax({ url: button.data("action"),
-		       data: JSON.stringify(data),
-		       dataType: "json",
-		       contentType: "application/json",
-		       type: "POST",
-		       success: function(obj) {
-			 if ( obj.status == "success" ) {
-			   button.closest(".modal").modal('hide');
-			   login.login('update', "profile");
-			   ev.preventDefault();
-			   return false;
-			 } else if ( obj.status == "error" ) {
-			   form.formError(formel, obj.error);
-			 } else {
-			   alert("Updated failed: " +
-				 JSON.serializeAsObject(obj));
-			 }
-		       },
-		       error: function(jqXHDR) {
-			 modal.ajaxError(jqXHDR);
-		       }
-	      });
-	    }
-
-	    ev.preventDefault();
-	    return false;
-	  });
-	}
+	url: config.swish.user.swish_profile_url ||
+	     config.http.locations.user_profile,
+	onreply: function() { login.login('update', "profile"); }
       });
     },
 
