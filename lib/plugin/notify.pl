@@ -43,6 +43,7 @@
 :- use_module(library(lists)).
 :- use_module(library(readutil)).
 :- use_module(library(debug)).
+:- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_session)).
 :- use_module(library(http/http_dispatch)).
@@ -202,21 +203,27 @@ next_send_queue_time(T) :-
     date_time_stamp(date(Y,M,D,HH,MM,0,Off,TZ,DST), T).
 
 
-%!  follow(+DocID, +ProfileID, +Options) is det.
+%!  follow(+DocID, +ProfileID, +Flags) is det.
 %
-%   Assert that DocID is being followed by ProfileID using Options.
+%   Assert that DocID is being followed by ProfileID using Flags.
 
-follow(DocID, ProfileID, Options) :-
+follow(DocID, ProfileID, Flags) :-
     to_atom(DocID, DocIDA),
     to_atom(ProfileID, ProfileIDA),
+    maplist(to_atom, Flags, Options),
     notify_open_db,
     (   follower(DocIDA, ProfileIDA, OldOptions)
     ->  (   OldOptions == Options
         ->  true
         ;   retractall_follower(DocIDA, ProfileIDA, _),
-            assert_follower(DocIDA, ProfileIDA, Options)
+            (   Options \== []
+            ->  assert_follower(DocIDA, ProfileIDA, Options)
+            ;   true
+            )
         )
-    ;   assert_follower(DocIDA, ProfileIDA, Options)
+    ;   Options \== []
+    ->  assert_follower(DocIDA, ProfileIDA, Options)
+    ;   true
     ).
 
 %!  notify(+DocID, +Action) is det.
@@ -444,7 +451,7 @@ follow_file_options(Request) :-
                     [ docid(DocID, [atom])
                     ]),
     http_in_session(_SessionID),
-    http_session_data(profile_id(ProfileID)),
+    http_session_data(profile_id(ProfileID)), !,
     profile_property(ProfileID, email_notifications(When)),
 
     (   follower(DocID, ProfileID, Follow)
@@ -452,7 +459,7 @@ follow_file_options(Request) :-
     ;   Follow = []
     ),
 
-    follow_file_widgets(When, Follow, Widgets),
+    follow_file_widgets(DocID, When, Follow, Widgets),
 
     reply_html_page(
         title('Follow file options'),
@@ -460,12 +467,28 @@ follow_file_options(Request) :-
                  [ class('form-horizontal'),
                    label_columns(sm-3)
                  ])).
+follow_file_options(_Request) :-
+    reply_html_page(
+        title('Follow file options'),
+        [ p('You must be logged in to follow a file'),
+          \bt_form([ button_group(
+                         [ button(cancel, button,
+                                  [ type(danger),
+                                    data([dismiss(modal)])
+                                  ])
+                         ], [])
+                   ],
+                   [ class('form-horizontal'),
+                     label_columns(sm-3)
+                   ])
+        ]).
 
 :- multifile
     user_profile:attribute/3.
 
-follow_file_widgets(When, Follow,
-    [ checkboxes(follow, [update,chat], [value(Follow)]),
+follow_file_widgets(DocID, When, Follow,
+    [ hidden(docid, DocID),
+      checkboxes(follow, [update,chat], [value(Follow)]),
       select(email_notifications, NotificationOptions, [value(When)])
     | Buttons
     ]) :-
@@ -496,6 +519,8 @@ save_follow_file(Request) :-
     http_read_json_dict(Request, Dict),
     debug(profile(update), 'Got ~p', [Dict]),
     http_in_session(_SessionID),
-    http_session_data(profile_id(_ProfileID)),
+    http_session_data(profile_id(ProfileID)),
     debug(notify(options), 'Set follow options to ~p', [Dict]),
+    set_profile(ProfileID, email_notifications=Dict.get(email_notifications)),
+    follow(Dict.get(docid), ProfileID, Dict.get(follow)),
     reply_json_dict(_{status:success}).
