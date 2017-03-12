@@ -73,10 +73,6 @@ A user has the following options to control notifications:
     - Notify chat
   * By profile
     - Notify by E-mail: never/immediate/daily
-
-@tbd    Allow user to update Profile value nicely
-@tbd	Allow user to edit options for a file.  This dialog
-	may also update the profile?
 */
 
 :- setting(database, callable, swish('data/notify.db'),
@@ -255,6 +251,10 @@ to_atom(Text, Atom) :-
 
 :- meta_predicate try(0).
 
+notify_user(Profile, Action, _Options) :-       % exclude self
+    event_generator(Action, Profile),
+    !,
+    debug(notify(self), 'Skip notification to ~p', [Profile]).
 notify_user(Profile, Action, Options) :-
     try(notify_chat(Profile, Action, Options)),
     try(notify_by_mail(Profile, Action, Options)).
@@ -264,8 +264,6 @@ try(Goal) :-
     !.
 try(Goal) :-
     print_message(error, goal_failed(Goal)).
-
-
 
 
 		 /*******************************
@@ -292,6 +290,10 @@ notify_event(created(_File, Commit)) :-
 % chat message
 notify_event(chat(Message)) :-
     notify(Message.docid, chat(Message)).
+
+event_generator(updated(Commit), Commit.get(profile_id)).
+event_generator(deleted(Commit), Commit.get(profile_id)).
+event_generator(forked(Commit),  Commit.get(profile_id)).
 
 
 		 /*******************************
