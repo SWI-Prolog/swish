@@ -60,7 +60,15 @@ _not_ see exactly the same UI for cooperation.  What about
 	- Team
 	- Only me						[OK]
       - Set/unset follow (docid, profile-id)
+        - When saving a file					[OK]
+	- From File/Follow menu					[OK]
       - Vote up/down
+      - Profile options for email				[OK]
+    - Email notifications
+      - Exclude sending mail to self `self'			[OK]
+      - Provide `stop following this file' link
+      - Provide `stop sending email' link
+      - Styling
 
 ## Make teams
 
