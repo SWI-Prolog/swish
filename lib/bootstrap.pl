@@ -55,8 +55,11 @@ This library provides HTML rules for constructing Bootstrap forms.
 %   one of the following terms:
 %
 %     - input(Name, Type, InputOptions)
+%     - select(Name, Values, SelectOptions)
+%     - checkboxes(Name, Values, BoxOptions)
 %     - button(Name, Type, ButtonOptions)
 %     - button_group(Buttons, GroupOptions)
+%     - hidden(Name, Value)
 %
 %   Options processed:
 %
@@ -120,6 +123,8 @@ bt_form_element(button(Name, Type, IOptions), Options) -->
     bt_button(Name, Type, IOptions, Options).
 bt_form_element(button_group(Buttons, IOptions), Options) -->
     bt_button_group(Buttons, IOptions, Options).
+bt_form_element(hidden(Name, Value), _Options) -->
+    html(input([type(hidden),name(Name),value(Value)])).
 
 %!  bt_label(+Name, +ElementOptions, +FormsOptions)//
 %
