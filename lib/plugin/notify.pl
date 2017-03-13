@@ -231,10 +231,11 @@ follow(DocID, ProfileID, Flags) :-
 %     Gitty file was updated
 %   - deleted(Commit)
 %     Gitty file was deleted
-%   - forked(Commit)
+%   - forked(OldCommit, Commit)
 %     Gitty file was forked
 %   - chat(Message)
 %     A chat message was sent.  Message is the JSON content as a dict.
+%     Message contains a `docid` key.
 
 notify(DocID, Action) :-
     to_atom(DocID, DocIDA),
@@ -286,14 +287,14 @@ notify_event(deleted(File, Commit)) :-
 notify_event(created(_File, Commit)) :-
     storage_meta_data(Commit.get(previous), Meta),
     atom_concat('gitty:', Meta.name, DocID),
-    notify(DocID, forked(Commit)).
+    notify(DocID, forked(Meta, Commit)).
 % chat message
 notify_event(chat(Message)) :-
     notify(Message.docid, chat(Message)).
 
 event_generator(updated(Commit), Commit.get(profile_id)).
 event_generator(deleted(Commit), Commit.get(profile_id)).
-event_generator(forked(Commit),  Commit.get(profile_id)).
+event_generator(forked(_, Commit),  Commit.get(profile_id)).
 
 
 		 /*******************************
@@ -305,6 +306,14 @@ notify_chat(ProfileID, Action, _Options) :-
 
 chat(updated(Commit)) -->
     html([\committer(Commit), ' updated ', \file_name(Commit)]).
+chat(deleted(Commit)) -->
+    html([\committer(Commit), ' deleted ', \file_name(Commit)]).
+chat(forked(OldCommit, Commit)) -->
+    html([\committer(Commit), ' forked ', \file_name(OldCommit),
+          ' into ', \file_name(Commit)
+         ]).
+chat(chat(Message)) -->
+    html([\chat_user(Message), " chatted about ", \chat_file(Message)]).
 
 
 		 /*******************************
@@ -348,14 +357,16 @@ send_notification_mail(Profile, Email, Action) :-
                    ]).
 
 subject(Action) -->
-    subject_prefix,
     subject_action(Action).
-
-subject_prefix -->
-    "[SWISH] ".
 
 subject_action(updated(Commit)) -->
     txt_commit_file(Commit), " updated by ", txt_committer(Commit).
+subject_action(deleted(Commit)) -->
+    txt_commit_file(Commit), " deleted by ", txt_committer(Commit).
+subject_action(forked(_, Commit)) -->
+    txt_commit_file(Commit), " forked by ", txt_committer(Commit).
+subject_action(chat(Message)) -->
+    txt_chat_user(Message), " chatted about ", txt_chat_file(Message).
 
 
 		 /*******************************
@@ -367,23 +378,21 @@ message(ProfileID, Action) -->
     notification(Action),
     signature.
 
-dear(ProfileID) -->
-    html(h4(["Dear ", \profile_name(ProfileID), ","])), !.
-dear(_) -->
-    [].
-
-profile_name(ProfileID) -->
-    { profile_property(ProfileID, name(Name)) },
-    html(Name).
-
-signature -->
-    { public_url(swish, [], HREF, []) },
-    html(address(['SWISH at ', a(href(HREF),HREF)])).
-
 notification(updated(Commit)) -->
     html(p(['The file ', \file_name(Commit),
             ' has been updated by ', \committer(Commit), '.'])),
     commit_message(Commit).
+notification(forked(OldCommit, Commit)) -->
+    html(p(['The file ', \file_name(OldCommit),
+            ' has been forked into ', \file_name(Commit), ' by ', \committer(Commit), '.'])),
+    commit_message(Commit).
+notification(deleted(Commit)) -->
+    html(p(['The file ', \file_name(Commit),
+            ' has been deleted by ', \committer(Commit), '.'])),
+    commit_message(Commit).
+notification(chat(Message)) -->
+    html(p([\chat_user(Message), " chatted about ", \chat_file(Message)])),
+    chat_message(Message).
 
 file_name(Commit) -->
     { public_url(web_storage, path_postfix(Commit.name), HREF, []) },
@@ -401,6 +410,36 @@ commit_message(Commit) -->
 commit_message(_Commit) -->
     html(p(class('no-commit-message'), 'No message')).
 
+chat_file(Message) -->
+    { string_concat("gitty:", File, Message.docid),
+      public_url(web_storage, path_postfix(File), HREF, [])
+    },
+    html(a(href(HREF), File)).
+
+chat_user(Message) -->
+    { User = Message.get(user).get(name) },
+    !,
+    html(User).
+chat_user(_Message) -->
+    html("Someone").
+
+chat_message(Message) -->
+    (chat_text(Message)                  -> [] ; []),
+    (chat_payloads(Message.get(payload)) -> [] ; []).
+
+chat_text(Message) -->
+    html(Message.get(text)).
+
+chat_payloads([]) --> [].
+chat_payloads([H|T]) --> chat_payload(H), chat_payloads(T).
+
+chat_payload(PayLoad) -->
+    (chat_payload(PayLoad.get(type), PayLoad) -> [] ; []).
+
+chat_payload(query, PayLoad) -->
+    html(pre(class(query), PayLoad.get(query))).
+chat_payload(Type, _) -->
+    html(p(['Unknown payload of type ~q'-[Type]])).
 
 
 		 /*******************************
@@ -425,6 +464,23 @@ txt_committer(Commit) -->
 txt_profile_name(ProfileID) -->
     { profile_property(ProfileID, name(Name)) },
     write(Name).
+
+
+		 /*******************************
+		 *    RULES ON CHAT MESSAGES	*
+		 *******************************/
+
+txt_chat_user(Message) -->
+    { User = Message.get(user).get(name) },
+    !,
+    write(User).
+txt_chat_user(_Message) -->
+    "Someone".
+
+txt_chat_file(Message) -->
+    { string_concat("gitty:", File, Message.docid) },
+    !,
+    write(File).
 
 
 		 /*******************************
