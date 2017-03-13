@@ -252,7 +252,7 @@ swish_config:user_profile(_Request, Profile) :-
 
 user_profile(_Request) :-
     http_in_session(_SessionID),
-    http_session_data(profile_id(User)),
+    http_session_data(profile_id(User)), !,
     current_profile(User, Profile),
     findall(Field, user_profile:attribute(Field, _, _), Fields),
     convlist(bt_field(Profile), Fields, FieldWidgets),
@@ -264,6 +264,22 @@ user_profile(_Request) :-
                  [ class('form-horizontal'),
                    label_columns(sm-3)
                  ])).
+user_profile(_Request) :-
+    reply_html_page(
+        title('User profile'),
+        [ p('You must be logged in to view your profile'),
+          \bt_form([ button_group(
+                         [ button(cancel, button,
+                                  [ type(danger),
+                                    data([dismiss(modal)])
+                                  ])
+                         ], [])
+                   ],
+                   [ class('form-horizontal'),
+                     label_columns(sm-3)
+                   ])
+        ]).
+
 
 bt_field(Profile, Name, Field) :-
     user_profile:attribute(Name, Type, AOptions),
