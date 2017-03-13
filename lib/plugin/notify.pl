@@ -100,23 +100,23 @@ notify_open_db :-
     absolute_file_name(Spec, Path, [access(write)]),
     db_attach(Path, [sync(close)]).
 
-%!  queue_event(+Profile, +Action) is det.
-%!  queue_event(+Profile, +Action, +Status) is det.
+%!  queue_event(+Profile, +DocID, +Action) is det.
+%!  queue_event(+Profile, +DocID, +Action, +Status) is det.
 %
 %   Queue an email notification for  Profile,   described  by Action. We
 %   simply append these events as Prolog terms to a file.
 
-queue_event(Profile, Action) :-
-    queue_event(Profile, Action, new).
-queue_event(Profile, Action, Status) :-
+queue_event(Profile, DocID, Action) :-
+    queue_event(Profile, DocID, Action, new).
+queue_event(Profile, DocID, Action, Status) :-
     queue_file(Path),
     with_mutex(swish_notify,
-               queue_event_sync(Path, Profile, Action, Status)).
+               queue_event_sync(Path, Profile, DocID, Action, Status)).
 
-queue_event_sync(Path, Profile, Action, Status) :-
+queue_event_sync(Path, Profile, DocID, Action, Status) :-
     setup_call_cleanup(
         open(Path, append, Out, [encoding(utf8)]),
-        format(Out, '~q.~n', [notify(Profile, Action, Status)]),
+        format(Out, '~q.~n', [notify(Profile, DocID, Action, Status)]),
         close(Out)).
 
 queue_file(Path) :-
@@ -138,11 +138,11 @@ send_queued_mails :-
     delete_file(Tmp).
 send_queued_mails.
 
-send_queued(notify(Profile, Action, Status)) :-
+send_queued(notify(Profile, DocID, Action, Status)) :-
     profile_property(Profile, email(Email)),
     profile_property(Profile, email_notifications(When)),
     When \== never, !,
-    (   catch(send_notification_mail(Profile, Email, Action),
+    (   catch(send_notification_mail(Profile, DocID, Email, Action),
               Error, true)
     ->  (   var(Error)
         ->  true
@@ -151,7 +151,7 @@ send_queued(notify(Profile, Action, Status)) :-
         ;   true
         )
     ;   update_status(Status, failed, NewStatus)
-    ->  queue_event(Profile, Action, NewStatus)
+    ->  queue_event(Profile, DocID, Action, NewStatus)
     ;   true
     ).
 
@@ -222,6 +222,17 @@ follow(DocID, ProfileID, Flags) :-
     ;   true
     ).
 
+nofollow(DocID, ProfileID, Flags) :-
+    to_atom(DocID, DocIDA),
+    to_atom(ProfileID, ProfileIDA),
+    maplist(to_atom, Flags, Options),
+    (   follower(DocIDA, ProfileIDA, OldOptions)
+    ->  subtract(OldOptions, Options, NewOptions),
+        follow(DocID, ProfileID, NewOptions)
+    ;   true
+    ).
+
+
 %!  notify(+DocID, +Action) is det.
 %
 %   Action has been executed on DocID.  Notify all interested users.
@@ -241,25 +252,26 @@ notify(DocID, Action) :-
     to_atom(DocID, DocIDA),
     notify_open_db,
     forall(follower(DocIDA, Profile, Options),
-           notify_user(Profile, Action, Options)).
+           notify_user(Profile, DocIDA, Action, Options)).
 
 to_atom(Text, Atom) :-
     atom_string(Atom, Text).
 
-%!  notify_user(+Profile, +Action, +Options)
+%!  notify_user(+Profile, +DocID, +Action, +Options)
 %
-%   Notify the user belonging to Profile about Action.
+%   Notify the user belonging to Profile  about Action, which is related
+%   to document DocID.
 
 :- meta_predicate try(0).
 
-notify_user(Profile, Action, _Options) :-       % exclude self
+notify_user(Profile, _, Action, _Options) :-	% exclude self
     event_generator(Action, Profile),
     debug(notify(self), 'Notification to self ~p', [Profile]),
     \+ debugging(notify_self),
     !.
-notify_user(Profile, Action, Options) :-
+notify_user(Profile, DocID, Action, Options) :-
     try(notify_chat(Profile, Action, Options)),
-    try(notify_by_mail(Profile, Action, Options)).
+    try(notify_by_mail(Profile, DocID, Action, Options)).
 
 try(Goal) :-
     catch(Goal, Error, print_message(error, Error)),
@@ -293,9 +305,13 @@ notify_event(created(_File, Commit)) :-
 notify_event(chat(Message)) :-
     notify(Message.docid, chat(Message)).
 
-event_generator(updated(Commit), Commit.get(profile_id)).
-event_generator(deleted(Commit), Commit.get(profile_id)).
-event_generator(forked(_, Commit),  Commit.get(profile_id)).
+%!  event_generator(+Event, -ProfileID) is semidet.
+%
+%   True when ProfileID refers to the user that initiated Event.
+
+event_generator(updated(Commit),   Commit.get(profile_id)).
+event_generator(deleted(Commit),   Commit.get(profile_id)).
+event_generator(forked(_, Commit), Commit.get(profile_id)).
 
 
 		 /*******************************
@@ -321,23 +337,23 @@ chat(chat(Message)) -->
 		 *            EMAIL		*
 		 *******************************/
 
-%!  notify_by_mail(+Profile, +Action, +FollowOptions) is semidet.
+% ! notify_by_mail(+Profile, +DocID, +Action, +FollowOptions) is semidet.
 %
 %   Send a notification by mail. Optionally  schedules the message to be
 %   send later.
 %
 %   @tbd: if sending fails, should we queue the message?
 
-notify_by_mail(Profile, Action, Options) :-
+notify_by_mail(Profile, DocID, Action, Options) :-
     profile_property(Profile, email(Email)),
     profile_property(Profile, email_notifications(When)),
     When \== never,
     must_notify(Action, Options),
     (   When == immediate
     ->  debug(notify(email), 'Sending notification mail to ~p', [Profile]),
-        send_notification_mail(Profile, Email, Action)
+        send_notification_mail(Profile, DocID, Email, Action)
     ;   debug(notify(email), 'Queing notification mail to ~p', [Profile]),
-        queue_event(Profile, Action)
+        queue_event(Profile, DocID, Action)
     ).
 
 must_notify(chat(_), Options) :- !,
@@ -345,15 +361,15 @@ must_notify(chat(_), Options) :- !,
 must_notify(_, Options) :-
     memberchk(update, Options).
 
-%!  send_notification_mail(+Profile, +Action) is semidet.
+% ! send_notification_mail(+Profile, +DocID, +Email, +Action) is semidet.
 %
 %   Actually send a notification mail.  Fails   if  Profile  has no mail
 %   address or does not want to be notified by email.
 
-send_notification_mail(Profile, Email, Action) :-
+send_notification_mail(Profile, DocID, Email, Action) :-
     phrase(subject(Action), Codes),
     string_codes(Subject, Codes),
-    smtp_send_html(Email, \message(Profile, Action),
+    smtp_send_html(Email, \mail_message(Profile, DocID, Action),
                    [ subject(Subject)
                    ]).
 
@@ -381,9 +397,15 @@ style -->
 notify_style -->
     html({|html||
 <style>
-p.commit-message   {margin-left: 10%; color: darkgreen;}
-p.nocommit-message {margin-left: 10%; color: orange;}
-pre.query          {margin-left: 10%;}
+ .block            {margin-left: 2em;}
+p.commit-message,
+p.chat             {color: darkgreen;}
+p.nocommit-message {color: orange;}
+pre.query          {}
+div.query	   {margin-top:2em; border-top: 1px solid #888;}
+div.query-title	   {font-size: 80%; color: #888;}
+div.nofollow	   {margin-top:2em; border-top: 1px solid #888;
+                    font-size: 80%; color: #888; }
 </style>
          |}).
 
@@ -394,9 +416,12 @@ pre.query          {margin-left: 10%;}
 		 *            HTML BODY		*
 		 *******************************/
 
-message(ProfileID, Action) -->
+%!  message(+ProfileID, +DocID, +Action)//
+
+mail_message(ProfileID, DocID, Action) -->
     dear(ProfileID),
     notification(Action),
+    unsubscribe_options(ProfileID, DocID, Action),
     signature,
     style.
 
@@ -428,9 +453,9 @@ committer(Commit) -->
 
 commit_message(Commit) -->
     { Message = Commit.get(commit_message) }, !,
-    html(p(class('commit-message'), Message)).
+    html(p(class(['commit-message', block]), Message)).
 commit_message(_Commit) -->
-    html(p(class('no-commit-message'), 'No message')).
+    html(p(class(['no-commit-message', block]), 'No message')).
 
 chat_file(Message) -->
     { string_concat("gitty:", File, Message.docid),
@@ -450,18 +475,77 @@ chat_message(Message) -->
     (chat_payloads(Message.get(payload)) -> [] ; []).
 
 chat_text(Message) -->
-    html(Message.get(text)).
+    html(p(class([chat,block]), Message.get(text))).
 
 chat_payloads([]) --> [].
 chat_payloads([H|T]) --> chat_payload(H), chat_payloads(T).
 
 chat_payload(PayLoad) -->
-    (chat_payload(PayLoad.get(type), PayLoad) -> [] ; []).
+    { atom_string(Type, PayLoad.get(type)) },
+    chat_payload(Type, PayLoad),
+    !.
+chat_payload(_) --> [].
 
 chat_payload(query, PayLoad) -->
-    html(pre(class(query), PayLoad.get(query))).
+    html(div(class(query),
+             [ div(class('query-title'), 'Query'),
+               pre(class([query, block]), PayLoad.get(query))
+             ])).
 chat_payload(Type, _) -->
     html(p(['Unknown payload of type ~q'-[Type]])).
+
+
+		 /*******************************
+		 *          UNSUBSCRIBE		*
+		 *******************************/
+
+unsubscribe_options(ProfileID, DocID, _) -->
+    html(div(class(nofollow),
+             [ 'Stop following ',
+               \nofollow_link(ProfileID, DocID, [chat]), '||',
+               \nofollow_link(ProfileID, DocID, [update]), '||',
+               \nofollow_link(ProfileID, DocID, [chat,update]),
+               ' about this document'
+             ])).
+
+nofollow_link(ProfileID, DocID, What) -->
+    email_action_link(\nofollow_link_label(What),
+                      nofollow_page(ProfileID, DocID, What),
+                      nofollow(ProfileID, DocID, What),
+                      []).
+
+nofollow_link_label([chat])         --> html(chats).
+nofollow_link_label([update])       --> html(updates).
+nofollow_link_label([chat, update]) --> html('all notifications').
+
+nofollow_done([chat])         --> html(chat).
+nofollow_done([update])       --> html(update).
+nofollow_done([chat, update]) --> html('any notifications').
+
+nofollow_page(ProfileID, DocID, What, _Request) :-
+    reply_html_page(
+        email_confirmation,
+        title('SWISH -- Stopped following'),
+        [ \email_style,
+          \dear(ProfileID),
+          p(['You will no longer receive ', \nofollow_done(What),
+             'notifications about ', \docid_link(DocID), '. ',
+             'You can reactivate following this document using the \c
+              File/Follow ... menu in SWISH.  You can specify whether \c
+              and when you like to receive email notifications from your \c
+              profile page.'
+            ]),
+          \signature
+        ]).
+
+docid_link(DocID) -->
+    { atom_concat('gitty:', File, DocID),
+      http_link_to_id(web_storage, path_postfix(File), HREF)
+    },
+    !,
+    html(a(href(HREF), File)).
+docid_link(DocID) -->
+    html(DocID).
 
 
 		 /*******************************

@@ -141,7 +141,9 @@ smtp_send_html(To, Content, Options) :-
                    ]).
 
 html_body(Content, Out) :-
-    phrase(html(html(Content)), Tokens),
+    phrase(html(html([ head([]),
+                       body(Content)
+                     ])), Tokens),
     print_html(Out, Tokens).
 
 %!  generate_key(-Key) is det.
@@ -343,7 +345,8 @@ verified_email(User, NewEmail, _Request) :-
     reply_html_page(
         email_confirmation,
         title('SWISH -- Email verified'),
-        [ \dear(User),
+        [ \email_style,
+          \dear(User),
           p(['Your email address ', \mailto(NewEmail), ' has been verified.']),
           \signature
         ]).
