@@ -254,8 +254,9 @@ to_atom(Text, Atom) :-
 
 notify_user(Profile, Action, _Options) :-       % exclude self
     event_generator(Action, Profile),
-    !,
-    debug(notify(self), 'Skip notification to ~p', [Profile]).
+    debug(notify(self), 'Notification to self ~p', [Profile]),
+    \+ debugging(notify_self),
+    !.
 notify_user(Profile, Action, Options) :-
     try(notify_chat(Profile, Action, Options)),
     try(notify_by_mail(Profile, Action, Options)).
@@ -370,13 +371,34 @@ subject_action(chat(Message)) -->
 
 
 		 /*******************************
+		 *             STYLE		*
+		 *******************************/
+
+style -->
+    email_style,
+    notify_style.
+
+notify_style -->
+    html({|html||
+<style>
+p.commit-message   {margin-left: 10%; color: darkgreen;}
+p.nocommit-message {margin-left: 10%; color: orange;}
+pre.query          {margin-left: 10%;}
+</style>
+         |}).
+
+
+
+
+		 /*******************************
 		 *            HTML BODY		*
 		 *******************************/
 
 message(ProfileID, Action) -->
     dear(ProfileID),
     notification(Action),
-    signature.
+    signature,
+    style.
 
 notification(updated(Commit)) -->
     html(p(['The file ', \file_name(Commit),

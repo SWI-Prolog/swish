@@ -42,6 +42,8 @@
             profile_name//1,            % +ProfileID
             email_action_link//4,	% :Label, :Reply, :Action, +Options
 
+            email_style//0,             % Inline style sheet
+
             email_cleanup_db/0,
 
             public_url/4                % +To, +Query, -URL, +Options
@@ -52,7 +54,6 @@
 :- use_module(library(base64)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_host)).
-:- use_module(library(http/http_wrapper)).
 :- use_module(library(http/html_write)).
 :- use_module(library(apply)).
 :- use_module(library(random)).
@@ -158,7 +159,7 @@ generate_key(Key) :-
 		 *            STYLE		*
 		 *******************************/
 
-style -->
+email_style -->
     html({|html||
 <style>
 address { width: 80%; text-align: right;
@@ -260,7 +261,7 @@ on_mail_link(Request) :-
     reply_html_page(
         email_confirmation,
         title('Unknown request'),
-        [ \style,
+        [ \email_style,
           p([ 'Cannot find request ~w.'-[Key], ' This typically means the \c
                request has already been executed, is expired or the link \c
                is invalid.'
@@ -274,7 +275,7 @@ reply_expired(_Request) :-
     reply_html_page(
         email_confirmation,
         title('Request expired'),
-        [ \style,
+        [ \email_style,
           p([ 'Your request has expired.'
             ]),
           \signature
@@ -294,8 +295,7 @@ host_url(HostURL, Options) :-
     option(host_url(HostURL), Options),
     !.
 host_url(HostURL, _Options) :-
-    http_current_request(Request),
-    http_public_host_url(Request, HostURL).
+    http_public_host_url(_Request, HostURL).
 
 
 		 /*******************************
@@ -314,7 +314,7 @@ email_verify(User, Old, Email) :-
 
 
 email_verify(User, "", New) -->
-    html([ \style,
+    html([ \email_style,
            \dear(User),
            p(['We have received a request to set the email account \c
                for SWISH to ', \mailto(New), '.' ]),
@@ -323,7 +323,7 @@ email_verify(User, "", New) -->
            \signature
          ]).
 email_verify(User, Old, New) -->
-    html([ \style,
+    html([ \email_style,
            \dear(User),
            p(['We have received a request to change the email account \c
                for SWISH from ', \mailto(Old), ' to ', \mailto(New), '.' ]),
