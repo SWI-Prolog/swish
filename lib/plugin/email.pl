@@ -36,7 +36,7 @@
 :- module(swish_email,
           [ smtp_send_mail/3,           % +To, :Goal, +Options
             smtp_send_html/3,           % +To, :Content, +Options
-            email_confirm/4,            % +To, :Message, :Action, +Options
+            email_action_link//4,	% :Label, :Reply, :Action, +Options
             email_cleanup_db/0,
             public_url/4                % +To, +Query, -URL, +Options
           ]).
@@ -61,16 +61,16 @@ confirmation (of the email address) as well as for notifications.
 */
 
 :- html_meta
-    email_confirm(+, html, 0, +),
-    smtp_send_html(+, html, +).
+    smtp_send_html(+, html, +),
+    email_action_link(html, 1, 0, +, ?, ?).
 
 :- setting(timeout, integer, 24*3600*7,
            "Timeout for handling email reply").
 :- setting(database, callable, swish('data/confirm.db'),
            "File specification for E-mail confirmations").
 
-:- http_handler(swish('mail/confirm/'), confirm, [prefix, id(email_confirm)]).
-:- http_handler(swish('mail/decline/'), decline, [prefix, id(email_decline)]).
+:- http_handler(swish('mail/action/'), on_mail_link,
+                [prefix, id(on_mail_link)]).
 
 
 		 /*******************************
@@ -80,7 +80,8 @@ confirmation (of the email address) as well as for notifications.
 :- persistent
         request(key:string,
                 deadline:integer,
-                action:callable).
+                action:callable,
+                reply:callable).
 
 email_open_db :-
     db_attached(_),
@@ -99,10 +100,10 @@ email_cleanup_db :-
 
 email_cleanup_db_sync :-
     get_time(Now),
-    forall(( request(Key, Deadline, _),
+    forall(( request(Key, Deadline, _, _),
              Now > Deadline
            ),
-           retract_request(Key, Deadline, _)),
+           retract_request(Key, Deadline, _, _)),
     db_sync(gc).
 
 
@@ -110,57 +111,6 @@ email_cleanup_db_sync :-
 		 /*******************************
 		 *           EMAIL		*
 		 *******************************/
-
-%!  email_confirm(+To, :Message, :Action, +Options)
-%
-%   Send an email to confirm some action.  Options are passed to
-%   smtp_send_mail/3.   Additional options are:
-%
-%     - host_url(+URL)
-%     URL of the host to contact for confirm/decline.  Default is
-%     obtained using http_public_host_url/2.
-%     - timeout(+Seconds)
-%     Time in seconds that the request is valid.  Can be a formula.
-%     - subject(+Subject)
-%     Subject of the message.  Default is "Confirmation request"
-
-email_confirm(To, Message, Action, Options) :-
-    email_open_db,
-    generate_key(Key),
-    public_url(email_confirm, path_postfix(Key), Confirm, Options),
-    public_url(email_decline, path_postfix(Key), Decline, Options),
-    merge_options(Options, [subject("Confirmation request")], MailOptions),
-    smtp_send_html(To, \body(Message, Confirm, Decline), MailOptions),
-    setting(timeout, TMODef),
-    option(timeout(TMO), Options, TMODef),
-    get_time(Now),
-    Deadline is round(Now+TMO),
-    with_mutex(swish_email,
-               assert_request(Key, Deadline, Action)).
-
-body(Message, Confirm, Decline) -->
-    html(Message),
-    html(ul([ li(['To confirm, visit ', a(href(Confirm),Confirm)]),
-              li(['To decline, visit ', a(href(Decline),Decline)])
-            ])).
-
-
-%!  public_url(+To, +Query, -URL, +Options) is det.
-%
-%   True when URL is a link to handler To with Query
-
-public_url(To, Query, URL, Options) :-
-    http_link_to_id(To, Query, RequestURI),
-    host_url(HostURL, Options),
-    atom_concat(HostURL, RequestURI, URL).
-
-host_url(HostURL, Options) :-
-    option(host_url(HostURL), Options),
-    !.
-host_url(HostURL, _Options) :-
-    http_current_request(Request),
-    http_public_host_url(Request, HostURL).
-
 
 %!  smtp_send_html(+To, :Content, +Options)
 %
@@ -194,59 +144,60 @@ generate_key(Key) :-
 		 *           WEB PAGE		*
 		 *******************************/
 
-%!  confirm(+Request)
+%!  public_url(+To, +Query, -URL, +Options) is det.
 %
-%   HTTP handler to deal with an email confirmation
+%   True when URL is a link to handler To with Query
 
-confirm(Request) :-
+public_url(To, Query, URL, Options) :-
+    http_link_to_id(To, Query, RequestURI),
+    host_url(HostURL, Options),
+    atom_concat(HostURL, RequestURI, URL).
+
+host_url(HostURL, Options) :-
+    option(host_url(HostURL), Options),
+    !.
+host_url(HostURL, _Options) :-
+    http_current_request(Request),
+    http_public_host_url(Request, HostURL).
+
+
+%!  on_mail_link(Request)
+%
+%   React after the user opens a link from the email.
+
+on_mail_link(Request) :-
     email_open_db,
     option(path_info(Path), Request),
     atom_string(Path, Key),
     with_mutex(swish_email,
-               retract_request(Key, Deadline, Action)),
+               retract_request(Key, Deadline, Action, Reply)),
     get_time(Now),
     Now =< Deadline,
     call(Action),
-    reply_html_page(
-        email_confirmation,
-        title('Confirmed'),
-        [ h4('Confirmed'),
-          p([ \action(Action), ' has been confirmed.' ])
-        ]).
+    call(Reply, Request).
 
 
-%!  decline(+Request)
+		 /*******************************
+		 *            ACTIONS		*
+		 *******************************/
+
+%!  email_action_link(:Label, :Reply, :Action, +Options)//
 %
-%   HTTP handler to deal with an email declineation
+%   Generate a link in an HTML mail   page  that, when clicked, executes
+%   Action and if successful replies to the request using Reply.
 
-decline(Request) :-
-    email_open_db,
-    option(path_info(Path), Request),
-    atom_string(Path, Key),
-    with_mutex(swish_email,
-               retract_request(Key, _Deadline, Action)),
-    reply_html_page(
-        email_confirmation,
-        title('Declined'),
-        [ h4('Confirmed'),
-          p([ \action(Action), ' has been declined.' ])
-        ]).
-
-body(email_confirmation, Body) -->
-    { host_url(HostURL, []) },
-    html(Body),
-    html([ hr([]),
-           address([ 'SWISH at ', a(href(HostURL), HostURL) ])
-         ]).
-
-action(_Module:Goal) -->
-    action_message(Goal),
-    !.
-action(_:Goal) -->
-    html('Unknown (~p)'-[Goal]).
-
-action_message(set_profile(_User, email_verified=true)) -->
-    html('Email verification').
+email_action_link(Label, Reply, Action, Options) -->
+    { email_open_db,
+      generate_key(Key),
+      public_url(on_mail_link, path_postfix(Key), HREF, Options),
+      setting(timeout, TMODef),
+      option(timeout(TMO), Options, TMODef),
+      get_time(Now),
+      Deadline is round(Now+TMO),
+      with_mutex(swish_email,
+                 assert_request(Key, Deadline, Action, Reply))
+    },
+    html(a(href(HREF), Label)).
 
 
 		 /*******************************
@@ -259,21 +210,33 @@ action_message(set_profile(_User, email_verified=true)) -->
 email_verify(_User, _Old, "") :-
     !.
 email_verify(User, Old, Email) :-
-    email_confirm(Email,
-                  \email_verify(User, Old, Email),
-                  set_profile(User, email_verified=true),
-                  [subject("Please verify email for SWISH")]).
+    smtp_send_html(Email, \email_verify(User, Old, Email),
+                   [ subject("[SWISH] Please verify email")
+                   ]).
+
 
 email_verify(User, "", New) -->
     html([ p(['Dear ', \name(User), ',']),
            p(['We have received a request to set the email account \c
-               for SWISH', \host, ' to ', b(New), '.' ])
+               for SWISH', \host, ' to ', b(New), '.' ]),
+           ul([ li(\confirm_link(User, New))
+              ])
          ]).
 email_verify(User, Old, New) -->
     html([ p(['Dear ', \name(User), ',']),
            p(['We have received a request to change the email account \c
-               for SWISH', \host, ' from ', b(Old), ' to ', b(New), '.' ])
+               for SWISH', \host, ' from ', b(Old), ' to ', b(New), '.' ]),
+           ul([ li(\confirm_link(User, New))
+              ])
          ]).
+
+confirm_link(User, New) -->
+    email_action_link(["Verify email as ", New], verified_email(User, New),
+                      verify_email(User), []).
+
+verify_email(User) :-
+    set_profile(User, email_verified(true)).
+
 
 name(User) -->
     { user_field(Field),
@@ -293,3 +256,11 @@ host -->
     html([' at ', HostURL]).
 host -->
     [].
+
+verified_email(User, NewEmail, _Request) :-
+    reply_html_page(
+        email_confirmation,
+        title('[SWISH] Email verified'),
+        [ p(['Dear ', \name(User), ',']),
+          p(['Your email address ~w has been verified'-[NewEmail]])
+        ]).
