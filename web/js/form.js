@@ -539,6 +539,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 
 	if ( options.action ) attrs['data-action'] = options.action;
 	if ( options.title )  attrs.title          = options.title;
+	if ( options.class )  attrs.class	  += " "+options.class;
 
 	return $.el.button(attrs, form.widgets.glyphIcon(glyph));
       },
