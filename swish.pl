@@ -150,6 +150,10 @@ swish_config:config(notebook,		_{eval_script: true}).
 %	    Only provide access to the file if it is loaded.
 
 
+% setup HTTP session management
+:- use_module(lib/session).
+
+
                  /*******************************
                  *   CREATE SWISH APPLICATION   *
                  *******************************/
