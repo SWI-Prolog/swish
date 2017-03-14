@@ -270,7 +270,7 @@ notify_user(Profile, _, Action, _Options) :-	% exclude self
     \+ debugging(notify_self),
     !.
 notify_user(Profile, DocID, Action, Options) :-
-    try(notify_chat(Profile, Action, Options)),
+    try(notify_online(Profile, Action, Options)),
     try(notify_by_mail(Profile, DocID, Action, Options)).
 
 try(Goal) :-
@@ -315,21 +315,21 @@ event_generator(forked(_, Commit), Commit.get(profile_id)).
 
 
 		 /*******************************
-		 *            CHAT		*
+		 *     NOTIFY PEOPLE ONLINE	*
 		 *******************************/
 
-notify_chat(ProfileID, Action, _Options) :-
-    chat_to_profile(ProfileID, \chat(Action)).
+notify_online(ProfileID, Action, _Options) :-
+    chat_to_profile(ProfileID, \short_notice(Action)).
 
-chat(updated(Commit)) -->
+short_notice(updated(Commit)) -->
     html([\committer(Commit), ' updated ', \file_name(Commit)]).
-chat(deleted(Commit)) -->
+short_notice(deleted(Commit)) -->
     html([\committer(Commit), ' deleted ', \file_name(Commit)]).
-chat(forked(OldCommit, Commit)) -->
+short_notice(forked(OldCommit, Commit)) -->
     html([\committer(Commit), ' forked ', \file_name(OldCommit),
           ' into ', \file_name(Commit)
          ]).
-chat(chat(Message)) -->
+short_notice(chat(Message)) -->
     html([\chat_user(Message), " chatted about ", \chat_file(Message)]).
 
 
