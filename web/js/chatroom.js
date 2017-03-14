@@ -118,6 +118,11 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	    return false;
 	  }
 	});
+	elem.on("click", "button", function(ev) {
+	  console.log(ev.target);
+	  ev.preventDefault();
+	  return false;
+	});
 	elem.on("pane.resize", function() {
 	  elem.chatroom('scrollToBottom', true);
 	});
@@ -291,6 +296,25 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       sourceToolTip(btn, query.query);
 
       this.append(" ", btn, " ");
+    },
+
+    update: function(update) {
+      var old, dif, nwe;
+
+      function btn(glyph, title) {
+	return form.widgets.glyphIconButton(glyph,
+					    {class:"btn-xs", title:title});
+      }
+
+      this.append(" ", $.el.span(
+        {class:"update"},
+	old = btn("play",    "Open old version"),
+	dif = btn("zoom-in", "View changes"),
+        nwe = btn("play",    "Open new version")));
+
+      $(old).data('commit', update.previous);
+      $(dif).data('diff',   {from:update.previous, to:update.commit});
+      $(nwe).data('commit', update.commit);
     }
   };
 

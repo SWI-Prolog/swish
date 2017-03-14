@@ -347,13 +347,17 @@ file_name(Commit) -->
 notify_in_chat(_, chat(_)) :-
     !.
 notify_in_chat(DocID, Action) :-
-    html_string(\chat_notice(Action), HTML),
+    html_string(\chat_notice(Action, Payload), HTML),
     action_user(Action, User),
-    Message = _{ type:"chat-message",
-                 html:HTML,
-                 user:User,
-                 create:false
-               },
+    Message0 = _{ type:"chat-message",
+                  html:HTML,
+                  user:User,
+                  create:false
+                },
+    (   Payload == []
+    ->  Message = Message0
+    ;   Message = Message0.put(payload, Payload)
+    ),
     chat_about(DocID, Message).
 
 
@@ -363,11 +367,13 @@ html_string(HTML, String) :-
     with_output_to(string(String), print_html(SingleLine)).
 
 
-chat_notice(updated(Commit)) -->
+chat_notice(updated(Commit), [_{type:update, name:Name,
+                                commit:CommitHash, previous:PrevCommit}]) -->
+    { _{name:Name, commit:CommitHash, previous:PrevCommit} :< Commit },
     html([b('Saved'), ' new version: ', \commit_message_summary(Commit)]).
-chat_notice(deleted(Commit)) -->
+chat_notice(deleted(Commit), []) -->
     html([b('Deleted'), ': ', \commit_message_summary(Commit)]).
-chat_notice(forked(_OldCommit, Commit)) -->
+chat_notice(forked(_OldCommit, Commit), []) -->
     html([b('Forked'), ' into ', \file_name(Commit), ': ',
           \commit_message_summary(Commit)
          ]).
