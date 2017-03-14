@@ -119,7 +119,15 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	  }
 	});
 	elem.on("click", "button", function(ev) {
-	  console.log(ev.target);
+	  var button = $(ev.target).closest("button");
+	  var val;
+
+	  if ( (val = button.data("commit")) ) {
+	    elem.closest(".swish").swish('playFile', val);
+	  } else if ( (val = button.data("diff")) ) {
+	    elem.chatroom('diff', val);
+	  }
+
 	  ev.preventDefault();
 	  return false;
 	});
@@ -229,6 +237,54 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
     },
 
     /**
+     * Show diff between versions
+     * @param {Object} options
+     * @param {String} options.from Base commit
+     * @param {String} options.to Target commit
+     * @param {String} options.name Name of the file
+     */
+
+    diff: function(options) {
+      function error(jqXHR) {
+	modal.ajaxError(jqXHR);
+      }
+
+      $.ajax({
+        url: config.http.locations.web_storage + options.from,
+	data: {format: "raw"},
+	success: function(from) {
+	  $.ajax({
+	    url: config.http.locations.web_storage + options.to,
+	    data: {format: "raw"},
+	    success: function(to) {
+
+	      function diffBody() {
+		var diff = $.el.div();
+
+		this.append(diff);
+		$(diff).diff({
+		  base: from,
+		  head: to,
+		  baseName: options.name + " (before)",
+		  headName: options.name + " (after)"
+		});
+		this.parents("div.modal-dialog").addClass("modal-wide");
+	      }
+
+	      form.showDialog({
+	        title: "Update differences",
+		body:  diffBody
+	      });
+	    },
+	    error: error
+	  })
+	},
+	error: error
+      });
+    },
+
+
+    /**
      * Associate with a new document
      */
     docid: function(docid, ifempty) {
@@ -313,7 +369,8 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
         nwe = btn("play",    "Open new version")));
 
       $(old).data('commit', update.previous);
-      $(dif).data('diff',   {from:update.previous, to:update.commit});
+      $(dif).data('diff',   {from:update.previous, to:update.commit,
+			     name:update.name});
       $(nwe).data('commit', update.commit);
     }
   };
