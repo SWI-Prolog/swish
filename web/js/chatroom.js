@@ -102,10 +102,15 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	  "Send my query": function() {
 	    var query = $(".prolog-query-editor").queryEditor('getQuery');
 	    if ( query.trim() != "" ) {
-	      this.chatroom('send', [{type:"query", query:query}]);
+	      this.chatroom('send',
+			    {payload: [{type:"query", query:query}]});
 	    } else {
 	      modal.alert("Your query editor is empty");
 	    }
+	  },
+	  "Cry for help": function() {
+	    this.chatroom('send',
+			  {class:"cry-for-help"});
 	  }
 	});
 	$(close).on("click", function() {
@@ -145,22 +150,30 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 
     /**
      * Send a chat message.
-     * @param {Object} [extra] provides additional fields to attach
-     * to the message
+     * @param {Object} [options]
+     * @param {Array}  [options.payload] Payloads (queries, etc)
+     * @param {String} [options.class] Class of the chat message
      */
-    send: function(payload) {
+    send: function(options) {
       var data = this.data(pluginName);
       var msg = {type:"chat-message"};
       var ta = this.find("textarea");
       msg.text = ta.val().trim();
 
-      if ( msg.text != "" || payload !== undefined ) {
+      options = options||{};
+
+      if ( msg.text != "" || options.payload !== undefined ) {
 	ta.val("");
 
-	msg.payload = payload;
+	msg.payload = options.payload;
 	msg.docid   = data.docid;
 	msg.user    = $("#chat").chat('self');
+	if ( options.class )
+	  msg.class = options.class;
+
 	$("#chat").chat('send', msg);
+      } else {
+	modal.alert("No message to send");
       }
     },
 
