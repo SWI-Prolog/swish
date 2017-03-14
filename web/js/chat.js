@@ -304,6 +304,10 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 	this.chat('userCount', e.visitors);
     },
 
+    session_closed: function() {
+      $("#login").login('update', "session-closed");
+    },
+
     /**
      * Display a notification by some user.
      */

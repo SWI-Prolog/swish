@@ -389,8 +389,7 @@ reclaim_visitor(WSID) :-
 %	not associated with  any  persistent  notion   of  a  user.  The
 %	destruction is left to the destruction of the session.
 
-:- unlisten(http_session(end(_, _))),
-   listen(http_session(end(SessionID, _Peer)),
+:- listen(http_session(end(SessionID, _Peer)),
 	  destroy_session_user(SessionID)).
 
 create_session_user(Session, TmpUser, UserData, _Options) :-
@@ -403,6 +402,9 @@ create_session_user(Session, TmpUser, UserData, Options) :-
 	assertz(visitor_data(TmpUser, UserData)).
 
 destroy_session_user(Session) :-
+	forall(visitor_session(WSID, Session, _Token),
+	       inform_session_closed(WSID, Session)),
+	retractall(visitor_session(_, Session, _)),
 	forall(retract(session_user(Session, TmpUser)),
 	       destroy_visitor_data(TmpUser)).
 
@@ -412,6 +414,12 @@ destroy_visitor_data(TmpUser) :-
 	    fail
 	;   true
 	).
+
+inform_session_closed(WSID, Session) :-
+	ignore(hub_send(WSID, json(_{type:session_closed}))),
+	session_user(Session, TmpUser),
+	update_visitor_data(TmpUser, _Data, logout).
+
 
 %!	update_visitor_data(+TmpUser, +Data, +Reason) is det.
 %
