@@ -217,7 +217,8 @@ gitty_update(Store, Name, Data, Meta, CommitRet) :-
 %	@tbd: the identity properties should not be hardcoded here.
 
 filter_identity(Meta0, Meta) :-
-	delete_keys([ auther,user,avatar,identity,peer,
+	delete_keys([ author,user,avatar,identity,peer,
+		      external_identity, identity_provider, profile_id,
 		      commit_message
 		    ], Meta0, Meta).
 
