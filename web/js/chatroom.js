@@ -165,7 +165,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	return this;
 
       var self = $("#chat").chat('self', []);
-      user = msg.user;
+      user = msg.user||{};
       var is_self = ( user.id == self.id ||
 		      user.avatar == self.avatar );
 

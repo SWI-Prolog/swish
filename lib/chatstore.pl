@@ -94,18 +94,27 @@ chat_file(DocID, File) :-
     chat_dir_file(DocID, Dir, File),
     make_directory_path(Dir).
 
-%!  chat_store(+Message:dict)
+%!  chat_store(+Message:dict) is det.
 %
-%   Add a chat message to the chat store.
+%   Add a chat message to the chat  store. If `Message.create == false`,
+%   the message is only stored if the   chat  is already active. This is
+%   used to only insert messages about changes   to the file if there is
+%   an ongoing chat so we know to which version chat messages refer.
 
 chat_store(Message) :-
     chat{docid:DocID} :< Message,
     chat_file(DocID, File),
+    (	del_dict(create, Message, false, Message1)
+    ->	exists_file(File)
+    ;	Message1 = Message
+    ),
+    !,
     with_mutex(chat_store,
                setup_call_cleanup(
                    open(File, append, Out, [encoding(utf8)]),
-                   format(Out, '~q.~n', [Message]),
+                   format(Out, '~q.~n', [Message1]),
                    close(Out))).
+chat_store(_).
 
 %!  chat_messages(+DocID, -Messages:list) is det.
 %

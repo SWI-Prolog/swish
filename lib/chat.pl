@@ -37,6 +37,7 @@
 	  [ chat_broadcast/1,		% +Message
 	    chat_broadcast/2,		% +Message, +Channel
 	    chat_to_profile/2,		% +ProfileID, :HTML
+	    chat_about/2,		% +DocID, +Message
 
 	    notifications//1		% +Options
 	  ]).
@@ -938,7 +939,14 @@ dict_file_name(Dict, File) :-
 		 *	   CHAT MESSAGES	*
 		 *******************************/
 
-%!	chat_relay(+Messsage) is det.
+%!	chat_about(+DocID, +Message) is det.
+%
+%	Distribute a chat message about DocID.
+
+chat_about(DocID, Message) :-
+	chat_relay(Message.put(docid, DocID)).
+
+%!	chat_relay(+Message) is det.
 %
 %	Store and relay a chat message.
 

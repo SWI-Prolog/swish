@@ -82,6 +82,7 @@ A user has the following options to control notifications:
 :- setting(daily, compound, 04:00,
            "Time at which to send daily messages").
 
+:- meta_predicate try(0).
 
 		 /*******************************
 		 *            DATABASE		*
@@ -250,6 +251,7 @@ nofollow(DocID, ProfileID, Flags) :-
 
 notify(DocID, Action) :-
     to_atom(DocID, DocIDA),
+    try(notify_in_chat(DocIDA, Action)),
     notify_open_db,
     forall(follower(DocIDA, Profile, Options),
            notify_user(Profile, DocIDA, Action, Options)).
@@ -261,8 +263,6 @@ to_atom(Text, Atom) :-
 %
 %   Notify the user belonging to Profile  about Action, which is related
 %   to document DocID.
-
-:- meta_predicate try(0).
 
 notify_user(Profile, _, Action, _Options) :-	% exclude self
     event_generator(Action, Profile),
@@ -331,6 +331,65 @@ short_notice(forked(OldCommit, Commit)) -->
          ]).
 short_notice(chat(Message)) -->
     html([\chat_user(Message), " chatted about ", \chat_file(Message)]).
+
+file_name(Commit) -->
+    { http_link_to_id(web_storage, path_postfix(Commit.name), HREF) },
+    html(a(href(HREF), Commit.name)).
+
+		 /*******************************
+		 *  ADD NOTIFICATIONS TO CHAT	*
+		 *******************************/
+
+%!  notify_in_chat(+DocID, +Action)
+
+:- html_meta(html_string(html, -)).
+
+notify_in_chat(_, chat(_)) :-
+    !.
+notify_in_chat(DocID, Action) :-
+    html_string(\chat_notice(Action), HTML),
+    action_user(Action, User),
+    Message = _{ type:"chat-message",
+                 html:HTML,
+                 user:User,
+                 create:false
+               },
+    chat_about(DocID, Message).
+
+
+html_string(HTML, String) :-
+    phrase(html(HTML), Tokens),
+    delete(Tokens, nl(_), SingleLine),
+    with_output_to(string(String), print_html(SingleLine)).
+
+
+chat_notice(updated(Commit)) -->
+    html(['Saved new version: ', \commit_message_summary(Commit)]).
+chat_notice(deleted(Commit)) -->
+    html(['Deleted: ', \commit_message_summary(Commit)]).
+chat_notice(forked(_OldCommit, Commit)) -->
+    html(['Forked into ', \file_name(Commit), ': ',
+          \commit_message_summary(Commit)
+         ]).
+
+commit_message_summary(Commit) -->
+    { Message = Commit.get(commit_message) }, !,
+    html(span(class(['commit-message']), Message)).
+commit_message_summary(_Commit) -->
+    html(span(class(['no-commit-message']), 'no message')).
+
+action_user(Action, User) :-
+    arg(1, Action, Commit),
+    findall(Name-Value, commit_user_property(Commit, Name, Value), Pairs),
+    dict_pairs(User, u, Pairs).
+
+commit_user_property(Commit, id, ID) :-
+    ID = Commit.get(profile_id).
+commit_user_property(Commit, name, Name) :-
+    Name = Commit.get(author).
+commit_user_property(Commit, avatar, Avatar) :-
+    Avatar = Commit.get(avatar).
+
 
 
 		 /*******************************
@@ -426,22 +485,23 @@ mail_message(ProfileID, DocID, Action) -->
     style.
 
 notification(updated(Commit)) -->
-    html(p(['The file ', \file_name(Commit),
+    html(p(['The file ', \public_file_ref(Commit),
             ' has been updated by ', \committer(Commit), '.'])),
     commit_message(Commit).
 notification(forked(OldCommit, Commit)) -->
-    html(p(['The file ', \file_name(OldCommit),
-            ' has been forked into ', \file_name(Commit), ' by ', \committer(Commit), '.'])),
+    html(p(['The file ', \public_file_ref(OldCommit),
+            ' has been forked into ', \public_file_ref(Commit), ' by ',
+            \committer(Commit), '.'])),
     commit_message(Commit).
 notification(deleted(Commit)) -->
-    html(p(['The file ', \file_name(Commit),
+    html(p(['The file ', \public_file_ref(Commit),
             ' has been deleted by ', \committer(Commit), '.'])),
     commit_message(Commit).
 notification(chat(Message)) -->
     html(p([\chat_user(Message), " chatted about ", \chat_file(Message)])),
     chat_message(Message).
 
-file_name(Commit) -->
+public_file_ref(Commit) -->
     { public_url(web_storage, path_postfix(Commit.name), HREF, []) },
     html(a(href(HREF), Commit.name)).
 
