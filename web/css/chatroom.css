@@ -89,6 +89,14 @@ span.chat-sender::after
 { content: ": ";
 }
 
+span.commit-message
+{ color: #060;
+}
+
+span.no-commit-message
+{ font-size: 80%; color: #fff;
+}
+
 /* Tooltip styling */
 
 .chat-message .tooltip
