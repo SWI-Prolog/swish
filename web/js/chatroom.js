@@ -118,7 +118,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	    return false;
 	  }
 	});
-	elem.on("click", "button", function(ev) {
+	elem.on("click", ".inner button", function(ev) {
 	  var button = $(ev.target).closest("button");
 	  var val;
 
