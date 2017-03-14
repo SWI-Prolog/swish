@@ -93,19 +93,19 @@ preferences.setDefault("emacs-keybinding", false);
 	  update: history.updateRecentUL
 	},
 	"Share": "--",
-	"Download": function() {
-	  menuBroadcast("download");
+	"Follow ...": function() {
+	  menuBroadcast("follow-file");
 	},
 	"Chat ...": function() {
 	  menuBroadcast("chat-about-file");
 	},
-	"Follow ...": function() {
-	  menuBroadcast("follow-file");
-	},
 	"Start TogetherJS ...": function() {
 	  $("body").swish('collaborate');
 	},
-	"Print group": "--",
+	"Export": "--",
+	"Download": function() {
+	  menuBroadcast("download");
+	},
 	"Print ...": function() {
 	  menuBroadcast("print");
 	}
