@@ -177,10 +177,13 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       elem.append($.el.span({class:"chat-sender"},
 			    is_self ? "Me" : user.name));
 
-      if ( msg.html )
-	elem.html(msg.html);
-      else if ( msg.text )
-	elem.append($.el.span(msg.text));
+      if ( msg.html ) {
+	var span = $.el.span({class:"chat-message html"});
+	$(span).html(msg.html);
+	elem.append(span);
+      } else if ( msg.text ) {
+	elem.append($.el.span({class:"chat-message text"}, msg.text));
+      }
 
       if ( msg.payload ) {
 	for(var i=0; i<msg.payload.length; i++) {
