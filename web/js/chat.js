@@ -234,6 +234,9 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       $(li).addClass("myself");
       this.chat('userCount', e.visitors);
       last_open = getTime();
+
+      if ( e.check_login )
+	$("#login").login('update', "check");
     },
 
     userCount: function(cnt) {

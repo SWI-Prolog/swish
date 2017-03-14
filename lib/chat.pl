@@ -112,7 +112,11 @@ start_chat(Request) :-
 
 start_chat(Request, Options) :-
 	authorized(chat, Options),
-	http_open_session(Session, []),
+	(   http_in_session(Session)
+	->  CheckLogin = false
+	;   http_open_session(Session, []),
+	    CheckLogin = true
+	),
 	check_flooding,
 	http_parameters(Request,
 			[ avatar(Avatar, [optional(true)]),
@@ -121,7 +125,8 @@ start_chat(Request, Options) :-
 			]),
 	extend_options([ avatar(Avatar),
 			 nick_name(NickName),
-			 reconnect(Token)
+			 reconnect(Token),
+			 check_login(CheckLogin)
 		       ], Options, ChatOptions),
 	http_upgrade_to_websocket(
 	    accept_chat(Session, ChatOptions),
@@ -176,11 +181,13 @@ accept_chat_(Session, Options, WebSocket) :-
 	    Reason = joined
 	),
 	visitor_count(Visitors),
+	option(check_login(CheckLogin), Options, true),
 	Msg = _{ type:welcome,
 		 uid:TmpUser,
 		 wsid:WSID,
 		 reconnect:Token,
-		 visitors:Visitors
+		 visitors:Visitors,
+		 check_login:CheckLogin
 	       },
 	hub_send(WSID, json(UserData.put(Msg))),
 	must_succeed(chat_broadcast(UserData.put(_{type:Reason,
