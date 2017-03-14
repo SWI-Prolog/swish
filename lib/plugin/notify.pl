@@ -364,11 +364,11 @@ html_string(HTML, String) :-
 
 
 chat_notice(updated(Commit)) -->
-    html(['Saved new version: ', \commit_message_summary(Commit)]).
+    html([b('Saved'), ' new version: ', \commit_message_summary(Commit)]).
 chat_notice(deleted(Commit)) -->
-    html(['Deleted: ', \commit_message_summary(Commit)]).
+    html([b('Deleted'), ': ', \commit_message_summary(Commit)]).
 chat_notice(forked(_OldCommit, Commit)) -->
-    html(['Forked into ', \file_name(Commit), ': ',
+    html([b('Forked'), ' into ', \file_name(Commit), ': ',
           \commit_message_summary(Commit)
          ]).
 
