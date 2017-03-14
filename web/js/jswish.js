@@ -79,11 +79,11 @@ preferences.setDefault("emacs-keybinding", false);
       { "Save ...": function() {
 	  menuBroadcast("save", "as");
 	},
-	"Reload": function() {
-	  menuBroadcast("reload");
-	},
 	"Info & history ...": function() {
 	  menuBroadcast("fileInfo");
+	},
+	"Reload": function() {
+	  menuBroadcast("reload");
 	},
 	"Open recent": {
 	  type: "submenu",
