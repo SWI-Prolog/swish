@@ -62,23 +62,23 @@
 :- volatile storage_dir/1.
 
 open_chatstore :-
-	setting(directory, Spec),
-	absolute_file_name(Spec, Dir,
-			   [ file_type(directory),
-			     access(write),
-			     file_errors(fail)
-			   ]), !,
-	asserta(storage_dir(Dir)).
+    setting(directory, Spec),
+    absolute_file_name(Spec, Dir,
+		       [ file_type(directory),
+			 access(write),
+			 file_errors(fail)
+		       ]), !,
+    asserta(storage_dir(Dir)).
 open_chatstore :-
-	setting(directory, Spec),
-	absolute_file_name(Spec, Dir,
-			   [ solutions(all)
-			   ]),
-	\+ exists_directory(Dir),
-	catch(make_directory(Dir),
-	      error(permission_error(create, directory, Dir), _),
-	      fail), !,
-	asserta(storage_dir(Dir)).
+    setting(directory, Spec),
+    absolute_file_name(Spec, Dir,
+		       [ solutions(all)
+		       ]),
+    \+ exists_directory(Dir),
+    catch(make_directory(Dir),
+	  error(permission_error(create, directory, Dir), _),
+	  fail), !,
+    asserta(storage_dir(Dir)).
 
 chat_dir_file(DocID, Path, File) :-
     sha_hash(DocID, Bin, []),
