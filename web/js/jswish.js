@@ -99,6 +99,12 @@ preferences.setDefault("emacs-keybinding", false);
 	"Chat ...": function() {
 	  menuBroadcast("chat-about-file");
 	},
+	"Chat help room ...": function() {
+	  $("body").swish('playFile', {
+	    file:"help.swinb",
+	    chat:'large'
+	  });
+	},
 	"Start TogetherJS ...": function() {
 	  $("body").swish('collaborate');
 	},
@@ -300,7 +306,7 @@ preferences.setDefault("emacs-keybinding", false);
 		 copyAttrs([ "line",
 			     "regex", "showAllMatches",
 			     "newTab", "noHistory",
-			     "prompt"
+			     "prompt", "chat"
 			   ]);
 
 		 elem.swish('setSource', reply);

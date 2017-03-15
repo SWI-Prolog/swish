@@ -195,7 +195,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       if ( !src.url       ) src.url = config.http.locations.swish;
       if ( !src.noHistory ) history.push(src);
 
-      this.storage('chat', 'update');
+      this.storage('chat', src.chat||'update');
       $(".storage").storage('chat_status', true);
 
       return this;
@@ -888,10 +888,11 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  else
 	    utils.flash(chat);
 	} else if ( action != 'update' ) {
+	  var percentage = (action == 'large' ? 80 : 20);
 	  chat = $($.el.div({class:"chatroom"}));
 
 	  chat.chatroom({docid:docid});
-	  this.tile('split', chat, "below", 20, 150)
+	  this.tile('split', chat, "below", percentage, 150)
 	      .addClass("chat-container");
 	}
       } else if ( action == 'update' ) {

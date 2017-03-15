@@ -43,10 +43,10 @@
  */
 
 define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
-	 "modal",
+	 "modal", "links",
 	 "laconic"
        ],
-       function($, form, CodeMirror, utils, config, modal) {
+       function($, form, CodeMirror, utils, config, modal, links) {
 
 (function($) {
   var pluginName = 'chatroom';
@@ -110,7 +110,9 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	  },
 	  "Cry for help": function() {
 	    this.chatroom('send',
-			  {class:"cry-for-help"});
+			  { docid:"gitty:help.swinb",
+			    payload: [{type:"about", docid:data.docid}]
+			  });
 	  }
 	});
 	$(close).on("click", function() {
@@ -136,6 +138,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	  ev.preventDefault();
 	  return false;
 	});
+	elem.on("click", ".inner a", links.followLink);
 	elem.on("pane.resize", function() {
 	  elem.chatroom('scrollToBottom', true);
 	});
@@ -152,7 +155,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
      * Send a chat message.
      * @param {Object} [options]
      * @param {Array}  [options.payload] Payloads (queries, etc)
-     * @param {String} [options.class] Class of the chat message
+     * @param {String} [options.docid] Addressed document of not self
      */
     send: function(options) {
       var data = this.data(pluginName);
@@ -166,7 +169,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	ta.val("");
 
 	msg.payload = options.payload;
-	msg.docid   = data.docid;
+	msg.docid   = options.docid||data.docid;
 	if ( options.class )
 	  msg.class = options.class;
 
@@ -371,11 +374,6 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
     update: function(update) {
       var old, dif, nwe;
 
-      function btn(glyph, type, title) {
-	return form.widgets.glyphIconButton(glyph,
-					    {class:"btn-xs "+type, title:title});
-      }
-
       this.append(" ", $.el.span(
         {class:"update"},
 	old = btn("play",    "btn-primary", "Open old version"),
@@ -386,6 +384,16 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       $(dif).data('diff',   {from:update.previous, to:update.commit,
 			     name:update.name});
       $(nwe).data('commit', update.commit);
+    },
+
+    about: function(about) {
+      var file = about.docid.replace("gitty:", "");
+
+      this.append(" ",
+	$.el.a({
+	  href:config.http.locations.web_storage+file,
+	  class:"store"
+	}, file));
     }
   };
 
@@ -404,6 +412,10 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
     elem.tooltip();
   }
 
+  function btn(glyph, type, title) {
+    return form.widgets.glyphIconButton(glyph,
+					{class:"btn-xs "+type, title:title});
+  }
 
   /**
    * <Class description>
