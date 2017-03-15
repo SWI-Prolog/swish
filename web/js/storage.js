@@ -175,6 +175,8 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	data.file = src.meta.name;
 	data.meta = src.meta;
 	data.url  = null;
+	if ( src.meta.symbolic == "HEAD" )
+	  src.url = config.http.locations.web_storage + src.meta.name;
       } else {
 	data.file = null;
 	data.meta = null;
