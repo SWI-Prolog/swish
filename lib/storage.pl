@@ -296,9 +296,10 @@ meta_data(Dict, Meta, Options) :-
 	->  HasIdentity = true
 	;   HasIdentity = false
 	),
+	filter_auth(Auth, Auth1),
 	(   filter_meta(Dict.get(meta), HasIdentity, Meta1)
-	->  Meta = meta{}.put(Auth).put(Meta1)
-	;   Meta = meta{}.put(Auth)
+	->  Meta = meta{}.put(Auth1).put(Meta1)
+	;   Meta = meta{}.put(Auth1)
 	).
 
 meta_data(Store, Dict, PrevMeta, Meta, Options) :-
@@ -342,6 +343,15 @@ filter_type(list(Type), V0, V) :-
 filter_type(atom, V0, V) :-
 	atomic(V0),
 	atom_string(V, V0).
+
+filter_auth(Auth0, Auth) :-
+	auth_template(Auth),
+	Auth :< Auth0, !.
+filter_auth(Auth, Auth).
+
+auth_template(_{identity:_, profile_id:_}).
+auth_template(_{profile_id:_}).
+auth_template(_{identity:_}).
 
 
 %%	storage_get(+Request, +Format, +Options) is det.
