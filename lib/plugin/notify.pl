@@ -350,6 +350,7 @@ notify_in_chat(DocID, Action) :-
     html_string(\chat_notice(Action, Payload), HTML),
     action_user(Action, User),
     Message0 = _{ type:"chat-message",
+                  class:"update",
                   html:HTML,
                   user:User,
                   create:false
@@ -421,8 +422,9 @@ notify_by_mail(Profile, DocID, Action, Options) :-
         queue_event(Profile, DocID, Action)
     ).
 
-must_notify(chat(_), Options) :- !,
-    memberchk(chat, Options).
+must_notify(chat(Message), Options) :- !,
+    memberchk(chat, Options),
+    \+ Message.get(class) == "update".
 must_notify(_, Options) :-
     memberchk(update, Options).
 
