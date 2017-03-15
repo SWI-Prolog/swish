@@ -535,7 +535,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
       },
 
       glyphIconButton: function(glyph, options) {
-	var attrs = {class:"btn btn-info", type:"button"};
+	var attrs = {class:"btn", type:"button"};
 
 	if ( options.action ) attrs['data-action'] = options.action;
 	if ( options.title )  attrs.title          = options.title;

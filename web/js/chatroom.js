@@ -371,16 +371,16 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
     update: function(update) {
       var old, dif, nwe;
 
-      function btn(glyph, title) {
+      function btn(glyph, type, title) {
 	return form.widgets.glyphIconButton(glyph,
-					    {class:"btn-xs", title:title});
+					    {class:"btn-xs "+type, title:title});
       }
 
       this.append(" ", $.el.span(
         {class:"update"},
-	old = btn("play",    "Open old version"),
-	dif = btn("zoom-in", "View changes"),
-        nwe = btn("play",    "Open new version")));
+	old = btn("play",    "btn-primary", "Open old version"),
+	dif = btn("zoom-in", "btn-info",    "View changes"),
+        nwe = btn("play",    "btn-primary", "Open new version")));
 
       $(old).data('commit', update.previous);
       $(dif).data('diff',   {from:update.previous, to:update.commit,
