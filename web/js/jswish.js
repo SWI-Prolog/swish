@@ -101,7 +101,7 @@ preferences.setDefault("emacs-keybinding", false);
 	},
 	"Chat help room ...": function() {
 	  $("body").swish('playFile', {
-	    file:"help.swinb",
+	    file:"Help.swinb",
 	    chat:'large'
 	  });
 	},

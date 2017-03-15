@@ -880,7 +880,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       var docid = this.storage('docid', 'gitty');
 
       if ( docid ) {
-	var chat = this.closest(".pane-container").find(".chatroom");
+	var chat = this.closest(".tab-pane").find(".chatroom");
 
 	if ( chat.length > 0 ) {
 	  if ( action == 'update' )

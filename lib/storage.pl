@@ -379,8 +379,8 @@ storage_get(Request, Format, Options) :-
 	request_file_or_hash(Request, Dir, FileOrHash, Type),
 	Obj =.. [Type,FileOrHash],
 	authorized(gitty(download(Obj, Format)), Options),
-	broadcast(swish(download(Dir, FileOrHash, Format))),
-	storage_get(Format, Dir, Type, FileOrHash, Request).
+	storage_get(Format, Dir, Type, FileOrHash, Request),
+	broadcast(swish(download(Dir, FileOrHash, Format))).
 
 storage_get(swish, Dir, _, FileOrHash, Request) :-
 	gitty_data(Dir, FileOrHash, Code, Meta),

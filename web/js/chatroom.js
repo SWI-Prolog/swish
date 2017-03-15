@@ -110,7 +110,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	  },
 	  "Cry for help": function() {
 	    this.chatroom('send',
-			  { docid:"gitty:help.swinb",
+			  { docid:"gitty:Help.swinb",
 			    payload: [{type:"about", docid:data.docid}]
 			  });
 	  }
