@@ -912,8 +912,13 @@ define([ "jquery", "config", "modal", "form", "gitty",
 
     /**
      * Act upon the arrival of a chat message.  Update the tab title.
+     * If the message is not displayed and it is not permanent
+     * (`create == false`) we should not update the counter.
      */
     chat_message: function(msg) {
+      if ( !msg.displayed && msg.create == false )
+	return this;
+
       return this.each(function() {
 	var elem = $(this);
 

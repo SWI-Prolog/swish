@@ -324,6 +324,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 
       if ( rooms.length > 0 ) {
 	rooms.chatroom('add', e);
+	e.displayed = true;
       } else {
 	if ( $("#"+e.user.id).length > 0 ) {
 	  msg = $.extend({}, e);
