@@ -85,6 +85,11 @@ span.chat-sender
   color: #4888be;
 }
 
+span.chat-time
+{ font-family: italic;
+  color: #4888be;
+}
+
 span.chat-sender::after
 { content: ": ";
 }

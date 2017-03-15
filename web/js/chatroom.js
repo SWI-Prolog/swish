@@ -69,7 +69,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	data.docid = options.docid;
 	elem.data(pluginName, data);	/* store with element */
 
-	elem.addClass("chatroom");
+	elem.addClass("chatroom each-minute");
 
 					/* build DOM */
 
@@ -144,6 +144,9 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	elem.on("pane.resize", function() {
 	  elem.chatroom('scrollToBottom', true);
 	});
+	elem.on("minute", function() {
+	  elem.chatroom('update_time');
+	});
 
 	elem.chatroom('load_from_server');
       });
@@ -210,6 +213,13 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       elem.append($.el.span({class:"chat-sender"},
 			    is_self ? "Me" : muser.name));
 
+      if ( msg.time ) {
+	var title = new Date(msg.time*1000).toLocaleString();
+	elem.append($.el.span({class:"chat-time", title:title},
+			      "(", ago(msg.time), ") "));
+	elem.data('time', msg.time);
+      }
+
       if ( msg.html ) {
 	var span = $.el.span({class:"chat-message html"});
 	$(span).html(msg.html);
@@ -254,6 +264,15 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	    });
 
       return this;
+    },
+
+    update_time: function() {
+      return this.find(".chat-message").each(function() {
+	var elem = $(this);
+	var time;
+	if ( (time=elem.data('time')) )
+	  elem.find(".chat-time").text("("+ago(time)+") ");
+      });
     },
 
     /**
@@ -418,6 +437,21 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
   function btn(glyph, type, title) {
     return form.widgets.glyphIconButton(glyph,
 					{class:"btn-xs "+type, title:title});
+  }
+
+  function ago(time) {
+    var ago = ((new Date().getTime())/1000) - time;
+
+    if ( ago < 20  ) return "just now";
+    if ( ago < 60  ) return "less then a minute ago";
+    ago = Math.round(ago/60);
+    if ( ago < 120 ) return ago + " minutes ago";
+    ago = Math.round(ago/60);
+    if ( ago < 48 )  return ago + " hours ago";
+    ago = Math.round(ago/24);
+    if ( ago < 360 ) return ago + " days ago";
+    ago = Math.round(ago/365);
+    return ago + " years ago";
   }
 
   /**

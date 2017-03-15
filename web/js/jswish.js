@@ -240,6 +240,10 @@ preferences.setDefault("emacs-keybinding", false);
 	  elem.swish('collaborate');
 
 	$("#chat").chat('');
+
+	setInterval(function(){
+	  $(".each-minute").trigger("minute");
+	}, 60000);
       });
     },
 
