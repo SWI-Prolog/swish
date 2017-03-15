@@ -507,25 +507,28 @@ mail_message(ProfileID, DocID, Action) -->
     style.
 
 notification(updated(Commit)) -->
-    html(p(['The file ', \public_file_ref(Commit),
+    html(p(['The file ', \global_commit_file(Commit),
             ' has been updated by ', \committer(Commit), '.'])),
     commit_message(Commit).
 notification(forked(OldCommit, Commit)) -->
-    html(p(['The file ', \public_file_ref(OldCommit),
-            ' has been forked into ', \public_file_ref(Commit), ' by ',
+    html(p(['The file ', \global_commit_file(OldCommit),
+            ' has been forked into ', \global_commit_file(Commit), ' by ',
             \committer(Commit), '.'])),
     commit_message(Commit).
 notification(deleted(Commit)) -->
-    html(p(['The file ', \public_file_ref(Commit),
+    html(p(['The file ', \global_commit_file(Commit),
             ' has been deleted by ', \committer(Commit), '.'])),
     commit_message(Commit).
 notification(chat(Message)) -->
     html(p([\chat_user(Message), " chatted about ", \chat_file(Message)])),
     chat_message(Message).
 
-public_file_ref(Commit) -->
-    { public_url(web_storage, path_postfix(Commit.name), HREF, []) },
-    html(a(href(HREF), Commit.name)).
+global_commit_file(Commit) -->
+    global_gitty_link(Commit.name).
+
+global_gitty_link(File) -->
+    { public_url(web_storage, path_postfix(File), HREF, []) },
+    html(a(href(HREF), File)).
 
 committer(Commit) -->
     { ProfileID = Commit.get(profile_id) }, !,
@@ -540,10 +543,12 @@ commit_message(_Commit) -->
     html(p(class(['no-commit-message', block]), 'No message')).
 
 chat_file(Message) -->
-    { string_concat("gitty:", File, Message.docid),
-      public_url(web_storage, path_postfix(File), HREF, [])
+    global_docid_link(Message.docid).
+
+global_docid_link(DocID) -->
+    { string_concat("gitty:", File, DocID)
     },
-    html(a(href(HREF), File)).
+    global_gitty_link(File).
 
 chat_user(Message) -->
     { User = Message.get(user).get(name) },
@@ -573,6 +578,9 @@ chat_payload(query, PayLoad) -->
              [ div(class('query-title'), 'Query'),
                pre(class([query, block]), PayLoad.get(query))
              ])).
+chat_payload(about, PayLoad) -->
+    html(div(class(about),
+             [ 'About file ', \global_docid_link(PayLoad.get(docid)) ])).
 chat_payload(Type, _) -->
     html(p(['Unknown payload of type ~q'-[Type]])).
 

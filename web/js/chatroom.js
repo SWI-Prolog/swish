@@ -111,8 +111,10 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	  "Cry for help": function() {
 	    this.chatroom('send',
 			  { docid:"gitty:Help.swinb",
-			    payload: [{type:"about", docid:data.docid}]
+			    payload: [{type:"about", docid:data.docid}],
+			    clear:false
 			  });
+	    this.chatroom('send');
 	  }
 	});
 	$(close).on("click", function() {
@@ -166,7 +168,8 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       options = options||{};
 
       if ( msg.text != "" || options.payload !== undefined ) {
-	ta.val("");
+	if ( options.clear !== false )
+	  ta.val("");
 
 	msg.payload = options.payload;
 	msg.docid   = options.docid||data.docid;
