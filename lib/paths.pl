@@ -46,6 +46,8 @@
     http:location/3.
 
 user:file_search_path(data,      data).
+user:file_search_path(config,    swish('config-enabled')).
+user:file_search_path(config,    swish('config-available')).
 user:file_search_path(swish_web, swish(web)).
 user:file_search_path(js,        swish_web(js)).
 user:file_search_path(css,       swish_web(css)).
@@ -68,18 +70,6 @@ set_swish_path :-
 
 attach_local_packs :-
     attach_packs(swish(pack), [duplicate(replace), search(first)]).
-
-% Built-in as of SWI-Prolog 7.5.2. Options ensure we get the local
-% version
-:- if(\+current_predicate(attach_packs/2)).
-attach_packs(Dir,_) :-
-	absolute_file_name(Dir, Path,
-			   [ file_type(directory),
-			     file_errors(fail)
-			   ]), !,
-	attach_packs(Path).
-attach_packs(_, _).
-:- endif.
 
 %!  set_data_path
 %

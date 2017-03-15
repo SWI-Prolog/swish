@@ -140,6 +140,8 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	$(window).bind("beforeunload", function(ev) {
 	  return elem.storage('unload', "beforeunload", ev);
 	});
+
+	elem.storage('chat', (data.meta||{}).chat||'update');
       });
     },
 
@@ -195,7 +197,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       if ( !src.url       ) src.url = config.http.locations.swish;
       if ( !src.noHistory ) history.push(src);
 
-      this.storage('chat', src.chat||'update');
+      this.storage('chat', src.chat||(src.meta||{}).chat||'update');
       $(".storage").storage('chat_status', true);
 
       return this;
@@ -323,6 +325,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       }
 
       if ( data.file &&
+	   !(meta && meta.default) &&
 	   (!meta || meta.name == data.file) ) {
 	url += encodeURI(data.file);
 	method = "PUT";
@@ -408,7 +411,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       var meta    = data.meta||{};
       var editor  = this;
       var update  = Boolean(data.file);
-      var fork    = data.meta && meta.symbolic != "HEAD";
+      var fork    = data.meta && meta.symbolic != "HEAD" && !meta.default;
       var type    = tabbed.tabTypes[data.typeName];
       var profile = $("#login").login('get_profile',
 				      [ "display_name", "avatar", "email",
@@ -437,6 +440,8 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	this.append($.el.form(
           { class:"form-horizontal"},
 	    form.fields.hidden("identity", profile.identity),
+	    form.fields.hidden("default", meta.default),
+	    form.fields.hidden("chat", meta.chat),
 	    profile.identity ? undefined :
 			       form.fields.hidden("avatar", profile.avatar),
 	    form.fields.fileName(fork ? null: data.file,

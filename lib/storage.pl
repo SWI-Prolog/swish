@@ -49,6 +49,7 @@
 :- use_module(library(option)).
 :- use_module(library(debug)).
 :- use_module(library(broadcast)).
+:- use_module(library(readutil)).
 :- use_module(library(solution_sequences)).
 
 :- use_module(page).
@@ -382,8 +383,8 @@ storage_get(Request, Format, Options) :-
 	storage_get(Format, Dir, Type, FileOrHash, Request),
 	broadcast(swish(download(Dir, FileOrHash, Format))).
 
-storage_get(swish, Dir, _, FileOrHash, Request) :-
-	gitty_data(Dir, FileOrHash, Code, Meta),
+storage_get(swish, Dir, Type, FileOrHash, Request) :-
+	gitty_data_or_default(Dir, Type, FileOrHash, Code, Meta),
 	chat_count(Meta, Count),
 	swish_reply([ code(Code),
 		      file(FileOrHash),
@@ -392,13 +393,13 @@ storage_get(swish, Dir, _, FileOrHash, Request) :-
 		      chat_count(Count)
 		    ],
 		    Request).
-storage_get(raw, Dir, _, FileOrHash, _Request) :-
-	gitty_data(Dir, FileOrHash, Code, Meta),
+storage_get(raw, Dir, Type, FileOrHash, _Request) :-
+	gitty_data_or_default(Dir, Type, FileOrHash, Code, Meta),
 	file_mime_type(Meta.name, MIME),
 	format('Content-type: ~w~n~n', [MIME]),
 	format('~s', [Code]).
-storage_get(json, Dir, _, FileOrHash, _Request) :-
-	gitty_data(Dir, FileOrHash, Code, Meta),
+storage_get(json, Dir, Type, FileOrHash, _Request) :-
+	gitty_data_or_default(Dir, Type, FileOrHash, Code, Meta),
 	chat_count(Meta, Count),
 	reply_json_dict(json{data:Code, meta:Meta, chats:_{count:Count}}).
 storage_get(history(Depth, Includes), Dir, _, File, _Request) :-
@@ -417,8 +418,37 @@ request_file_or_hash(Request, Dir, FileOrHash, Type) :-
 	->  Type = file
 	;   is_gitty_hash(FileOrHash)
 	->  Type = hash
+	;   gitty_default_file(FileOrHash, _)
+	->  Type = default
 	;   http_404([], Request)
 	).
+
+%!	gitty_data_or_default(+Dir, +Type, +FileOrHash, -Code, -Meta)
+%
+%	Read a file from the gitty store. I   the file is not present, a
+%	default may be provided =gitty/File= in the config directory.
+
+gitty_data_or_default(_, default, File, Code,
+		      meta{name:File,
+			   modify:[login,owner],
+			   default:true,
+			   chat:"large"
+			  }) :- !,
+	gitty_default_file(File, Path),
+	read_file_to_string(Path, Code, []).
+gitty_data_or_default(Dir, _, FileOrHash, Code, Meta) :-
+	gitty_data(Dir, FileOrHash, Code, Meta), !.
+
+gitty_default_file(File, Path) :-
+	file_name_extension(Base, Ext, File),
+	memberchk(Ext, [pl,swinb]),
+	forall(sub_atom(Base, _, 1, _, C),
+	       char_type(C, csym)),
+	absolute_file_name(config(gitty/File), Path,
+			   [ access(read),
+			     file_errors(fail)
+			   ]).
+
 
 %!	chat_count(+Meta, -ChatCount) is det.
 %
