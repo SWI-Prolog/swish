@@ -171,6 +171,9 @@ preferences.setDefault("emacs-keybinding", false);
 	"Chat": function() {
 	  menuBroadcast("help", {file:"chat.html"});
 	},
+	"Login extras": function() {
+	  menuBroadcast("help", {file:"login.html"});
+	},
 	"Background": "--",
 	"Limitations": function() {
 	  menuBroadcast("help", {file:"beware.html"});
