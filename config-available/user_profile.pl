@@ -67,18 +67,20 @@ linked to SWISH as a git submodule.  To use profiles, run
 %
 %   Declare profile properties.
 
-user_profile:attribute(name,              string,           []).
-user_profile:attribute(given_name,        string,           []).
-user_profile:attribute(family_name,       string,           []).
-user_profile:attribute(nick_name,         string,           []).
-user_profile:attribute(email,             email,            []).
-user_profile:attribute(email_verified,    boolean,          [access(ro)]).
-user_profile:attribute(avatar,            url(http),        []).
-user_profile:attribute(home_page,         url(http),        []).
-user_profile:attribute(last_login,        time_stamp('%+'), [access(ro)]).
-user_profile:attribute(last_peer,         string,           [access(ro)]).
-user_profile:attribute(identity_provider, atom,             [access(ro)]).
-user_profile:attribute(external_identity, string,           [hidden(true)]).
+user_profile:attribute(name,                string,           []).
+user_profile:attribute(given_name,          string,           []).
+user_profile:attribute(family_name,         string,           []).
+user_profile:attribute(nick_name,           string,           []).
+user_profile:attribute(email,               email,            []).
+user_profile:attribute(email_verified,      boolean,          [access(ro)]).
+user_profile:attribute(email_notifications, oneof([immediate,daily,never]),
+                                                           [default(immediate)]).
+user_profile:attribute(avatar,              url(http),        []).
+user_profile:attribute(home_page,           url(http),        []).
+user_profile:attribute(last_login,          time_stamp('%+'), [access(ro)]).
+user_profile:attribute(last_peer,           string,           [access(ro)]).
+user_profile:attribute(identity_provider,   atom,             [access(ro)]).
+user_profile:attribute(external_identity,   string,           [hidden(true)]).
 
 %!  user_profile:attribute_mapping(+ProfileAttr, +IDProvider, -IDProviderAttr)
 %

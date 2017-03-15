@@ -33,7 +33,9 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-:- module(swish_plugin_user_profile, []).
+:- module(swish_plugin_user_profile,
+          [
+          ]).
 :- use_module(library(option)).
 :- use_module(library(user_profile)).
 :- use_module(library(http/http_dispatch)).
@@ -101,7 +103,7 @@ profile:
 :- multifile
     swish_config:reply_logged_in/1,     % +Options
     swish_config:reply_logged_out/1,    % +Options
-    swish_config:user_profile/3.        % +Request, +ServerID, -Info
+    swish_config:user_profile/2.        % +Request, -Info
 
 
 		 /*******************************
@@ -227,15 +229,16 @@ update_last_login(User) :-
     set_profile(User, last_peer(Peer)),
     set_profile(User, last_login(NowInt)).
 
-% ! swish_config:user_profile(+Request, -Profile) is semidet.
+%!  swish_config:user_profile(+Request, -Profile) is semidet.
 %
-%   Provide the profile for the current user.
+%   Provide the profile for the current  user. The Profile dict contains
+%   the profile keys and the `profile_id` key.
 
 swish_config:user_profile(_Request, Profile) :-
     http_in_session(_SessionID),
     http_session_data(profile_id(User)),
     current_profile(User, Profile0),
-    Profile = Profile0.put(user_id, User).
+    Profile = Profile0.put(profile_id, User).
 
 
 		 /*******************************
@@ -249,7 +252,7 @@ swish_config:user_profile(_Request, Profile) :-
 
 user_profile(_Request) :-
     http_in_session(_SessionID),
-    http_session_data(profile_id(User)),
+    http_session_data(profile_id(User)), !,
     current_profile(User, Profile),
     findall(Field, user_profile:attribute(Field, _, _), Fields),
     convlist(bt_field(Profile), Fields, FieldWidgets),
@@ -261,11 +264,37 @@ user_profile(_Request) :-
                  [ class('form-horizontal'),
                    label_columns(sm-3)
                  ])).
+user_profile(_Request) :-
+    reply_html_page(
+        title('User profile'),
+        [ p('You must be logged in to view your profile'),
+          \bt_form([ button_group(
+                         [ button(cancel, button,
+                                  [ type(danger),
+                                    data([dismiss(modal)])
+                                  ])
+                         ], [])
+                   ],
+                   [ class('form-horizontal'),
+                     label_columns(sm-3)
+                   ])
+        ]).
 
-bt_field(Profile, Name, input(Name, IType, Options)) :-
+
+bt_field(Profile, Name, Field) :-
     user_profile:attribute(Name, Type, AOptions),
-    input_type(Type, IType),
+    !,
     \+ option(hidden(true), AOptions),
+    bt_field(Profile, Name, Type, AOptions, Field).
+
+bt_field(Profile, Name, Type, AOptions, select(Name, Values, Options)) :-
+    Type = oneof(Values),
+    !,
+    phrase(( (value_opt(Profile, Type, Name) -> [] ; []),
+             (access_opt(AOptions)           -> [] ; [])
+           ), Options).
+bt_field(Profile, Name, Type, AOptions, input(Name, IType, Options)) :-
+    input_type(Type, IType),
     phrase(( (value_opt(Profile, Type, Name) -> [] ; []),
              (access_opt(AOptions)           -> [] ; []),
              (data_type_opt(Type)            -> [] ; [])
@@ -342,10 +371,11 @@ save_profile(Request) :-
     http_in_session(_SessionID),
     http_session_data(profile_id(User)),
     dict_pairs(Dict, _, Pairs),
-    maplist(validate_term, Pairs, Validate),
+    maplist(validate_term, Pairs, VPairs, Validate),
     catch(validate_form(Dict, Validate), E, true),
     (   var(E)
-    ->  save_profile(User, Dict),
+    ->  dict_pairs(VDict, _, VPairs),
+        save_profile(User, VDict),
         current_profile(User, Profile),
         reply_json_dict(_{status:success, profile:Profile})
     ;   message_to_string(E, Msg),
@@ -353,7 +383,8 @@ save_profile(Request) :-
         reply_json_dict(_{status:error, error:Error})
     ).
 
-validate_term(Name-_, field(Name, _Value, [strip,default("")|Options])) :-
+validate_term(Name-_, Name-Value,
+              field(Name, Value, [strip,default("")|Options])) :-
     user_profile:attribute(Name, Type, FieldOptions),
     (   (   option(access(ro), FieldOptions)
         ;   option(hidden(true), FieldOptions)
@@ -421,3 +452,14 @@ delete_profile(_Request) :-
     http_close_session(SessionID),      % effectively logout
     profile_remove(User),
     reply_json_dict(true).
+
+
+		 /*******************************
+		 *           PROPERTIES		*
+		 *******************************/
+
+:- listen(identity_property(Identity, Property),
+          from_profile(Identity, Property)).
+
+from_profile(Identity, Property) :-
+    profile_property(Identity.get(profile_id), Property).

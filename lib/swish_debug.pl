@@ -274,6 +274,7 @@ get_stats(Wrap, Stats) :-
 			rss:RSS,
 			stack:Stack,
 			pengines:Pengines,
+			threads:Threads,
 			pengines_created:PenginesCreated,
 			time:Time
 		      },
@@ -283,12 +284,14 @@ get_stats(Wrap, Stats) :-
 	statistics(cputime, MyCPU),
 	CPU is PCPU-MyCPU,
 	statistics(stack, Stack),
+	statistics(threads, Threads),
 	catch(procps_stat(Stat), _,
 	      Stat = stat{rss:0}),
 	RSS = Stat.rss,
 	swish_statistics(pengines(Pengines)),
 	swish_statistics(pengines_created(PenginesCreated)),
-	add_fordblks(Wrap, Stats0, Stats).
+	add_fordblks(Wrap, Stats0, Stats1),
+	add_visitors(Stats1, Stats).
 
 :- if(current_predicate(mallinfo/1)).
 add_fordblks(Wrap, Stats0, Stats) :-
@@ -302,6 +305,11 @@ add_fordblks(Wrap, Stats0, Stats) :-
 	Stats = Stats0.put(fordblks, FordBlks).
 :- endif.
 add_fordblks(_, Stats, Stats).
+
+add_visitors(Stats0, Stats) :-
+	broadcast_request(swish(visitor_count(C))), !,
+	Stats = Stats0.put(visitors, C).
+add_visitors(Stats, Stats).
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

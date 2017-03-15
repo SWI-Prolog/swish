@@ -62,23 +62,23 @@
 :- volatile storage_dir/1.
 
 open_chatstore :-
-	setting(directory, Spec),
-	absolute_file_name(Spec, Dir,
-			   [ file_type(directory),
-			     access(write),
-			     file_errors(fail)
-			   ]), !,
-	asserta(storage_dir(Dir)).
+    setting(directory, Spec),
+    absolute_file_name(Spec, Dir,
+		       [ file_type(directory),
+			 access(write),
+			 file_errors(fail)
+		       ]), !,
+    asserta(storage_dir(Dir)).
 open_chatstore :-
-	setting(directory, Spec),
-	absolute_file_name(Spec, Dir,
-			   [ solutions(all)
-			   ]),
-	\+ exists_directory(Dir),
-	catch(make_directory(Dir),
-	      error(permission_error(create, directory, Dir), _),
-	      fail), !,
-	asserta(storage_dir(Dir)).
+    setting(directory, Spec),
+    absolute_file_name(Spec, Dir,
+		       [ solutions(all)
+		       ]),
+    \+ exists_directory(Dir),
+    catch(make_directory(Dir),
+	  error(permission_error(create, directory, Dir), _),
+	  fail), !,
+    asserta(storage_dir(Dir)).
 
 chat_dir_file(DocID, Path, File) :-
     sha_hash(DocID, Bin, []),
@@ -94,18 +94,45 @@ chat_file(DocID, File) :-
     chat_dir_file(DocID, Dir, File),
     make_directory_path(Dir).
 
-%!  chat_store(+Message:dict)
+%!  chat_store(+Message:dict) is det.
 %
-%   Add a chat message to the chat store.
+%   Add a chat message to the chat  store. If `Message.create == false`,
+%   the message is only stored if the   chat  is already active. This is
+%   used to only insert messages about changes   to the file if there is
+%   an ongoing chat so we know to which version chat messages refer.
 
 chat_store(Message) :-
     chat{docid:DocID} :< Message,
     chat_file(DocID, File),
+    (	del_dict(create, Message, false, Message1)
+    ->	exists_file(File)
+    ;	Message1 = Message
+    ),
+    !,
+    strip_chat(Message1, Message2),
     with_mutex(chat_store,
                setup_call_cleanup(
                    open(File, append, Out, [encoding(utf8)]),
-                   format(Out, '~q.~n', [Message]),
+                   format(Out, '~q.~n', [Message2]),
                    close(Out))).
+chat_store(_).
+
+%!  strip_chat(_Message0, -Message) is det.
+%
+%   Remove  stuff  from  a  chat  message   that  is  useless  to  store
+%   permanently, such as the wsid (WebSocket id).
+
+strip_chat(Message0, Message) :-
+    strip_chat_user(Message0.get(user), User),
+    !,
+    Message = Message0.put(user, User).
+strip_chat(Message, Message).
+
+strip_chat_user(User0, User) :-
+    del_dict(wsid, User0, _, User),
+    !.
+strip_chat_user(User, User).
+
 
 %!  chat_messages(+DocID, -Messages:list) is det.
 %

@@ -45,6 +45,8 @@
 define([ "jquery", "modal", "config", "form", "laconic" ],
        function($, modal, config, form) {
 
+var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
+
 (function($) {
   var pluginName = 'login';
 
@@ -165,67 +167,61 @@ define([ "jquery", "modal", "config", "form", "laconic" ],
     profile: function() {
       var login = $(this);
 
-      modal.show({
+      modal.server_form({
 	title: "User profile",
-	body: function() {
-	  elem = $(this);
-	  $.ajax({ url: config.swish.user.swish_profile_url ||
-			config.http.locations.user_profile,
-		   success: function(data) {
-		     elem.append(data);
-		   },
-		   error: function(jqXHDR) {
-		     modal.ajaxError(jqXHDR);
-		   }
-	         });
-
-	  elem.on("click", "button[data-action]", function(ev) {
-	    var formel = $(ev.target).closest("form");
-	    var data   = form.serializeAsObject(formel, true);
-	    var button = $(ev.target).closest("button");
-
-	    if ( button.data("form_data") == false ) {
-	      $.ajax({ url: button.data("action"),
-	               success: function(obj) {
-			 button.closest(".modal").modal('hide');
-			 login.login('update', "profile");
-			 ev.preventDefault();
-			 return false;
-		       },
-		       error: function(jqXHDR) {
-			 modal.ajaxError(jqXHDR);
-		       }
-	      });
-	    } else {
-	      $.ajax({ url: button.data("action"),
-		       data: JSON.stringify(data),
-		       dataType: "json",
-		       contentType: "application/json",
-		       type: "POST",
-		       success: function(obj) {
-			 if ( obj.status == "success" ) {
-			   button.closest(".modal").modal('hide');
-			   login.login('update', "profile");
-			   ev.preventDefault();
-			   return false;
-			 } else if ( obj.status == "error" ) {
-			   form.formError(formel, obj.error);
-			 } else {
-			   alert("Updated failed: " +
-				 JSON.serializeAsObject(obj));
-			 }
-		       },
-		       error: function(jqXHDR) {
-			 modal.ajaxError(jqXHDR);
-		       }
-	      });
-	    }
-
-	    ev.preventDefault();
-	    return false;
-	  });
-	}
+	url: config.swish.user.swish_profile_url ||
+	     config.http.locations.user_profile,
+	onreply: function() { login.login('update', "profile"); }
       });
+    },
+
+    /**
+     * Get information about the current user. If possible we get this
+     * from the logged in user.  Else we get the name and avatar from
+     * #chat.
+     * @param [fields] is an array with fields we want to have
+     * @return {Object} info about current user
+     */
+    get_profile: function(fields) {
+      var info = {};
+      var obj = config.swish.user||{};
+
+      function set_from_chat(key, chat_key) {
+	var chat = $("#chat");
+	if ( chat.length == 1 ) {
+	  var v = chat.chat('self', [chat_key]);
+	  if ( v[chat_key] ) info[key] = v[chat_key];
+	}
+      }
+
+      fields = fields||DEFAULT_USER_FIELDS;
+      for(var i=0; i<fields.length; i++) {
+	var key = fields[i];
+
+	if ( obj[key] ) {
+	  info[key] = obj[key];
+	} else if ( key == 'display_name' ) {
+	  if ( obj.name )
+	    info.display_name = obj.name;
+	  else if ( obj.given_name && obj.family_name )
+	    info.display_name = obj.given_name + " " + obj.family_name;
+	  else if ( obj.family_name )
+	    info.display_name = obj.family_name;
+	  else if ( obj.given_name )
+	    info.display_name = obj.given_name;
+	  else if ( obj.nick_name )
+	    info.display_name = obj.nick_name;
+	  else
+	    set_from_chat('display_name', 'name');
+	} else if ( key == 'identity' ) {
+	  if ( obj.external_identity && obj.identity_provider )
+	    info.identity = obj.identity_provider + ":" + obj.external_identity;
+	} else if ( key == 'avatar' ) {
+	  set_from_chat('avatar', 'avatar');
+	}
+      }
+
+      return info;
     },
 
     /**

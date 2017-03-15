@@ -68,6 +68,8 @@
 :- use_module(search).
 :- use_module(login).
 :- use_module(chat).
+:- use_module(authenticate).
+:- use_module(pep).
 
 /** <module> Provide the SWISH application as Prolog HTML component
 
@@ -82,9 +84,7 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 
 :- multifile
 	swish_config:source_alias/2,
-	swish_config:reply_page/1,
-	swish_config:verify_write_access/3, % +Request, +File, +Options
-	swish_config:authenticate/2.	    % +Request, -User
+	swish_config:reply_page/1.
 
 %%	swish_reply(+Options, +Request)
 %
@@ -105,10 +105,8 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 %	  Control showing the _beware limited edition_ warning.
 
 swish_reply(Options, Request) :-
-	swish_config:authenticate(Request, User), !, % must throw to deny access
-	swish_reply2([user(User)|Options], Request).
-swish_reply(Options, Request) :-
-	swish_reply2(Options, Request).
+	authenticate(Request, Auth),
+	swish_reply2([identity(Auth)|Options], Request).
 
 swish_reply2(Options, Request) :-
 	option(method(Method), Request),
@@ -706,8 +704,8 @@ swish_rest_reply(put, Request, Options) :-
 	source_file(Request, File, Options1), !,
 	option(content_type(String), Request),
 	http_parse_header_value(content_type, String, Type),
-	read_data(Type, Request, Data, _Meta),
-	verify_write_access(Request, File, Options1),
+	read_data(Type, Request, Data, Meta),
+	authorized(file(update(File,Meta)), Options1),
 	setup_call_cleanup(
 	    open(File, write, Out),
 	    format(Out, '~s', [Data]),
@@ -720,20 +718,3 @@ read_data(media(Type,_), Request, Data, Meta) :-
 	del_dict(data, Dict, Data, Meta).
 read_data(media(text/_,_), Request, Data, _{}) :-
 	http_read_data(Request, Data, [to(string)]).
-
-%%	swish_config:verify_write_access(+Request, +File, +Options) is
-%%	nondet.
-%
-%	Hook that verifies that the HTTP Request  may write to File. The
-%	hook must succeed to grant access. Failure   is  is mapped to an
-%	HTTP _403 Forbidden_ reply. The  hook   may  throw  another HTTP
-%	reply.  By default, the following options are passed:
-%
-%	  - alias(+Alias)
-%	    The swish_config:source_alias/2 Alias used to find File.
-
-verify_write_access(Request, File, Options) :-
-	swish_config:verify_write_access(Request, File, Options), !.
-verify_write_access(Request, _File, _Options) :-
-	option(path(Path), Request),
-	throw(http_reply(forbidden(Path))).

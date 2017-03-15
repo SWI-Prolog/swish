@@ -226,7 +226,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 
       data.wsid = e.wsid;
       data.reconnect = e.reconnect;		/* reconnection token */
-      if ( e.avatar && e.avatar_generated )
+      if ( e.avatar && e.avatar_source == 'generated' )
 	preferences.setVal("anon-avatar", e.avatar);
       e.role = "self";
 
@@ -234,6 +234,9 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       $(li).addClass("myself");
       this.chat('userCount', e.visitors);
       last_open = getTime();
+
+      if ( e.check_login )
+	$("#login").login('update', "check");
     },
 
     userCount: function(cnt) {
@@ -266,8 +269,11 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       var li = $("#"+e.wsid);
 
       li.children("a").html("").append(avatar(e));
-      if ( e.avatar )
+      if ( e.avatar ) {
 	$("*[data-userid="+e.wsid+"] img.avatar").attr("src", e.avatar);
+	if ( e.avatar_source == 'generated' )
+	  preferences.setVal("anon-avatar", e.avatar);
+      }
 
       if ( e.name ) {
 	li.prop('title', e.name);
@@ -298,6 +304,10 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 	this.chat('userCount', e.visitors);
     },
 
+    session_closed: function() {
+      $("#login").login('update', "session-closed");
+    },
+
     /**
      * Display a notification by some user.
      */
@@ -314,6 +324,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 
       if ( rooms.length > 0 ) {
 	rooms.chatroom('add', e);
+	e.displayed = true;
       } else {
 	if ( $("#"+e.user.id).length > 0 ) {
 	  msg = $.extend({}, e);
@@ -482,17 +493,21 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
      * @param {Array} [fields] lists the keys we want to have in the
      * user objects.  Default is all we have.
      */
-    user_info: function(li, fields) {
+    user_info: function(fields) {
       var li = $(this);
       var user = {};
-      var self = li.hasClass("myself");
 
-      if ( self || !fields || fields.indexOf('id') >= 0 )
+      if ( !fields || fields.indexOf('id') >= 0 ) {
 	user.id = li.attr("id");
-      if ( self || !fields || fields.indexOf('name') >= 0 )
-	user.name = li.prop("title");
-      if ( self || !fields || fields.indexOf('avatar') >= 0 )
+      }
+      if ( !fields || fields.indexOf('name') >= 0 ) {
+	var name = li.prop("title");
+	if ( name && name !== "Me" )
+	  user.name = name;
+      }
+      if ( !fields || fields.indexOf('avatar') >= 0 ) {
 	user.avatar = li.find("img.avatar").attr("src");
+      }
 
       return user;
     },
@@ -510,7 +525,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       this.find("li.user[id]").each(function() {
 	var elem = $(this);
 	var self = elem.hasClass("myself");
-	var user = elem.chat('user_info', fields);
+	var user = elem.chat('user_info', self ? undefined : fields);
 
 	if ( self ) {
 	  rc.self = $.extend({}, user);

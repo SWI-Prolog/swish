@@ -43,10 +43,10 @@
  */
 
 define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
-	 "modal",
+	 "modal", "links",
 	 "laconic"
        ],
-       function($, form, CodeMirror, utils, config, modal) {
+       function($, form, CodeMirror, utils, config, modal, links) {
 
 (function($) {
   var pluginName = 'chatroom';
@@ -69,7 +69,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	data.docid = options.docid;
 	elem.data(pluginName, data);	/* store with element */
 
-	elem.addClass("chatroom");
+	elem.addClass("chatroom each-minute");
 
 					/* build DOM */
 
@@ -102,10 +102,19 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	  "Send my query": function() {
 	    var query = $(".prolog-query-editor").queryEditor('getQuery');
 	    if ( query.trim() != "" ) {
-	      this.chatroom('send', [{type:"query", query:query}]);
+	      this.chatroom('send',
+			    {payload: [{type:"query", query:query}]});
 	    } else {
 	      modal.alert("Your query editor is empty");
 	    }
+	  },
+	  "Cry for help": function() {
+	    this.chatroom('send',
+			  { docid:"gitty:Help.swinb",
+			    payload: [{type:"about", docid:data.docid}],
+			    clear:false
+			  });
+	    this.chatroom('send');
 	  }
 	});
 	$(close).on("click", function() {
@@ -118,8 +127,25 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	    return false;
 	  }
 	});
+	elem.on("click", ".inner button", function(ev) {
+	  var button = $(ev.target).closest("button");
+	  var val;
+
+	  if ( (val = button.data("commit")) ) {
+	    elem.closest(".swish").swish('playFile', val);
+	  } else if ( (val = button.data("diff")) ) {
+	    elem.chatroom('diff', val);
+	  }
+
+	  ev.preventDefault();
+	  return false;
+	});
+	elem.on("click", ".inner a", links.followLink);
 	elem.on("pane.resize", function() {
 	  elem.chatroom('scrollToBottom', true);
+	});
+	elem.on("minute", function() {
+	  elem.chatroom('update_time');
 	});
 
 	elem.chatroom('load_from_server');
@@ -132,22 +158,30 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 
     /**
      * Send a chat message.
-     * @param {Object} [extra] provides additional fields to attach
-     * to the message
+     * @param {Object} [options]
+     * @param {Array}  [options.payload] Payloads (queries, etc)
+     * @param {String} [options.docid] Addressed document of not self
      */
-    send: function(payload) {
+    send: function(options) {
       var data = this.data(pluginName);
       var msg = {type:"chat-message"};
       var ta = this.find("textarea");
       msg.text = ta.val().trim();
 
-      if ( msg.text != "" || payload !== undefined ) {
-	ta.val("");
+      options = options||{};
 
-	msg.payload = payload;
-	msg.docid   = data.docid;
-	msg.user    = $("#chat").chat('self');
+      if ( msg.text != "" || options.payload !== undefined ) {
+	if ( options.clear !== false )
+	  ta.val("");
+
+	msg.payload = options.payload;
+	msg.docid   = options.docid||data.docid;
+	if ( options.class )
+	  msg.class = options.class;
+
 	$("#chat").chat('send', msg);
+      } else {
+	modal.alert("No message to send");
       }
     },
 
@@ -159,28 +193,40 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
      * @param {Object} msg.user Sender description
      */
     add: function(msg) {
-      var data = this.data(pluginName);
+      var data  = this.data(pluginName);
+      var muser = msg.user||{};
+      var suser = config.swish.user||{};
 
       if ( msg.docid != data.docid )
 	return this;
 
-      var self = $("#chat").chat('self', []);
-      user = msg.user;
-      var is_self = ( user.id == self.id ||
-		      user.avatar == self.avatar );
+      var self = $("#chat").chat('self');
+      var is_self = ((muser.id && muser.id == self.id) ||
+		     (muser.avatar && muser.avatar == self.avatar) ||
+		     (muser.profile_id && muser.profile_id == suser.profile_id));
 
       elem = $($.el.div({class:"chat-message"+(is_self ? " self" : ""),
-			 'data-userid':user.id}));
-      if ( !is_self && user.avatar ) {
-	elem.append($.el.img({ class:"avatar", src:user.avatar }));
+			 'data-userid':muser.wsid}));
+      if ( !is_self && muser.avatar ) {
+	elem.append($.el.img({ class:"avatar", src:muser.avatar }));
       }
       elem.append($.el.span({class:"chat-sender"},
-			    is_self ? "Me" : user.name));
+			    is_self ? "Me" : muser.name));
 
-      if ( msg.html )
-	elem.html(msg.html);
-      else if ( msg.text )
-	elem.append($.el.span(msg.text));
+      if ( msg.time ) {
+	var title = new Date(msg.time*1000).toLocaleString();
+	elem.append($.el.span({class:"chat-time", title:title},
+			      "(", ago(msg.time), ") "));
+	elem.data('time', msg.time);
+      }
+
+      if ( msg.html ) {
+	var span = $.el.span({class:"chat-message html"});
+	$(span).html(msg.html);
+	elem.append(span);
+      } else if ( msg.text ) {
+	elem.append($.el.span({class:"chat-message text"}, msg.text));
+      }
 
       if ( msg.payload ) {
 	for(var i=0; i<msg.payload.length; i++) {
@@ -219,6 +265,63 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 
       return this;
     },
+
+    update_time: function() {
+      return this.find(".chat-message").each(function() {
+	var elem = $(this);
+	var time;
+	if ( (time=elem.data('time')) )
+	  elem.find(".chat-time").text("("+ago(time)+") ");
+      });
+    },
+
+    /**
+     * Show diff between versions
+     * @param {Object} options
+     * @param {String} options.from Base commit
+     * @param {String} options.to Target commit
+     * @param {String} options.name Name of the file
+     */
+
+    diff: function(options) {
+      function error(jqXHR) {
+	modal.ajaxError(jqXHR);
+      }
+
+      $.ajax({
+        url: config.http.locations.web_storage + options.from,
+	data: {format: "raw"},
+	success: function(from) {
+	  $.ajax({
+	    url: config.http.locations.web_storage + options.to,
+	    data: {format: "raw"},
+	    success: function(to) {
+
+	      function diffBody() {
+		var diff = $.el.div();
+
+		this.append(diff);
+		$(diff).diff({
+		  base: from,
+		  head: to,
+		  baseName: options.name + " (before)",
+		  headName: options.name + " (after)"
+		});
+		this.parents("div.modal-dialog").addClass("modal-wide");
+	      }
+
+	      form.showDialog({
+	        title: "Update differences",
+		body:  diffBody
+	      });
+	    },
+	    error: error
+	  })
+	},
+	error: error
+      });
+    },
+
 
     /**
      * Associate with a new document
@@ -288,6 +391,31 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       sourceToolTip(btn, query.query);
 
       this.append(" ", btn, " ");
+    },
+
+    update: function(update) {
+      var old, dif, nwe;
+
+      this.append(" ", $.el.span(
+        {class:"update"},
+	old = btn("play",    "btn-primary", "Open old version"),
+	dif = btn("zoom-in", "btn-info",    "View changes"),
+        nwe = btn("play",    "btn-primary", "Open new version")));
+
+      $(old).data('commit', update.previous);
+      $(dif).data('diff',   {from:update.previous, to:update.commit,
+			     name:update.name});
+      $(nwe).data('commit', update.commit);
+    },
+
+    about: function(about) {
+      var file = about.docid.replace("gitty:", "");
+
+      this.append(" ",
+	$.el.a({
+	  href:config.http.locations.web_storage+file,
+	  class:"store"
+	}, file));
     }
   };
 
@@ -306,6 +434,25 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
     elem.tooltip();
   }
 
+  function btn(glyph, type, title) {
+    return form.widgets.glyphIconButton(glyph,
+					{class:"btn-xs "+type, title:title});
+  }
+
+  function ago(time) {
+    var ago = ((new Date().getTime())/1000) - time;
+
+    if ( ago < 20  ) return "just now";
+    if ( ago < 60  ) return "less then a minute ago";
+    ago = Math.round(ago/60);
+    if ( ago < 120 ) return ago + " minutes ago";
+    ago = Math.round(ago/60);
+    if ( ago < 48 )  return ago + " hours ago";
+    ago = Math.round(ago/24);
+    if ( ago < 360 ) return ago + " days ago";
+    ago = Math.round(ago/365);
+    return ago + " years ago";
+  }
 
   /**
    * <Class description>

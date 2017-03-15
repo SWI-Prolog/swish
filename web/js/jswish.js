@@ -79,11 +79,11 @@ preferences.setDefault("emacs-keybinding", false);
       { "Save ...": function() {
 	  menuBroadcast("save", "as");
 	},
-	"Reload": function() {
-	  menuBroadcast("reload");
-	},
 	"Info & history ...": function() {
 	  menuBroadcast("fileInfo");
+	},
+	"Reload": function() {
+	  menuBroadcast("reload");
 	},
 	"Open recent": {
 	  type: "submenu",
@@ -93,16 +93,25 @@ preferences.setDefault("emacs-keybinding", false);
 	  update: history.updateRecentUL
 	},
 	"Share": "--",
-	"Download": function() {
-	  menuBroadcast("download");
+	"Follow ...": function() {
+	  menuBroadcast("follow-file");
 	},
 	"Chat ...": function() {
 	  menuBroadcast("chat-about-file");
 	},
+	"Chat help room ...": function() {
+	  $("body").swish('playFile', {
+	    file:"Help.swinb",
+	    chat:'large'
+	  });
+	},
 	"Start TogetherJS ...": function() {
 	  $("body").swish('collaborate');
 	},
-	"Print group": "--",
+	"Export": "--",
+	"Download": function() {
+	  menuBroadcast("download");
+	},
 	"Print ...": function() {
 	  menuBroadcast("print");
 	}
@@ -161,6 +170,9 @@ preferences.setDefault("emacs-keybinding", false);
 	},
 	"Chat": function() {
 	  menuBroadcast("help", {file:"chat.html"});
+	},
+	"Login extras": function() {
+	  menuBroadcast("help", {file:"login.html"});
 	},
 	"Background": "--",
 	"Limitations": function() {
@@ -231,6 +243,10 @@ preferences.setDefault("emacs-keybinding", false);
 	  elem.swish('collaborate');
 
 	$("#chat").chat('');
+
+	setInterval(function(){
+	  $(".each-minute").trigger("minute");
+	}, 60000);
       });
     },
 
@@ -297,7 +313,7 @@ preferences.setDefault("emacs-keybinding", false);
 		 copyAttrs([ "line",
 			     "regex", "showAllMatches",
 			     "newTab", "noHistory",
-			     "prompt"
+			     "prompt", "chat"
 			   ]);
 
 		 elem.swish('setSource', reply);

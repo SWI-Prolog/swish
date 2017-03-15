@@ -15,3 +15,7 @@ span.diff-tags {
 
 pre.udiff .udiff-del { color: red; }
 pre.udiff .udiff-add { color: green; }
+pre.udiff {
+  max-height: 30em;
+  overflow-y: auto;
+}

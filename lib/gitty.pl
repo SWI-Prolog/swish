@@ -191,7 +191,8 @@ gitty_update(Store, Name, Data, Meta, CommitRet) :-
 	->  true
 	;   throw(error(gitty(commit_version(Name, OldHead, Meta.previous)), _))
 	),
-	load_plain_commit(Store, OldHead, OldMeta),
+	load_plain_commit(Store, OldHead, OldMeta0),
+	filter_identity(OldMeta0, OldMeta),
 	get_time(Now),
 	save_object(Store, Data, blob, Hash),
 	Commit = gitty{}.put(OldMeta)
@@ -208,6 +209,26 @@ gitty_update(Store, Name, Data, Meta, CommitRet) :-
 	      E,
 	      ( delete_object(Store, CommitHash),
 		throw(E))).
+
+%!	filter_identity(+Meta0, -Meta)
+%
+%	Remove identification information  from   the  previous  commit.
+%
+%	@tbd: the identity properties should not be hardcoded here.
+
+filter_identity(Meta0, Meta) :-
+	delete_keys([ author,user,avatar,identity,peer,
+		      external_identity, identity_provider, profile_id,
+		      commit_message
+		    ], Meta0, Meta).
+
+delete_keys([], Dict, Dict).
+delete_keys([H|T], Dict0, Dict) :-
+	del_dict(H, Dict0, _, Dict1), !,
+	delete_keys(T, Dict1, Dict).
+delete_keys([_|T], Dict0, Dict) :-
+	delete_keys(T, Dict0, Dict).
+
 
 %%	gitty_update_head(+Store, +Name, +OldCommit, +NewCommit) is det.
 %

@@ -123,6 +123,9 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	elem.on("chat-about-file", function(ev) {
 	  onStorage(ev, 'chat');
 	});
+	elem.on("follow-file", function(ev) {
+	  onStorage(ev, 'follow');
+	});
 	elem.on("activate-tab", function(ev) {
 						/* TBD: What exactly? */
 	});
@@ -137,6 +140,8 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	$(window).bind("beforeunload", function(ev) {
 	  return elem.storage('unload', "beforeunload", ev);
 	});
+
+	elem.storage('chat', (data.meta||{}).chat||'update');
       });
     },
 
@@ -172,6 +177,8 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	data.file = src.meta.name;
 	data.meta = src.meta;
 	data.url  = null;
+	if ( src.meta.symbolic == "HEAD" )
+	  src.url = config.http.locations.web_storage + src.meta.name;
       } else {
 	data.file = null;
 	data.meta = null;
@@ -190,7 +197,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       if ( !src.url       ) src.url = config.http.locations.swish;
       if ( !src.noHistory ) history.push(src);
 
-      this.storage('chat', 'update');
+      this.storage('chat', src.chat||(src.meta||{}).chat||'update');
       $(".storage").storage('chat_status', true);
 
       return this;
@@ -318,7 +325,8 @@ define([ "jquery", "config", "modal", "form", "gitty",
       }
 
       if ( data.file &&
-	   (!meta || !meta.name || meta.name == data.file) ) {
+	   !(meta && meta.default) &&
+	   (!meta || meta.name == data.file) ) {
 	url += encodeURI(data.file);
 	method = "PUT";
       }
@@ -383,6 +391,8 @@ define([ "jquery", "config", "modal", "form", "gitty",
 		 if ( jqXHR.status == 409 ) {
 		   elem.storage('resolveEditConflict',
 				JSON.parse(jqXHR.responseText));
+		 } else if ( jqXHR.status == 403 ) {
+		   modal.alert("Permission denied.  Please try a different name");
 		 } else {
 		   alert('Save failed; click "ok" to try again');
 		   elem.storage('saveAs');
@@ -401,37 +411,56 @@ define([ "jquery", "config", "modal", "form", "gitty",
       var meta    = data.meta||{};
       var editor  = this;
       var update  = Boolean(data.file);
-      var fork    = data.meta && meta.symbolic != "HEAD";
+      var fork    = data.meta && meta.symbolic != "HEAD" && !meta.default;
       var type    = tabbed.tabTypes[data.typeName];
-      var author  = config.swish.user ?
-        ( config.swish.user.name && config.swish.user.email ?
-	    config.swish.user.name + " <" + config.swish.user.email + ">" :
-	    config.swish.user.name||config.swish.user.user
-        ) :
-	meta.author;
+      var profile = $("#login").login('get_profile',
+				      [ "display_name", "avatar", "email",
+					"identity"
+				      ]);
+      var author  = profile.display_name;
+      var modify  = meta.modify;
+      var canmodify;
 
       if ( meta.public === undefined )
 	meta.public = true;
 
+      if ( !modify ) {
+	if ( profile.identity )
+	  modify = ["login", "owner"];
+	else
+	  modify = ["any", "login", "owner"];
+      }
+
+      canmodify = ( profile.identity == meta.identity ||
+		    (profile.identity && !(meta.identity||meta.user)) );
+
       options = options||{};
 
       function saveAsBody() {
-	this.append($.el.form({class:"form-horizontal"},
-			      form.fields.fileName(fork ? null: data.file,
-						   meta.public, meta.example),
-			      form.fields.title(meta.title),
-			      form.fields.author(author),
-			      update ? form.fields.commit_message() : undefined,
-			      form.fields.tags(meta.tags),
-			      form.fields.buttons(
-				{ label: fork   ? "Fork "+type.label :
-					 update ? "Update "+type.label :
-						  "Save "+type.label,
-				  action: function(ev, as) {
-				            editor.storage('save', as);
-					    return false;
-				          }
-				})));
+	this.append($.el.form(
+          { class:"form-horizontal"},
+	    form.fields.hidden("identity", profile.identity),
+	    form.fields.hidden("default", meta.default),
+	    form.fields.hidden("chat", meta.chat),
+	    profile.identity ? undefined :
+			       form.fields.hidden("avatar", profile.avatar),
+	    form.fields.fileName(fork ? null: data.file,
+				 meta.public, meta.example),
+	    form.fields.title(meta.title),
+	    form.fields.author(author, profile.identity),
+	    update ? form.fields.commit_message() : undefined,
+	    form.fields.tags(meta.tags),
+	    form.fields.modify(modify, canmodify),
+	    form.fields.follow(profile.email),
+	    form.fields.buttons(
+	      { label: fork   ? "Fork "+type.label :
+		       update ? "Update "+type.label :
+				"Save "+type.label,
+		action: function(ev, as) {
+			  editor.storage('save', as);
+			  return false;
+			}
+	      })));
       }
 
       form.showDialog({ title: options.title ? options.title :
@@ -856,7 +885,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       var docid = this.storage('docid', 'gitty');
 
       if ( docid ) {
-	var chat = this.closest(".pane-container").find(".chatroom");
+	var chat = this.closest(".tab-pane").find(".chatroom");
 
 	if ( chat.length > 0 ) {
 	  if ( action == 'update' )
@@ -864,10 +893,11 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  else
 	    utils.flash(chat);
 	} else if ( action != 'update' ) {
+	  var percentage = (action == 'large' ? 80 : 20);
 	  chat = $($.el.div({class:"chatroom"}));
 
 	  chat.chatroom({docid:docid});
-	  this.tile('split', chat, "below", 20, 150)
+	  this.tile('split', chat, "below", percentage, 150)
 	      .addClass("chat-container");
 	}
       } else if ( action == 'update' ) {
@@ -888,12 +918,15 @@ define([ "jquery", "config", "modal", "form", "gitty",
 
     /**
      * Act upon the arrival of a chat message.  Update the tab title.
+     * If the message is not displayed and it is not permanent
+     * (`create == false`) we should not update the counter.
      */
     chat_message: function(msg) {
+      if ( !msg.displayed && msg.create == false )
+	return this;
+
       return this.each(function() {
 	var elem = $(this);
-
-	console.log(msg, elem);
 
 	if ( msg.docid == elem.storage('docid') ) {
 	  var data = elem.data(pluginName);
@@ -906,6 +939,24 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  elem.storage('update_tab_title');
 	}
       });
+    },
+
+    /**
+     * Edit the _follow_ options for this file.
+     */
+
+    follow: function() {
+      var docid = this.storage('docid', 'gitty');
+
+      if ( docid ) {
+	modal.server_form({
+	  title: "Follow file options",
+	  url:   config.http.locations.follow_file_options,
+	  data:  {docid: docid}
+	});
+      } else {
+	modal.alert("Sorry, can only follow files");
+      }
     },
 
     /**

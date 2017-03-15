@@ -11,7 +11,6 @@
 
 ## Window handling
 
-  - Add/remove new windows to the tile (pane.js can do that).
   - Specify more about sized: minimum size, flexibility.  Probably
     requires extending jquery.splitter.
   - Allow moving panes around using drag/drop.  Allow organizing
@@ -48,12 +47,39 @@ _not_ see exactly the same UI for cooperation.  What about
 
   - Allow for sharing editors
   - Allow sharing runners (= query+program)
-  - Provide chat and whiteboard (Anne)
+
+## File ownership and rights
+
+  - If a user is logged in
+    - Store the profile-id with a saved program			[OK]
+    - Do not show E-mail					[OK]
+    - Provide options:
+      - Allow save a new version
+        - Anyone						[OK]
+	- Logged on						[OK]
+	- Team
+	- Only me						[OK]
+      - Set/unset follow (docid, profile-id)
+        - When saving a file					[OK]
+	- From File/Follow menu					[OK]
+      - Vote up/down
+      - Profile options for email				[OK]
+    - Email notifications
+      - Exclude sending mail to self `self'			[OK]
+      - Provide `stop following this file' link
+      - Provide `stop sending email' link
+      - Styling
+
+## Make teams
+
+  - Create a team: name, description
+  - Edit team:
+    - Invite users from their profile
+    - Edit rights: invite, remove, delete team
+    - Remove users
 
 ## Saving files
 
-  - Look at [Dillinger markup editor](http://dillinger.io/)
-    - Save to github
   - Save/Info dialogs
     - Fork from history
       - Now: Play, Save, clear/fill name.

@@ -206,7 +206,9 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
 	playButton = form.widgets.glyphIconButton(
            "play",
-	   {title:"Open the highlighted version in SWISH"});
+	   { title:"Open the highlighted version in SWISH",
+	     class:"btn-primary"
+	   });
 	tab.append(playButton);
 	$(playButton).on("click", function(ev) {
 	  var row = elem.find("tr.success");

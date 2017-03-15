@@ -85,8 +85,21 @@ span.chat-sender
   color: #4888be;
 }
 
+span.chat-time
+{ font-family: italic;
+  color: #4888be;
+}
+
 span.chat-sender::after
 { content: ": ";
+}
+
+span.commit-message
+{ color: #060;
+}
+
+span.no-commit-message
+{ font-size: 80%; color: #f80;
 }
 
 /* Tooltip styling */

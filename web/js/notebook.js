@@ -861,7 +861,7 @@ var cellTypes = {
 		    value: current.run,
 		    title: "Run when document is loaded"
 		  }
-		]),
+		], {col:3}),
 	  form.fields.chunk(current.chunk),
 	  form.fields.name(current.name||""),
 	  form.fields.buttons(
