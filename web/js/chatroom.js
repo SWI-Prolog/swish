@@ -109,12 +109,17 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	    }
 	  },
 	  "Cry for help": function() {
-	    this.chatroom('send',
-			  { docid:"gitty:Help.swinb",
-			    payload: [{type:"about", docid:data.docid}],
-			    clear:false
-			  });
-	    this.chatroom('send');
+	    if ( data.docid != "gitty:Help.swinb" ) {
+	      this.chatroom('send',
+			    { docid:"gitty:Help.swinb",
+			      payload: [{type:"about", docid:data.docid}],
+			      clear:false
+			    });
+	      this.chatroom('send');
+	    } else {
+	      modal.alert("Please use `Cry for help' from the document "+
+			  "about which you need help.");
+	    }
 	  }
 	});
 	$(close).on("click", function() {
@@ -167,10 +172,20 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       var msg = {type:"chat-message"};
       var ta = this.find("textarea");
       msg.text = ta.val().trim();
+      var has_payload;
 
       options = options||{};
 
-      if ( msg.text != "" || options.payload !== undefined ) {
+      if ( options.payload ) {
+	for(var i=0; i<options.payload.length; i++) {
+	  if ( options.payload[i].type != 'about' ) {
+	    has_payload = true;
+	    break;
+	  }
+	}
+      }
+
+      if ( msg.text != "" || has_payload ) {
 	if ( options.clear !== false )
 	  ta.val("");
 
@@ -180,7 +195,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	  msg.class = options.class;
 
 	$("#chat").chat('send', msg);
-      } else {
+      } else if ( !options.payload ) {
 	modal.alert("No message to send");
       }
     },

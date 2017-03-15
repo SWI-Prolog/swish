@@ -882,6 +882,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
      * Open the chat window for the current file
      */
     chat: function(action) {
+      var data = this.data(pluginName);
       var docid = this.storage('docid', 'gitty');
 
       if ( docid ) {
@@ -902,8 +903,14 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	}
       } else if ( action == 'update' ) {
 	this.storage('close_chat');
+      } else if ( !data.st_type ) {
+	modal.alert("The chat facility is bound to named documents.<br>"+
+		    "Please save your document and try again.");
       } else {
-	modal.alert("Sorry, can only chat about files");
+	modal.alert("The chat facility is only available for "+
+		    "user-saved files.<br>"+
+		    "You can use the <b>File/Chat help room</b> menu to "+
+		    "access the shared chat room.");
       }
 
       return this;
