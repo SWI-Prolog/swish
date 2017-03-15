@@ -276,8 +276,8 @@ notify_user(Profile, DocID, Action, Options) :-
 try(Goal) :-
     catch(Goal, Error, print_message(error, Error)),
     !.
-try(Goal) :-
-    print_message(error, goal_failed(Goal)).
+try(_0Goal) :-
+    debug(notify(fail), 'Failed: ~p', [_0Goal]).
 
 
 		 /*******************************
