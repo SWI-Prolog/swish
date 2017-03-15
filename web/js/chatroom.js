@@ -184,23 +184,25 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
      * @param {Object} msg.user Sender description
      */
     add: function(msg) {
-      var data = this.data(pluginName);
+      var data  = this.data(pluginName);
+      var muser = msg.user||{};
+      var suser = config.swish.user||{};
 
       if ( msg.docid != data.docid )
 	return this;
 
-      var self = $("#chat").chat('self', []);
-      user = msg.user||{};
-      var is_self = ( user.id == self.id ||
-		      user.avatar == self.avatar );
+      var self = $("#chat").chat('self');
+      var is_self = ((muser.id && muser.id == self.id) ||
+		     (muser.avatar && muser.avatar == self.avatar) ||
+		     (muser.profile_id && muser.profile_id == suser.profile_id));
 
       elem = $($.el.div({class:"chat-message"+(is_self ? " self" : ""),
-			 'data-userid':user.id}));
-      if ( !is_self && user.avatar ) {
-	elem.append($.el.img({ class:"avatar", src:user.avatar }));
+			 'data-userid':muser.wsid}));
+      if ( !is_self && muser.avatar ) {
+	elem.append($.el.img({ class:"avatar", src:muser.avatar }));
       }
       elem.append($.el.span({class:"chat-sender"},
-			    is_self ? "Me" : user.name));
+			    is_self ? "Me" : muser.name));
 
       if ( msg.html ) {
 	var span = $.el.span({class:"chat-message html"});
