@@ -385,18 +385,32 @@ commit_message_summary(Commit) -->
 commit_message_summary(_Commit) -->
     html(span(class(['no-commit-message']), 'no message')).
 
+%!  action_user(+Action, -User) is det.
+%
+%   Describe a user for chat purposes.  Such a user is identified by the
+%   `profile_id`, `name` and/or `avatar`.
+
 action_user(Action, User) :-
     arg(1, Action, Commit),
     findall(Name-Value, commit_user_property(Commit, Name, Value), Pairs),
     dict_pairs(User, u, Pairs).
 
-commit_user_property(Commit, id, ID) :-
-    ID = Commit.get(profile_id).
+commit_user_property(Commit, Name, Value) :-
+    Profile = Commit.get(profile_id),
+    !,
+    profile_user_property(Profile, Commit, Name, Value).
 commit_user_property(Commit, name, Name) :-
     Name = Commit.get(author).
 commit_user_property(Commit, avatar, Avatar) :-
     Avatar = Commit.get(avatar).
 
+profile_user_property(ProfileID, _,      profile_id, ProfileID).
+profile_user_property(_,         Commit, name,       Commit.get(author)).
+profile_user_property(ProfileID, Commit, avatar,     Avatar) :-
+    (   profile_property(ProfileID, avatar(Avatar))
+    ->  true
+    ;   Avatar = Commit.get(avatar)
+    ).
 
 
 		 /*******************************
