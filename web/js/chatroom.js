@@ -167,7 +167,6 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 
 	msg.payload = options.payload;
 	msg.docid   = data.docid;
-	msg.user    = $("#chat").chat('self');
 	if ( options.class )
 	  msg.class = options.class;
 

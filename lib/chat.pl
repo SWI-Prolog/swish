@@ -925,9 +925,10 @@ json_message(Dict, WSID) :-
 	_{type: "set-nick-name", name:Name} :< Dict, !,
 	wsid_visitor(WSID, Visitor),
 	update_visitor_data(Visitor, _{name:Name}, 'set-nick-name').
-json_message(Dict, _WSID) :-
+json_message(Dict, WSID) :-
 	_{type: "chat-message", docid:_} :< Dict, !,
-	chat_relay(Dict).
+	chat_add_user_id(WSID, Dict, Message),
+	chat_relay(Message).
 json_message(Dict, _WSID) :-
 	debug(chat(ignored), 'Ignoring JSON message ~p', [Dict]).
 
@@ -938,6 +939,25 @@ dict_file_name(Dict, File) :-
 		 /*******************************
 		 *	   CHAT MESSAGES	*
 		 *******************************/
+
+%!	chat_add_user_id(+WSID, +Message0, -Message) is det.
+%
+%	Decorate a message with the user credentials.
+
+chat_add_user_id(WSID, Dict, Message) :-
+	visitor_session(WSID, Session, _Token),
+	session_user(Session, Visitor),
+	visitor_data(Visitor, UserData),
+	User0 = u{avatar:UserData.avatar,
+		  name:UserData.name,
+		  wsid:WSID
+		 },
+	(   http_current_session(Session, profile_id(ProfileID))
+	->  User = User0.put(profile_id, ProfileID)
+	;   User = User0
+	),
+	Message = Dict.put(user, User).
+
 
 %!	chat_about(+DocID, +Message) is det.
 %

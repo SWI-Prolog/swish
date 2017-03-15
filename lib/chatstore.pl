@@ -109,12 +109,30 @@ chat_store(Message) :-
     ;	Message1 = Message
     ),
     !,
+    strip_chat(Message1, Message2),
     with_mutex(chat_store,
                setup_call_cleanup(
                    open(File, append, Out, [encoding(utf8)]),
-                   format(Out, '~q.~n', [Message1]),
+                   format(Out, '~q.~n', [Message2]),
                    close(Out))).
 chat_store(_).
+
+%!  strip_chat(_Message0, -Message) is det.
+%
+%   Remove  stuff  from  a  chat  message   that  is  useless  to  store
+%   permanently, such as the wsid (WebSocket id).
+
+strip_chat(Message0, Message) :-
+    strip_chat_user(Message0.get(user), User),
+    !,
+    Message = Message0.put(user, User).
+strip_chat(Message, Message).
+
+strip_chat_user(User0, User) :-
+    del_dict(wsid, User0, _, User),
+    !.
+strip_chat_user(User, User).
+
 
 %!  chat_messages(+DocID, -Messages:list) is det.
 %
