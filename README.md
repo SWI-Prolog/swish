@@ -15,9 +15,9 @@ your programs online for at least multiple years.
 
 ### Get submodules
 
-cd to your swish root directory and 
+cd to your swish root directory and
 
-git submodule update --init
+    git submodule update --init
 
 ### Get JavaScript requirements
 
@@ -56,7 +56,7 @@ you            need            the             [nightly            build
 system    from    the     current      git     development    repository
 [swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
 
-Feb 3, 2017: SWI-Prolog 7.4.0-rc1 and 7.5.0 support SWISH completely.
+Mar 16, 2017: SWI-Prolog needs to be installed from swipl-devel git.
 
 ## Running SWISH
 
@@ -84,6 +84,10 @@ There is a lot that can be configured in SWISH.  Roughly:
 Configuration is done  by  reading  `*.pl`   files  from  the  directory
 `config-enabled`. The directory `config-available`   contains  templates
 that can be copied and optionally edited to create a configuration.
+
+See [README.md in
+config-available](https://github.com/SWI-Prolog/swish/tree/master/config-available)
+for details.
 
 
 ### Running SWISH without sandbox limitations
