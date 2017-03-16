@@ -78,9 +78,13 @@ authenticate(Request, Auth) :-
     swish_config:user_profile/2.
 
 http_auth(Request, Auth) :-
-    swish_config:authenticate(Request, User),   % throws http_reply(_)
+    (   swish_config:authenticate(Request, User)   % throws http_reply(_)
+    ->  true
+    ;   swish_config:user_info(Request, local, UserInfo),
+        User = UserInfo.get(user)
+    ),
     !,
-    Auth = auth{user:User}.
+    Auth = auth{user:User, identity_provider:local, external_identity:User}.
 http_auth(_Request, auth{}).
 
 profile_auth(Request, Auth) :-
@@ -96,11 +100,6 @@ identity(Auth0, Auth) :-
     _{identity_provider:Provider, external_identity:ExtID} :< Auth0,
     !,
     atomic_list_concat([Provider,ExtID], :, Identity),
-    Auth = Auth0.put(identity, Identity).
-identity(Auth0, Auth) :-
-    _{user:User} :< Auth0,
-    !,
-    atom_concat('local:', User, Identity),
     Auth = Auth0.put(identity, Identity).
 identity(Auth, Auth).
 
