@@ -47,7 +47,6 @@ Run
 :- use_module(library(option)).
 :- use_module(library(main)).
 
-:- if(current_predicate(argv_options/3)).
 swish_daemon :-
 	current_prolog_flag(argv, Argv),
 	argv_options(Argv, _RestArgv, Options0),
@@ -57,10 +56,6 @@ swish_daemon :-
 	;   true
 	),
 	http_daemon(Options).
-:- else.
-swish_daemon :-
-	http_daemon.
-:- endif.
 
 swish_options(Options0, Options) :-
 	option(https(_), Options0), !,
@@ -86,7 +81,6 @@ user:file_search_path(swish, SwishDir) :-
 :- initialization swish_daemon.
 
 :- [swish(swish)].
-:- use_module(swish:swish(lib/swish_debug)).
 
 %%	load_swish_modules
 %
