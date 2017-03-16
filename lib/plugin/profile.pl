@@ -222,6 +222,8 @@ profile_default(IdProvider, UserInfo, Default) :-
           error(type_error(_,_),_),
           fail),
     Default =.. [Name,Value].
+profile_default(local, UserInfo, email_verified(true)) :-
+    _ = UserInfo.get(email).                    % trust our own user data
 
 %!  last_login(+User)//
 %
