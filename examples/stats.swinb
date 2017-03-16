@@ -116,7 +116,7 @@ Threads are used as HTTP workers, pengines and some adminstrative tasks.  Visito
 </div>
 
 <div class="nb-cell query">
-chart(hour, [threads,visitors], Chart).
+chart(hour, [pengines,threads,visitors], Chart).
 </div>
 
 <div class="nb-cell markdown">
