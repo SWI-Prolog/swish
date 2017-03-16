@@ -43,6 +43,7 @@
 :- use_module(library(lists)).
 :- use_module(library(readutil)).
 :- use_module(library(debug)).
+:- use_module(library(error)).
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_session)).
@@ -706,7 +707,10 @@ follow_file_options(Request) :-
                     ]),
     http_in_session(_SessionID),
     http_session_data(profile_id(ProfileID)), !,
-    profile_property(ProfileID, email_notifications(When)),
+    (   profile_property(ProfileID, email_notifications(When))
+    ->  true
+    ;   existence_error(profile_property, email_notifications)
+    ),
 
     (   follower(DocID, ProfileID, Follow)
     ->  true
