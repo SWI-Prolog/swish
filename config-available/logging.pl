@@ -37,7 +37,6 @@
 :- use_module(library(settings)).
 :- use_module(library(http/http_log)).
 :- use_module(lib/logging).
-:- use_module(library(debug)).
 
 /** <module> Configure logging facilities
 
@@ -48,7 +47,6 @@ lib/replay_cm.pl  to  replay   Pengine    interaction   and   CodeMirror
 highlighting interaction.
 */
 
-:- debug_message_context(+time).
 :- set_setting_default(http:log_post_data, 1 000 000).
 :- set_setting_default(http:logfile, 'log/httpd.log').
 :- http_schedule_logrotate(weekly(sun, 05:05),
