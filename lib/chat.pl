@@ -949,12 +949,15 @@ chat_add_user_id(WSID, Dict, Message) :-
 	session_user(Session, Visitor),
 	visitor_data(Visitor, UserData),
 	User0 = u{avatar:UserData.avatar,
-		  name:UserData.name,
 		  wsid:WSID
 		 },
+	(   Name = UserData.get(name)
+	->  User1 = User0.put(name, Name)
+	;   User1 = User0
+	),
 	(   http_current_session(Session, profile_id(ProfileID))
-	->  User = User0.put(profile_id, ProfileID)
-	;   User = User0
+	->  User = User1.put(profile_id, ProfileID)
+	;   User = User1
 	),
 	Message = Dict.put(user, User).
 
