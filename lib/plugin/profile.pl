@@ -51,6 +51,7 @@
 
 :- use_module(swish(lib/config), []).
 :- use_module(swish(lib/login)).
+:- use_module(swish(lib/authenticate)).
 :- use_module(swish(lib/bootstrap)).
 :- use_module(swish(lib/form)).
 
@@ -151,11 +152,11 @@ swish_config:reply_logged_in(Options) :-
 %   True when ProfileID is the profile  identifier for the authenticated
 %   user.
 
-known_profile(Info, User) :-
+known_profile(Info, ProfileID) :-
     IdProvider = Info.identity_provider,
     profile_default(IdProvider, Info, external_identity(ID)),
-    profile_property(User, external_identity(ID)),
-    profile_property(User, identity_provider(IdProvider)).
+    profile_property(ProfileID, external_identity(ID)),
+    profile_property(ProfileID, identity_provider(IdProvider)).
 
 %!  associate_profile(+ProfileID) is det.
 %
@@ -166,6 +167,22 @@ associate_profile(ProfileID) :-
     http_session_assert(profile_id(ProfileID)),
     broadcast(swish(profile(ProfileID))).
 
+
+%!  init_session_profile
+%
+%   This deals with the case where  a   session  is opened, but login is
+%   continued because it is based on HTTP authentication.  If the server
+%   opens a session, we check for the current identity and associate the
+%   related profile.
+
+:- listen(http_session(begin(_SessionID, _Peer)),
+          init_session_profile).
+
+init_session_profile :-
+    http_current_request(Request),
+    authenticate(Request, Identity),
+    known_profile(Identity, ProfileID),
+    associate_profile(ProfileID).
 
 %!  swish_config:reply_logged_out(+Options)
 %
