@@ -49,15 +49,12 @@
 :- use_module(library(http/js_write)).
 :- use_module(library(option)).
 :- use_module(library(apply)).
-:- use_module(library(pairs)).
 :- use_module(library(broadcast)).
 
 :- use_module('../config', []).
-:- use_module('../bootstrap').
 
 :- multifile
     swish_config:li_login_button//1,    % +Options
-    swish_config:profile_field/3,       % +Field, -Order, -Type
     swish_config:reply_logged_in/1,     % +Options
     swish_config:reply_logged_out/1,    % +Options
     swish_config:user_info/3,           % +Request, -Server, -Info
@@ -76,8 +73,6 @@ configuration files in =config-available=.
 
 :- http_handler(swish(login),        swish_login,  [id(login)]).
 :- http_handler(swish(user_info),    user_info,    [id(user_info)]).
-:- http_handler(swish(user_profile), user_profile, [id(user_profile),
-                                                    priority(-10)]).
 
 
 		 /*******************************
@@ -305,143 +300,4 @@ copy_fields([H|T], From, Dict0, Dict) :-
     ->  copy_fields(T, From, Dict0.put(H,V), Dict)
     ;   copy_fields(T, From, Dict0, Dict)
     ).
-
-
-%!  user_profile(+Request)
-%
-%   HTTP handler to display basic information  about the logged in user.
-%   The handler must reply  with  an   HTML  document  that provides the
-%   content for a modal window.
-
-user_profile(Request) :-
-    swish_config:user_info(Request, _ServerID, Info),
-    !,
-    dict_pairs(Info, _, Pairs0),
-    select_fields(Pairs0, Pairs),
-    reply_html_page(title('User profile'),
-                    [ table(class([table, 'table-striped']),
-                            \profile_rows(Pairs, Info)),
-                      div(class(['btn-group', 'btn-group-justified']),
-                          \ok_button)
-                    ]).
-user_profile(_Request) :-
-    reply_html_page(title('User profile'),
-                    [ p('Not logged in')
-                    ]).
-
-
-profile_rows([], _) --> [].
-profile_rows([H|T], Info) --> profile_row(H, Info), profile_rows(T, Info).
-
-profile_row(Name-Value, Info) -->
-    { name_label(Name, Label),
-      get_profile_field(Name, _Tag, Type)
-    },
-    !,
-    html(tr([ th(class('text-nowrap'), Label),
-              td(\profile_value(Type, Value, Info))
-            ])).
-profile_row(Name-Value, _Info) -->
-    html(tr(class(warning),
-            [ th(class('text-nowrap'), Name),
-              td(\profile_value(string, Value, _{}))
-            ])).
-
-
-%!  profile_value(+Type, +Value, +Profile)//
-%
-%   Render a profile value  Value  of  type   Type.  Profile  is  a dict
-%   providing the entire profile.
-
-profile_value(url(img), URL, _) -->
-    !,
-    html(img([src(URL), class('profile-picture')])).
-profile_value(url, URL, _) -->
-    !,
-    html(a(href(URL), URL)).
-profile_value(email, Address, _) -->
-    !,
-    html(a(href('mailto:'+Address), Address)).
-profile_value(time_stamp(Format), Stamp, _) -->
-    !,
-    { format_time(string(S), Format, Stamp) },
-    html(S).
-profile_value(identity_provider, ServerID, Info) -->
-    { Info.get(auth_method) == oauth2,
-      oauth2:server_attribute(ServerID, url, URL)
-    },
-    !,
-    html(a(href(URL), ServerID)).
-profile_value(_, Value, _) -->
-    html('~w'-[Value]).
-
-ok_button -->
-    html(div(class('btn-group'),
-             \bt_button(done, button,
-                        [ type(primary),
-                          data([dismiss(modal)])
-                        ], []))).
-
-%!  select_fields(+PairsIn, -Pairs) is det.
-%
-%   Select and order fields we display for the user info.
-
-select_fields(PairsIn, Pairs) :-
-    tag_fields(PairsIn, Tagged),
-    keysort(Tagged, Ordered),
-    pairs_values(Ordered, Pairs).
-
-tag_fields([], []).
-tag_fields([Name-Value|T0], [Tag-(Name-Value)|T]) :-
-    (   get_profile_field(Name, Tag, _Type)
-    ->  true
-    ;   debugging(profile),
-        Tag = 1000
-    ),
-    !,
-    tag_fields(T0, T).
-tag_fields([_|T0], T) :-
-    tag_fields(T0, T).
-
-%!  get_profile_field(+Name, -Tag, -Type) is semidet.
-%
-%   Get properties for a field for the user profile.
-
-get_profile_field(Name, Tag, Type) :-
-    swish_config:profile_field(Name, Tag, Type),
-    !.
-get_profile_field(Name, Tag, Type) :-
-    def_profile_field(Name, Tag, Type),
-    !.
-
-%!  swish_config:profile_field(+Name, -Tag, -Type)
-%
-%   Determine which of the  fields   from  swish_config:user_info/3  are
-%   displayed in which order and using which type of rendering.  Type is
-%   one of
-%
-%     - url(img)
-%     Value is an image URL
-%     - url
-%     Value is a URL
-%     - email
-%     Value is an email address
-%     - time_stamp(Format)
-%     Value is a time stamp (seconds since Jan 1, 1970) and it is
-%     formatted according to Format, which is passed to format_time/3.
-%     - identity_provider
-%     Render a link to federated identity providers.
-
-def_profile_field(picture,           100, url(img)).
-def_profile_field(name,              200, string).
-def_profile_field(given_name,        230, string).
-def_profile_field(family_name,       260, string).
-def_profile_field(reputation,	     350, int).
-def_profile_field(user_type,	     370, string).
-def_profile_field(email,             400, email).
-def_profile_field(profile_url,       450, url).
-def_profile_field(website_url,       480, url).
-def_profile_field(creation_date,     490, time_stamp('%D')).
-def_profile_field(locale,            500, string).
-def_profile_field(identity_provider, 600, identity_provider).
 
