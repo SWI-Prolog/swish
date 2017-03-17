@@ -84,7 +84,7 @@ configuration files in =config-available=.
 %   Hook called from page.pl to include the login buttons.
 
 swish_config:li_login_button(Options) -->
-    html(\login_button(Options)).
+    html(li(\login_button(Options))).
 
 %!  login_button(+Options)//
 %
