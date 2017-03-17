@@ -56,6 +56,7 @@
 :- use_module(bootstrap).
 
 :- multifile
+    swish_config:li_login_button//1,    % +Options
     swish_config:profile_field/3,       % +Field, -Order, -Type
     swish_config:reply_logged_in/1,     % +Options
     swish_config:reply_logged_out/1,    % +Options
@@ -82,6 +83,13 @@ configuration files in =config-available=.
 		 /*******************************
 		 *          UI ELEMENTS		*
 		 *******************************/
+
+%!  swish_config:li_login_button(+Options)//
+%
+%   Hook called from page.pl to include the login buttons.
+
+swish_config:li_login_button(Options) -->
+    html(\login_button(Options)).
 
 %!  login_button(+Options)//
 %

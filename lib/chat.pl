@@ -65,7 +65,6 @@
 :- use_module(storage).
 :- use_module(gitty).
 :- use_module(config).
-:- use_module(login).
 :- use_module(avatar).
 :- use_module(noble_avatar).
 :- use_module(chatstore).

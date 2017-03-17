@@ -66,7 +66,6 @@
 :- use_module(config).
 :- use_module(help).
 :- use_module(search).
-:- use_module(login).
 :- use_module(chat).
 :- use_module(authenticate).
 :- use_module(pep).
@@ -84,7 +83,8 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 
 :- multifile
 	swish_config:source_alias/2,
-	swish_config:reply_page/1.
+	swish_config:reply_page/1,
+	swish_config:li_login_button//1.
 
 %%	swish_reply(+Options, +Request)
 %
@@ -342,10 +342,15 @@ swish_navbar(Options) -->
 			 ul([class([nav, 'navbar-nav', 'navbar-right'])],
 			    [ li(\notifications(Options)),
 			      li(\search_box(Options)),
-			      li(\login_button(Options))
+			      \li_login_button(Options)
 			    ])
 		       ])
 		 ])).
+
+li_login_button(Options) -->
+	swish_config:li_login_button(Options).
+li_login_button(_Options) -->
+	[].
 
 collapsed_button -->
 	html(button([type(button),
