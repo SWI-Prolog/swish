@@ -98,7 +98,8 @@ var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
 		  ulClass:"pull-right",
 		  client: elem,
 		  actions: {
-		    "Logout":  function() {
+		    "Logout":  elem.hasClass('no-logout') ? undefined :
+			       function() {
 		      this.login('logout');
 		    },
 		    "Profile": function() {

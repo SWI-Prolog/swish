@@ -106,8 +106,13 @@ login_button(_Options) -->
                   [ span(class(value), 'Logout')
                   ])
            ])).
-login_button(_Options) -->
-    [].
+login_button(_Options) -->              % config-available/auth_http_always.pl
+    html(a([ id(login), class([login, 'no-logout']) ],
+           [ span([ class(logout)
+                  ],
+                  [ span(class(value), [])
+                  ])
+           ])).
 
 login_item(item(Tag, Server, Item)) :-
     swish_config:login_item(Server, Item0),

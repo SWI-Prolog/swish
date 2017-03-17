@@ -21,6 +21,7 @@ involved with using authenticated access.  In a nutshell:
 swish_config:config(public_access, false).
 
 :- use_module(swish(lib/plugin/http_authenticate), []).
+:- use_module(swish(lib/plugin/login), []).
 
 % Can be set to `basic` when HTTPS is used.  Using `basic` saves
 % one round trip but requires HTTPS to avoid exchanging the password

@@ -587,13 +587,15 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 	}
 
 	function addMenuItem(label, onclick) {
-	  if ( label.indexOf("--") == 0 ) {
-	    ul.append($.el.li({class:"divider"}));
-	  } else {
-	    var a = $.el.a(label);
+	  if ( onclick !== undefined ) {
+	    if ( label.indexOf("--") == 0 ) {
+	      ul.append($.el.li({class:"divider"}));
+	    } else {
+	      var a = $.el.a(label);
 
-	    $(a).data('action', onclick);
-	    ul.append($.el.li(a));
+	      $(a).data('action', onclick);
+	      ul.append($.el.li(a));
+	    }
 	  }
 	}
 
