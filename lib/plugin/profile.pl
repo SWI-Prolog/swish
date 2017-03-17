@@ -156,7 +156,12 @@ known_profile(Info, ProfileID) :-
     IdProvider = Info.identity_provider,
     profile_default(IdProvider, Info, external_identity(ID)),
     profile_property(ProfileID, external_identity(ID)),
-    profile_property(ProfileID, identity_provider(IdProvider)).
+    profile_property(ProfileID, identity_provider(IdProvider)),
+    !.
+known_profile(Info, ProfileID) :-
+    local == Info.identity_provider,
+    create_profile(Info, local, ProfileID).
+
 
 %!  associate_profile(+ProfileID) is det.
 %
