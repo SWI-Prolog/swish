@@ -154,7 +154,7 @@ swish_config:reply_logged_in(Options) :-
 %   user.
 
 known_profile(Info, ProfileID) :-
-    IdProvider = Info.identity_provider,
+    IdProvider = Info.get(identity_provider),
     profile_default(IdProvider, Info, external_identity(ID)),
     profile_property(ProfileID, external_identity(ID)),
     profile_property(ProfileID, identity_provider(IdProvider)),
@@ -191,7 +191,7 @@ known_profile(_Request, Identity, ProfileID) :-
     known_profile(Identity, ProfileID),
     !.
 known_profile(Request, Identity, ProfileID) :-
-    local == Identity.identity_provider,
+    local == Identity.get(identity_provider),
     swish_config:user_info(Request, local, UserInfo),
     create_profile(UserInfo, local, ProfileID).
 
