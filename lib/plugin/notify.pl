@@ -337,6 +337,7 @@ file_name(Commit) -->
     { http_link_to_id(web_storage, path_postfix(Commit.name), HREF) },
     html(a(href(HREF), Commit.name)).
 
+
 		 /*******************************
 		 *  ADD NOTIFICATIONS TO CHAT	*
 		 *******************************/
