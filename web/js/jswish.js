@@ -93,9 +93,10 @@ preferences.setDefault("emacs-keybinding", false);
 	  update: history.updateRecentUL
 	},
 	"Share": "--",
-	"Follow ...": function() {
+	"Follow ...": config.http.locations.follow_file_options ?
+		      function() {
 	  menuBroadcast("follow-file");
-	},
+	} : undefined,
 	"Chat ...": function() {
 	  menuBroadcast("chat-about-file");
 	},

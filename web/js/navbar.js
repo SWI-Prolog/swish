@@ -169,7 +169,9 @@ define([ "jquery", "preferences", "laconic" ],
    *   - An object with `.typeIcon` gets an icon indicating the type
    */
   function appendDropdown(dropdown, label, options) {
-    if ( options == "--" ) {
+    if ( options == undefined ) {
+      // ignored
+    } else if ( options == "--" ) {
       dropdown.append($.el.li({class:"divider"}));
     } else if ( typeof(options) == "function" ) {	/* Simple action */
       var a;
