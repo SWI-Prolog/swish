@@ -50,7 +50,7 @@
 :- use_module(library(broadcast)).
 
 :- use_module(swish(lib/config), []).
-:- use_module(swish(lib/login)).
+:- use_module(login).
 :- use_module(swish(lib/authenticate)).
 :- use_module(swish(lib/bootstrap)).
 :- use_module(swish(lib/form)).

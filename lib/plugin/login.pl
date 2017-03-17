@@ -52,8 +52,8 @@
 :- use_module(library(pairs)).
 :- use_module(library(broadcast)).
 
-:- use_module(config, []).
-:- use_module(bootstrap).
+:- use_module('../config', []).
+:- use_module('../bootstrap').
 
 :- multifile
     swish_config:li_login_button//1,    % +Options

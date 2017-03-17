@@ -34,7 +34,7 @@
 
 :- module(auth_config_unity, []).
 :- use_module(swish(lib/oauth2)).
-:- use_module(swish(lib/login)).
+:- use_module(swish(lib/plugin/login)).
 
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_session)).
