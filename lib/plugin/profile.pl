@@ -54,6 +54,7 @@
 :- use_module(swish(lib/authenticate)).
 :- use_module(swish(lib/bootstrap)).
 :- use_module(swish(lib/form)).
+:- use_module(swish(lib/avatar)).
 
 
 /** <module> User profile configuration
@@ -158,9 +159,6 @@ known_profile(Info, ProfileID) :-
     profile_property(ProfileID, external_identity(ID)),
     profile_property(ProfileID, identity_provider(IdProvider)),
     !.
-known_profile(Info, ProfileID) :-
-    local == Info.identity_provider,
-    create_profile(Info, local, ProfileID).
 
 
 %!  associate_profile(+ProfileID) is det.
@@ -186,8 +184,17 @@ associate_profile(ProfileID) :-
 init_session_profile :-
     http_current_request(Request),
     authenticate(Request, Identity),
-    known_profile(Identity, ProfileID),
+    known_profile(Request, Identity, ProfileID),
     associate_profile(ProfileID).
+
+known_profile(_Request, Identity, ProfileID) :-
+    known_profile(Identity, ProfileID),
+    !.
+known_profile(Request, Identity, ProfileID) :-
+    local == Identity.identity_provider,
+    swish_config:user_info(Request, local, UserInfo),
+    create_profile(UserInfo, local, ProfileID).
+
 
 %!  swish_config:reply_logged_out(+Options)
 %
@@ -214,7 +221,8 @@ create_profile(UserInfo, IdProvider, User) :-
 user_profile_values(UserInfo, IdProvider, Defaults) :-
     findall(Default,
             profile_default(IdProvider, UserInfo, Default),
-            Defaults).
+            Defaults0),
+    add_gravatar(Defaults0, Defaults).
 
 profile_default(IdProvider, UserInfo, Default) :-
     (   nonvar(Default)
@@ -229,6 +237,19 @@ profile_default(IdProvider, UserInfo, Default) :-
     Default =.. [Name,Value].
 profile_default(local, UserInfo, email_verified(true)) :-
     _ = UserInfo.get(email).                    % trust our own user data
+
+add_gravatar(Defaults0, Defaults) :-
+    \+ memberchk(avatar(_), Defaults0),
+    memberchk(email(Email), Defaults0),
+    email_gravatar(Email, Avatar0),
+    valid_gravatar(Avatar0),
+    catch(profile_canonical_value(avatar, Avatar0, Avatar),
+          error(type_error(_,_),_),
+          fail),
+    !,
+    Defaults = [avatar(Avatar)|Defaults0].
+add_gravatar(Defaults, Defaults).
+
 
 %!  last_login(+User)//
 %
