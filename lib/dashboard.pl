@@ -79,6 +79,7 @@ fill([]) :-
     !.
 fill(NotFilled) :-
     maplist(input, NotFilled, FieldWidgets),
+    !,
     buttons(Buttons),
     append(FieldWidgets, Buttons, Widgets),
     html_string(\bt_form(Widgets,
@@ -198,6 +199,7 @@ optchk(Opt, Options) :-
 
 html_string(HTML, String) :-
     phrase(html(HTML), Tokens),
+    !,
     delete(Tokens, nl(_), SingleLine),
     with_output_to(string(String), print_html(SingleLine)).
 
