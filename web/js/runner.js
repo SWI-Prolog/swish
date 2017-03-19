@@ -45,10 +45,11 @@
  */
 
 define([ "jquery", "config", "preferences",
-	 "cm/lib/codemirror", "form", "prolog", "links",
+	 "cm/lib/codemirror", "form", "prolog", "links", "modal",
 	 "answer", "laconic", "sparkline", "download"
        ],
-       function($, config, preferences, CodeMirror, form, prolog, links) {
+       function($, config, preferences,
+		CodeMirror, form, prolog, links, modal) {
 
 		 /*******************************
 		 *	  THE COLLECTION	*
@@ -619,6 +620,31 @@ define([ "jquery", "config", "preferences",
     },
 
     /**
+     * Handle a (dashboard) form.  This opens dialog from the supplied
+     * `html`.
+     * @param {Object} prompt
+     * @param {String} prompt.html contains the HTML content of the form
+     */
+    form: function(prompt) {
+      var data = this.data('prologRunner');
+
+      modal.show({
+	title: "Please enter parameters",
+	body: function() {
+	  this.html(prompt.data.html);
+
+	  this.on("click", "button[type=submit]", function(ev) {
+	    var formel = $(ev.target).closest("form");
+	    var fdata  = form.serializeAsObject(formel, true);
+	    var s      = Pengine.stringify(fdata);
+	    data.prolog.respond(s);
+	  });
+	}
+      });
+    },
+
+
+    /**
      * send a response (to pengine onprompt handler) to the
      * pengine and add the response to the dialogue as
      * `div class="response">`
@@ -1072,6 +1098,8 @@ define([ "jquery", "config", "preferences",
     if ( typeof(prompt) == "object" ) {
       if ( prompt.type == "trace" ) {
 	return elem.prologRunner('trace', this);
+      } else if ( prompt.type == "form" ) {
+	return elem.prologRunner('form', this);
       } else if ( prompt.type == "jQuery" ) {
 	return elem.prologRunner('jQuery', this);
       } else if ( prompt.type == "console" ) {

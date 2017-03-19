@@ -165,6 +165,7 @@ swish_config:config(notebook,		_{eval_script: true}).
 :- use_module(swish:lib/render).
 :- use_module(swish:lib/trace).
 :- use_module(swish:lib/jquery).
+:- use_module(swish:lib/dashboard).
 :- use_module(swish:lib/swish_debug).
 :- use_module(swish:library(pengines_io)).
 :- use_module(swish:library(solution_sequences)).
