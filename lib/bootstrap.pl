@@ -308,6 +308,7 @@ bt_button(Name, Type, IOptions, Options) -->
       phrase(data(IOptions), DataAttrs)
     },
     html(button([ type(Type),
+                  name(Name),
                   class([btn|BtnClasses])
                 | DataAttrs
                 ],
