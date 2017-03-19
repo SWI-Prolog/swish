@@ -40,6 +40,27 @@
     - Allow for rewriting answer terms?
     - Allow generating HTML?  How to deal with security?
 
+## Dashboard
+
+Dashboard entry is basically a query. We will specify the parameters as
+
+```
+paramters(
+    [ Param1: Option ("+" Option)*
+      ...
+    ]),
+
+Goal
+```
+
+parameters/1 creates a dialog from the  provided argument types. We will
+do that server side. Initially we will  use the Pengine _prompt_ to fill
+the dialog, so parameters/1 acts as  read/1.   In  later versions we can
+provide a setting to the query that   will perform the generation of the
+dialog at notebook load time  and  replace   the  query  by  its dialog.
+Possibly we can implement that as part of the server-side highlighting?
+
+
 ## Sharing
 
 First option was TogetherJS.  Now doubting, as it my be much better to
@@ -66,9 +87,9 @@ _not_ see exactly the same UI for cooperation.  What about
       - Profile options for email				[OK]
     - Email notifications
       - Exclude sending mail to self `self'			[OK]
-      - Provide `stop following this file' link
-      - Provide `stop sending email' link
-      - Styling
+      - Provide `stop following this file' link			[OK]
+      - Provide `stop sending email' link			[OK]
+      - Styling						        [Not yet pretty]
 
 ## Make teams
 
