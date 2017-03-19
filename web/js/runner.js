@@ -633,11 +633,22 @@ define([ "jquery", "config", "preferences",
 	body: function() {
 	  this.html(prompt.data.html);
 
-	  this.on("click", "button[type=submit]", function(ev) {
-	    var formel = $(ev.target).closest("form");
-	    var fdata  = form.serializeAsObject(formel, true);
-	    var s      = Pengine.stringify(fdata);
-	    data.prolog.respond(s);
+	  this.on("click", "button[data-action]", function(ev) {
+	    var button = $(ev.target).closest("button");
+	    var action = button.data('action');
+
+	    if ( action == 'run' ) {
+	      var formel = $(ev.target).closest("form");
+	      var fdata  = form.serializeAsObject(formel, true);
+	      var s      = Pengine.stringify(fdata);
+	      data.prolog.respond(s);
+	    } else if ( action == 'cancel' ) {
+	      data.prolog.respond("cancel");
+	    }
+	    button.closest(".modal").modal('hide');
+
+	    ev.preventDefault();
+	    return false;
 	  });
 	}
       });

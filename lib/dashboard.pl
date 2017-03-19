@@ -95,23 +95,26 @@ buttons(
     [ button_group(
           [ button(run, submit,
                    [ type(primary),
-                     label('Run')
+                     data([action(run)])
                    ]),
             button(cancel, button,
                    [ type(danger),
-                     data([dismiss(modal)])
+                     data([action(cancel)])
                    ])
           ],
           [])
     ]).
 
 
+bind_form_reply(_NotFilled, cancel) :-
+    !,
+    fail.
 bind_form_reply(NotFilled, Reply) :-
     maplist(form_field, NotFilled, Fields),
     validate_form(Reply, Fields).
 
 form_field(Var:Options, field(Name, Var, [Type|Extra])) :-
-    opt(name(Name), Options),
+    optchk(name(Name), Options),
     opt_type(Type, Options),
     (   opt(default(Default), Options)
     ->  Extra = [default(Default)]
@@ -188,6 +191,10 @@ opt(Opt, Opts) :-
 opt(Opt, Opt+_).
 opt(Opt, _+Opts) :-
     opt(Opt, Opts).
+
+optchk(Opt, Options) :-
+    opt(Opt, Options),
+    !.
 
 html_string(HTML, String) :-
     phrase(html(HTML), Tokens),
