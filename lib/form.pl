@@ -119,6 +119,8 @@ validate_form([field(Field, Value, Options)|T], Dict, Errors) :-
 %	  - strip
 %	  Strip leading and trailing white space and normalize
 %	  internal white space to a single space.
+%	  - term
+%	  Input is parsed as a Prolog term
 
 
 validate_field(Dict, Field, Value, Options) :-
@@ -160,6 +162,8 @@ validate_step(length =< N, Value, Value) :-
 	Len =< N.
 validate_step(strip, Value0, Value) :-
 	normalize_space(string(Value), Value0).
+validate_step(term, Value0, Value) :-
+	term_string(Value0, Value).
 validate_step(alnum_and_spaces, Value, Value) :-
 	forall(sub_atom(Value, _, 1, _, Char),
 	       alnum_or_space(Char)).
