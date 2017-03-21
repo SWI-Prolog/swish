@@ -109,6 +109,22 @@ data_record(Signature, Tag, Record, Head) :-
     dict_pairs(Record, Tag, Pairs),
     Head =.. [Name|Values].
 
+:- multifile
+    swish:goal_expansion/2.
+
+swish:goal_expansion(Dict, data_csv:Head) :-
+    is_dict(Dict, Id),
+    prolog_load_context(module, M),
+    clause(M:'$data'(Id, Hash), true),
+    materialize(Hash),
+    data_signature(Hash, Signature),
+    data_record(Signature, Id, Record, Head),
+    Dict :< Record.
+
+
+		 /*******************************
+		 *       DATA MANAGEMENT	*
+		 *******************************/
 
 %!  materialize(+Hash)
 %
@@ -120,7 +136,10 @@ materialize(Hash) :-
     !.
 materialize(Hash) :-
     data_source(Hash, Goal),
-    call(Goal).
+    call(Goal),
+    data_signature(Hash, Head),
+    functor(Head, Name, Arity),
+    public(Name/Arity).
 
 
 %!  data_flush(+Hash)
