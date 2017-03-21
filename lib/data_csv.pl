@@ -45,6 +45,7 @@
 :- use_module(library(lazy_lists)).
 :- use_module(library(apply)).
 :- use_module(library(date)).
+:- use_module(library(zlib)).
 :- use_module(library(http/http_open)).
 
 /** <module> Cached CSV data access
@@ -167,25 +168,25 @@ data_flush(Hash) :-
 
 import_csv(URL, Options) :-
     variant_sha1(URL+Options, Hash),
+    input_format(URL, Options, Filters, Options1),
     setup_call_catcher_cleanup(
         http_open(URL, In,
                   [ header(content_type, ContentType),
                     header(last_modified, LastModified)
                   ]),
-        load_csv_stream(In, Hash, ContentType, Signature, Options),
+        ( input_filters(In, ContentType, Filters, In1, Options1),
+          load_csv_stream(In1, Hash, Signature, Options1)
+        ),
         Catcher,
-        finalize(Catcher, In, LastModified, import_csv(URL, Options), Signature)).
+        finalize(Catcher, In1, LastModified,
+                 import_csv(URL,Options1),
+                 Signature)).
 
-load_csv_stream(In, Hash, ContentType, Signature, Options) :-
-    set_encoding(In, ContentType, Options),
+load_csv_stream(In, Hash, Signature, Options) :-
     lazy_list(lazy_read_rows(In, [functor(Hash)|Options]), Rows0),
     signature(Rows0, Rows, Hash, Signature, Options),
     maplist(assertz, Rows),
     !.
-
-set_encoding(In, _ContentType, Options) :-
-    option(encoding(Enc), Options, utf8),
-    set_stream(In, encoding(Enc)).
 
 signature(Rows, Rows, Hash, Signature, Options) :-
     option(columns(Names), Options),
@@ -231,6 +232,39 @@ lazy_read_rows(Stream, Options, List, Tail) :-
 :- lazy_list_iterator(lazy_read_rows(Stream, RecordOptions), Row,
                       csv_read_row(Stream, Row, RecordOptions),
                       Row == end_of_file).
+
+%!  input_format(+URL, +OptionsIn, -Filters, -OptionsOut) is det.
+
+input_format(URL, Options0, [gzip|Filters], Options) :-
+    file_name_extension(URL1, gz, URL),
+    !,
+    input_format(URL1, Options0, Filters, Options).
+input_format(URL, Options0, [], Options) :-
+    (   option(separator(_), Options0)
+    ->  Options = Options0
+    ;   file_name_extension(_, Ext0, URL),
+        downcase_atom(Ext0, Ext),
+        ext_separator(Ext, Sep)
+    ->  Options = [separator(Sep)|Options0]
+    ;   Options = Options0
+    ).
+
+ext_separator(csv, 0',).
+ext_separator(tsv, 0'\t).
+
+%!  input_filters(+In0, +ContentType, +Filters, -In, +Options) is det.
+%
+%   Establish input filters and encoding from   the content type and the
+%   file name.
+
+input_filters(In, _ContentType, [], In, Options) :-
+    !,
+    option(encoding(Enc), Options, utf8),
+    set_stream(In, encoding(Enc)).
+input_filters(In, ContentType, [gzip|T], In2, Options) :-
+    !,
+    zopen(In, In1, [format(gzip)]),
+    input_filters(In1, ContentType, T, In2, Options).
 
 
 		 /*******************************
