@@ -150,7 +150,7 @@ swish:goal_expansion(Dict, swish_data_source:Head) :-
 		 *******************************/
 
 valid_source(Source) :-
-    must_be(ground, Source),
+    must_be(nonvar, Source),
     source(Source, _Goal),
     !.
 valid_source(Source) :-

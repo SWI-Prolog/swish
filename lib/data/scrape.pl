@@ -33,15 +33,44 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-:- module(swish_config_data_source, []).
-:- use_module(swish:swish(lib/data_source)).
+:- module(swish_data_scrape, []).
+:- use_module(library(sgml)).
+:- use_module(library(xpath)).
+:- use_module(library(sandbox)).
+:- use_module(library(pairs)).
+:- use_module(library(error)).
 
-/** <module> Configure external data sources
+:- use_module('../data_source').
 
-This module configures data sources that can be used with data_source/2.
-Loading the above library  enabled  handling   data  sources.  The files
-loaded below enable handlers for importing specific formats.
+/** <module> Scrape data from XML and HTML pages
 */
 
-:- use_module(swish(lib/data/csv)).
-:- use_module(swish(lib/data/scrape)).
+:- multifile
+    swish_data_source:source/2.
+
+swish_data_source:source(
+    scrape(URL, Proj, DOM, Convert, Options),
+    swish_data_scrape:scrape(URL, Proj, DOM, Convert, Options)).
+
+:- public scrape/6.
+
+scrape(URL, Proj, DOM, {Convert}, Options, Hash) :-
+    exclude(safe_option, Options, UnSafe),
+    (   UnSafe == []
+    ->  true
+    ;   permission_error(use, scrape_options, Options)
+    ),
+    load_structure(URL, DOM, Options), !,
+    safe_goal(Convert),
+    dict_pairs(Proj, _, Pairs),
+    pairs_keys_values(Pairs, Keys, Values),
+    Signature =.. [Hash|Keys],
+    Head =.. [Hash|Values],
+    forall(call(Convert),
+           'data assert'(Head)),
+    'data materialized'(Hash, Signature, -).
+scrape(URL, Proj, DOM, Convert, Options, _Hash) :-
+    throw(error(failure_error(scrape(URL, Proj, DOM, Convert, Options)))).
+
+safe_option(dialect(_)).
+safe_option(space(_)).
