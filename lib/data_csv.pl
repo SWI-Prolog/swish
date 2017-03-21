@@ -34,7 +34,7 @@
 */
 
 :- module(data_csv,
-          [ csv_data/3,                 % :Id, +URL, +Options
+          [ data_source/2,              % :Id, +Source
             record/2,                   % :Id, -Record
 
             data_flush/1                % +Hash
@@ -62,7 +62,7 @@ processing options.
     record(:, -).
 
 
-%!  csv_data(:Id, +URL, +Options) is det.
+%!  data_source(:Id, +Source) is det.
 %
 %   Make the CSV data in URL available   using  Id. Given this id, dicts
 %   with a tag Id are expanded to goals   on  the CSV data. In addition,
@@ -76,17 +76,18 @@ processing options.
 %       Names for the columns. If not provided, the first row is assumed
 %       to hold the column names.
 
-csv_data(M:Id, URL, Options) :-
-    variant_sha1(URL+Options, Hash),
-    data_source(Hash, import_csv(URL, Options)),
+data_source(M:Id, Source) :-
+    variant_sha1(Source, Hash),
+    data_source_db(Hash, Source),
     !,
     (   clause(M:'$data'(Id, Hash), true)
     ->  true
     ;   assertz(M:'$data'(Id, Hash))
     ).
-csv_data(M:Id, URL, Options) :-
-    variant_sha1(URL+Options, Hash),
-    assertz(data_source(Hash, import_csv(URL, Options))),
+data_source(M:Id, Source) :-
+    valid_source(Source),
+    variant_sha1(Source, Hash),
+    assertz(data_source_db(Hash, Source)),
     assertz(M:'$data'(Id, Hash)).
 
 %!  record(:Id, -Record) is nondet.
@@ -127,6 +128,12 @@ swish:goal_expansion(Dict, data_csv:Head) :-
 		 *       DATA MANAGEMENT	*
 		 *******************************/
 
+valid_source(Source) :-
+    must_be(ground, Source),
+    valid_source(Source, _Goal).
+
+valid_source(csv(URL, Options), import_csv(URL, Options)).
+
 %!  materialize(+Hash)
 %
 %   Materialise the data identified by Hash
@@ -136,7 +143,7 @@ materialize(Hash) :-
     data_materialized(Hash, _When, _From),
     !.
 materialize(Hash) :-
-    data_source(Hash, Goal),
+    data_source_db(Hash, Goal),
     call(Goal),
     data_signature(Hash, Head),
     functor(Head, Name, Arity),
@@ -161,7 +168,7 @@ data_flush(Hash) :-
 		 *******************************/
 
 :- dynamic
-    data_source/2,                      % Hash, Goal
+    data_source_db/2,                      % Hash, Goal
     data_signature/2,                   % Hash, Signature
     data_materialized/3,                % Hash, Materialized, SourceID
     data_last_access/2.                 % Hash, Time
