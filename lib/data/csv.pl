@@ -33,12 +33,7 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-:- module(data_csv,
-          [ data_source/2,              % :Id, +Source
-            record/2,                   % :Id, -Record
-
-            data_flush/1                % +Hash
-          ]).
+:- module(swish_data_csv, []).
 :- use_module(library(csv)).
 :- use_module(library(option)).
 :- use_module(library(error)).
@@ -48,133 +43,28 @@
 :- use_module(library(zlib)).
 :- use_module(library(http/http_open)).
 
-/** <module> Cached CSV data access
+:- use_module('../data_source').
 
-This module provides access to CSV  data   by  caching  it into a Prolog
-module. The data itself is kept in  a   separate  data  module, so it is
-maintained over a SWISH Pengine invocation. It  still needs to be unique
-and thus is is  stored  under  a   hash  constructed  from  the  URL and
-processing options.
+/** <module> Data source handler for CSV data
+
+This handler deals  with  downloading  CSV   and  TSV  files  from  HTTP
+resources.
 */
 
-:- meta_predicate
-    csv_data(:, +, +),
-    record(:, -).
-
-
-%!  data_source(:Id, +Source) is det.
-%
-%   Make the CSV data in URL available   using  Id. Given this id, dicts
-%   with a tag Id are expanded to goals   on  the CSV data. In addition,
-%   record(Id, Record) gives a full data record   as a dict. Options are
-%   as defined by csv//2.  In addition, these options are processed:
-%
-%     - encoding(+Encoding)
-%       Set the encoding for processing the data.  Default is guessed
-%       from the URL header or `utf8` if there is no clue.
-%     - columns(+ColumnNames)
-%       Names for the columns. If not provided, the first row is assumed
-%       to hold the column names.
-
-data_source(M:Id, Source) :-
-    variant_sha1(Source, Hash),
-    data_source_db(Hash, Source),
-    !,
-    (   clause(M:'$data'(Id, Hash), true)
-    ->  true
-    ;   assertz(M:'$data'(Id, Hash))
-    ).
-data_source(M:Id, Source) :-
-    valid_source(Source),
-    variant_sha1(Source, Hash),
-    assertz(data_source_db(Hash, Source)),
-    assertz(M:'$data'(Id, Hash)).
-
-%!  record(:Id, -Record) is nondet.
-%
-%   True when Record is a record in the dataset identified by Id.
-
-record(M:Id, Record) :-
-    clause(M:'$data'(Id, Hash), true),
-    !,
-    materialize(Hash),
-    data_signature(Hash, Signature),
-    data_record(Signature, Id, Record, Head),
-    call(Head).
-
-record(_:Id, _Record) :-
-    existence_error(dataset, Id).
-
-data_record(Signature, Tag, Record, Head) :-
-    Signature =.. [Name|Keys],
-    pairs_keys_values(Pairs, Keys, Values),
-    dict_pairs(Record, Tag, Pairs),
-    Head =.. [Name|Values].
-
 :- multifile
-    swish:goal_expansion/2.
+    swish_data_source:source/2.
 
-swish:goal_expansion(Dict, data_csv:Head) :-
-    is_dict(Dict, Id),
-    prolog_load_context(module, M),
-    clause(M:'$data'(Id, Hash), true),
-    materialize(Hash),
-    data_signature(Hash, Signature),
-    data_record(Signature, Id, Record, Head),
-    Dict :< Record.
-
-
-		 /*******************************
-		 *       DATA MANAGEMENT	*
-		 *******************************/
-
-valid_source(Source) :-
-    must_be(ground, Source),
-    valid_source(Source, _Goal).
-
-valid_source(csv(URL, Options), import_csv(URL, Options)).
-
-%!  materialize(+Hash)
-%
-%   Materialise the data identified by Hash
-
-materialize(Hash) :-
-    must_be(atom, Hash),
-    data_materialized(Hash, _When, _From),
-    !.
-materialize(Hash) :-
-    data_source_db(Hash, Goal),
-    call(Goal),
-    data_signature(Hash, Head),
-    functor(Head, Name, Arity),
-    public(Name/Arity).
-
-
-%!  data_flush(+Hash)
-%
-%   Drop the data associated with hash
-
-data_flush(Hash) :-
-    data_signature(Hash, Signature),
-    data_record(Signature, _Id, _Record, Head),
-    retractall(Head),
-    retractall(data_signature(Hash, Head)),
-    retractall(data_materialized(Hash, _When1, _From)),
-    retractall(data_last_access(Hash, _When2)).
+swish_data_source:source(csv(URL, Options),
+                         swish_data_csv:import_csv(URL, Options)).
 
 
 		 /*******************************
 		 *           CSV IMPORT		*
 		 *******************************/
 
-:- dynamic
-    data_source_db/2,                      % Hash, Goal
-    data_signature/2,                   % Hash, Signature
-    data_materialized/3,                % Hash, Materialized, SourceID
-    data_last_access/2.                 % Hash, Time
+:- public import_csv/3.
 
-import_csv(URL, Options) :-
-    variant_sha1(URL+Options, Hash),
+import_csv(URL, Options, Hash) :-
     input_format(URL, Options, Filters, Options1),
     setup_call_catcher_cleanup(
         http_open(URL, In,
@@ -185,14 +75,14 @@ import_csv(URL, Options) :-
           load_csv_stream(In1, Hash, Signature, Options1)
         ),
         Catcher,
-        finalize(Catcher, In1, LastModified,
+        finalize(Catcher, In1, Hash, LastModified,
                  import_csv(URL,Options1),
                  Signature)).
 
 load_csv_stream(In, Hash, Signature, Options) :-
     lazy_list(lazy_read_rows(In, [functor(Hash)|Options]), Rows0),
     signature(Rows0, Rows, Hash, Signature, Options),
-    maplist(assertz, Rows),
+    maplist('data assert', Rows),
     !.
 
 signature(Rows, Rows, Hash, Signature, Options) :-
@@ -205,20 +95,17 @@ signature([Head|Rows], Rows, _Hash, Signature, _Options) :-
     must_be(list(atom), Names),
     Signature = Head.
 
-finalize(exit, In, LastModified, _Action, Signature) :-
+finalize(exit, In, Hash, LastModified, _Action, Signature) :-
     !,
     close(In),
-    functor(Signature, Hash, _),
     (   parse_time(LastModified, LastModStamp)
     ->  true
     ;   LastModStamp = (-)
     ),
-    get_time(Now),
-    assertz(data_materialized(Hash, Now, LastModStamp)),
-    assertz(data_signature(Hash, Signature)).
-finalize(Reason, In, _LastModified, Action, Signature) :-
+    'data materialized'(Hash, Signature, LastModStamp).
+finalize(Reason, In, Hash, _LastModified, Action, Signature) :-
     close(In),
-    retractall(Signature),
+    'data failed'(Hash, Signature),
     failed(Reason, Action).
 
 failed(exception(Ex), _) :-
@@ -272,16 +159,3 @@ input_filters(In, ContentType, [gzip|T], In2, Options) :-
     !,
     zopen(In, In1, [format(gzip)]),
     input_filters(In1, ContentType, T, In2, Options).
-
-
-		 /*******************************
-		 *            SANDBOX		*
-		 *******************************/
-
-:- multifile
-    sandbox:safe_meta/2.
-
-sandbox:safe_meta(data_csv:csv_data(_:_,_,_), []) :- !, fail.
-sandbox:safe_meta(data_csv:record(_:_, _), []) :- !, fail.
-sandbox:safe_meta(data_csv:csv_data(_,_,_), []).
-sandbox:safe_meta(data_csv:record(_, _), []).
