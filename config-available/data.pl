@@ -34,6 +34,7 @@
 */
 
 :- module(swish_config_data_source, []).
+:- use_module(library(settings)).
 :- use_module(swish:swish(lib/data_source)).
 
 /** <module> Configure external data sources
@@ -43,5 +44,9 @@ Loading the above library  enabled  handling   data  sources.  The files
 loaded below enable handlers for importing specific formats.
 */
 
+% EDIT: Assign max memory to use for data sources (Mb)
+:- set_setting_default(swish_data_source:max_memory, 8000).
+
+% EDIT: Load data source plugins
 :- use_module(swish(lib/data/csv)).
 :- use_module(swish(lib/data/scrape)).

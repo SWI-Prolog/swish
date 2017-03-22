@@ -43,6 +43,12 @@
             'data failed'/2		% +Hash, +Signature
           ]).
 :- use_module(library(error)).
+:- use_module(library(lists)).
+:- use_module(library(settings)).
+
+:- setting(max_memory, integer, 8000,
+           "Max memory used for cached data store (Mb)").
+
 
 /** <module> Cached data access
 
@@ -64,24 +70,27 @@ maintained over a SWISH Pengine invocation.
 		 *******************************/
 
 :- dynamic
-    data_source_db/2,                   % Hash, Goal
+    data_source_db/3,                   % Hash, Goal, Lock
     data_signature/2,                   % Hash, Signature
-    data_materialized/3,                % Hash, Materialized, SourceID
-    data_last_access/2.                 % Hash, Time
+    data_materialized/5,                % Hash, Materialized, SourceID, CPU, Wall
+    data_last_access/3.                 % Hash, Time, Updates
 
 'data assert'(Term) :-
     assertz(Term).
 
 'data materialized'(Hash, Signature, SourceID) :-
+    statistics(cputime, CPU1),
     get_time(Now),
+    nb_current('$data_source_materalize', stats(Time0, CPU0)),
+    CPU  is CPU1 - CPU0,
+    Wall is Now - Time0,
     assertz(data_signature(Hash, Signature)),
-    assertz(data_materialized(Hash, Now, SourceID)).
+    assertz(data_materialized(Hash, Now, SourceID, CPU, Wall)).
 
 'data failed'(_Hash, Signature) :-
     functor(Signature, Name, Arity),
     functor(Generic, Name, Arity),
     retractall(Generic).
-
 
 %!  data_source(:Id, +Source) is det.
 %
@@ -99,7 +108,7 @@ maintained over a SWISH Pengine invocation.
 
 data_source(M:Id, Source) :-
     variant_sha1(Source, Hash),
-    data_source_db(Hash, Source),
+    data_source_db(Hash, Source, _),
     !,
     (   clause(M:'$data'(Id, Hash), true)
     ->  true
@@ -108,7 +117,8 @@ data_source(M:Id, Source) :-
 data_source(M:Id, Source) :-
     valid_source(Source),
     variant_sha1(Source, Hash),
-    assertz(data_source_db(Hash, Source)),
+    mutex_create(Lock),
+    assertz(data_source_db(Hash, Source, Lock)),
     assertz(M:'$data'(Id, Hash)).
 
 %!  record(:Id, -Record) is nondet.
@@ -158,19 +168,108 @@ valid_source(Source) :-
 
 %!  materialize(+Hash)
 %
-%   Materialise the data identified by Hash
+%   Materialise the data identified by   Hash.  The materialization goal
+%   should
+%
+%     - Call 'data assert'/1 using a term Hash(Arg, ...) for each term
+%       to add to the database.
+%     - Call 'data materialized'(Hash, Signature, SourceVersion) on
+%       completion, where `Signature` is a term Hash(ArgName, ...) and
+%       `SourceVersion` indicates the version info provided by the
+%       source.  Use `-` if this information is not available.
+%     - OR call `data failed`(+Hash, +Signature) if materialization
+%       fails after some data has been asserted.
 
 materialize(Hash) :-
     must_be(atom, Hash),
-    data_materialized(Hash, _When, _From),
-    !.
+    data_materialized(Hash, _When, _From, _CPU, _Wall),
+    !,
+    update_last_access(Hash).
 materialize(Hash) :-
-    data_source_db(Hash, Source),
+    data_source_db(Hash, Source, Lock),
+    update_last_access(Hash),
+    gc_data,
+    with_mutex(Lock, materialize_sync(Hash, Source)).
+
+materialize_sync(Hash, _Source) :-
+    data_materialized(Hash, _When, _From, _CPU, _Wall),
+    !.
+materialize_sync(Hash, Source) :-
     source(Source, Goal),
-    call(Goal, Hash),
+    get_time(Time0),
+    statistics(cputime, CPU0),
+    setup_call_cleanup(
+        b_setval('$data_source_materalize', stats(Time0, CPU0)),
+        call(Goal, Hash),
+        nb_delete('$data_source_materalize')),
     data_signature(Hash, Head),
     functor(Head, Name, Arity),
     public(Name/Arity).
+
+
+		 /*******************************
+		 *              GC		*
+		 *******************************/
+
+%!  update_last_access(+Hash) is det.
+%
+%   Update the last known access time. The   value  is rounded down to 1
+%   minute to reduce database updates.
+
+update_last_access(Hash) :-
+    get_time(Now),
+    Rounded is floor(Now/60)*60,
+    (   data_last_access(Hash, Rounded, _)
+    ->  true
+    ;   clause(data_last_access(Hash, _, C0), true, Old)
+    ->  C is C0+1,
+        asserta(data_last_access(Hash, Rounded, C)),
+        erase(Old)
+    ;   asserta(data_last_access(Hash, Rounded, 1))
+    ).
+
+gc_stats(Hash, _{ hash:Hash,
+                  materialized:When, cpu:CPU, wall:Wall,
+                  bytes:Size,
+                  last_accessed_ago:Ago,
+                  access_frequency:AccessCount
+                }) :-
+    data_materialized(Hash, When, _From, CPU, Wall),
+    data_signature(Hash, Signature),
+    data_last_access(Hash, Last, AccessCount),
+    get_time(Now),
+    Ago is floor(Now/60)*60-Last,
+    predicate_property(Signature, number_of_clauses(Count)),
+    functor(Signature, _, Arity),
+    Size is (88+(16*Arity))*Count.
+
+
+%!  gc_data is det.
+%!  gc_data(+MaxSize) is det.
+%
+%   Remove the last unused data set until   memory  of this module drops
+%   below  MaxSize.  The   predicate   gc_data/0    is   called   before
+%   materializing a data source.
+
+gc_data :-
+    setting(max_memory, MB),
+    Bytes is MB*1024*1024,
+    gc_data(Bytes),
+    set_module(program_space(Bytes)).
+
+gc_data(MaxSize) :-
+    module_property(swish_data_source, program_size(Size)),
+    Size < MaxSize,
+    !.
+gc_data(MaxSize) :-
+    findall(Stat, gc_stats(_, Stat), Stats),
+    sort(last_accessed_ago, >=, Stats, ByTime),
+    member(Stat, ByTime),
+       data_flush(ByTime.hash),
+       module_property(swish_data_source, program_size(Size)),
+       Size < MaxSize,
+    !.
+gc_data(_).
 
 
 %!  data_flush(+Hash)
@@ -182,8 +281,8 @@ data_flush(Hash) :-
     data_record(Signature, _Id, _Record, Head),
     retractall(Head),
     retractall(data_signature(Hash, Head)),
-    retractall(data_materialized(Hash, _When1, _From)),
-    retractall(data_last_access(Hash, _When2)).
+    retractall(data_materialized(Hash, _When1, _From, _CPU, _Wall)),
+    retractall(data_last_access(Hash, _When2, _Count)).
 
 
 		 /*******************************
