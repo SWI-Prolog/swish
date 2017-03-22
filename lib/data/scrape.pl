@@ -35,6 +35,8 @@
 
 :- module(swish_data_scrape, []).
 :- use_module(library(sgml)).
+:- use_module(library(option)).
+:- use_module(library(apply)).
 :- use_module(library(xpath)).
 :- use_module(library(sandbox)).
 :- use_module(library(pairs)).
@@ -54,12 +56,14 @@ swish_data_source:source(
 
 :- public scrape/6.
 
-scrape(URL, Proj, DOM, {Convert}, Options, Hash) :-
-    exclude(safe_option, Options, UnSafe),
+scrape(URL, Proj, DOM, {Convert}, Options0, Hash) :-
+    exclude(safe_option, Options0, UnSafe),
     (   UnSafe == []
     ->  true
-    ;   permission_error(use, scrape_options, Options)
+    ;   permission_error(use, scrape_options, UnSafe)
     ),
+    default_options(URL, DefOptions),
+    merge_options(Options0, DefOptions, Options),
     load_structure(URL, DOM, Options), !,
     safe_goal(Convert),
     dict_pairs(Proj, _, Pairs),
@@ -74,3 +78,33 @@ scrape(URL, Proj, DOM, Convert, Options, _Hash) :-
 
 safe_option(dialect(_)).
 safe_option(space(_)).
+safe_option(dtd(Dialect)) :-
+    dialect(Dialect).
+safe_option(max_errors(_)).
+safe_option(syntax_errors(_)).
+
+dialect(sgml).
+dialect(html4).
+dialect(html5).
+dialect(html).
+dialect(xhtml).
+dialect(xml).
+dialect(xmlns).
+
+default_options(URL, Options) :-
+    file_name_extension(_, Ext, URL),
+    ext_options(Ext, Options),
+    !.
+default_options(_URL, Options) :-
+    ext_options(html, Options).
+
+ext_options(xml,  [dialect(xml)]).
+ext_options(htm,  Options) :-
+    ext_options(html, Options).
+ext_options(html, [ dtd(DTD),
+                    dialect(Dialect),
+                    max_errors(-1),
+                    syntax_errors(quiet)
+                  ]) :-
+    Dialect = html,
+    dtd(Dialect, DTD).
