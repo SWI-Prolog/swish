@@ -35,7 +35,7 @@
 :- module(swish_include,
           [
           ]).
-:- use_module(gitty).
+:- use_module(storage).
 :- use_module(config).
 :- use_module(library(sandbox), []).
 :- use_module(library(debug)).
@@ -81,9 +81,10 @@ swish:term_expansion(:- include(FileIn), Expansion) :-
 include_data(Name, URI, Data) :-        % Deal with gitty files
     atom(Name),
     !,
-    setting(web_storage:directory, Store),
     add_extension(Name, FileExt),
-    catch(gitty_data(Store, FileExt, Data, _Meta), _, fail),
+    catch(storage_file(FileExt, Data, _Meta),
+          error(existence_error(_,_),_),
+          fail),
     atom_concat('swish://', FileExt, URI).
 include_data(Spec, URI, Data) :-
     absolute_file_name(Spec, Path, [ file_type(prolog), access(read) ]),
@@ -187,9 +188,8 @@ prolog_colour:term_colours((:- include(FileIn)),
 classify_include(File, FileClass) :-
     atom(File),
     !,
-    setting(web_storage:directory, Store),
     add_extension(File, FileExt),
-    catch(gitty_commit(Store, FileExt, _Meta), _, fail),
+    catch(storage_meta_data(FileExt, _Meta), _, fail),
     atom_concat('swish://', FileExt, Id),
     FileClass = file(Id).
 classify_include(Spec, FileClass) :-
@@ -228,8 +228,7 @@ prolog:xref_open_source(File, Stream) :-
     (   file_alias(File, Spec)
     ->  absolute_file_name(Spec, Path, [ file_type(prolog), access(read) ]),
         open(Path, read, Stream)
-    ;   setting(web_storage:directory, Store),
-        catch(gitty_data(Store, Name, Data, _Meta), _, fail),
+    ;   catch(storage_file(Name, Data, _Meta), _, fail),
         open_string(Data, Stream)
     ).
 
@@ -239,8 +238,7 @@ prolog:xref_source_time(File, Modified) :-
     (   file_alias(File, Spec)
     ->  absolute_file_name(Spec, Path, [ file_type(prolog), access(read) ]),
         time_file(Path, Modified)
-    ;   setting(web_storage:directory, Store),
-        catch(gitty_commit(Store, Name, Meta), _, fail),
+    ;   catch(storage_meta_data(Name, Meta), _, fail),
         Modified = Meta.get(time)
     ).
 
