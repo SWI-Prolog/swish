@@ -52,7 +52,6 @@ SWISH program and obtain the results using   a simple web client such as
 
 :- multifile
 	pengines:write_result/3,
-	pengines:write_result/4,
 	write_answers/2,		% Answers, Bindings
 	write_answers/3.		% Answers, Bindings, Options
 
@@ -61,38 +60,35 @@ SWISH program and obtain the results using   a simple web client such as
 %	Hook into library(pengines) that  makes   pengines  support  CSV
 %	output.
 
-pengines:write_result(csv, Event, VarNames) :-
-	csv(Event, VarNames, []).
-pengines:write_result(csv, Event, VarNames, OptionDict) :-
+pengines:write_result(csv, Event, OptionDict) :-
 	(   Disposition = OptionDict.get(disposition)
 	->  Options = [disposition(Disposition)]
 	;   Options = []
 	),
-	csv(Event, VarNames, Options).
+	csv(Event, Options).
 
-csv(create(_Id, Features), VarNames, Options) :- !,
+csv(create(_Id, Features), Options) :- !,
 	memberchk(answer(Answer), Features),
-	csv(Answer, VarNames, Options).
-csv(destroy(_Id, Wrapped), VarNames, Options) :- !,
-	csv(Wrapped, VarNames, Options).
-csv(success(_Id, Answers, _Time, More), VarNames, Options) :- !,
-	VarTerm =.. [row|VarNames],
+	csv(Answer, Options).
+csv(destroy(_Id, Wrapped), Options) :- !,
+	csv(Wrapped, Options).
+csv(success(_Id, Answers, Projection, _Time, More), Options) :- !,
+	VarTerm =.. [row|Projection],
 	success(Answers, VarTerm, [more(More)|Options]).
-csv(error(_Id, Error), _VarNames, _Options) :- !,
+csv(error(_Id, Error), _Options) :- !,
 	message_to_string(Error, Msg),
 	format('Status: 400 Bad request~n'),
 	format('Content-type: text/plain~n~n'),
 	format('ERROR: ~w~n', [Msg]).
-csv(output(_Id, message(_Term, _Class, HTML, _Where)), _VarNames, _Opts) :- !,
+csv(output(_Id, message(_Term, _Class, HTML, _Where)), _Opts) :- !,
 	format('Status: 400 Bad request~n'),
 	format('Content-type: text/html~n~n'),
 	format('<html>~n~s~n</html>~n', [HTML]).
-csv(page(Page, Event), VarNames, Options) :-
-	csv(Event, VarNames, [page(Page)|Options]).
-csv(failure(_Id, _Time), VarNames, Options) :- !,
-	VarTerm =.. [row|VarNames],
-	success([], VarTerm, [more(false)|Options]).
-csv(Event, _VarNames, _) :-
+csv(page(Page, Event), Options) :-
+	csv(Event, [page(Page)|Options]).
+csv(failure(_Id, _Time), Options) :- !,
+	success([], -, [more(false)|Options]).
+csv(Event, _) :-
 	print_term(Event, [output(user_error)]).
 
 success(Answers, VarTerm, Options) :-
@@ -112,9 +108,13 @@ success(Answers, VarTerm, Options) :-
 	format('Content-encoding: chunked~n'),
 	format('Content-disposition: attachment; filename="~w"~n', [Disposition]),
 	format('Content-type: text/csv~n~n'),
-	csv_write_stream(current_output, [VarTerm], []),
+	projection_row(VarTerm),
 	forall(paginate(100, Page, Rows),
 	       csv_write_stream(current_output, Page, [])).
+
+projection_row(-) :- !.
+projection_row(VarTerm) :-
+	csv_write_stream(current_output, [VarTerm], []).
 
 paginate(Len, Page, List) :-
 	length(Page0, Len),
