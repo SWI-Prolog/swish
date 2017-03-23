@@ -35,7 +35,9 @@
 
 :- module(swish_data_source,
           [ data_source/2,              % :Id, +Source
+            data_record/2,              % :Id, -Record
             record/2,                   % :Id, -Record
+            data_signature/2,           % :Id, -Signature
 
             data_flush/1,               % +Hash
             'data assert'/1,            % +Term
@@ -59,7 +61,9 @@ maintained over a SWISH Pengine invocation.
 
 :- meta_predicate
     data_source(:, +),
-    record(:, -).
+    data_record(:, -),
+    record(:, -),
+    data_signature(:, -).
 
 :- multifile
     source/2.                           % +Term, -Goal
@@ -71,7 +75,7 @@ maintained over a SWISH Pengine invocation.
 
 :- dynamic
     data_source_db/3,                   % Hash, Goal, Lock
-    data_signature/2,                   % Hash, Signature
+    data_signature_db/2,                % Hash, Signature
     data_materialized/5,                % Hash, Materialized, SourceID, CPU, Wall
     data_last_access/3.                 % Hash, Time, Updates
 
@@ -84,7 +88,7 @@ maintained over a SWISH Pengine invocation.
     nb_current('$data_source_materalize', stats(Time0, CPU0)),
     CPU  is CPU1 - CPU0,
     Wall is Now - Time0,
-    assertz(data_signature(Hash, Signature)),
+    assertz(data_signature_db(Hash, Signature)),
     assertz(data_materialized(Hash, Now, SourceID, CPU, Wall)).
 
 'data failed'(_Hash, Signature) :-
@@ -122,25 +126,54 @@ data_source(M:Id, Source) :-
     assertz(M:'$data'(Id, Hash)).
 
 %!  record(:Id, -Record) is nondet.
+%!  data_record(:Id, -Record) is nondet.
 %
-%   True when Record is a record in the dataset identified by Id.
+%   True when Record is  a  dict  representing   a  row  in  the dataset
+%   identified by Id.
+%
+%   @deprecated  record/2  is   deprecated.   New    code   should   use
+%   data_record/2.
 
-record(M:Id, Record) :-
-    clause(M:'$data'(Id, Hash), true),
-    !,
+record(Id, Record) :-
+    data_record(Id, Record).
+
+data_record(M:Id, Record) :-
+    data_hash(M:Id, Hash),
     materialize(Hash),
-    data_signature(Hash, Signature),
+    data_signature_db(Hash, Signature),
     data_record(Signature, Id, Record, Head),
     call(Head).
-
-record(_:Id, _Record) :-
-    existence_error(dataset, Id).
 
 data_record(Signature, Tag, Record, Head) :-
     Signature =.. [Name|Keys],
     pairs_keys_values(Pairs, Keys, Values),
     dict_pairs(Record, Tag, Pairs),
     Head =.. [Name|Values].
+
+%!  data_signature(:Id, -Signature)
+%
+%   True when Signature is the signature of the data source Id.  The
+%   signature is a compound term Id(ColName, ...)
+
+data_signature(M:Id, Signature) :-
+    data_hash(M:Id, Hash),
+    materialize(Hash),
+    data_signature_db(Hash, Signature0),
+    Signature0 =.. [_|ColNames],
+    Signature  =.. [Id|ColNames].
+
+data_hash(M:Id, Hash) :-
+    clause(M:'$data'(Id, Hash), true),
+    !.
+data_hash(_:Id, _) :-
+    existence_error(dataset, Id).
+
+%!  swish:goal_expansion(+Dict, -DataGoal)
+%
+%   Translate a Dict where the tag is   the  identifier of a data source
+%   and the keys are columns pf this  source   into  a goal on the data.
+%   Note that the data itself  is   represented  as  a Prolog predicate,
+%   representing each row as a fact and each column as an argument.
 
 :- multifile
     swish:goal_expansion/2.
@@ -150,7 +183,7 @@ swish:goal_expansion(Dict, swish_data_source:Head) :-
     prolog_load_context(module, M),
     clause(M:'$data'(Id, Hash), true),
     materialize(Hash),
-    data_signature(Hash, Signature),
+    data_signature_db(Hash, Signature),
     data_record(Signature, Id, Record, Head),
     Dict :< Record.
 
@@ -202,7 +235,7 @@ materialize_sync(Hash, Source) :-
         b_setval('$data_source_materalize', stats(Time0, CPU0)),
         call(Goal, Hash),
         nb_delete('$data_source_materalize')),
-    data_signature(Hash, Head),
+    data_signature_db(Hash, Head),
     functor(Head, Name, Arity),
     public(Name/Arity).
 
@@ -235,7 +268,7 @@ gc_stats(Hash, _{ hash:Hash,
                   access_frequency:AccessCount
                 }) :-
     data_materialized(Hash, When, _From, CPU, Wall),
-    data_signature(Hash, Signature),
+    data_signature_db(Hash, Signature),
     data_last_access(Hash, Last, AccessCount),
     get_time(Now),
     Ago is floor(Now/60)*60-Last,
@@ -277,10 +310,10 @@ gc_data(_).
 %   Drop the data associated with hash
 
 data_flush(Hash) :-
-    data_signature(Hash, Signature),
+    data_signature_db(Hash, Signature),
     data_record(Signature, _Id, _Record, Head),
     retractall(Head),
-    retractall(data_signature(Hash, Head)),
+    retractall(data_signature_db(Hash, Head)),
     retractall(data_materialized(Hash, _When1, _From, _CPU, _Wall)),
     retractall(data_last_access(Hash, _When2, _Count)).
 
@@ -292,7 +325,9 @@ data_flush(Hash) :-
 :- multifile
     sandbox:safe_meta/2.
 
-sandbox:safe_meta(swish_data_source:data_source(_:_,_), []) :- !, fail.
-sandbox:safe_meta(swish_data_source:record(_:_, _), []) :- !, fail.
-sandbox:safe_meta(swish_data_source:data_source(_,_), []).
-sandbox:safe_meta(swish_data_source:record(_, _), []).
+sandbox:safe_meta(swish_data_source:data_source(Id,_), [])     :- safe_id(Id).
+sandbox:safe_meta(swish_data_source:data_record(Id, _), [])    :- safe_id(Id).
+sandbox:safe_meta(swish_data_source:data_signature(Id, _), []) :- safe_id(Id).
+
+safe_id(_:_) :- !, fail.
+safe_id(_).
