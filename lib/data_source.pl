@@ -37,7 +37,10 @@
           [ data_source/2,              % :Id, +Source
             data_record/2,              % :Id, -Record
             record/2,                   % :Id, -Record
-            data_signature/2,           % :Id, -Signature
+            data_property/2,            % :Id, ?Property
+            data_row/2,                 % :Id, -Row
+            data_row/3,                 % :Id, +Range, -Row
+            data_dump/3,                % :Id, +Range, -Row
 
             data_flush/1,               % +Hash
             'data assert'/1,            % +Term
@@ -47,6 +50,7 @@
 :- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(settings)).
+:- use_module(library(solution_sequences)).
 
 :- setting(max_memory, integer, 8000,
            "Max memory used for cached data store (Mb)").
@@ -63,7 +67,10 @@ maintained over a SWISH Pengine invocation.
     data_source(:, +),
     data_record(:, -),
     record(:, -),
-    data_signature(:, -).
+    data_row(:, -),
+    data_row(:, +, -),
+    data_dump(:, +, -),
+    data_property(:, -).
 
 :- multifile
     source/2.                           % +Term, -Goal
@@ -150,23 +157,104 @@ data_record(Signature, Tag, Record, Head) :-
     dict_pairs(Record, Tag, Pairs),
     Head =.. [Name|Values].
 
-%!  data_signature(:Id, -Signature)
-%
-%   True when Signature is the signature of the data source Id.  The
-%   signature is a compound term Id(ColName, ...)
-
-data_signature(M:Id, Signature) :-
-    data_hash(M:Id, Hash),
-    materialize(Hash),
-    data_signature_db(Hash, Signature0),
-    Signature0 =.. [_|ColNames],
-    Signature  =.. [Id|ColNames].
-
 data_hash(M:Id, Hash) :-
     clause(M:'$data'(Id, Hash), true),
     !.
 data_hash(_:Id, _) :-
     existence_error(dataset, Id).
+
+%!  data_row(:Id, -Row) is nondet.
+%!  data_row(:Id, +Range, -Row) is nondet.
+%
+%   True when Row is a term Id(Arg,   ...), where the first row contains
+%   the column names.
+%
+%   @see data_dump/3 to return a table
+
+data_row(Id, Row) :-
+    data_row(Id, all, Row).
+
+data_row(M:Id, Range, Row) :-
+    data_hash(M:Id, Hash),
+    materialize(Hash),
+    data_signature_db(Hash, Signature),
+    Signature =.. [_|ColNames],
+    same_length(ColNames, Vars),
+    Goal =.. [Hash|Vars],
+    Row  =.. [Id|Vars],
+    (   Vars = ColNames
+    ;   range(Range, M:Id, Goal)
+    ).
+
+range(all, _Id, Goal) :-
+    !,
+    call(Goal).
+range(From-To, _Id, Goal) :-
+    !,
+    Skip is From - 1,
+    Size is To-Skip,
+    limit(Size, offset(Skip, call(Goal))).
+range(Limit, _Id, Goal) :-
+    Limit >= 0,
+    !,
+    limit(Limit, call(Goal)).
+range(Limit, Id, Goal) :-
+    Limit < 0,
+    data_property(Id, rows(Rows)),
+    Skip is Rows+Limit,
+    offset(Skip, call(Goal)).
+
+%!  data_dump(:Id, +Range, -Table) is det.
+%
+%   Table is a list of rows in the indicated range. This cooperates with
+%   the table rendering to produce a data table.  Range is one of:
+%
+%     - all
+%       All rows from the data are included.  Be careful if these
+%       are many as it is likely to make your browser very slow.
+%     - From-To
+%       List the (1-based) rows From to To
+%     - Count
+%       If Count >= 0, list the _first_, else list the _last_
+%       Count rows.
+
+data_dump(Id, Range, Table) :-
+    findall(Row, data_row(Id, Range, Row), Table).
+
+
+%!  data_property(:Id, ?Property) is nondet.
+%
+%   True when Property is a known property about the data source Id.
+%   Defined properties are:
+%
+%     - columns(-Count)
+%       Number of columns in the table.
+%     - column_names(-Names)
+%       Names is a list of the column names as they appear in the
+%       data.
+%     - rows(-Rows)
+%       Number of rows in the table
+
+data_property(M:Id, Property) :-
+    data_hash(M:Id, Hash),
+    materialize(Hash),
+    property(Property),
+    property(Property, Hash).
+
+property(columns(_)).
+property(column_names(_)).
+property(rows(_)).
+
+property(columns(Count), Hash) :-
+    data_signature_db(Hash, Signature),
+    functor(Signature, _, Count).
+property(column_names(Names), Hash) :-
+    data_signature_db(Hash, Signature),
+    Signature =.. [_|Names].
+property(rows(Count), Hash) :-
+    data_signature_db(Hash, Signature),
+    predicate_property(Signature, number_of_clauses(Count)).
+
 
 %!  swish:goal_expansion(+Dict, -DataGoal)
 %
@@ -327,7 +415,11 @@ data_flush(Hash) :-
 
 sandbox:safe_meta(swish_data_source:data_source(Id,_), [])     :- safe_id(Id).
 sandbox:safe_meta(swish_data_source:data_record(Id, _), [])    :- safe_id(Id).
-sandbox:safe_meta(swish_data_source:data_signature(Id, _), []) :- safe_id(Id).
+sandbox:safe_meta(swish_data_source:record(Id, _), [])         :- safe_id(Id).
+sandbox:safe_meta(swish_data_source:data_row(Id, _), [])       :- safe_id(Id).
+sandbox:safe_meta(swish_data_source:data_row(Id, _, _), [])    :- safe_id(Id).
+sandbox:safe_meta(swish_data_source:data_dump(Id, _, _), [])   :- safe_id(Id).
+sandbox:safe_meta(swish_data_source:data_property(Id, _), [])  :- safe_id(Id).
 
 safe_id(_:_) :- !, fail.
 safe_id(_).
