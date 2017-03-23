@@ -51,6 +51,7 @@
 :- use_module(library(lists)).
 :- use_module(library(settings)).
 :- use_module(library(solution_sequences)).
+:- use_module(library(pengines)).
 
 :- setting(max_memory, integer, 8000,
            "Max memory used for cached data store (Mb)").
@@ -421,5 +422,5 @@ sandbox:safe_meta(swish_data_source:data_row(Id, _, _), [])    :- safe_id(Id).
 sandbox:safe_meta(swish_data_source:data_dump(Id, _, _), [])   :- safe_id(Id).
 sandbox:safe_meta(swish_data_source:data_property(Id, _), [])  :- safe_id(Id).
 
-safe_id(_:_) :- !, fail.
+safe_id(M:_) :- !, pengine_self(M).
 safe_id(_).
