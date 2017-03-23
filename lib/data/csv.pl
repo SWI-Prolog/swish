@@ -86,14 +86,31 @@ load_csv_stream(In, Hash, Signature, Options) :-
     !.
 
 signature(Rows, Rows, Hash, Signature, Options) :-
-    option(columns(Names), Options),
+    option(columns(Names0), Options),
     !,
-    must_be(list(atom), Names),
+    column_key_list(Names0, Names),
     Signature =.. [Hash|Names].
-signature([Head|Rows], Rows, _Hash, Signature, _Options) :-
-    Head =.. [_|Names],
-    must_be(list(atom), Names),
-    Signature = Head.
+signature([Head|Rows], Rows, Hash, Signature, _Options) :-
+    Head =.. [_|Names0],
+    column_key_list(Names0, Names),
+    Signature =.. [Hash|Names].
+
+column_key_list(Names0, Names) :-
+    must_be(list, Names0),
+    maplist(column_key, Names0, Names).
+
+column_key(Key, Key) :-
+    atom(Key),
+    !.
+column_key(Int, Int) :-
+    integer(Int),
+    current_prolog_flag(min_tagged_integer, Min),
+    Int >= Min,
+    current_prolog_flag(max_tagged_integer, Max),
+    Int =< Max, !.
+column_key(Any, Key) :-
+    format(atom(Key), '~w', [Any]).
+
 
 finalize(exit, In, Hash, LastModified, _Action, Signature) :-
     !,
