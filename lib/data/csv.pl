@@ -48,7 +48,15 @@
 /** <module> Data source handler for CSV data
 
 This handler deals  with  downloading  CSV   and  TSV  files  from  HTTP
-resources.
+resources. The defined data source is   csv(URL, Options). The following
+options are processed:
+
+ - encoding(+Encoding)
+   Set the encoding for processing the data.  Default is guessed
+   from the URL header or `utf8` if there is no clue.
+ - column_names(+ColumnNames)
+   Names for the columns. If not provided, the first row is assumed
+   to hold the column names.
 */
 
 :- multifile
@@ -86,7 +94,7 @@ load_csv_stream(In, Hash, Signature, Options) :-
     !.
 
 signature(Rows, Rows, Hash, Signature, Options) :-
-    option(columns(Names0), Options),
+    option(column_names(Names0), Options),
     !,
     column_key_list(Names0, Names),
     Signature =.. [Hash|Names].

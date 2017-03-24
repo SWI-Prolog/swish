@@ -106,17 +106,8 @@ maintained over a SWISH Pengine invocation.
 
 %!  data_source(:Id, +Source) is det.
 %
-%   Make the CSV data in URL available   using  Id. Given this id, dicts
-%   with a tag Id are expanded to goals   on  the CSV data. In addition,
-%   record(Id, Record) gives a full data record   as a dict. Options are
-%   as defined by csv//2.  In addition, these options are processed:
-%
-%     - encoding(+Encoding)
-%       Set the encoding for processing the data.  Default is guessed
-%       from the URL header or `utf8` if there is no clue.
-%     - columns(+ColumnNames)
-%       Names for the columns. If not provided, the first row is assumed
-%       to hold the column names.
+%   Create a data source Id from   the  source definition Source. Source
+%   definitions are plugin files loaded from swish(data).
 
 data_source(M:Id, Source) :-
     variant_sha1(Source, Hash),
