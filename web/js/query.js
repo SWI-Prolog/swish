@@ -393,6 +393,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
     var list = options.aggregates ||
       [ "Aggregate (count all)",
 	"--",
+	"Projection",
 	"Order by",
 	"Distinct",
 	"Limit",

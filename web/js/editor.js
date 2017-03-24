@@ -1152,6 +1152,12 @@ define([ "cm/lib/codemirror",
 	return that;
       }
 
+      function prefixQuery(pre) {
+	that.prologEditor('setSource', pre + query + ".")
+	    .focus();
+	return that;
+      }
+
       function order(l) {
 	var order = [];
 	for(var i=0; i<vars.length; i++)
@@ -1162,6 +1168,8 @@ define([ "cm/lib/codemirror",
       switch ( wrapper ) {
         case "Aggregate (count all)":
 	  return wrapQuery("aggregate_all(count, ", ", Count)");
+	case "Projection":
+	  return prefixQuery("projection(["+vars.join(",")+"]),\n");
         case "Order by":
 	  return wrapQuery("order_by(["+order(vars)+"], ", ")");
         case "Distinct":

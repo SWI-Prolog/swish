@@ -1103,6 +1103,7 @@ var cellTypes = {
         actions: {
 	  "Aggregate (count all)": wrapSolution,
 	  "--":			   null,
+	  "Projection":		   wrapSolution,
 	  "Order by":              wrapSolution,
 	  "Distinct":              wrapSolution,
 	  "Limit":		   wrapSolution,
