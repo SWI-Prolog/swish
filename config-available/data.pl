@@ -49,4 +49,5 @@ loaded below enable handlers for importing specific formats.
 
 % EDIT: Load data source plugins
 :- use_module(swish(lib/data/csv)).
+:- use_module(swish(lib/data/sparql)).
 :- use_module(swish(lib/data/scrape)).
