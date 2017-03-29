@@ -7,3 +7,6 @@
 [submodule "pack/rserve_client"]
 	path = pack/rserve_client
 	url = https://github.com/JanWielemaker/rserve_client
+[submodule "pack/hdt"]
+	path = pack/hdt
+	url = https://github.com/JanWielemaker/hdt4swipl.git
