@@ -90,6 +90,7 @@ rdf_prefix(hdt:linkedgeodata, lgo,   'http://linkedgeodata.org/ontology/').
 rdf_prefix(hdt:wordnet,       wn,    'http://wordnet-rdf.princeton.edu/wn31/').
 rdf_prefix(hdt:wordnet,       wno,   'http://wordnet-rdf.princeton.edu/ontology#').
 rdf_prefix(hdt:wordnet,       lemon, 'http://lemon-model.net/lemon#').
+rdf_prefix(hdt:dblp,          swrc,  'http://swrc.ontoware.org/ontology#').
 
 register_prefixes :-
     forall(rdf_prefix(_G, Prefix, IRI),
