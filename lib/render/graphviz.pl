@@ -212,6 +212,7 @@ svg(SVG, _Options) -->
        updateSize()
        pan = svgPanZoom(svg[0], {
 			  // controlIconsEnabled: true
+			  minZoom: 0.1,
 			  maxZoom: 50
 			});
     });
