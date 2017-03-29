@@ -251,6 +251,8 @@ graphviz_program(fdp).
 graphviz_program(sfdp).
 graphviz_program(twopi).
 graphviz_program(circo).
+graphviz_program(osage).
+graphviz_program(patchwork).
 
 graph_type(graph).
 graph_type(digraph).
