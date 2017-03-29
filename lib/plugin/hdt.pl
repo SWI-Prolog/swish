@@ -35,16 +35,24 @@
 
 :- module(swish_hdt,
           [ rdf/4,                      % ?Subject, ?Pred, ?Object, ?Graph
+
             rdf_subject/2,              % ?Subject, ?Graph
             rdf_predicate/2,            % ?Predicate, ?Graph
             rdf_object/2,               % ?Object, ?Graph
             rdf_shared/2,               % ?IRI, ?Graph
+
+            rdf_suggestions/5,		% +Base, +Role, +MaxCount, -List, +Graph
+            rdf_graph_property/2,	% -Property, +Graph
+
             op(110, xfx, @),            % must be above .
             op(650, xfx, ^^)            % must be above :
           ]).
 :- use_module(library(hdt)).
 :- use_module(library(error)).
-:- use_module(library(semweb/rdf11), except([rdf/4])).
+:- use_module(library(semweb/rdf11),
+              except([ rdf/4,
+                       rdf_graph_property/2
+                     ])).
 
 :- rdf_register_prefix(hdt, 'hdt://data/').
 :- rdf_meta
@@ -52,7 +60,9 @@
     rdf_subject(r,r),
     rdf_predicate(r,r),
     rdf_object(r,r),
-    rdf_shared(r,r).
+    rdf_shared(r,r),
+    rdf_suggestions(+,+,+,-,r),
+    rdf_graph_property(-,r).
 
 /** <module> Access RDF through HDTs
 */
@@ -98,6 +108,29 @@ rdf_shared(S,G) :-
     graph_hdt(G, HDT),
     hdt_shared(HDT, S).
 
+%!  rdf_suggestions(+Base, +Role, +MaxCount, -List, +Graph)
+%
+%   True when Results is a list of   suggestions  for Base in the triple
+%   role Role. Some experimentation suggests it  performs a prefix match
+%   on the internal string representation.   This  implies that literals
+%   are only found if the first character of Base is `"`.
+%
+%   @arg Base is a string or atom
+%   @arg Role is one of `subject`, `predicate` or `object`
+
+rdf_suggestions(Base, Role, MaxCount, List, Graph) :-
+    graph_hdt(Graph, HDT),
+    hdt_suggestions(HDT, Base, Role, MaxCount, List).
+
+%!  rdf_graph_property(-Property, +Graph) is nondet.
+%
+%   True when Property is a property of Graph
+
+rdf_graph_property(Property, Graph) :-
+    graph_hdt(Graph, HDT),
+    hdt_property(HDT, Property).
+
+
 :- dynamic
     hdt_graph/2.
 
@@ -126,3 +159,5 @@ graph_hdt(G, HDT) :-
 sandbox:safe_primitive(swish_hdt:graph_hdt(_,_)).
 sandbox:safe_primitive(hdt:hdt_search(_,_,_,_)).
 sandbox:safe_primitive(system:hdt_column_(_,_,_)).
+sandbox:safe_primitive(system:hdt_suggestions(_,_,_,_,_)).
+sandbox:safe_primitive(system:hdt_property_(_,_)).
