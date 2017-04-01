@@ -10,7 +10,8 @@ div.prolog-runners {
 
 div.prolog-runner {
   position: relative;
-  margin: 2px 0px 2px;		/* top,left/right,bottom */
+  padding: 2px 0px 2px;		/* top,left/right,bottom */
+  margin: 0px;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
@@ -34,7 +35,7 @@ div.prolog-runner.iconic > div.runner-results { display: none; }
 
 div.runner-title {
   padding: 0px 5px 2px;
-  border-width: 2px;
+  border: 2px solid #333;
   border-radius: 5px;
   box-sizing: border-box;
 }

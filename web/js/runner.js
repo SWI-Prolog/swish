@@ -323,14 +323,14 @@ define([ "jquery", "config", "preferences",
 	  return div;
 	}
 
-	elem.addClass("prolog-runner");
+	elem.addClass("prolog-runner panel panel-default");
 	if ( query.tabled )
 	  elem.addClass("tabled");
 	if ( query.title != false ) {
 	  var qspan = $.el.span({class:"query cm-s-prolog"});
 	  CodeMirror.runMode(query.query, "prolog", qspan);
 	  elem.append($.el.div(
-	    {class:"runner-title ui-widget-header"},
+	    {class:"runner-title panel-heading"},
 	    titleBarButton("remove-circle", "Close",        'close'),
 	    titleBarButton("minus",         "Iconify",      'toggleIconic'),
 	    titleBarButton("download",      "Download CSV", 'downloadCSV'),
@@ -345,7 +345,7 @@ define([ "jquery", "config", "preferences",
 	}
 	if ( query.chunk )
 	  data.chunk = query.chunk;
-	elem.append($.el.div({class:"runner-results"}));
+	elem.append($.el.div({class:"runner-results panel-body"}));
 	elem.append(controllerDiv());
 
 	elem.data('prologRunner', data);
