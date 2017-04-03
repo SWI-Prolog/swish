@@ -288,6 +288,8 @@ storage_url(File, HREF) :-
 %	Gather meta-data from the  Request   (user,  peer, identity) and
 %	provided meta-data. Illegal and unknown values are ignored.
 %
+%	The meta_data/5 version is used to add information about a fork.
+%
 %	@param Dict represents the JSON document posted and contains the
 %	content (`data`) and meta data (`meta`).
 
