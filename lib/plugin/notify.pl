@@ -398,9 +398,14 @@ commit_message_summary(_Commit) -->
 %   `profile_id`, `name` and/or `avatar`.
 
 action_user(Action, User) :-
-    arg(1, Action, Commit),
+    action_commit(Action, Commit),
     findall(Name-Value, commit_user_property(Commit, Name, Value), Pairs),
     dict_pairs(User, u, Pairs).
+
+action_commit(forked(_From, Commit), Commit) :-
+    !.
+action_commit(Action, Commit) :-
+    arg(1, Action, Commit).
 
 commit_user_property(Commit, Name, Value) :-
     Profile = Commit.get(profile_id),
