@@ -382,7 +382,10 @@ define([ "jquery", "config", "modal", "form", "gitty",
 				    owner: elem
 		                  });
 
-		   elem.tabbed('title', data.meta.name);
+		   if ( method == "POST" )
+		     data.chats = 0;	/* forked file has no chats */
+		   elem.storage('update_tab_title');
+		   elem.storage('chat', (data.meta||{}).chat||'update');
 		   $(".storage").storage('chat_status', true);
 		   history.push(reply);
 		 }
