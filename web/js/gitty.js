@@ -269,9 +269,13 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	if ( m1.previous ) {
 	  if ( (m2 = data.commits[m1.previous]) &&
 	       (diff = diffMeta(m1, m2)) ) {
+	    var change = 0;
+
 	    for( var d in diff ) {
 	      if ( diff.hasOwnProperty(d) ) {
-		$(elem).append($.el.span({class:"change-type"}, d));
+		var ch = (d == "name" ? "forked "+m2.name : d);
+		$(elem).append((change++ == 0 ? undefined : ", "),
+			       $.el.span({class:"change-type"}, ch));
 	      }
 	    }
 	  }
@@ -467,6 +471,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
     diffAttr("data");
     diffAttr("public");
     diffAttr("example");
+    diffAttr("name");
 
     if ( (d=diffTags(m1.tags, m2.tags)) )
       diff.tags = d;
