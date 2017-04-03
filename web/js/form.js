@@ -184,7 +184,9 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
     fields: {
       fileName: function(name, public, example, disabled) {
 	var labeltext = config.swish.community_examples ? "Public | Example | name" : "Public | name"
-	var elem =
+	var empty = "(leave empty for generated random name)"
+	var fork, input;
+        var elem =
 	$.el.div({class:"form-group"},
 		 label("name", labeltext),
 		 $.el.div({class:valgridw()},
@@ -202,11 +204,23 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 					     checkbox("example",
 						      { checked: example
 						      })) : undefined,
-				   textInput("name",
-					     {placeholder:"Name (leave empty for generated random name)",
+			   input = textInput("name",
+					     {placeholder:"Name " + empty,
 					      title:"Public name of your program",
 					      value:name,
-					      disabled:disabled}))));
+					      disabled:disabled}),
+			    fork = $.el.span({class:"input-group-btn"
+				             },
+					     $.el.button({ class: "btn btn-success",
+							   type: "button"
+							 }, "Fork"))
+				  )));
+	$(fork).on("click", function() {
+	  var btn = $(input).closest("form").find(".btn.btn-primary");
+	  $(input).attr("placeholder", "Fork as " + empty);
+	  $(input).val("");
+	  btn.text(btn.text().replace("Update", "Fork"));
+	});
 	return elem;
       },
 
