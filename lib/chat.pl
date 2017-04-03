@@ -87,12 +87,6 @@ browsers which in turn may have multiple SWISH windows opened.
      HTTP authentication.
 */
 
-:- multifile
-	swish_config:config/2.
-
-swish_config:config(chat, true).
-
-
 		 /*******************************
 		 *	ESTABLISH WEBSOCKET	*
 		 *******************************/
@@ -1176,12 +1170,15 @@ html_string(HTML, String) :-
 		 *	       UI		*
 		 *******************************/
 
+:- multifile swish_config:config/2.
+
 %%	notifications(+Options)//
 %
 %	The  chat  element  is  added  to  the  navbar  and  managed  by
 %	web/js/chat.js
 
 notifications(_Options) -->
+	{ swish_config:config(chat, true) }, !,
 	html(div(class(chat),
 		 [ div(class('chat-users'),
 		       ul([ class([nav, 'navbar-nav', 'pull-right']),
@@ -1192,6 +1189,8 @@ notifications(_Options) -->
 			 ' users'
 		       ])
 		 ])).
+notifications(_Options) -->
+	[].
 
 
 		 /*******************************
