@@ -73,20 +73,31 @@ preferences.setDefault("emacs-keybinding", false);
 (function($) {
   var pluginName = 'swish';
 
+  function glyph(name, func) {
+    func.glyph = name;
+    return func;
+  }
+
+  function icon(name, func) {
+    func.typeIcon = name;
+    return func;
+  }
+
   var defaults = {
     menu: {
       "File":
-      { "Save ...": function() {
+      { "Save ...": glyph("cloud-upload", function() {
 	  menuBroadcast("save", "as");
-	},
-	"Info & history ...": function() {
+	}),
+	"Info & history ...": glyph("info-sign", function() {
 	  menuBroadcast("fileInfo");
-	},
-	"Reload": function() {
+	}),
+	"Reload": glyph("refresh", function() {
 	  menuBroadcast("reload");
-	},
+	}),
 	"Open recent": {
 	  type: "submenu",
+	  glyph: "paperclip",
 	  action: function(ev) {
 	    history.openRecent(ev, $(this).data('document'));
 	  },
@@ -94,28 +105,28 @@ preferences.setDefault("emacs-keybinding", false);
 	},
 	"Share": "--",
 	"Follow ...": config.http.locations.follow_file_options ?
-		      function() {
+		      glyph("eye-open", function() {
 	  menuBroadcast("follow-file");
-	} : undefined,
-	"Chat ...": function() {
+	}) : undefined,
+	"Chat ...": icon("chat", function() {
 	  menuBroadcast("chat-about-file");
-	},
-	"Chat help room ...": function() {
+	}),
+	"Chat help room ...": icon("chathelp", function() {
 	  $("body").swish('playFile', {
 	    file:"Help.swinb",
 	    chat:'large'
 	  });
-	},
-	"Start TogetherJS ...": function() {
+	}),
+	"Start TogetherJS ...": icon("togetherjs", function() {
 	  $("body").swish('collaborate');
-	},
+	}),
 	"Export": "--",
-	"Download": function() {
+	"Download": glyph("floppy-save", function() {
 	  menuBroadcast("download");
-	},
-	"Print ...": function() {
+	}),
+	"Print ...": glyph("print", function() {
 	  menuBroadcast("print");
-	}
+	})
       },
       "Edit":
       { "Clear messages": function() {

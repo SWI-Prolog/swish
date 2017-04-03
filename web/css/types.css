@@ -13,3 +13,18 @@
 .type-icon.select {
   background-image: url("../icons/select.png");
 }
+
+/* Actually, these are icons for dropdown menus */
+
+.type-icon.chat {
+  background-image: url("../icons/chat.png");
+}
+
+.type-icon.chathelp {
+  background-image: url("../icons/chathelp.png");
+}
+
+.type-icon.togetherjs {
+  background-image: url("../icons/togetherjs.png");
+}
+

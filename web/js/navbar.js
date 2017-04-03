@@ -169,6 +169,13 @@ define([ "jquery", "preferences", "laconic" ],
    *   - An object with `.typeIcon` gets an icon indicating the type
    */
   function appendDropdown(dropdown, label, options) {
+    function glyph(name) {
+      if ( name ) {
+	return $.el.span({
+	  class:"dropdown-icon glyphicon glyphicon-" + name});
+      }
+    }
+
     if ( options == undefined ) {
       // ignored
     } else if ( options == "--" ) {
@@ -180,6 +187,8 @@ define([ "jquery", "preferences", "laconic" ],
       if ( options.typeIcon ) {
 	a = $.el.a($.el.span({class:"dropdown-icon type-icon "+options.typeIcon}),
 		   label);
+      } else if ( options.glyph ) {
+	a = $.el.a(glyph(options.glyph), label);
       } else if ( (i=label.indexOf("(")) > 0 ) {
 	var accell = label.substr(i);
 	a = $.el.a({class:"accelerated"},
@@ -224,7 +233,9 @@ define([ "jquery", "preferences", "laconic" ],
       } else if ( options.type == "submenu" ) {		/* Submenu */
 	var submenu = $.el.ul({class:"dropdown-menu sub-menu"});
 
-	dropdown.append($.el.li($.el.a({class:"trigger right-caret"}, label),
+	dropdown.append($.el.li($.el.a({class:"trigger right-caret"},
+				       glyph(options.glyph),
+				       label),
 				submenu));
 	if ( options.action )
 	  $(submenu).data('navbar-action', options.action);
