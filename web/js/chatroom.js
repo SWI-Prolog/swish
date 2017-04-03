@@ -62,7 +62,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       return this.each(function() {
 	var elem = $(this);
 	var data = {};			/* private data */
-	var btn;
+	var btn, send;
 	var close;
 	var text;
 
@@ -74,12 +74,16 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 					/* build DOM */
 
 	btn  = $.el.div({class:"btn-group dropup"},
+		 send = $.el.button({ type:"button",
+				      class:"btn btn-primary btn-xs"
+				    }, "Send"),
 			$.el.button({ type:"button",
 				      class:"btn btn-primary btn-xs "+
 				            "dropdown-toggle",
-				      'data-toggle':"dropdown"
+				      'data-toggle':"dropdown",
+				      'aria-haspopup':true,
+				      'aria-expanded':false
 				    },
-				    "Send ",
 				    $.el.span({class:"caret"})),
 		   ul = $.el.ul({class:"dropdown-menu pull-right"}));
 	text = $.el.textarea({ placeholder:"Type chat message here ..."
@@ -94,12 +98,13 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 					$.el.tr($.el.td({class:"chat-text"}, text),
 						$.el.td({class:"chat-send"}, btn)))));
 
+	$(send).on("click", function() {
+	  elem.chatroom('send');
+	});
+
 					/* event handling */
 	form.widgets.populateMenu($(btn), elem, {
-	  "Message": function() {
-	    this.chatroom('send');
-	  },
-	  "Send my query": function() {
+	  "Include my query": function() {
 	    var query = $(".prolog-query-editor").queryEditor('getQuery');
 	    if ( query.trim() != "" ) {
 	      this.chatroom('send',
@@ -108,7 +113,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	      modal.alert("Your query editor is empty");
 	    }
 	  },
-	  "Cry for help": function() {
+	  "Broadcast to help room": function() {
 	    if ( data.docid != "gitty:Help.swinb" ) {
 	      this.chatroom('send',
 			    { docid:"gitty:Help.swinb",

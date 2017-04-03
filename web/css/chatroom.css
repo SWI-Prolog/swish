@@ -38,8 +38,13 @@ table.chat-input
 
 td.chat-send
 { text-align: right;
-  vertical-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
   padding: 5px;
+}
+
+td.chat-send > div
+{ display:flex;
 }
 
 td.chat-text
