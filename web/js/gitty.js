@@ -200,7 +200,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	  },
 	  $.el.tr($.el.th("Comment"),
 		  $.el.th("Date"),
-		  $.el.th("Author"),
+		  $.el.th("User"),
 		  $.el.th("Changed")),
 	  $.el.tbody()));
 
