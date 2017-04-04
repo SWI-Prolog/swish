@@ -897,7 +897,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  else
 	    utils.flash(chat);
 	} else if ( action != 'update' ) {
-	  var percentage = (action == 'large' ? 80 : 20);
+	  var percentage = (action == 'large' ? 60 : 20);
 	  chat = $($.el.div({class:"chatroom"}));
 
 	  chat.chatroom({docid:docid});
