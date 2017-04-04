@@ -26,7 +26,8 @@ img.avatar:hover
 }
 
 div.user-count
-{ text-align:center;
+{ clear: both;
+  text-align:center;
   color: #888;
   font-style: italic;
   font-size: 75%;

@@ -1186,7 +1186,7 @@ notifications(_Options) -->
 			  ], [])),
 		   div(class('user-count'),
 		       [ span(id('user-count'), '?'),
-			 ' users'
+			 ' users online'
 		       ])
 		 ])).
 notifications(_Options) -->
