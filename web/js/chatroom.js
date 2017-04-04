@@ -78,7 +78,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 				      class:"btn btn-primary btn-xs"
 				    }, "Send"),
 			$.el.button({ type:"button",
-				      class:"btn btn-primary btn-xs "+
+				      class:"btn btn-info btn-xs "+
 				            "dropdown-toggle",
 				      'data-toggle':"dropdown",
 				      'aria-haspopup':true,
