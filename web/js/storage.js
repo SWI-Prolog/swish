@@ -859,6 +859,53 @@ define([ "jquery", "config", "modal", "form", "gitty",
     },
 
     /**
+     * Get a description of the selection to be transferred with a
+     * chat message.
+     */
+    getSelection: function() {
+      if ( this.hasClass("prolog-editor") ) {	/* plain editor */
+	var sel = this.prologEditor('getSelection');
+	return sel ? sel[0].selections : null;
+      } else {					/* composite (notebook) */
+	return this.find(".prolog-editor").prologEditor('getSelection');
+      }
+    },
+
+    /**
+     * @returns {String} description of the selection to use inside
+     * a link or button
+     */
+    getSelectionLabel: function(sel) {
+      if ( $.isArray(sel) ) {
+	var label = "";
+	for(var i=0; i<sel.length; i++) {
+	  var s = sel[i];
+	  if ( label != "" )
+	    label += ";";
+	  label += "@L"+(s.from.line+1);
+	  if ( s.to.line != s.from.line )
+	    label += "-"+(s.to.line+1);
+	}
+	return label;
+      } else {
+	console.log(sel);
+	alert("FIXME: non-array selection");
+      }
+    },
+
+    /**
+     * Restore a selection retrieved using `getSelection`.
+     */
+    restoreSelection: function(sel) {
+      if ( this.hasClass("prolog-editor") ) {	/* plain editor */
+	var sel = this.prologEditor('restoreSelection', sel);
+      } else {					/* composite (notebook) */
+	alert("FIXME: Restore notebook selection");
+	return this.find(".prolog-editor").prologEditor('getSelection');
+      }
+    },
+
+    /**
      * Get a document identification string for chats, status, etc.
      * @param {String} [type] defines the type of storage supported
      * @param {Object} [data] is the data object from which to derive

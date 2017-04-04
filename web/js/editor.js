@@ -846,6 +846,191 @@ define([ "cm/lib/codemirror",
     },
 
     /**
+     * Get the selection for later reuse.
+     * @returns {null|Array} Array of selection descriptions for each
+     * editor in the jQuery object that has a selection.  Each editor
+     * selection contains `editor` and `selections`, where `selections`
+     * is an array of objects with `from`, `to` (line,ch), `string` and
+     * `context`.  The latter two allow for fuzzy restoration of the
+     * selection.
+     */
+    getSelection: function() {
+      var selection = [];
+
+      this.each(function() {
+	var ed   = $(this);
+	var data = ed.data(pluginName);
+
+	if ( data.cm.somethingSelected() == true ) {
+	  var sel    = data.cm.listSelections();
+	  var esel   = {selections:[]};
+
+						/* Hack */
+	  var cellid = ed.closest(".nb-cell").attr("name");
+	  if ( cellid )
+	    esel.cell_id = cellid;
+
+	  for(var i=0; i<sel.length; i++) {
+	    var s = sel[i];
+	    var sr = {};
+
+	    function cmploc(l1, l2) {
+	      if ( l1.line < l2.line ) return -1;
+	      if ( l1.line > l2.line ) return  1;
+	      if ( l1.ch   < l2.ch   ) return -1;
+	      if ( l1.ch   > l2.ch   ) return  1;
+	      return 0;
+	    }
+	    function sol(pos) {
+	      return {line:pos.line, ch:0};
+	    }
+	    function eol(pos) {
+	      return {line:pos.line, ch:data.cm.getLine(pos.line).length};
+	    }
+	    function cppos(pos) {
+	      return {line:pos.line, ch:pos.ch};
+	    }
+
+	    if ( cmploc(s.anchor, s.head) ) {
+	      sr.from = cppos(s.anchor);
+	      sr.to   = cppos(s.head);
+	    } else {
+	      sr.to   = cppos(s.anchor);
+	      sr.from = cppos(s.head);
+	    }
+
+	    sr.string  = data.cm.getRange(sr.from, sr.to);
+	    sr.context = data.cm.getRange(sol(sr.from), eol(sr.to));
+
+	    esel.selections.push(sr);
+	  }
+
+	  selection.push(esel);
+	}
+      });
+
+      return selection.length > 0 ? selection : null;
+    },
+
+    /**
+     * @param {Array} sel is the selection to restore
+     * @fixme deal with notebook selections
+     */
+    restoreSelection: function(sel) {
+      return this.each(function() {
+	var ed      = $(this);
+	var data    = ed.data(pluginName);
+	var cm      = data.cm;
+	var cmsel   = [];
+	var loffset = "";
+
+	function findsel(s) {
+	  if ( cm.getRange(s.from, s.to) == s.string ) {
+	    return {anchor:s.from, head: s.to};
+	  } else {
+	    var start   = cm.firstLine();
+	    var end     = cm.lastLine();
+	    var offset  = 0;
+	    var goffset = 1;
+
+	    function contextMatch(l0, s) {
+	      var lines = s.split("\n");
+	      for(var i=0; i<lines.length; i++) {
+		if ( cm.getLine(l0+i) != lines[i] )
+		  return false;
+	      }
+	      return true;
+	    }
+
+	    function stringMatch(l0, s) {
+	      var lines = s.split("\n");
+	      for(var i=0; i<lines.length; i++) {
+		var cml = cm.getLine(l0);
+		var   l = lines[i];
+		var choff;
+
+		if ( i == 0 ) {
+		  if ( i == lines.length-1 ) {
+		    return cml.indexOf(l);
+		  } else {
+		    choff = cml.indexOf(l);
+
+		    if ( !(choff >= 0 && l.length+choff == cml.length) )
+		      return -1;
+		  }
+		} else if ( i == lines.length-1 ) {
+		  if ( cml.indexOf(l) != 0 )
+		    return -1;
+		} else {
+		  if ( cm.getLine(l0+i) != lines[i] )
+		    return -1;
+		}
+	      }
+	      return choff;			/* ch of selection start */
+	    }
+
+	    function poff(p, l, ch) {
+	      ch = ch||0;
+	      return {line:p.line+l, ch:p.ch+ch};
+	    }
+
+	    while( s.from.line+offset >= start &&
+		   s.to.line+offset <= end ) {
+	      var ch;
+
+	      if ( contextMatch(s.from.line+offset, s.context) )
+		return { anchor:poff(s.from, offset),
+			 head:  poff(s.to,   offset),
+			 offset:offset
+		       };
+	      if ( (ch=stringMatch(s.from.line+offset, s.string)) >= 0 ) {
+		var soff = ch-s.from.ch;
+		var toff = s.to.line != s.from.line ? 0 : soff;
+
+		return { anchor:poff(s.from, offset, soff),
+			 head:  poff(s.to,   offset, toff),
+			 offset:offset
+		       };
+	      }
+
+	      goffset++;
+	      offset = Math.floor(goffset/2);
+	      if ( goffset%2 == 1 )
+		offset = -offset;
+	    }
+	  }
+	}
+
+	for(var i=0; i<sel.length; i++) {
+	  var r = findsel(sel[i]);
+	  if ( r ) {
+	    cmsel.push(r);
+	    if ( r.offset ) {
+	      if ( loffset != "" )
+		loffset += ";";
+	      loffset += r.offset
+	    }
+	  }
+	}
+
+	if ( cmsel.length > 0 )
+	  cm.setSelections(cmsel, 0);
+	if ( loffset != "" || cmsel.length < sel.length ) {
+	  var msg;
+
+	  if ( cmsel.length == sel.length )
+	    msg = "Found selections at offset "+loffset;
+	  else if ( loffset == "" )
+	    msg = "Could not restore all selections";
+	  else
+	    msg = "Only found some selections at offsets " + loffset;
+
+	  modal.feedback({ html: msg, owner: ed });
+	}
+      });
+    },
+
+    /**
      * Extract example queries from text.  By   default,  this looks for
      * structured  comment  blocks  labelled   *examples*  and  extracts
      * fragments between `^ *?-` and `.`

@@ -173,20 +173,22 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
      * @param {String} [options.docid] Addressed document of not self
      */
     send: function(options) {
+      options = options||{};
       var data = this.data(pluginName);
       var msg = {type:"chat-message"};
       var ta = this.find("textarea");
       msg.text = ta.val().trim();
-      var has_payload;
+      var payload = options.payload||[];
+      var has_payload = false;
+      var selection = this.chatroom('storage').storage('getSelection');
 
-      options = options||{};
+      if ( selection )
+	payload.push({type:"selection", selection:selection});
 
-      if ( options.payload ) {
-	for(var i=0; i<options.payload.length; i++) {
-	  if ( options.payload[i].type != 'about' ) {
-	    has_payload = true;
-	    break;
-	  }
+      for(var i=0; i<payload.length; i++) {
+	if ( payload[i].type != 'about' ) {
+	  has_payload = true;
+	  break;
 	}
       }
 
@@ -194,7 +196,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	if ( options.clear !== false )
 	  ta.val("");
 
-	msg.payload = options.payload;
+	msg.payload = payload;
 	msg.docid   = options.docid||data.docid;
 	if ( options.class )
 	  msg.class = options.class;
@@ -203,6 +205,13 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       } else if ( !options.payload ) {
 	modal.alert("No message to send");
       }
+    },
+
+    /**
+     * Get the related storage object
+     */
+    storage: function() {
+      return this.closest(".tab-pane").find(".storage");
     },
 
     /**
@@ -240,13 +249,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	elem.data('time', msg.time);
       }
 
-      if ( msg.html ) {
-	var span = $.el.span({class:"chat-message html"});
-	$(span).html(msg.html);
-	elem.append(span);
-      } else if ( msg.text ) {
-	elem.append($.el.span({class:"chat-message text"}, msg.text));
-      }
+      this.find(".inner").append(elem);
 
       if ( msg.payload ) {
 	for(var i=0; i<msg.payload.length; i++) {
@@ -258,7 +261,14 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	}
       }
 
-      this.find(".inner").append(elem);
+      if ( msg.html ) {
+	var span = $.el.span({class:"chat-message html"});
+	$(span).html(msg.html);
+	elem.append(span);
+      } else if ( msg.text ) {
+	elem.append($.el.span({class:"chat-message text"}, msg.text));
+      }
+
       this.chatroom('scrollToBottom');
 
       return this;
@@ -397,6 +407,20 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 		 *******************************/
 
   var payload_handlers = {
+    selection: function(selection) {
+      var storage = this.chatroom('storage');
+      var label   = storage.storage('getSelectionLabel', selection.selection);
+      var btn = $($.el.button({ class:"btn btn-xs btn-primary"
+			      },
+			      label + " ",
+			      form.widgets.glyphIcon("eye-open")));
+      btn.on("click", function() {
+	storage.storage('restoreSelection', selection.selection);
+      });
+
+      this.append(" ", btn, " ");
+    },
+
     query: function(query) {
       var btn = $($.el.button({ class:"btn btn-xs btn-primary"
 			      },
