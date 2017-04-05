@@ -53,6 +53,27 @@ class="caret"></b></a> button. The message that appears in the shared
 room contains a link to the file from which it was created.
 <p>
 
+<h3 id="chat-markdown">Markdown in chat messages</h3>
+
+<p>
+Chat messages are subject to a limited form of Markdown processing.
+Currently, the patterns below replaced.  Note that these are simplied
+forms of the actual regular expressions which use stronger boundary
+conditions.
+</p>
+
+<table class="table table-condensed" style="width:80%; margin:auto">
+<tr><th>Pattern<th>Example<th>Meaning
+<tr><td>\b\w+.pl<td>program.pl<td>Link to Prolog program
+<tr><td>\b\w+.swinb<td>notebook.swinb<td>Link to SWISH notebook
+<tr><td>\w+/\d<td>between/3<td>Link to documentation on predicate
+<tr><td>`[^`]+`<td>`A is 1+1`<td><code>A is 1+1</code>
+<tr><td>*[^*]+*<td>*never*<td><b>never</b>
+<tr><td>__[^_]+__<td>__always__<td><b>always</b>
+<tr><td>_[^_]+_<td>_italic_<td><i>italic</i>
+</table>
+
+
 <h3 id="chat-status">Status of the SWISH sharing service</h3>
 
 <p>

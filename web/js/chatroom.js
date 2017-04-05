@@ -261,12 +261,18 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	}
       }
 
+      var html;
       if ( msg.html ) {
-	var span = $.el.span({class:"chat-message html"});
-	$(span).html(msg.html);
-	elem.append(span);
+	html = msg.html;
       } else if ( msg.text ) {
-	elem.append($.el.span({class:"chat-message text"}, msg.text));
+	html = $($.el.span(msg.text)).html();
+	html = markdown(html);
+      }
+
+      if ( html ) {
+	var span = $.el.span({class:"chat-message html"});
+	$(span).html(html);
+	elem.append(span);
       }
 
       this.chatroom('scrollToBottom');
@@ -458,8 +464,8 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       this.append(" ",
 	$.el.a({
 	  href:config.http.locations.web_storage+file,
-	  class:"store"
-	}, file));
+	  class:"store btn btn-primary btn-xs"
+	}, file), " ");
     }
   };
 
@@ -496,6 +502,60 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
     if ( ago < 360 ) return ago + " days ago";
     ago = Math.round(ago/365);
     return ago + " years ago";
+  }
+
+  /**
+   * Perform very simple regex based markdown processing
+   */
+  function markdown(text) {
+    var replace = [
+      { regex: /[a-z][a-zA-Z0-9_]*\/[0-9]/g,
+        func:  function(match) {
+	  return '<a class="builtin" href="/pldoc/man?predicate='+match+'">'
+	         +match+'</a>';
+	}
+      },
+      { regex: /[a-zA-Z0-9_-]+\.(pl|swinb)\b/g,
+        func:  function(match) {
+	  return '<a class="builtin" href="'+
+		 config.http.locations.web_storage+
+	         match+'">'
+	         +match+'</a>';
+	}
+      },
+      { regex: /`(.)`/g,
+        func:  function(match, content) {
+	  return '<code>'+content+'</code>';
+	}
+      },
+      { regex: /`([\w\[\{\(][^`]*[\w\]\}\)])`/g,
+        func:  function(match, content) {
+	  return '<code>'+content+'</code>';
+	}
+      },
+      { delim: "\\*", a: "\\*\\b", z: "\\b\\*", tag: "b" },
+      { delim: "__",  a: "\\b__",  z: "__\\b",  tag: "b" },
+      { delim: "_",   a: "\\b_",   z: "_\\b",   tag: "i" }
+    ];
+
+    function wrap(tag) {
+      return function(match, content) {
+	return "<"+tag+">"+content+"</"+tag+">";
+      };
+    }
+
+    for(var i=0; i<replace.length; i++) {
+      var r = replace[i];
+
+      if ( r.regex ) {
+	text = text.replace(r.regex, r.func);
+      } else if ( r.delim ) {
+	text = text.replace(RegExp(r.a+"([^"+r.delim+"]+)"+r.z,"g"),
+			    wrap(r.tag));
+      }
+    }
+
+    return text;
   }
 
   /**
