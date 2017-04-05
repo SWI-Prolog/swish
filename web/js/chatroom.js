@@ -450,7 +450,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
         {class:"update"},
 	old = btn("play",    "btn-primary", "Open old version"),
 	dif = btn("zoom-in", "btn-info",    "View changes"),
-        nwe = btn("play",    "btn-primary", "Open new version")));
+        nwe = btn("play",    "btn-primary", "Open new version")), " ");
 
       $(old).data('commit', update.previous);
       $(dif).data('diff',   {from:update.previous, to:update.commit,
