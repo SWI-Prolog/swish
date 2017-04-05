@@ -175,14 +175,14 @@ define(["jquery", "config", "modal"],
 	if ( href.startsWith(swishStore) && !href.match(/#/) ) {
 	  accept();
 	  file = href.slice(swishStore.length);
-	  $(ev.target).parents(".swish").swish('playFile', file);
+	  $(ev.target).closest(".swish").swish('playFile', file);
 	} else if ( a.hasClass("store") ) {
 	  accept();
 	  modal.alert("File does not appear to come from gitty store?");
 	} else if ( a.hasClass("file") ||
 		    (href.startsWith(swishExamples) && !href.match(/#/)) ) {
 	  accept();
-	  $(ev.target).parents(".swish")
+	  $(ev.target).closest(".swish")
 		      .swish('playURL', {url: href});
 	} else if ( a.hasClass("builtin") && href.match(/predicate=/) ) {
 	  done = functions.PlDoc(href.split("predicate=").pop(), ev);
