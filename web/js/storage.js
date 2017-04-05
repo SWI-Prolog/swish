@@ -984,7 +984,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
      * Close associated chat
      */
     close_chat: function() {
-      this.closest(".pane-container").find(".chatroom").chatroom('close');
+      this.closest(".chat-container").find(".chatroom").chatroom('close');
     },
 
     /**
