@@ -211,6 +211,9 @@ div.notebook-menu {
 
 .nb-placeholder
 { opacity: 0.5;
+  width: 90%;
+  margin: auto;
+  margin-top: 1ex;
 }
 
 /* Notebook markdown */
