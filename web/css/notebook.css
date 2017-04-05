@@ -128,7 +128,8 @@ div.notebook-menu {
   padding-left: 5px;
 }
 
-.nb-cell.markdown.active > div.editor
+.nb-cell.markdown.active > div.editor,
+.nb-cell.html.active > div.editor
 { border: 1px dotted #888;
   border-radius: 5px;
   margin-bottom: 5px;
