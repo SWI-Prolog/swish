@@ -548,6 +548,10 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 	return $.el.span({class:"glyphicon glyphicon-"+glyph});
       },
 
+      typeIcon: function(type) {
+	return $.el.span({class:"dropdown-icon type-icon "+type});
+      },
+
       glyphIconButton: function(glyph, options) {
 	var attrs = {class:"btn", type:"button"};
 

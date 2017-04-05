@@ -43,8 +43,8 @@
  */
 
 
-define([ "jquery", "preferences", "laconic" ],
-       function($, preferences) {
+define([ "jquery", "preferences", "form", "laconic" ],
+       function($, preferences, form) {
 
 (function($) {
   var pluginName = 'navbar';
@@ -185,7 +185,7 @@ define([ "jquery", "preferences", "laconic" ],
       var i;
 
       if ( options.typeIcon ) {
-	a = $.el.a($.el.span({class:"dropdown-icon type-icon "+options.typeIcon}),
+	a = $.el.a(form.widgets.typeIcon(options.typeIcon),
 		   label);
       } else if ( options.glyph ) {
 	a = $.el.a(glyph(options.glyph), label);

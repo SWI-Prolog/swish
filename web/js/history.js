@@ -44,8 +44,8 @@
  * @author Jan Wielemaker, J.Wielemaker@vu.nl
  */
 
-define(["jquery", "preferences"],
-       function($, preferences) {
+define(["jquery", "preferences", "form"],
+       function($, preferences, form) {
   var history = {
 
 		 /*******************************
@@ -138,10 +138,14 @@ define(["jquery", "preferences"],
       ul.html("");
       for(var i=0; i<recent.length; i++) {
 	var e = recent[i];
-	var a = $.el.a(e.label||e.id);
 
-	$(a).data('document', e);
-	ul.append($.el.li(a));
+	if ( e.id ) {
+	  var a = $.el.a(form.widgets.typeIcon(e.id.split(".").pop()),
+			 e.label||e.id);
+
+	  $(a).data('document', e);
+	  ul.append($.el.li(a));
+	}
       }
     }
   };
