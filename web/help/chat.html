@@ -6,18 +6,41 @@
   </head>
   <body>
 
-<p class="dropup">
+<div class="dropup">
+<p>
 The <span style="color:darkblue">SWI</span><span
 style="color:maroon">SH</span> chat services allows you to chat with
 users about a file. <span style="color:darkblue">SWI</span><span
 style="color:maroon">SH</span> displays an <i>avatar</i> for each user
 with whom you share an open file. If you select <b>File/Chat ...</b> the
 current notebook or program gets a chat window displayed below it,
-preloaded with older chat messages about this file. The <a class="btn
-btn-xs btn-primary">Send <b class="caret"></b></a> button menu provides
-advanced options such as including your query and <i>broadcasting</i>
-to the shared help chat room (see below).
+preloaded with older chat messages about this file.  A chat message
+may include one or more <b>payload</b> objects that are made visible
+as buttons.  Most payloads are added using the <a class="btn
+btn-xs btn-primary">Send <b class="caret"></b></a> button menu.  Defined
+payloads are:
 </p>
+
+  <ul>
+    <li>The <b>selection</b>.  If you have made a selection on the
+        page, this is sent along with the chat message.  Clicking
+        on the <a class="btn btn-xs btn-primary"><span
+	class="glyphicon glyphicon-eye-open"></span></a> button restores
+	this selection.  Note that you can make <b>multiple selections</b>
+	using <b>Control-click</b> in the CodeMirror editor.
+    <li>Your current <b>query</b> can be included using the <a class="btn
+        btn-xs btn-primary">Send <b class="caret"></b></a>.
+    <li>System generated <b>update messages</b> include a payload that
+        allows you to open the file in <b>before/after</b> mode as well
+	as examine the <b>differences</b>
+  </ul>
+
+<p>
+Finally, the <a class="btn btn-xs btn-primary">Send <b class="caret"></b></a>
+button may be used to create a link from the <b>shared chatroom</b> to this
+file to <b>ask for support</b>.
+</p>
+
 
 <h3 id="chat-help">The shared chat room</h3>
 
@@ -43,6 +66,7 @@ There are many facilities we have in mind, such as:
       the same file.
   <li>Allow Prolog programs to exchange messages through the chat room.
 </ul>
+</div>
 
 </body>
 </html>
