@@ -866,8 +866,10 @@ define([ "jquery", "config", "modal", "form", "gitty",
       if ( this.hasClass("prolog-editor") ) {	/* plain editor */
 	var sel = this.prologEditor('getSelection');
 	return sel ? sel[0].selections : null;
-      } else {					/* composite (notebook) */
-	return this.find(".prolog-editor").prologEditor('getSelection');
+      } else if ( this.hasClass("notebook") ) {
+	return this.notebook('getSelection');
+      } else {
+	console.log(sel);
       }
     },
 
@@ -876,10 +878,10 @@ define([ "jquery", "config", "modal", "form", "gitty",
      * a link or button
      */
     getSelectionLabel: function(sel) {
-      if ( $.isArray(sel) ) {
+      function editorLabel(sels) {
 	var label = "";
-	for(var i=0; i<sel.length; i++) {
-	  var s = sel[i];
+	for(var i=0; i<sels.length; i++) {
+	  var s = sels[i];
 	  if ( label != "" )
 	    label += ";";
 	  label += "@L"+(s.from.line+1);
@@ -887,9 +889,20 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	    label += "-"+(s.to.line+1);
 	}
 	return label;
+      }
+
+      if ( sel[0].cell ) {
+	var label = "";
+
+	for(var i=0; i<sel.length; i++) {
+	  var ed = sel[i];
+	  if ( label != "" )
+	    label += ",";
+	  label += ed.cell + editorLabel(ed.selections);
+	}
+	return label;
       } else {
-	console.log(sel);
-	alert("FIXME: non-array selection");
+	return editorLabel(sel);
       }
     },
 
@@ -898,10 +911,11 @@ define([ "jquery", "config", "modal", "form", "gitty",
      */
     restoreSelection: function(sel) {
       if ( this.hasClass("prolog-editor") ) {	/* plain editor */
-	var sel = this.prologEditor('restoreSelection', sel);
-      } else {					/* composite (notebook) */
-	alert("FIXME: Restore notebook selection");
-	return this.find(".prolog-editor").prologEditor('getSelection');
+	return this.prologEditor('restoreSelection', sel);
+      } else if ( this.hasClass("notebook") ) { /* notebook */
+	return this.notebook('restoreSelection', sel);
+      } else {
+	console.log(sel);
       }
     },
 

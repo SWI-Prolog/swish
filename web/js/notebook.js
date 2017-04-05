@@ -331,32 +331,55 @@ var cellTypes = {
     },
 
 		 /*******************************
+		 *	      SELECTION		*
+		 *******************************/
+
+    getSelection: function() {
+      return this.notebook('assignCellNames')
+                 .find(".prolog-editor")
+		 .prologEditor('getSelection');
+    },
+
+    restoreSelection: function(sel) {
+      return this.notebook('assignCellNames')
+                 .find(".prolog-editor")
+		 .prologEditor('restoreSelection', sel);
+    },
+
+
+		 /*******************************
 		 *	    CLEAN/DIRTY		*
 		 *******************************/
 
     checkModified: function() {
-      var store = this.data("storage");
-      var clean = store.cleanGeneration == this.notebook('changeGen');
+      return this.each(function() {
+	var nb = $(this);
+	var store = nb.data("storage");
+	var clean = store.cleanGeneration == nb.notebook('changeGen');
 
-      this.notebook('markClean', clean);
+	nb.notebook('markClean', clean);
+      });
     },
 
     /**
-     * Called if the noteook changes from clean to dirty or visa versa.
+     * Called if the notebook changes from clean to dirty or visa versa.
      * This triggers `data-is-clean`, which is trapped by the tab to
      * indicate the changed state of the editor.
      */
     markClean: function(clean) {
-      var data = this.data(pluginName);
+      return this.each(function() {
+	var nb = $(this);
+	var data = nb.data(pluginName);
 
-      if ( data.clean_signalled != clean )
-      { data.clean_signalled = clean;
-	this.trigger("data-is-clean", clean);
-      }
+	if ( data.clean_signalled != clean )
+	{ data.clean_signalled = clean;
+	  nb.trigger("data-is-clean", clean);
+	}
 
-      if ( clean ) {
-	this.find(".prolog-editor").prologEditor('setIsClean');
-      }
+	if ( clean ) {
+	  nb.find(".prolog-editor").prologEditor('setIsClean');
+	}
+      });
     },
 
 

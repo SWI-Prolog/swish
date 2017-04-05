@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2016, VU University Amsterdam
+    Copyright (C): 2014-2017, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -866,9 +866,9 @@ define([ "cm/lib/codemirror",
 	  var esel   = {selections:[]};
 
 						/* Hack */
-	  var cellid = ed.closest(".nb-cell").attr("name");
-	  if ( cellid )
-	    esel.cell_id = cellid;
+	  var cell_name = ed.closest(".nb-cell").attr("name");
+	  if ( cell_name )
+	    esel.cell = cell_name;
 
 	  for(var i=0; i<sel.length; i++) {
 	    var s = sel[i];
@@ -916,9 +916,8 @@ define([ "cm/lib/codemirror",
      * @param {Array} sel is the selection to restore
      * @fixme deal with notebook selections
      */
-    restoreSelection: function(sel) {
-      return this.each(function() {
-	var ed      = $(this);
+    restoreSelection: function(selection) {
+      function restoreEditorSelection(ed, sel) {
 	var data    = ed.data(pluginName);
 	var cm      = data.cm;
 	var cmsel   = [];
@@ -1027,7 +1026,31 @@ define([ "cm/lib/codemirror",
 
 	  modal.feedback({ html: msg, owner: ed });
 	}
-      });
+      }
+
+      // Our body
+      if ( selection[0].cell ) {	/* notebook style */
+	var editors = this;
+
+	for(var i=0; i<selection.length; i++) {
+	  var s = selection[i];
+
+	  function findEditor(name) {
+	    for(var i=0; i<editors.length; i++) {
+	      if ( $(editors[i]).closest(".nb-cell").attr("name") == name )
+		return $(editors[i]);
+	    }
+	  }
+
+	  var ed = findEditor(s.cell);
+	  if ( ed )
+	    restoreEditorSelection(ed, s.selections);
+	}
+      } else {				/* plain editor */
+	restoreEditorSelection(this, selection);
+      }
+
+      return this;
     },
 
     /**
