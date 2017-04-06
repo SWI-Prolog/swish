@@ -49,7 +49,9 @@ To use this config file, you need to
   1. Install the Rserve client Prolog pack from Prolog:
 
      ```
-     ?- pack_install(rserve_client).
+     $ git submodule update pack/rserve_client
+     $ swipl run.pl
+     ?- pack_rebuild(rserve_client).
      ```
 
   2. Install R in an OS sandbox.  We provided a Docker recipe for that
