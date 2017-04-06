@@ -93,11 +93,25 @@ _not_ see exactly the same UI for cooperation.  What about
 
 ## Make teams
 
-  - Create a team: name, description
-  - Edit team:
-    - Invite users from their profile
-    - Edit rights: invite, remove, delete team
-    - Remove users
+  - A team has a homepage, which is a notebook.
+  - Workflow:
+    - Save a copy of the "Team homepage" example notebook.
+    - Turn into team homepage
+      - Add "team" tag
+      - Have a members query, returning a table.  Using an
+        HTML cell?
+      - Create as a copy from an example page?
+    - Invite team members (is this a general page behaviour)
+      - Input with look-ahead for searching people (or type
+	email).
+      - Text area for invitation
+      - Sends e-mail.
+  - Thus a team is
+    - A page
+    - Link to members
+  - Small installations can automatically add all users to the
+    one team.
+
 
 ## Saving files
 
