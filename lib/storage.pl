@@ -547,7 +547,7 @@ current_meta_property(modify(_List),   derived).
 :- multifile
 	swish_search:typeahead/4.	% +Set, +Query, -Match, +Options
 
-%%	swish_search:typeahead(+Set, +Query, -Match) is nondet.
+%%	swish_search:typeahead(+Set, +Query, -Match, +Options) is nondet.
 %
 %	Find files using typeahead  from  the   SWISH  search  box. This
 %	version defines the following sets:
