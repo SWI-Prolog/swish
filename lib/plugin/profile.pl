@@ -48,6 +48,7 @@
 :- use_module(library(lists)).
 :- use_module(library(debug)).
 :- use_module(library(broadcast)).
+:- use_module(library(pairs)).
 
 :- use_module(swish(lib/config), []).
 :- use_module(login).
@@ -508,3 +509,77 @@ delete_profile(_Request) :-
 
 from_profile(Identity, Property) :-
     profile_property(Identity.get(profile_id), Property).
+
+%!  profile_name(+ProfileID, -Name) is semidet.
+%
+%   Name is the public name associated with Profile.
+
+profile_name(ProfileID, Name) :-
+    user_field(Field),
+    Term =.. [Field, Name],
+    profile_property(ProfileID, Term),
+    !.
+
+user_field(name).
+user_field(given_name).
+user_field(nick_name).
+user_field(family_name).
+
+
+		 /*******************************
+		 *           TYPE AHEAD		*
+		 *******************************/
+
+:- multifile
+	swish_search:typeahead/4.	% +Set, +Query, -Match, +Options
+
+%!  swish_search:typeahead(+Set, +Query, -Match, +Options) is nondet.
+%
+%   Find users based on their  profile.   This  handler  defines the set
+%   `user`. A Match is a dict holding:
+%
+%     - id:ProfileID
+%     - name:Name
+%     A reasonable name for the user
+%     - email:Email
+%     Only present if the match was found on the email.
+%     - hit:hit{key:Key,value:Value}
+%     Field key and value on which the hit was found
+%     - avatar:Avatar
+%     Avatar URL
+
+swish_search:typeahead(user, Query, User, _Options) :-
+    current_profile(ProfileID, Attributes),
+    Keys = [name,given_name,family_name,email],
+    pairs_keys_values(Pairs, Keys, _),
+    dict_pairs(Profile, _, Pairs),
+    Profile >:< Attributes,
+    profile_match_query(Query, Pairs, Key),
+    user_dict(ProfileID, Key, Attributes, User).
+
+profile_match_query(Query, Pairs, Key) :-
+    member(Key-Value, Pairs),
+    text(Value),
+    sub_atom_icasechk(Value, 0, Query),
+    !.
+
+text(Value) :-
+    string(Value),
+    !.
+text(Value) :-
+    atom(Value).
+
+user_dict(ProfileID, SearchKey, Attributes, Dict) :-
+    findall(Key-Value,
+            user_search_property(ProfileID,SearchKey,Attributes,Key,Value),
+            Pairs),
+    dict_pairs(Dict, user, Pairs).
+
+user_search_property(ProfileID, _, _, id,   ProfileID).
+user_search_property(ProfileID, _, _, name, Name) :-
+    profile_name(ProfileID, Name).
+user_search_property(_, email,  Attrs, email,  Attrs.get(email)).
+user_search_property(_, Search, Attrs, hit,    hit{key:Search,
+                                                   value:Attrs.get(Search)}).
+user_search_property(_, _,      Attrs, avatar, Attrs.get(avatar)).
+
