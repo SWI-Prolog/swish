@@ -35,7 +35,7 @@
 
 :- module(config_r_serve, []).
 :- use_module(library(settings)).
-:- use_module(swish(lib/r_swish)).
+:- use_module(swish:swish(lib/r_swish)).
 
 /** <module> Provide R access using Rserve
 
