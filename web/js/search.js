@@ -59,8 +59,13 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
   var methods = {
     /**
      * Turn Bootstrap search input into a typeahead widget
+     * @param {Object}  [options]
+     * @param {Boolean} [options.search=true] If false, merely use
+     * typeahead to fill a value.
      */
     _init: function(options) {
+      options = options||{};
+
       return this.each(function() {
 	var elem = $(this);
 	var query;			/* current query */
@@ -317,6 +322,48 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
 	}
 
 
+		 /*******************************
+		 *	       USERS		*
+		 *******************************/
+
+	var users = new Bloodhound({
+			     name: "users",
+			     limit: 20,
+			     cache: false,
+			     remote: {
+			       url: config.http.locations.swish_typeahead +
+				     "?set=user&q=%QUERY",
+			       replace:bloodHoundURL
+			     },
+			     datumTokenizer: sourceLineTokenizer,
+			     queryTokenizer: Bloodhound.tokenizers.whitespace
+	                   });
+	users.initialize();
+
+	function renderUser(hit) {
+	  function avatar(hit) {
+	    if ( hit.avatar ) {
+	      return '<img class="avatar" src="'+encodeURI(hit.avatar)+'">';
+	    } else {
+	      return "";
+	    }
+	  }
+
+	  var str = '<div class="tt-match user">'
+		  + avatar(hit)
+		  + '<span class="tt-label">'
+		  + utils.htmlEncode(hit.name)
+		  + '</span>'
+		  + '</div>';
+
+	  return str;
+	}
+
+
+		 /*******************************
+		 *	      COMBINE		*
+		 *******************************/
+
 	var typeaheadProperties = {
 	  source:			/* local source */
 	  { name: "source",
@@ -350,6 +397,12 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
 	    },
 	    source: predicateMatcher,
 	    templates: { suggestion: renderPredicate }
+	  },
+	  users:			/* Users (profiles) */
+	  { name: "users",
+	    display: "name",
+	    source: users.ttAdapter(),
+	    templates: { suggestion: renderUser }
 	  }
 	};
 
@@ -378,7 +431,6 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
 	  return sources;
 	}
 
-
 		 /*******************************
 		 *	     TYPEAHEAD		*
 		 *******************************/
@@ -388,54 +440,60 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
 		       },
 		       ttSources(elem.data("search-in")))
 	  .on('typeahead:selected typeahead:autocompleted',
-	      function(ev, datum, set) {
+	      function(ev, datum) {
 
-		if ( datum.type == "store" ) {
-		  if ( datum.query ) {
-		    datum.regex = new RegExp(RegExp.escape(datum.query), "g");
-		    datum.showAllMatches = true;
-		  }
-		  $(ev.target).parents(".swish").swish('playFile', datum);
-		} else if ( datum.arity !== undefined ) {
-		  $(".swish-event-receiver").trigger("pldoc", datum);
-		} else if ( datum.editor !== undefined &&
-			    datum.line !== undefined ) {
-		  $(datum.editor).prologEditor('gotoLine', datum.line,
-					       { regex: datum.regex,
-						 showAllMatches: true
-					       });
-		} else if ( datum.alias !== undefined ) {
-		  var url = encodeURI("/"+datum.alias+
-				      "/"+datum.file+
-				      "."+datum.ext);
-		  var play = { url:url, line:datum.line };
-
-		  if ( datum.query ) {
-		    play.regex = new RegExp(RegExp.escape(datum.query), "g");
-		    play.showAllMatches = true;
-		  }
-
-		  $(ev.target).parents(".swish").swish('playURL', play);
+		if ( options.search == false ) {
+		  elem.data("json-value", datum);
 		} else {
-		  elem.data("target", {datum:datum, set:set});
-		  console.log(elem.data("target"));
+		  if ( datum.type == "store" ) {
+		    if ( datum.query ) {
+		      datum.regex = new RegExp(RegExp.escape(datum.query), "g");
+		      datum.showAllMatches = true;
+		    }
+		    $(ev.target).closest(".swish").swish('playFile', datum);
+		  } else if ( datum.arity !== undefined ) {
+		    $(".swish-event-receiver").trigger("pldoc", datum);
+		  } else if ( datum.editor !== undefined &&
+			      datum.line !== undefined ) {
+		    $(datum.editor).prologEditor('gotoLine', datum.line,
+						 { regex: datum.regex,
+						   showAllMatches: true
+						 });
+		  } else if ( datum.alias !== undefined ) {
+		    var url = encodeURI("/"+datum.alias+
+					"/"+datum.file+
+					"."+datum.ext);
+		    var play = { url:url, line:datum.line };
+
+		    if ( datum.query ) {
+		      play.regex = new RegExp(RegExp.escape(datum.query), "g");
+		      play.showAllMatches = true;
+		    }
+
+		    $(ev.target).closest(".swish").swish('playURL', play);
+		  } else {
+		    elem.data("json-value", datum);
+		    console.log(elem.data("json-value"));
+		  }
 		}
 	      });
 
-	elem.parents("form").submit(function(ev) {
-	  var data = elem.data("target");
-	  var str  = elem.val();
+	if ( options.search != false ) {
+	  elem.closest("form").submit(function(ev) {
+	    var data = elem.data("json-value");
+	    var str  = elem.val();
 
-	  if ( !(data && data.datum && data.datum.label == str) )
-	    data = str;
+	    if ( !(data && data.datum && data.datum.label == str) )
+	      data = str;
 
-	  elem.val("");
-	  elem.data("target", null);
+	    elem.val("");
+	    elem.data("json-value", null);
 
-	  elem.search('search', data);
+	    elem.search('search', data);
 
-	  return false;
-	});
+	    return false;
+	  });
+	}
       });
     },
 

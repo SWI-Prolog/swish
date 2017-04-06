@@ -539,7 +539,7 @@ user_field(family_name).
 %   `user`. A Match is a dict holding:
 %
 %     - id:ProfileID
-%     - name:Name
+%     - label:Name
 %     A reasonable name for the user
 %     - email:Email
 %     Only present if the match was found on the email.
@@ -575,8 +575,8 @@ user_dict(ProfileID, SearchKey, Attributes, Dict) :-
             Pairs),
     dict_pairs(Dict, user, Pairs).
 
-user_search_property(ProfileID, _, _, id,   ProfileID).
-user_search_property(ProfileID, _, _, name, Name) :-
+user_search_property(ProfileID, _, _, id,    ProfileID).
+user_search_property(ProfileID, _, _, name,  Name) :-
     profile_name(ProfileID, Name).
 user_search_property(_, email,  Attrs, email,  Attrs.get(email)).
 user_search_property(_, Search, Attrs, hit,    hit{key:Search,

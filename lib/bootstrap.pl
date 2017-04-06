@@ -177,13 +177,17 @@ bt_input_elem(Name, checkbox, InputOptions, _FormOptions) -->
     { phrase(checkbox_attr(InputOptions), Attrs) },
     html(input([type(checkbox), name(Name)|Attrs])).
 bt_input_elem(Name, Type, InputOptions, _FormOptions) -->
-    { phrase(input_attr(InputOptions), Attrs) },
-    html(input([type(Type), class('form-control'), name(Name)|Attrs])).
+    { phrase(input_attr(InputOptions), Attrs),
+      phrase(classes(InputOptions), Classes),
+      list_to_set(['form-control'|Classes], InputClasses)
+    },
+    html(input([type(Type), class(InputClasses), name(Name)|Attrs])).
 
 checkbox_attr(Options) -->
     ( checkbox_value(Options) -> [] ; [] ),
     ( input_disabled(Options) -> [] ; [] ),
-    ( input_readonly(Options) -> [] ; [] ).
+    ( input_readonly(Options) -> [] ; [] ),
+    data(Options).
 
 checkbox_value(Options) -->
     { option(value(true), Options) },
@@ -191,7 +195,8 @@ checkbox_value(Options) -->
 
 input_attr(Options) -->
     ( input_value(Options) -> [] ; [] ),
-    ( input_disabled(Options) -> [] ; [] ).
+    ( input_disabled(Options) -> [] ; [] ),
+    data(Options).
 
 input_value(Options) -->
     { option(value(Value), Options) },
@@ -352,16 +357,15 @@ data(Options) -->
     data_values(Data).
 data(_) --> [].
 
-data_values([]) --> [].
-data_values([H|T]) --> data_value(H), data_values(T).
-
-data_value(Name-Value) -->
+data_values([]) --> !.
+data_values([H|T]) --> !, data_values(H), data_values(T).
+data_values(Name-Value) -->
     !,
     data_value(Name, Value).
-data_value(Name=Value) -->
+data_values(Name=Value) -->
     !,
     data_value(Name, Value).
-data_value(NameValue) -->
+data_values(NameValue) -->
     { NameValue =.. [Name,Value] },
     data_value(Name, Value).
 
@@ -370,6 +374,18 @@ data_value(Name, Value) -->
       Attr =.. [AttrName,Value]
     },
     [Attr].
+
+%!  classes(+Options)//
+%
+%   Collect defined classes
+
+classes([]) --> !.
+classes([class(Classes)|T]) --> !, class(Classes), classes(T).
+classes([_|T]) --> classes(T).
+
+class([]) --> !.
+class([H|T]) --> !, class(H), class(T).
+class(Class) --> [Class].
 
 
 		 /*******************************

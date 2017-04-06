@@ -46,7 +46,7 @@
 
 define([ "jquery", "config", "preferences",
 	 "cm/lib/codemirror", "form", "prolog", "links", "modal",
-	 "answer", "laconic", "sparkline", "download"
+	 "answer", "laconic", "sparkline", "download", "search"
        ],
        function($, config, preferences,
 		CodeMirror, form, prolog, links, modal) {
@@ -632,6 +632,7 @@ define([ "jquery", "config", "preferences",
 	title: "Please enter parameters",
 	body: function() {
 	  this.html(prompt.data.html);
+	  this.find("[data-search-in]").search({search:false});
 
 	  this.on("click", "button[data-action]", function(ev) {
 	    var button = $(ev.target).closest("button");

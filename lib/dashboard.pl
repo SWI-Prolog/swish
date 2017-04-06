@@ -127,8 +127,32 @@ form_field(Var:Options, field(Name, Var, [Type|Extra])) :-
 %
 %   Construct a Bootstrap input item from ParamSpec.
 
-input(_Var:Options, input(Name, text, [])) :-
+input(Var:Options, Input) :-
+    opt_type(Type, Options),
+    input(Type, Var:Options, Input).
+
+input(Type, _Var:Options,
+      input(Name, text,
+            [ data('search-in'=Set),
+              class(typeahead)
+            ])) :-
+    typeahead(Type, Set),
+    !,
     opt(name(Name), Options).
+input(_, _Var:Options, input(Name, text, [])) :-
+    opt(name(Name), Options).
+
+%!  typeahead(+Type, -Set)
+%
+%   True when an object of Type can be   selected from an input set that
+%   uses type-ahead search using the data set Set.
+
+typeahead(user, users).
+
+:- multifile error:has_type/2.
+
+error:has_type(user, _Dict) :-
+    true.
 
 
 		 /*******************************

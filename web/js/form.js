@@ -87,8 +87,11 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 	var value = arr[i].value;
 	var input = form.find('[name="'+name+'"]');
 	var type  = input.prop("type");
+	var jvalue;
 
-	if ( value != "" || ignore_empty == true ) {
+	if ( (jvalue = input.data('json-value')) ) {
+	  obj[name] = jvalue;
+	} else if ( value != "" || ignore_empty == true ) {
 	  // deal with tag lists
 	  if ( type == "hidden" && name.indexOf("hidden-") == 0 ) {
 	    name = name.slice("hidden-".length);

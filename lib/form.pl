@@ -133,12 +133,19 @@ validate_field(Dict, Field, Value, Options) :-
 	).
 
 is_empty(Value) :-
+	text(Value),
 	normalize_space(string(""), Value).
+
+text(Value) :- atom(Value), !.
+text(Value) :- string(Value).
 
 validate_value([], Value, Value, _).
 validate_value([H|T], Value0, Value, Field) :-
 	(   validate_step(H, Value0, Value1)
 	->  true
+	;   current_type(H, _, _),
+	    is_of_type(H, Value0)
+	->  Value1 = Value0
 	;   validate_failed(H, Value0, Field)
 	),
 	validate_value(T, Value1, Value, Field).
