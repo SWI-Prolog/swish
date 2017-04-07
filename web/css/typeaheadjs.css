@@ -1,10 +1,4 @@
-span.twitter-typeahead .tt-dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
-  display: none;
-  float: left;
+span.twitter-typeahead .tt-menu {
   min-width: 250px;
   padding: 5px 0;
   margin: 2px 0 0;
@@ -28,8 +22,8 @@ span.twitter-typeahead .tt-suggestion > p {
   color: #333333;
   white-space: nowrap;
 }
-span.twitter-typeahead .tt-suggestion > p:hover,
-span.twitter-typeahead .tt-suggestion > p:focus {
+span.twitter-typeahead .tt-suggestion:hover,
+span.twitter-typeahead .tt-suggestion:focus {
   text-decoration: none;
   outline: 0;
   background-color: #e8e8e8;
@@ -40,24 +34,12 @@ span.twitter-typeahead .tt-suggestion.tt-cursor {
 span.twitter-typeahead {
   width: 100%;
 }
-.input-group span.twitter-typeahead {
-  display: block !important;
-}
-.input-group span.twitter-typeahead .tt-dropdown-menu {
-  top: 32px !important;
-}
-.input-group.input-group-lg span.twitter-typeahead .tt-dropdown-menu {
-  top: 44px !important;
-}
-.input-group.input-group-sm span.twitter-typeahead .tt-dropdown-menu {
-  top: 28px !important;
-}
 
 /** SWISH styling of typeahead hits
  */
 
 .tt-suggestion {
-  max-width: 30em;
+  max-width: 25em;
   overflow: hidden;
 }
 
@@ -65,7 +47,7 @@ span.twitter-typeahead {
   padding-left: 1.5em;
 }
 
-.tt-suggestion .tt-match.file, .tt-file-header {
+.tt-suggestion.tt-match.file, .tt-file-header {
   background-size: 1em;
   background-repeat: no-repeat;
   background-position: 5px 5px;

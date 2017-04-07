@@ -49,8 +49,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "utils", "typeahead" ],
-       function($, config, utils) {
+define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
+       function($, config, utils, Bloodhound) {
 
 (function($) {
   var pluginName = 'search';
@@ -71,8 +71,10 @@ define([ "jquery", "config", "utils", "typeahead" ],
 
 	var files = new Bloodhound({
 			name: "files",
-			remote: config.http.locations.swish_typeahead +
-				"?set=file&q=%QUERY",
+			remote: { url: config.http.locations.swish_typeahead +
+				       "?set=file&q=%QUERY",
+				  wildcard: '%QUERY'
+			},
 			datumTokenizer: fileTokenizer,
 			queryTokenizer: Bloodhound.tokenizers.whitespace
 	               });
@@ -318,27 +320,34 @@ define([ "jquery", "config", "utils", "typeahead" ],
 	var typeaheadProperties = {
 	  source:			/* local source */
 	  { name: "source",
+	    display: 'text',
 	    source: sourceMatcher,
 	    templates: { suggestion: renderSourceMatch }
 	  },
 	  sources:			/* remote sources */
 	  { name: "sources",
+	    display: 'file',
 	    source: sources.ttAdapter(),
 	    templates: { suggestion: renderSourceLine },
 	    limit: 15
 	  },
 	  files:			/* files in gitty on name and tags */
 	  { name: "files",
+	    display: 'name',
 	    source: files.ttAdapter(),
 	    templates: { suggestion: renderFile }
 	  },
 	  store_content:		/* file content in gitty */
 	  { name: "store_content",
+	    display: 'file',
 	    source: storeContent.ttAdapter(),
 	    templates: { suggestion: renderStoreSourceLine }
 	  },
 	  predicates:			/* built-in and library predicates */
 	  { name: "predicates",
+	    display: function(p) {
+	      return p.name+"/"+p.arity;
+	    },
 	    source: predicateMatcher,
 	    templates: { suggestion: renderPredicate }
 	  }

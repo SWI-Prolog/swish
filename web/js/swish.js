@@ -51,7 +51,8 @@ require.config({
     "jquery-ui": "../bower_components/jquery-ui/jquery-ui.min",
     laconic:     "../bower_components/laconic/laconic",
     bootstrap:   "../bower_components/bootstrap/dist/js/bootstrap.min",
-    typeahead:   "../bower_components/typeahead.js/dist/typeahead.bundle.min",
+    bloodhound:  "../bower_components/typeahead.js/dist/bloodhound",
+    typeahead:   "../bower_components/typeahead.js/dist/typeahead.jquery",
     splitter:    "../bower_components/jquery.splitter/js/jquery.splitter-0.15.0",
     tagmanager:  "../bower_components/tagmanager/tagmanager",
     sha1:        "../bower_components/js-sha1/src/sha1",
@@ -74,7 +75,13 @@ require.config({
   { bootstrap:
     { deps:["jquery"]
     },
-    typeahead:
+    typeahead: /* HACK: See https://github.com/twitter/typeahead.js/issues/1211 */
+    { deps:["jquery"],
+      init: function ($) {
+	return require.s.contexts._.registry['typeahead.js'].factory($);
+      }
+    },
+    bloodhound:
     { deps:["jquery"]
     },
     splitter:
@@ -85,7 +92,7 @@ require.config({
     },
     tagmanager:
     { deps:["jquery"]
-    }
+    },
   }
 }); //require.config
 

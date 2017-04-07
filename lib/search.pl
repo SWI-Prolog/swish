@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015-2016, VU University Amsterdam
+    Copyright (c)  2015-2017, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -73,7 +73,7 @@ search_box(_Options) -->
 	html(form([class('navbar-form'), role(search)],
 		  div(class('input-group'),
 		      [ input([ type(text),
-				class('form-control'),
+				class(['form-control', typeahead]),
 				placeholder('Search'),
 				'data-search-in'([source,files,predicates]),
 				title('Searches code, documentation and files'),
