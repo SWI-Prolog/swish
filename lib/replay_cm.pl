@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2016, VU University Amsterdam
+    Copyright (c)  2017, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -206,9 +206,9 @@ replay_guarded(Id, Reply) :-
 	    close(In)).
 
 replay :-
-	request(Id, []),
-	(   replay(Id)
-	->  true
-	;   print_message(error, format('Failed for ID=~p', [Id]))
-	),
-	fail.
+	forall(request(Id, []),
+	       (   replay(Id)
+	       ->  true
+	       ;   print_message(error, format('Failed for ID=~p', [Id]))
+	       )).
+
