@@ -44,7 +44,10 @@ http://www.swi-prolog.org/download/swish/swish-bower-components.zip.
 Unpack the zip file, maintaining the directory structure, from the swish
 root directory to create the directory web/bower_components.
 
-Last updated: Apr 1, 2016: Added sparklines
+Last updated: Apr 8, 2017: upgraded. Notably typeahead.js is forward nor
+backward compatible and you need SWISH with commit
+042d93a66409ef6460052c46394e4f83dcab3d90 (April 7, 2017) together with
+this zip file.
 
 ### Get the latest SWI-Prolog
 
@@ -56,7 +59,7 @@ you            need            the             [nightly            build
 system    from    the     current      git     development    repository
 [swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
 
-Mar 16, 2017: SWI-Prolog needs to be installed from swipl-devel git.
+Apr 8, 2017: SWI-Prolog 7.5.3 works fine.
 
 ## Running SWISH
 
