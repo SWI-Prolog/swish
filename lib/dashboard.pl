@@ -40,6 +40,7 @@
 :- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(debug)).
+:- use_module(library(option)).
 :- use_module(library(lists)).
 :- use_module(library(http/html_write)).
 
@@ -114,10 +115,11 @@ bind_form_reply(NotFilled, Reply) :-
     maplist(form_field, NotFilled, Fields),
     validate_form(Reply, Fields).
 
-form_field(Var:Options, field(Name, Var, [Type|Extra])) :-
-    optchk(name(Name), Options),
-    opt_type(Type, Options),
-    (   opt(default(Default), Options)
+form_field(Var:Opts, field(Name, Var, [Type|Extra])) :-
+    opt_list(Opts, Options),
+    option(name(Name), Options),
+    option(type(Type), Options),
+    (   option(default(Default), Options)
     ->  Extra = [default(Default)]
     ;   Extra = []
     ).
@@ -127,20 +129,26 @@ form_field(Var:Options, field(Name, Var, [Type|Extra])) :-
 %
 %   Construct a Bootstrap input item from ParamSpec.
 
-input(Var:Options, Input) :-
-    opt_type(Type, Options),
-    input(Type, Var:Options, Input).
+input(_Var:Opts, Input) :-
+    opt_list(Opts, Options),
+    select_option(type(Type), Options, Options1),
+    select_option(name(Name), Options1, Options2),
+    input(Type, Name, Options2, Input).
 
-input(Type, _Var:Options,
+input(Type, Name, Options,
       input(Name, text,
             [ data('search-in'=Set),
               class(typeahead)
+            | Options
             ])) :-
     typeahead(Type, Set),
-    !,
-    opt(name(Name), Options).
-input(_, _Var:Options, input(Name, text, [])) :-
-    opt(name(Name), Options).
+    !.
+input(string, Name, Options,
+      textarea(Name, Options)) :-
+    option(rows(_Rows), Options),
+    !.
+input(_, Name, Options,
+      input(Name, text, Options)).
 
 %!  typeahead(+Type, -Set)
 %
@@ -153,25 +161,6 @@ typeahead(user, users).
 
 error:has_type(user, _Dict) :-
     true.
-
-
-		 /*******************************
-		 *        TYPE HANDLING		*
-		 *******************************/
-
-%!  opt_type(-Type, +Options) is det.
-%
-%   Determine the Type for the parameter. Default is `term`, which
-%   considers the input as a general Prolog term.
-
-opt_type(Type, Options) :-
-    opt(type(Type), Options),
-    !.
-opt_type(Type, Options) :-
-    opt(Type, Options),
-    current_type(Type, _, _),
-    !.
-opt_type(term, _).
 
 
 		 /*******************************
@@ -206,6 +195,27 @@ add_var_name(Var:Options, N, Var:name(Name)+Options) :-
 		 *            BASICS		*
 		 *******************************/
 
+opt_list(Opts, List) :-
+    phrase(opts(Opts), List0),
+    add_type(List0, List).
+
+opts(OptA+OptB) -->
+    !,
+    opts(OptA),
+    opts(OptB).
+opts(Opt) -->
+    [Opt].
+
+add_type(Options, Options) :-
+    option(type(_), Options), !.
+add_type(List, Options) :-
+    select(Type, List, Options1),
+    current_type(Type, _, _),
+    !,
+    Options = [type(Type)|Options1].
+add_type(Options, [type(term)|Options]).
+
+
 %!  opt(?Option, +Options) is nondet.
 %
 %   Opt is a member of the Options term.
@@ -216,10 +226,6 @@ opt(Opt, Opts) :-
 opt(Opt, Opt+_).
 opt(Opt, _+Opts) :-
     opt(Opt, Opts).
-
-optchk(Opt, Options) :-
-    opt(Opt, Options),
-    !.
 
 html_string(HTML, String) :-
     phrase(html(HTML), Tokens),
