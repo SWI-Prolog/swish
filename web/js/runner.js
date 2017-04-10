@@ -806,7 +806,7 @@ define([ "jquery", "config", "preferences",
      */
     downloadCSV: function(options) {
       var data = this.data('prologRunner');
-      var query = data.query.query.replace(/\.\s*$/,"");
+      var query = termNoFullStop(data.query.query);
 
       prolog.downloadCSV(query, data.query.source, options);
 
