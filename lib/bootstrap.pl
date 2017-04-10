@@ -119,6 +119,11 @@ bt_form_element(checkboxes(Name, Values, IOptions), Options) -->
              [ \bt_label(Name, IOptions, Options),
                \bt_checkboxes(Name, Values, IOptions, Options)
              ])).
+bt_form_element(textarea(Name, IOptions), Options) -->
+    html(div(class('form-group'),
+             [ \bt_label(Name, IOptions, Options),
+               \bt_textarea(Name, IOptions, Options)
+             ])).
 bt_form_element(button(Name, Type, IOptions), Options) -->
     bt_button(Name, Type, IOptions, Options).
 bt_form_element(button_group(Buttons, IOptions), Options) -->
@@ -284,6 +289,25 @@ checkbox(Value, Options) -->
                        ]),
                  Label
                ])).
+
+%!  bt_textarea(+Name, +TextAreaOptions, +FormOptions)//
+
+bt_textarea(Name, TextAreaOptions, FormOptions) -->
+    horizontal_input(\bt_textarea_elem(Name, TextAreaOptions, FormOptions),
+                     [], [], FormOptions),
+    !.
+bt_textarea(Name, TextAreaOptions, FormOptions) -->
+    bt_textarea_elem(Name, TextAreaOptions, FormOptions).
+
+
+bt_textarea_elem(Name, TextAreaOptions, _FormOptions) -->
+    { option(rows(Rows), TextAreaOptions, 4)
+    },
+    html(textarea([ class('form-control)'),
+                    rows(Rows),
+                    name(Name),
+                    style('width:100%')
+                  ], [])).
 
 
 %!  bt_button_group(+Buttons, +ButtonOptions, +FormOptions)//
