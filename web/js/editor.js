@@ -452,8 +452,8 @@ define([ "cm/lib/codemirror",
     },
 
     /**
-     * FIXME: Add indication of the source, such that errors
-     * can be relayed to the proper editor.
+     * Get the source text from a set of editors.  Each source is
+     * preceeded by a line :- '#file'(DocID, Line).
      *
      * @param {String} [role] Only return source for editors that
      * match the given role.
@@ -473,11 +473,15 @@ define([ "cm/lib/codemirror",
 	  if ( data ) {
 	    if ( !role || (role == data.role) ) {
 	      var mysrc;
+//TBD	      var docid = $(this).prologEditor('docid');
+
 	      if ( typeof(data.getSource) == "function" && !direct ) {
 		mysrc = data.getSource();
 	      } else {
 		mysrc = data.cm.getValue();
 	      }
+//TBD	      if ( role == "source" )
+//TBD		src.push(":- '#file'("+Pengine.stringify(docid)+",1).");
 	      src.push(mysrc);
 	    }
 	  }
@@ -498,6 +502,22 @@ define([ "cm/lib/codemirror",
 	obj.breakpoints = bps;
 
       return obj;
+    },
+
+    /*
+     * @returns {String} document identifier relating this editor to
+     * the server side document store.
+     */
+    docid: function() {
+      var st;
+
+      if ( this.hasClass("storage") )
+	return this.storage('docid');
+      else if ( (st=this.closest(".storage")) && st.length > 0 ) {
+	stdoc = st.storage('docid');
+	if ( stdoc )
+	  return stdoc + "#" + this.closest(".nb-cell").attr("name");
+      }
     },
 
     /**

@@ -1113,7 +1113,7 @@ var cellTypes = {
     options.autoCurrent = false;
     options.getSource = function() {
       var programs = cell.nbCell('programs');
-      return programs.prologEditor('getSource', undefined, true);
+      return programs.prologEditor('getSource', "source", true);
     };
 
     this.html("");
@@ -1194,7 +1194,7 @@ var cellTypes = {
 	  "Download answers as CSV": function() {
 	    var query  = cellText(this).replace(/\.\s*$/,"");
 	    var source = this.nbCell('programs')
-			     .prologEditor('getSource', undefined, true);
+			     .prologEditor('getSource', "source", true);
 	    var options = {};
 	    var name   = this.attr("name");
 	    if ( name )
@@ -1359,7 +1359,7 @@ var cellTypes = {
 	text = pretext + ", (" + prolog.trimFullStop(text) + ")";
     }
     var query = { source:       programs.prologEditor('getSource',
-						      undefined, true),
+						      "source", true),
                   query:        text,
 		  tabled:       settings.tabled||false,
 		  chunk:        settings.chunk,
@@ -1780,7 +1780,7 @@ function Notebook(options) {
  */
 Notebook.prototype.swish = function(options) {
   var pcells = this.cell().nbCell("programs");
-  var source = pcells.prologEditor('getSource', undefined, true);
+  var source = pcells.prologEditor('getSource', "source", true);
 
   if ( source )
     options.src = source;
