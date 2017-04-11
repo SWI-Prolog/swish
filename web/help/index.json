@@ -1,0 +1,16 @@
+// list of help topics, represented as a JSON list
+
+[ { "file":"about.html",      "title":"About" },
+  "--",
+  { "file":"help.html",	      "title":"Help" },
+  { "file":"runner.html",     "title":"Runner" },
+  { "file":"debug.html",      "title":"Debugging" },
+  { "file":"notebook.html",   "title":"Notebook" },
+  { "file":"editor.html",     "title":"Editor" },
+  { "file":"chat.html",	      "title":"Chat" },
+  { "file":"login.html",      "title":"Login extras" },
+  "--",
+  { "file":"beware.html",     "title":"Limitations" },
+  { "file":"caveats.html",    "title":"Caveats" },
+  { "file":"background.html", "title":"Background" }
+]

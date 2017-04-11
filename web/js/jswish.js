@@ -160,42 +160,8 @@ preferences.setDefault("emacs-keybinding", false);
       "Examples": function(navbar, dropdown) {
 	$("body").swish('populateExamples', navbar, dropdown);
       },
-      "Help":
-      { "About": function() {
-	  menuBroadcast("help", {file:"about.html"});
-	},
-	"Topics": "--",
-	"Help": function() {
-	  menuBroadcast("help", {file:"help.html"});
-	},
-	"Runner": function() {
-	  menuBroadcast("help", {file:"runner.html"});
-	},
-	"Debugging": function() {
-	  menuBroadcast("help", {file:"debug.html"});
-	},
-	"Notebook": function() {
-	  menuBroadcast("help", {file:"notebook.html"});
-	},
-	"Editor": function() {
-	  menuBroadcast("help", {file:"editor.html"});
-	},
-	"Chat": function() {
-	  menuBroadcast("help", {file:"chat.html"});
-	},
-	"Login extras": function() {
-	  menuBroadcast("help", {file:"login.html"});
-	},
-	"Background": "--",
-	"Limitations": function() {
-	  menuBroadcast("help", {file:"beware.html"});
-	},
-	"Caveats": function() {
-	  menuBroadcast("help", {file:"caveats.html"});
-	},
-	"Background": function() {
-	  menuBroadcast("help", {file:"background.html"});
-	},
+      "Help": function(navbar, dropdown) {
+	$("body").swish('populateHelp', navbar, dropdown);
       }
     }
   }; // defaults;
@@ -474,6 +440,47 @@ preferences.setDefault("emacs-keybinding", false);
 	     });
       return this;
     },
+
+    /**
+     * Populate the help dropdown of the navigation bar. This
+     * method is used by the navigation bar initialization.
+     * @param {Object} navbar is the navigation bar
+     * @param {Object} dropdown is the examples dropdown
+     */
+    populateHelp: function(navbar, dropdown) {
+      var that = this;
+
+      function openHelpFunction(help) {
+	return function() {
+	  menuBroadcast("help", {file:help.file});
+	};
+      }
+
+      $.ajax(config.http.locations.swish_help_index,
+	     { dataType: "json",
+	       success: function(data) {
+		 for(var i=0; i<data.length; i++) {
+		   var help = data[i];
+		   var title;
+		   var options;
+
+		   if ( help == "--" || help.type == "divider" ) {
+		     title = "--";
+		     options = "--";
+		   } else {
+		     var name = help.file;
+		     title = help.title;
+		     options = openHelpFunction(help);
+		   }
+
+		   $("#navbar").navbar('extendDropdown', dropdown,
+				       title, options);
+		 }
+	       }
+	     });
+      return this;
+    },
+
 
     /**
      * pick up all Prolog sources, preparing to execute a query. Currently
