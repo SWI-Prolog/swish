@@ -39,6 +39,9 @@
 	    swish_navbar//1,			% +Options
 	    swish_content//1,			% +Options
 
+	    pengine_logo//1,			% +Options
+	    swish_logo//1,			% +Options
+
 	    swish_resources//0,
 	    swish_js//0,
 	    swish_css//0
@@ -82,6 +85,7 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 :- http_handler(swish(.), swish_reply([]), [id(swish), prefix]).
 
 :- multifile
+	swish_config:logo//1,
 	swish_config:source_alias/2,
 	swish_config:reply_page/1,
 	swish_config:li_login_button//1.
@@ -365,8 +369,23 @@ collapsed_button -->
 		    ])).
 
 swish_logos(Options) -->
+	swish_config:logo(Options), !.
+swish_logos(Options) -->
 	pengine_logo(Options),
 	swish_logo(Options).
+
+%!	swish_config:logo(+Options)// is semidet.
+%
+%	Hook  to  include  the  top-left    logos.   The  default  calls
+%	pengine_logo//1 and swish_logo//1.  The   implementation  should
+%	emit zero or more <a> elements.
+
+%!	pengine_logo(+Options)// is det.
+%!	swish_logo(+Options)// is det.
+%
+%	Emit an <a> element that provides a   link to Pengines and SWISH
+%	on this server. These may be called from swish_config:logo//1 to
+%	include the default logos.
 
 pengine_logo(_Options) -->
 	{ http_absolute_location(root(.), HREF, [])
