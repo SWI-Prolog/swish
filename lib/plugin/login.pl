@@ -127,9 +127,11 @@ login_item(item(Tag, Server, Item)) :-
 %   Show the login options. If there is only   one, we just show a login
 %   field.
 
-login_items([item(_Tag, Server, _Item)]) -->
+login_items([item(_Tag, Server, Item)]) -->
     !,
-    html(span('data-server'(Server),
+    { findall(Attr, login_attr(Item, Attr), Attrs)
+    },
+    html(span(['data-server'(Server)|Attrs],
               [ span(class([glyphicon, 'glyphicon-log-in']), []),
                 span(class(value), 'Login')
               ])).
@@ -137,6 +139,11 @@ login_items(Items) -->
     { maplist(arg(3), Items, HTML) },
     html([ span(class(value), HTML)
          ]).
+
+login_attr(Item, 'data-frame'(Frame)) :-
+    sub_term('data-frame'(Frame), Item).
+
+
 
 
 %!  reply_logged_in(+Options) is det.
