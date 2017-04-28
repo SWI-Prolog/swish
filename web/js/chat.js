@@ -113,6 +113,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       data.connection = new WebSocket("ws://" + url, ['chat']);
 
       data.connection.onerror = function(error) {
+	elem.chat('userCount', undefined);
       };
       data.connection.onclose = function(ev) {
 	if ( last_open == null ) {
@@ -240,7 +241,14 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
     },
 
     userCount: function(cnt) {
-      $("#user-count").text(cnt);
+      var elem = $("#user-count");
+
+      if ( cnt == undefined ) {
+	elem.parent().hide();
+      } else {
+	elem.parent().show();
+	elem.text(cnt);
+      }
     },
 
     /**

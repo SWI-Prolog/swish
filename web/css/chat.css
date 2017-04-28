@@ -31,6 +31,7 @@ div.user-count
   color: #888;
   font-style: italic;
   font-size: 75%;
+  display: none;
 }
 
 li.myself
