@@ -171,7 +171,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
      * @param {Object} msg is the JSON object to broadcast
      */
     send: function(msg) {
-      var data = $(this).data(pluginName);
+      var data = this.data(pluginName);
 
       if ( data && data.connection ) {
 	var str = JSON.stringify(msg);
@@ -181,7 +181,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 	    data.queue = [str];
 	  else
 	    data.queue.push(str);
-	  methods.connect();
+	  this.chat('connect');
 	} else {
 	  data.connection.send(str);
 	}
