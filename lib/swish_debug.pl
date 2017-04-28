@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015-2016, VU University Amsterdam
+    Copyright (c)  2015-2017, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,11 +33,12 @@
 */
 
 :- module(swish_debug,
-	  [ pengine_stale_module/1,	% -Module, -State
+	  [ pengine_stale_module/1,	% -Module
 	    pengine_stale_module/2,	% -Module, -State
 	    swish_statistics/1,		% -Statistics
 	    start_swish_stat_collector/0,
-	    swish_stats/2		% ?Period, ?Dicts
+	    swish_stats/2,		% ?Period, ?Dicts
+	    swish_died_thread/2		% ?Thread, ?State
 	  ]).
 :- use_module(library(pengines)).
 :- use_module(library(broadcast)).
@@ -385,6 +386,24 @@ avg_key(Dicts, Len, Key, Key-Avg) :-
 	Avg is Sum/Len.
 
 
+%!	swish_died_thread(TID, Status) is nondet.
+%
+%	True if Id is a thread that died   with Status and has not (yet)
+%	been joined. Note that such threads may exist for a short while.
+
+swish_died_thread(TID, Status) :-
+	findall(TID-Stat, (thread_property(Thread, status(Stat)),
+			   Stat \== running,
+			   thread_property(Thread, id(TID))), Pairs),
+	member(TID-Stat, Pairs),
+	status_message(Stat, Status).
+
+status_message(exception(Ex), Message) :- !,
+	message_to_string(Ex, Message0),
+	string_concat('ERROR: ', Message0, Message).
+status_message(Status, Status).
+
+
 		 /*******************************
 		 *	     SANDBOX		*
 		 *******************************/
@@ -396,3 +415,4 @@ sandbox:safe_primitive(swish_debug:pengine_stale_module(_)).
 sandbox:safe_primitive(swish_debug:pengine_stale_module(_,_)).
 sandbox:safe_primitive(swish_debug:swish_statistics(_)).
 sandbox:safe_primitive(swish_debug:swish_stats(_, _)).
+sandbox:safe_primitive(swish_debug:swish_died_thread(_, _)).

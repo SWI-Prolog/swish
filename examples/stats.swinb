@@ -134,6 +134,8 @@ chart(hour, [rss_mb,heap_mb,stack_mb,free_mb], Chart).
 ## Health statistics
 
 The statistics below assesses the number of *Pengines* (actively executing queries from users) and the *highlight states*, the number of server-side mirrors we have from client's source code used to compute the semantically enriched tokens.   If such states are not explicitly invalidated by the client, they are removed after having not been accessed for one hour.  The *stale modules* count refers to temporary modules that are not associated to a Pengine, nor to a highlight state and probably indicate a leak.
+
+The two queries below extract information about stale modules and threads that have died.  These are used to help debugging related leaks.
 </div>
 
 <div class="nb-cell program" data-singleline="true">
@@ -148,6 +150,14 @@ stats([stale_modules-Stale|Pairs]) :-
 
 <div class="nb-cell query">
 stats(Stats).
+</div>
+
+<div class="nb-cell query" data-chunk="10" data-tabled="true" name="q2">
+pengine_stale_module(Module, State).
+</div>
+
+<div class="nb-cell query" data-chunk="10" data-tabled="true" name="q1">
+swish_died_thread(Thread, State).
 </div>
 
 </div>
