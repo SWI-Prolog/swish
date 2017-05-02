@@ -750,7 +750,7 @@ define([ "jquery", "config", "preferences",
 
 	  if ( elem.prologRunner('alive') ) {
 	    $(".prolog-editor").trigger('pengine-died', data.prolog.id);
-	    data.prolog.destroy();
+	    data.prolog.abort();
 	  }
 	});
 	this.remove();
@@ -850,17 +850,18 @@ define([ "jquery", "config", "preferences",
        } else if ( state == "wait-input" ) {
 	 this.find("input").focus();
        }
-       if ( !aliveState(state) ) {
-	 $(".prolog-editor").trigger('pengine-died', data.prolog.id);
-	 data.prolog.destroy();
-       }
      }
-     if ( state == "wait-next" || state == "true" ) {
+
+     if ( !aliveState(state) ) {
+       $(".prolog-editor").trigger('pengine-died', data.prolog.id);
+       data.prolog.destroy();
+     } else if ( state == "wait-next" || state == "true" ) {
        var runners = RS(this);
        setTimeout(function() { runners.prologRunners('scrollToBottom') }, 100);
      } else {
        RS(this).prologRunners('scrollToBottom');
      }
+
      return this;
    },
 
@@ -948,7 +949,7 @@ define([ "jquery", "config", "preferences",
 		 *******************************/
 
   function RS(from) {			/* find runners from parts */
-    return $(from).parents(".prolog-runners");
+    return $(from).closest(".prolog-runners");
   }
 
   function addAnswer(runner, html) {
@@ -1179,9 +1180,12 @@ define([ "jquery", "config", "preferences",
 
   function handleOutput(msg) {
     var elem = msg.pengine.options.runner;
+    var data = elem.data(pluginName);
+
+    if ( !data )				/* runner is gone */
+      return;
 
     if ( typeof(msg.data) == 'string' ) {
-      var data = elem.data(pluginName);
       var econtext = {editor: data.query.editor};
 
       msg.data = msg.data.replace(/'[-0-9a-f]{36}':/g, "")  /* remove module */
@@ -1257,9 +1261,14 @@ define([ "jquery", "config", "preferences",
 
   function handleAbort() {
     var elem = this.pengine.options.runner;
+    var data = elem.data('prologRunner');
 
-    elem.prologRunner('error', "** Execution aborted **");
-    elem.prologRunner('setState', "aborted");
+    if ( data ) {
+      elem.prologRunner('error', "** Execution aborted **");
+      elem.prologRunner('setState', "aborted");
+    } else {
+      this.pengine.destroy();
+    }
   }
 
   function handlePing() {
