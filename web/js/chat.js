@@ -110,7 +110,8 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 	lead = "&";
       }
 
-      data.connection = new WebSocket("ws://" + url, ['chat']);
+      data.connection = new WebSocket("ws://" + url,
+				      ['v1.chat.swish.swi-prolog.org']);
 
       data.connection.onerror = function(error) {
 	elem.chat('userCount', undefined);
