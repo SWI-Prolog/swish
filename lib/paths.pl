@@ -50,6 +50,7 @@ user:file_search_path(config_enabled, swish('config-enabled')).
 user:file_search_path(config,         config_enabled(.)).
 user:file_search_path(config,         swish('config-available')).
 user:file_search_path(swish_web,      swish(web)).
+user:file_search_path(swish_pack,     swish(pack)).
 user:file_search_path(js,             swish_web(js)).
 user:file_search_path(css,            swish_web(css)).
 user:file_search_path(icons,          swish_web(icons)).
@@ -70,7 +71,7 @@ set_swish_path :-
 %   Attach pack submodules from swish(pack)
 
 attach_local_packs :-
-    attach_packs(swish(pack), [duplicate(replace), search(first)]).
+    attach_packs(swish_pack(.), [duplicate(replace), search(first)]).
 
 %!  set_data_path
 %
