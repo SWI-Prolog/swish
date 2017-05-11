@@ -125,7 +125,7 @@ start_chat(Request, Options) :-
 	http_upgrade_to_websocket(
 	    accept_chat(Session, ChatOptions),
 	    [ guarded(false),
-	      subprotocols(['v1.chat.swish.swi-prolog.org'])
+	      subprotocols(['v1.chat.swish.swi-prolog.org', chat])
 	    ],
 	    Request).
 
