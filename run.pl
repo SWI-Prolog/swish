@@ -33,10 +33,23 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
+:- use_module(library(main)).
+:- use_module(library(option)).
 :- use_module(server).
 
-% Using `localhost:3050`, we only bind to localhost interface!
+% Usage:
+%
+%   swipl run.pl [--port=Port]
+
+% Using `localhost:Port`, we only bind to localhost interface!
 % Use plain `3050` (or any port number you like) to make the server
 % accessible from all network interfaces.
 
-:- initialization server(localhost:3050).
+:- initialization run_swish.
+
+run_swish :-
+    current_prolog_flag(argv, Argv),
+    argv_options(Argv, _, Options),
+    option(port(Port), Options, 3050),
+    server(localhost:Port).
+
