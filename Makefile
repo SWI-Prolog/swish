@@ -3,6 +3,11 @@
 
 BOWER_ARCHIVE=swish-bower-components.zip
 BOWER_URL=http://www.swi-prolog.org/download/swish/${BOWER_ARCHIVE}
+SWIPL=swipl
+
+# Packs to download and configure.  Run `git submodule` to see the
+# available packs.
+PACKS=profile rserve_client smtp
 
 all:
 	@echo "Targets"
@@ -12,6 +17,7 @@ all:
 	@echo "    src       -- Prepare bower dependencies for execution"
 	@echo "    min       -- Create minimized CSS and JavaScript"
 	@echo "    clean     -- Clean minimized CSS and JavaScript"
+	@echo "    packs     -- Download and configure packs"
 	@echo
 
 bower::
@@ -52,3 +58,16 @@ $(BOWER_ARCHIVE)::
 upload:	$(BOWER_ARCHIVE)
 	rsync $(BOWER_ARCHIVE) ops:/home/swipl/web/download/swish/$(BOWER_ARCHIVE)
 
+
+		 /*******************************
+		 *	       PACKS		*
+		 *******************************/
+
+PACKFILES=$(addprefix pack/, $(addsuffix /pack.pl, $(PACKS)))
+ATTACH_PACKDIR=-g 'attach_packs(pack,[duplicate(replace),search(first)])'
+
+packs: $(PACKFILES)
+
+$(PACKFILES):
+	git submodule update --init $(shell dirname $@)
+	$(SWIPL) $(ATTACH_PACKDIR) -g 'pack_rebuild($(shell basename $$(dirname $@)))' -t halt
