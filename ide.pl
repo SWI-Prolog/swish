@@ -33,7 +33,8 @@
 */
 
 :- module(swish_ide,
-	  [ swish/0
+	  [ swish/0,
+	    swish/1			% ?Port
 	  ]).
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
