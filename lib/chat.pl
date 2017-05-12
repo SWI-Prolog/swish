@@ -59,7 +59,9 @@
 :- use_module(library(ordsets)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
+:- if(exists_source(library(user_profile))).
 :- use_module(library(user_profile)).
+:- endif.
 :- use_module(library(aggregate)).
 
 :- use_module(storage).
@@ -1026,11 +1028,6 @@ chat_event(Event) :-
 	;   WSID = undefined
 	),
 	session_broadcast_event(Event, File, Session, WSID).
-chat_event(profile(ProfileID)) :- !,
-	current_profile(ProfileID, Profile),
-	http_session_id(Session),
-	session_user(Session, User),
-	update_visitor_data(User, Profile, login).
 chat_event(logout(_ProfileID)) :- !,
 	http_session_id(Session),
 	session_user(Session, User),
@@ -1038,6 +1035,13 @@ chat_event(logout(_ProfileID)) :- !,
 chat_event(visitor_count(Count)) :-		% request
 	visitor_count(Count).
 
+:- if(current_predicate(current_profile/2)).
+
+chat_event(profile(ProfileID)) :- !,
+	current_profile(ProfileID, Profile),
+	http_session_id(Session),
+	session_user(Session, User),
+	update_visitor_data(User, Profile, login).
 
 %!	propagate_profile_change(+ProfileID, +Attribute, +Value)
 %
@@ -1052,6 +1056,7 @@ propagate_profile_change(ProfileID, _, _) :-
 	current_profile(ProfileID, Profile),
 	update_visitor_data(User, Profile, 'profile-edit').
 
+:- endif.
 
 %%	broadcast_event(+Event) is semidet.
 %
