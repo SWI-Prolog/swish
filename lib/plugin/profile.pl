@@ -50,12 +50,12 @@
 :- use_module(library(broadcast)).
 :- use_module(library(pairs)).
 
-:- use_module(swish(lib/config), []).
+:- use_module('../config', []).
 :- use_module(login).
-:- use_module(swish(lib/authenticate)).
-:- use_module(swish(lib/bootstrap)).
-:- use_module(swish(lib/form)).
-:- use_module(swish(lib/avatar)).
+:- use_module('../authenticate').
+:- use_module('../bootstrap').
+:- use_module('../form').
+:- use_module('../avatar').
 
 
 /** <module> User profile configuration
