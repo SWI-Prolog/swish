@@ -120,34 +120,47 @@ profile:
 %     - user_info(+UserInfo:Dict)
 %     Provides information about the user provided by the external
 %     identity provider.
+%     - reply(+Format)
+%     If Format = `html`, reply with an HTML page.  Other values
+%     are left for future extensions.
+%     - profile_id(-Id)
+%     Unify Id with the found or created profile id.
 
 swish_config:reply_logged_in(Options) :-
     option(user_info(Info), Options),
     known_profile(Info, ProfileID),
     !,
+    option(profile_id(ProfileID), Options, _),
     associate_profile(ProfileID),
-    reply_html_page(
-        title('Logged in'),
-        [ h4('Welcome back'),
-          p(\last_login(ProfileID)),
-          \login_continue_button
-        ]).
+    (   option(reply(html), Options, html)
+    ->  reply_html_page(
+            title('Logged in'),
+            [ h4('Welcome back'),
+              p(\last_login(ProfileID)),
+              \login_continue_button
+            ])
+    ;   true
+    ).
 swish_config:reply_logged_in(Options) :-
     option(user_info(Info), Options),
-    create_profile(Info, Info.get(identity_provider), User),
+    create_profile(Info, Info.get(identity_provider), ProfileID),
     !,
+    option(profile_id(ProfileID), Options, _),
     http_open_session(_SessionID, []),
-    associate_profile(User),
-    update_last_login(User),
-    reply_html_page(
-        title('Logged in'),
-        [ h4('Welcome'),
-          p([ 'You appear to be a new user.  You may inspect, update \c
-               and delete your profile using the drop-down menu associated \c
-               with the login/logout widget.'
-            ]),
-          \login_continue_button
-        ]).
+    associate_profile(ProfileID),
+    update_last_login(ProfileID),
+    (   option(reply(html), Options, html)
+    ->  reply_html_page(
+            title('Logged in'),
+            [ h4('Welcome'),
+              p([ 'You appear to be a new user.  You may inspect, update \c
+                  and delete your profile using the drop-down menu associated \c
+                  with the login/logout widget.'
+                ]),
+              \login_continue_button
+            ])
+    ;   true
+    ).
 
 %!  known_profile(+Info, -ProfileID) is semidet.
 %
@@ -211,13 +224,13 @@ swish_config:reply_logged_out(_) :-
     broadcast(swish(logout(-))).        % ?
 
 
-%!  create_profile(+UserInfo, +IDProvider, -User)
+%!  create_profile(+UserInfo, +IDProvider, -ProfileID)
 %
 %   Create a new user profile.
 
-create_profile(UserInfo, IdProvider, User) :-
+create_profile(UserInfo, IdProvider, ProfileID) :-
     user_profile_values(UserInfo, IdProvider, Defaults),
-    profile_create(User, Defaults).
+    profile_create(ProfileID, Defaults).
 
 user_profile_values(UserInfo, IdProvider, Defaults) :-
     findall(Default,

@@ -254,8 +254,12 @@ reply_logged_out(Options) :-
 reply_logged_out(Options) :-
     reply_logged_out_page(Options).
 
-reply_logged_out_page(_) :-
-    reply_json_dict(true).
+reply_logged_out_page(Options) :-
+    option(reply(Format), Options, json),
+    (   Format == json
+    ->  reply_json_dict(true)
+    ;   true
+    ).
 
 
 		 /*******************************
