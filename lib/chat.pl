@@ -727,7 +727,7 @@ avatar_property(_Avatar, Source, avatar_source, Source).
 		 *	   NOBLE AVATAR		*
 		 *******************************/
 
-:- http_handler(swish('avatar/'), reply_avatar, [prefix]).
+:- http_handler(swish('avatar/'), reply_avatar, [id(avatar), prefix]).
 
 %%	reply_avatar(+Request)
 %

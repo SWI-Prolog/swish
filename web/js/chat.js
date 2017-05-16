@@ -97,6 +97,13 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 	var value = preferences.getVal(pname);
 
 	if ( value ) {
+	  if ( pname == "anon-avatar" ) {
+	    /* hack to deal with possibly rebased server */
+	    console.log(config.http.locations.avatar);
+	    value = config.http.locations.avatar+value.split("/").pop();
+	    console.log(value);
+	  }
+
 	  url += lead + name + "=" + encodeURIComponent(value);
 	  lead = "&";
 	}
