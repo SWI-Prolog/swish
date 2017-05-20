@@ -62,14 +62,15 @@ Render table-like data.
 %	@tbd: recognise more formats
 
 term_rendering(Term, _Vars, Options) -->
-	{ is_list_of_dicts(Term, _Rows, ColNames)
+	{ is_list_of_dicts(Term, _Rows, ColNames), !,
+	  partition(is_header, Options, _HeaderOptions, Options1)
 	}, !,
 	html(div([ style('display:inline-block'),
 		   'data-render'('List of terms as a table')
 		 ],
 		 [ table(class('render-table'),
 			 [ \header_row(ColNames),
-			   \rows(Term, Options)
+			   \rows(Term, Options1)
 			 ])
 		 ])).
 term_rendering(Term, _Vars, Options) -->
