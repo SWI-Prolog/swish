@@ -33,6 +33,7 @@ span.twitter-typeahead .tt-suggestion.tt-cursor {
 }
 span.twitter-typeahead {
   width: 100%;
+  height: 30px;   /* hack around vertical misalignment of search button */
 }
 
 /** SWISH styling of typeahead hits
