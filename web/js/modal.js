@@ -46,6 +46,8 @@ define([ "jquery", "config", "preferences", "links", "form",
 	 "laconic", "bootstrap" ],
        function($, config, preferences, links, form) {
 
+/* NOTE: form dependency is circular.  Form is initialized later. */
+
 (function($) {
   var pluginName = 'swishModal';
 
@@ -244,6 +246,9 @@ define([ "jquery", "config", "preferences", "links", "form",
 
     server_form: function(options) {
       var modalel = $(this);
+
+      if ( form === undefined )			/* circular dependency */
+	form = require("form");
 
       return this.swishModal('show', {
 	title: options.title,
