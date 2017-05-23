@@ -74,9 +74,14 @@
 
 load_config :-
 	exists_directory('config-enabled'), !,
+	working_directory(WD, WD),
 	expand_file_name('config-enabled/*.pl', Files),
-	maplist(ensure_loaded, Files).
+	maplist(load_config(WD), Files).
 load_config.
+
+load_config(Dir, File) :-		% avoid loading relative to source
+	directory_file_path(Dir, File, Path),
+	ensure_loaded(Path).
 
 :- initialization(load_config, now).
 
