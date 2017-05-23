@@ -73,7 +73,7 @@ confirmation (of the email address) as well as for notifications.
 
 :- setting(timeout, integer, 24*3600*7,
            "Timeout for handling email reply").
-:- setting(database, callable, swish('data/confirm.db'),
+:- setting(database, callable, data('confirm.db'),
            "File specification for E-mail confirmations").
 :- setting(subject_prefix, atom, '[SWISH] ',
            "Prefix for the subject of emails sent").
