@@ -46,6 +46,7 @@
     http:location/3.
 
 user:file_search_path(data,           data).
+user:file_search_path(config_enabled, 'config-enabled').
 user:file_search_path(config_enabled, swish('config-enabled')).
 user:file_search_path(config,         config_enabled(.)).
 user:file_search_path(config,         swish('config-available')).

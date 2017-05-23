@@ -70,18 +70,23 @@
 
 %!	load_config
 %
-%	Load files from config-enabled if present.
+%	Load files from config-enabled if  present. Currently loads from
+%	a single config-enabled directory, either  found locally or from
+%	the swish directory.
 
 load_config :-
-	exists_directory('config-enabled'), !,
-	working_directory(WD, WD),
-	expand_file_name('config-enabled/*.pl', Files),
-	maplist(load_config(WD), Files).
+	absolute_file_name(config_enabled(.), Path,
+			   [ file_type(directory),
+			     access(read),
+			     file_errors(fail)
+			   ]), !,
+	atom_concat(Path, '/*.pl', Pattern),
+	expand_file_name(Pattern, Files),
+	maplist(load_config, Files).
 load_config.
 
-load_config(Dir, File) :-		% avoid loading relative to source
-	directory_file_path(Dir, File, Path),
-	ensure_loaded(Path).
+load_config(File) :-		% avoid loading relative to source
+	ensure_loaded(File).
 
 :- initialization(load_config, now).
 
