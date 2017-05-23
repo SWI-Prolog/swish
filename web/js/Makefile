@@ -19,9 +19,13 @@ doc::	$(CONF) $(JQ) $(JS)
 min:	swish-min.js swish-min.js.gz
 
 swish-min.js:	build.js $(JS) $(CM)
-	rm -f swish-min.js.new
+	rm -f swish-min.js.new swish-min.js.new.map
 	r.js -o build.js
+	sed -i 's@//# sourceMappingURL=swish-min.js.new.map@//# sourceMappingURL=swish-min.js.map@' swish-min.js.new
 	mv swish-min.js.new swish-min.js
+	if [ -f swish-min.js.new.map ]; then \
+	  mv swish-min.js.new.map swish-min.js.map; \
+	fi
 
 swish-min.js.gz: swish-min.js
 	gzip < $< > $@

@@ -7,6 +7,9 @@
 ({ baseURL: ".",
    @CONFIG@
 
+   generateSourceMaps: true,
+   preserveLicenseComments: false,
+
    name: "swish",
    out: "swish-min.js.new"
 })
