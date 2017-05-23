@@ -74,6 +74,7 @@ authenticate(Request, Auth) :-
     debug(authenticate, 'Identity: ~p', [Auth]).
 
 :- multifile
+    swish_config:user_info/3,
     swish_config:authenticate/2,
     swish_config:user_profile/2.
 

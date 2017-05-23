@@ -54,6 +54,8 @@
 :- use_module('../config', []).
 
 :- multifile
+    swish_config:login/2,
+    swish_config:login_item/2,
     swish_config:li_login_button//1,    % +Options
     swish_config:reply_logged_in/1,     % +Options
     swish_config:reply_logged_out/1,    % +Options

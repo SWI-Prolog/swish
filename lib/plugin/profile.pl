@@ -104,9 +104,12 @@ profile:
 
 
 :- multifile
+    swish_config:user_info/3,
     swish_config:reply_logged_in/1,     % +Options
     swish_config:reply_logged_out/1,    % +Options
-    swish_config:user_profile/2.        % +Request, -Info
+    swish_config:user_profile/2,        % +Request, -Info
+    user_profile:attribute/3,
+    user_profile:attribute_mapping/3.
 
 
 		 /*******************************
