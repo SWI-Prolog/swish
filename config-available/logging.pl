@@ -36,7 +36,7 @@
 :- module(swish_config_logging, []).
 :- use_module(library(settings)).
 :- use_module(library(http/http_log)).
-:- use_module(lib/logging).
+:- use_module(swish(lib/logging)).
 
 /** <module> Configure logging facilities
 
