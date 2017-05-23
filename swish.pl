@@ -38,6 +38,7 @@
 :- use_module(library(pengines)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(option)).
+:- use_module(library(apply)).
 :- use_module(library(settings)).
 
 :- use_module(lib/messages).
@@ -82,11 +83,8 @@ load_config :-
 			   ]), !,
 	atom_concat(Path, '/*.pl', Pattern),
 	expand_file_name(Pattern, Files),
-	maplist(load_config, Files).
+	maplist(ensure_loaded, Files).
 load_config.
-
-load_config(File) :-		% avoid loading relative to source
-	ensure_loaded(File).
 
 :- initialization(load_config, now).
 
