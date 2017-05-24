@@ -37,6 +37,12 @@ You are reading a SWISH _notebook_.  A notebook is a mixture of _text_, _program
       and write to the web interface.
     - [Assert and retract](example/database.pl) demonstrates using the
       dynamic database.
+  - *Machine learning (notebooks)*  (see also [SWISH tutorials](example/swish_tutorials.swinb))
+    - [EM Clustering of the Iris Dataset](example/iris.swinb)
+    - [SIATEC pattern discovery in polyphonic music](example/siatec.swinb)
+  - *Graphical output* (see also [rendering](example/rendering.swinb))
+    - [Using Graphviz to display graphs](example/render_graphviz.swinb)
+    - [Using C3 to display charts](example/render_c3.swinb)
   - *International character support*
     - [Japanese source](example/japanese.pl) gives example source from
       the Japanese Wikipedia site on Prolog, illustrating multi-lingual
