@@ -30,6 +30,7 @@ The notebooks below explain the basics of using R from SWISH.  You can test whet
 ### More elaborate examples
 
   - [EM Clustering of the Iris Dataset](example/iris.swinb)
+  - [SIATEC pattern discovery in polyphonic music](example/siatec.swinb)
 </div>
 
 </div>
