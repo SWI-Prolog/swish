@@ -51,6 +51,10 @@ Check out [JavaPengines](https://github.com/Anniepoo/JavaPengine)
 
 Check out [RubyPengines](https://github.com/simularity/RubyPengine)
 
+## Extracting results using Erlang
+
+Check out [erl_pengine](https://github.com/Limmen/erl_pengine)
+
 ---
 If you write or find another client, please make a pull request for this
 page!
