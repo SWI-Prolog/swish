@@ -855,6 +855,8 @@ define([ "jquery", "config", "preferences",
      if ( !aliveState(state) ) {
        $(".prolog-editor").trigger('pengine-died', data.prolog.id);
        data.prolog.destroy();
+       var runners = RS(this);
+       setTimeout(function() { runners.prologRunners('scrollToBottom') }, 100);
      } else if ( state == "wait-next" || state == "true" ) {
        var runners = RS(this);
        setTimeout(function() { runners.prologRunners('scrollToBottom') }, 100);
