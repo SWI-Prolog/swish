@@ -852,14 +852,15 @@ define([ "jquery", "config", "preferences",
        }
      }
 
+     var runners = RS(this);
      if ( !aliveState(state) ) {
        $(".prolog-editor").trigger('pengine-died', data.prolog.id);
        data.prolog.destroy();
+       setTimeout(function() { runners.prologRunners('scrollToBottom') }, 100);
      } else if ( state == "wait-next" || state == "true" ) {
-       var runners = RS(this);
        setTimeout(function() { runners.prologRunners('scrollToBottom') }, 100);
      } else {
-       RS(this).prologRunners('scrollToBottom');
+       runners.prologRunners('scrollToBottom');
      }
 
      return this;
