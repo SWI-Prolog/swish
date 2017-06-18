@@ -413,7 +413,7 @@ swish_content(Options) -->
 	swish_resources,
 	swish_config_hash(Options),
 	swish_options(Options),
-	html(div([id(content), class([container, swish])],
+	html(div([id(content), class([container, 'tile-top'])],
 		 [ div([class([tile, horizontal]), 'data-split'('50%')],
 		       [ div([ class([editors, tabbed])
 			     ],
