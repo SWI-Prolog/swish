@@ -153,7 +153,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       var data = this.data(pluginName);
 
       while(data.queue && data.queue != [] && data.connection.readyState == 1) {
-	var str = shift(data.queue);
+	var str = data.queue.shift();
 	data.connection.send(str);
       }
     },
