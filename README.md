@@ -19,6 +19,12 @@ your programs online for at least multiple years.
 
     git submodule update --init
 
+If you have `make` installed you  can   configure  the  desired packs by
+editing the `PACKS` variable and run the  following to download them and
+configure those that need to be configured.
+
+    make packs
+
 ### Get JavaScript requirements
 
 #### Using bower
@@ -42,7 +48,10 @@ As installing node and bower is not a pleasure on all operating systems,
 you can also download  the  dependencies  as   a  single  zip  file from
 http://www.swi-prolog.org/download/swish/swish-bower-components.zip.
 Unpack the zip file, maintaining the directory structure, from the swish
-root directory to create the directory web/bower_components.
+root directory to create the directory web/bower_components. If you have
+`make` installed you can install the above `.zip` file using
+
+    make bower-zip
 
 Last updated: Apr 8, 2017: upgraded. Notably typeahead.js is forward nor
 backward compatible and you need SWISH with commit
@@ -59,7 +68,7 @@ you            need            the             [nightly            build
 system    from    the     current      git     development    repository
 [swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
 
-Apr 8, 2017: SWI-Prolog 7.5.3 works fine.
+Jun 18, 2017: SWI-Prolog 7.5.9 works fine.
 
 ### Other dependencies
 
@@ -192,7 +201,7 @@ You also need GNU make installed as   `make`  and SWI-Prolog as `swipl`.
 With all that in  place,  the   following  command  creates the minified
 versions:
 
-    % make
+    % make min
 
 The default main page (`/`)  is   generated  from `lib/page.pl`. It uses
 minified    JavaScript    and    CSS      from     `web/js/swish-min.js`
