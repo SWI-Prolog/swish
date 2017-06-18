@@ -208,6 +208,8 @@ providing the parameters below.  The URL accepts both `GET` and `POST` requests.
   <dl class="dl-horizontal">
   <dt>code<dd>
   Either the concrete code or a URL from which the code will be downloaded.
+  If <code>code</code> is a URL and the extension is <code>.swinb</code>,
+  the data is loaded into a SWISH notebook.
   </dd>
   <dt>background<dd>
   As <code>code</code>, but this part of the code will not be visible in
@@ -227,6 +229,12 @@ providing the parameters below.  The URL accepts both `GET` and `POST` requests.
 <pre>
 http://swish.swi-prolog.org/?code=https://github.com/SWI-Prolog/swipl-devel/raw/master/demo/likes.pl&amp;q=likes(sam,Food).</pre>
 <a target="_blank" href="http://swish.swi-prolog.org/?code=https://github.com/SWI-Prolog/swipl-devel/raw/master/demo/likes.pl&amp;q=likes(sam,Food).">Try it!</a> (launches a new tab)
+
+<p>The URL below opens <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span> on notebook.
+
+<pre>
+http://localhost:3050/?code=https://raw.githubusercontent.com/SWI-Prolog/swish/master/examples/htmlcell.swinb</pre>
+<a target="_blank" href="">Try it!</a> (launches a new tab)
 
 </body>
 </html>

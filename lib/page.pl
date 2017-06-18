@@ -640,7 +640,7 @@ load_error(E, Source) :-
 %
 %	Determine the type of document.
 %
-%	@arg Type is one of `notebook` or `prolog`
+%	@arg Type is one of `swinb` or `pl`
 
 document_type(Type, Options) :-
 	(   option(type(Type0), Options)
@@ -649,8 +649,15 @@ document_type(Type, Options) :-
 	    file_name_extension(_, Type0, Meta.name),
 	    Type0 \== ''
 	->  Type = Type0
+	;   option(st_type(external), Options),
+	    option(url(URL), Options),
+	    file_name_extension(_, Ext, URL),
+	    ext_type(Ext, Type)
+	->  true
 	;   Type = pl
 	).
+
+ext_type(swinb, swinb).
 
 
 		 /*******************************
