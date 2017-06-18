@@ -14,7 +14,7 @@ Copyright: Public domain
 :- use_module(library(main)).
 :- use_module(library(debug)).
 
-:- initialization main.
+:- initialization(main, main).
 %:- debug(css).
 
 main(['--debug'|Argv]) :- !,
