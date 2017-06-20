@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2016, VU University Amsterdam
+    Copyright (C): 2014-2017, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -44,10 +44,10 @@
  * @requires editor
  */
 
-define([ "jquery", "config", "preferences", "cm/lib/codemirror",
+define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
 	 "laconic", "editor"
        ],
-       function($, config, preferences, CodeMirror) {
+       function($, config, preferences, CodeMirror, modal) {
 
 (function($) {
   var pluginName = 'queryEditor';
@@ -217,10 +217,31 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
 
       if ( clear === true )
 	ul.html("");
+      ul.find("li.add-example, li.divider").remove();
       for(var i=0; i<list.length; i++) {
 	ul.append($.el.li($.el.a(list[i])));
       }
       ul.data('examples', list.slice(0));
+      ul.append($.el.li({class:"divider"}));
+      ul.append($.el.li({class:'add-example'},
+			$.el.a("Add current query to examples")));
+
+      return this;
+    },
+
+    /**
+     * Add the current query to the examples in the program
+     */
+    addExample: function()
+    { var query	= this.find(".query").prologEditor('getSource');
+
+      if ( query.trim() != "" ) {
+	$(".swish-event-receiver:visible")
+	     .trigger("addExample",
+		      this.find(".query").prologEditor('getSource'));
+      } else
+      { modal.alert("The query window is empty");
+      }
 
       return this;
     },
@@ -336,7 +357,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
   */
 
   function Q(from) {
-    return $(from).parents(".prolog-query-editor");
+    return $(from).closest(".prolog-query-editor");
   }
 
   function dropup(cls, label, options) {
@@ -350,7 +371,12 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
       $.el.ul({class:"dropdown-menu "+cls}));
 
     $(dropup).on("click", "a", function() {
-      Q(this).queryEditor('setQuery', $(this).text());
+      var li = $(this).closest("li");
+
+      if ( li.hasClass("add-example") )
+	Q(this).queryEditor('addExample');
+      else
+	Q(this).queryEditor('setQuery', $(this).text());
     });
 
     return dropup;
@@ -368,9 +394,10 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror",
     }
 
     if ( typeof(options.examples) == "function" ) {
+      var copy = $.extend({}, options);
       $(el).mousedown(function(ev) {
 			if ( ev.which == 1 ) {
-			  updateExamples(options);
+			  updateExamples(copy);
 			}
 		      });
     } else if ( options.examples ) {

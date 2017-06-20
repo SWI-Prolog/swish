@@ -308,6 +308,9 @@ define([ "cm/lib/codemirror",
 	      data.traceMark = null;
 	    }
 	  });
+	  elem.on('addExample', function(ev, query) {
+	    elem.prologEditor('addExample', query);
+	  });
 	  data.cm.on("gutterClick", function(cm, n) {
 	    var info = cm.lineInfo(n);
 
@@ -1116,19 +1119,66 @@ define([ "cm/lib/codemirror",
     },
 
     /**
+     * Add an example to the examples comment block or create such a
+     * block.
+     */
+    addExample: function(query) {
+      var cm      = this.data(pluginName).cm;
+      var source = this.prologEditor('getSource');
+      var start  = this.prologEditor('search',
+				     /\/\*\* *<?examples>?/igm, {dir:-1,max:1});
+      var end    = this.prologEditor('search', /\*\//, {start:start.line,max:1});
+
+      if ( start.length == 1 && end.length == 1 ) {
+	var current = this.prologEditor('getExamples', source);
+
+	if ( current && current.indexOf(query) != -1 )
+	{ modal.alert("Query is already in examples");
+	  return this;
+	}
+
+	cm.setSelection({line:end[0].line-1, ch:0});
+	cm.replaceSelection("?- "+query+"\n");
+      } else
+      { cm.setSelection({line:cm.lastLine(), ch:0});
+	cm.replaceSelection("/** <examples>\n" +
+			    "?- "+query+"\n" +
+			    "*/\n");
+      }
+
+      return this;
+    },
+
+    /**
      * @param {RegExp} re is the regular expression to search for
      * @param {Object} [options]
      * @param {number} [options.max] is the max number of hits to return
      * @returns {Array.object} list of objects holding the matching line
      * content and line number.
+     * @param {number} [options.dir=1] is -1 to search backwards
+     * @param {number} [options.start] to start at a given line
      */
     search: function(re, options) {
       var cm      = this.data(pluginName).cm;
+      var dir     = options.dir||1;
       var start   = cm.firstLine();
       var end     = cm.lastLine();
       var matches = [];
 
-      for(var i=start; i<=end; i++) {
+      if ( dir == -1 )
+      { var tmp = start;
+	start = end;
+	end = tmp;
+      }
+      if ( options.start !== undefined )
+	start = options.start;
+
+      if ( (dir > 0 && start > end) ||
+	   (dir < 0 && start < end) )
+	return matches;
+      end += dir;
+
+      for(var i=start; i!=end; i+=dir) {
 	var line = cm.getLine(i);
 	if ( line.search(re) >= 0 ) {
 	  matches.push({line:i+1, text:line});
