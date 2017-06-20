@@ -44,8 +44,12 @@
             rdf_suggestions/5,		% +Base, +Role, +MaxCount, -List, +Graph
             rdf_graph_property/2,	% -Property, +Graph
 
+            rdf_meta/1,                 % +Declarations
+
             op(110, xfx, @),            % must be above .
-            op(650, xfx, ^^)            % must be above :
+            op(650, xfx, ^^),           % must be above :
+            op(1150, fx, rdf_meta)
+
           ]).
 :- use_module(library(hdt)).
 :- use_module(library(error)).
