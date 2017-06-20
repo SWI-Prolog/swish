@@ -45,6 +45,7 @@
             rdf_graph_property/2,	% -Property, +Graph
 
             rdf_meta/1,                 % +Declarations
+            rdf_prefix/2,               % +Prefix, +URL
 
             op(110, xfx, @),            % must be above .
             op(650, xfx, ^^),           % must be above :
