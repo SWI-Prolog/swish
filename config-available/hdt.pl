@@ -91,6 +91,10 @@ rdf_prefix(hdt:wordnet,       wn,    'http://wordnet-rdf.princeton.edu/wn31/').
 rdf_prefix(hdt:wordnet,       wno,   'http://wordnet-rdf.princeton.edu/ontology#').
 rdf_prefix(hdt:wordnet,       lemon, 'http://lemon-model.net/lemon#').
 rdf_prefix(hdt:dblp,          swrc,  'http://swrc.ontoware.org/ontology#').
+rdf_prefix(hdt:wikidata,      wdp,   'http://www.wikidata.org/prop/').
+rdf_prefix(hdt:wikidata,      wde,   'http://www.wikidata.org/entity/').
+rdf_prefix(hdt:wikidata,      wds,   'http://www.wikidata.org/prop/statement/').
+rdf_prefix(hdt:wikidata,      wdt,   'http://www.wikidata.org/prop/direct/').
 
 register_prefixes :-
     forall(rdf_prefix(_G, Prefix, IRI),
