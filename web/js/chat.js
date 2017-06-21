@@ -92,6 +92,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       var data = this.data(pluginName);
       var url  = window.location.host + config.http.locations.swish_chat;
       var lead = "?";
+      var ws = window.location.protocol.replace("http", "ws");
 
       function add_pref_param(name, pname) {
 	var value = preferences.getVal(pname);
@@ -115,7 +116,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 	lead = "&";
       }
 
-      data.connection = new WebSocket("ws://" + url,
+      data.connection = new WebSocket(ws + "//" + url,
 				      ['v1.chat.swish.swi-prolog.org']);
 
       data.connection.onerror = function(error) {
