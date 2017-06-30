@@ -8,6 +8,7 @@
 ## Design
 
   - Modularize navbar population?
+  - Allow using rendering infrastructure as module in other web applications.
 
 ## Window handling
 
@@ -33,6 +34,12 @@
 
   - Show stack and choice-points?
   - Display constraints.  How?
+  - breakpoints in notebooks (mostly needs to deal with source locations)
+
+## Highlighting
+
+  - Deal with multiple sources from a notebook (background programs).
+    - Analyse all programs and queries using a single callback?
 
 ## Rendering framework
 
@@ -42,54 +49,17 @@
 
 ## Dashboard
 
-Dashboard entry is basically a query. We will specify the parameters as
-
-```
-paramters(
-    [ Param1: Option ("+" Option)*
-      ...
-    ]),
-
-Goal
-```
-
-parameters/1 creates a dialog from the  provided argument types. We will
-do that server side. Initially we will  use the Pengine _prompt_ to fill
-the dialog, so parameters/1 acts as  read/1.   In  later versions we can
-provide a setting to the query that   will perform the generation of the
-dialog at notebook load time  and  replace   the  query  by  its dialog.
-Possibly we can implement that as part of the server-side highlighting?
-
+  - Complete type support for parameters/1
+  - Allow replacing the query with the dialog.  Can use query settings to
+    switch between the two modes.
 
 ## Sharing
 
-First option was TogetherJS.  Now doubting, as it my be much better to
+First option was TogetherJS.  Now doubting, as it may be much better to
 _not_ see exactly the same UI for cooperation.  What about
 
   - Allow for sharing editors
   - Allow sharing runners (= query+program)
-
-## File ownership and rights
-
-  - If a user is logged in
-    - Store the profile-id with a saved program			[OK]
-    - Do not show E-mail					[OK]
-    - Provide options:
-      - Allow save a new version
-        - Anyone						[OK]
-	- Logged on						[OK]
-	- Team
-	- Only me						[OK]
-      - Set/unset follow (docid, profile-id)
-        - When saving a file					[OK]
-	- From File/Follow menu					[OK]
-      - Vote up/down
-      - Profile options for email				[OK]
-    - Email notifications
-      - Exclude sending mail to self `self'			[OK]
-      - Provide `stop following this file' link			[OK]
-      - Provide `stop sending email' link			[OK]
-      - Styling						        [Not yet pretty]
 
 ## Make teams
 
@@ -112,19 +82,10 @@ _not_ see exactly the same UI for cooperation.  What about
   - Small installations can automatically add all users to the
     one team.
 
-
 ## Saving files
 
-  - Save/Info dialogs
-    - Fork from history
-      - Now: Play, Save, clear/fill name.
-      - New: Fork button?
-        - Will do
-	  - Load new data
-	  - Save, clearing name.
-    - Indicate branch points in history?
-      - Requires complete graph in memory.
-  - Re-map Control-S (google-docs ignores save)
+  - Provide auto-save (in browser?)
+    - How to recover?
 
 ## Search
 
@@ -165,8 +126,6 @@ _not_ see exactly the same UI for cooperation.  What about
       - Fire on this URL
       - Establish session cookie
       - Demand this cookie and destroy the initial URL
-    - Shared/remote usage
-      - Describe how to setup HTTPS.
   - Improve source search
     - Full search
     - Search file names
@@ -183,6 +142,26 @@ _not_ see exactly the same UI for cooperation.  What about
   - Mark files as pengine_src, loaded, not_loaded
     - Only send pengine_src with pengines.
     - Detect pengine_src based on alias?
+
+### Chat
+
+  - Turn `main' chat to be easy visible and notify all users
+    - Bell in main navbar with messages in central chat
+      - Incremented on new chats
+      - Menu to define action on new chat
+        - Ignore
+	- Alert
+	- Open chat
+	- When not online, mail me
+      - Click opens chat
+      - Only keep last N/period
+    - Menu "Chat about this file"
+    - Get Anna's new avatars
+
+### HTTPS
+
+  - Move swish.swi-prolog.org to https-only (redirect)
+    - Test dropping and resuming connections.
 
 ### Bugs
 
