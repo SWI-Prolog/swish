@@ -73,9 +73,9 @@ A user has the following options to control notifications:
     - Notify by E-mail: never/immediate/daily
 */
 
-:- setting(database, callable, swish('data/notify.db'),
+:- setting(database, callable, data('notify.db'),
            "Database holding notifications").
-:- setting(queue, callable, swish('data/notify-queue.db'),
+:- setting(queue, callable, data('notify-queue.db'),
            "File holding queued messages").
 :- setting(daily, compound, 04:00,
            "Time at which to send daily messages").
