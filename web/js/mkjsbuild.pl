@@ -4,7 +4,7 @@
 :- use_module(library(pio)).
 :- use_module(library(main)).
 
-:- initialization main.
+:- initialization(main, main).
 
 main([]) :- !,
 	main(['swish.js', 'build.js.in']).
