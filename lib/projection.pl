@@ -62,7 +62,9 @@ set.
 
 projection(_).
 
-swish:goal_expansion((projection(Spec),Body), Ordered) :-
+swish:goal_expansion((Projection,Body), Ordered) :-
+    nonvar(Projection),
+    Projection = projection(Spec),
     must_be(list, Spec),
     phrase(order(Spec, Vars), Order),
     Order \== [],
