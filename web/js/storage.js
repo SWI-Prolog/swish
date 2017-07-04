@@ -869,7 +869,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       } else if ( this.hasClass("notebook") ) {
 	return this.notebook('getSelection');
       } else {
-	console.log(sel);
+	console.log("Don't know how to get selection from", this);
       }
     },
 
