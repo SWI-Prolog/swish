@@ -94,6 +94,9 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       var lead = "?";
       var ws = window.location.protocol.replace("http", "ws");
 
+      if ( data.connection && data.connection.readyState == 1 )
+	return this;			/* already connected */
+
       function add_pref_param(name, pname) {
 	var value = preferences.getVal(pname);
 
