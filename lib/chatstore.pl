@@ -35,11 +35,11 @@
 
 :- module(chat_store,
           [ chat_store/1,               % +Message
-            chat_messages/2             % +DocID, -Messages
+            chat_messages/3             % +DocID, -Messages, +Options
           ]).
 :- use_module(library(settings)).
 :- use_module(library(filesex)).
-:- use_module(library(readutil)).
+:- use_module(library(option)).
 :- use_module(library(sha)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
@@ -134,23 +134,88 @@ strip_chat_user(User0, User) :-
 strip_chat_user(User, User).
 
 
-%!  chat_messages(+DocID, -Messages:list) is det.
+%!  chat_messages(+DocID, -Messages:list, +Options) is det.
 %
-%   Get all messages associated with DocID.
+%   Get messages associated with DocID.  Options include
+%
+%     - max(+Max)
+%     Maximum number of messages to retrieve.  Default is 25.
+%     - max_age(+Seconds)
+%     Do not retrieve older messages
 
-chat_messages(DocID, Messages) :-
+chat_messages(DocID, Messages, Options) :-
     chat_dir_file(DocID, _, File),
     (   exists_file(File)
-    ->  read_file_to_terms(File, Messages, [encoding(utf8)])
+    ->  read_messages(File, Messages0, Options),
+        filter_old(Messages0, Messages, Options)
     ;   Messages = []
     ).
+
+read_messages(File, Messages, Options) :-
+    setup_call_cleanup(
+        open(File, read, In, [encoding(utf8)]),
+        read_messages_from_stream(In, Messages, Options),
+        close(In)).
+
+read_messages_from_stream(In, Messages, Options) :-
+    option(max(Max), Options, 25),
+    integer(Max),
+    seek(In, 0, eof, _Pos),
+    backskip_lines(In, Max),
+    !,
+    read_terms(In, Messages).
+read_messages_from_stream(In, Messages, _Options) :-
+    seek(In, 0, bof, _NewPos),
+    read_terms(In, Messages).
+
+read_terms(In, Terms) :-
+    read_term(In, H, []),
+    (   H == end_of_file
+    ->  Terms = []
+    ;   Terms = [H|T],
+        read_terms(In, T)
+    ).
+
+backskip_lines(Stream, Lines) :-
+    byte_count(Stream, Here),
+    between(10, 20, X),
+    Start is max(0, Here-(1<<X)),
+    seek(Stream, Start, bof, _NewPos),
+    skip(Stream, 0'\n),
+    line_starts(Stream, Here, Starts),
+    reverse(Starts, RStarts),
+    nth1(Lines, RStarts, LStart),
+    !,
+    seek(Stream, LStart, bof, _).
+
+line_starts(Stream, To, Starts) :-
+    byte_count(Stream, Here),
+    (   Here >= To
+    ->  Starts = []
+    ;   Starts = [Here|T],
+        skip(Stream, 0'\n),
+        line_starts(Stream, To, T)
+    ).
+
+filter_old(Messages0, Messages, Options) :-
+    option(max_age(Age), Options),
+    !,
+    get_time(Now),
+    NotBefore is Now - Age,
+    exclude(older(NotBefore), Messages0, Messages).
+filter_old(Messages, Messages, _).
+
+older(NotBefore, Message) :-
+    is_dict(Message),
+    Message.get(time) < NotBefore.
+
 
 %!  swish_config:chat_count_about(+DocID, -Count)
 %
 %   True when Count is the number of messages about DocID
 
 swish_config:chat_count_about(DocID, Count) :-
-    chat_messages(DocID, Messages),
+    chat_messages(DocID, Messages, []),
     length(Messages, Count).
 
 
@@ -164,7 +229,8 @@ swish_config:chat_count_about(DocID, Count) :-
 
 chat_messages(Request) :-
     http_parameters(Request,
-                    [ docid(DocID, [])
+                    [ docid(DocID, []),
+                      max(Max, [nonneg, default(25)])
                     ]),
-    chat_messages(DocID, Messages),
+    chat_messages(DocID, Messages, [max(Max)]),
     reply_json_dict(Messages).
