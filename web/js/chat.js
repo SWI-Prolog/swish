@@ -153,7 +153,9 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
     empty_queue: function() {
       var data = this.data(pluginName);
 
-      while(data.queue && data.queue != [] && data.connection.readyState == 1) {
+      while( data.queue &&
+	     data.queue.length > 0
+	     && data.connection.readyState == 1 ) {
 	var str = data.queue.shift();
 	data.connection.send(str);
       }
