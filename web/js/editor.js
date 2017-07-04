@@ -914,12 +914,17 @@ define([ "cm/lib/codemirror",
 	      return {line:pos.line, ch:pos.ch};
 	    }
 
-	    if ( cmploc(s.anchor, s.head) ) {
-	      sr.from = cppos(s.anchor);
-	      sr.to   = cppos(s.head);
-	    } else {
-	      sr.to   = cppos(s.anchor);
-	      sr.from = cppos(s.head);
+	    switch ( cmploc(s.anchor, s.head) )
+	    { case -1:
+		sr.from = cppos(s.anchor);
+	        sr.to   = cppos(s.head);
+		break;
+	      case 1:
+		sr.to   = cppos(s.anchor);
+	        sr.from = cppos(s.head);
+		break;
+	      case 0:
+		continue;
 	    }
 
 	    sr.string  = data.cm.getRange(sr.from, sr.to);
