@@ -113,7 +113,7 @@ start_chat(Request, Options) :-
 	;   http_open_session(Session, []),
 	    CheckLogin = true
 	),
-	check_flooding,
+	check_flooding(Session),
 	http_parameters(Request,
 			[ avatar(Avatar, [optional(true)]),
 			  nickname(NickName, [optional(true)]),
@@ -124,6 +124,7 @@ start_chat(Request, Options) :-
 			 reconnect(Token),
 			 check_login(CheckLogin)
 		       ], Options, ChatOptions),
+	debug(chat(websocket), 'Accepting (session ~p)', [Session]),
 	http_upgrade_to_websocket(
 	    accept_chat(Session, ChatOptions),
 	    [ guarded(false),
@@ -139,12 +140,12 @@ extend_options([_|T0], Options, T) :-
 	extend_options(T0, Options, T).
 
 
-%!	check_flooding
+%!	check_flooding(+Session)
 %
 %	See whether the client associated with  a session is flooding us
 %	and if so, return a resource error.
 
-check_flooding :-
+check_flooding(_0Session) :-
 	get_time(Now),
 	(   http_session_retract(websocket(Score, Last))
 	->  Passed is Now-Last,
@@ -152,6 +153,8 @@ check_flooding :-
 	;   NewScore = 10,
 	    Passed = 0
 	),
+	debug(chat(flooding), 'Flooding score: ~2f (session ~p)',
+	      [NewScore, _0Session]),
 	http_session_assert(websocket(NewScore, Now)),
 	(   NewScore > 50
 	->  throw(http_reply(resource_error(
