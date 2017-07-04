@@ -592,7 +592,7 @@ var cellTypes = {
      * method has no effect if all cells already have a name.
      */
     assignCellNames: function() {
-      this.find(".nbCell").nbCell('assignName');
+      this.find(".nb-cell").nbCell('assignName');
       return this.notebook('checkModified');
     },
 
