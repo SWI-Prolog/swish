@@ -51,35 +51,9 @@ a.tab-chat {
 }
 
 a.tab-chat.chat-alert {
-  position: relative;
-  vertical-align: middle;
   display: inline-block;
   height: 30px;
   width: 22px;
-}
-
-a.tab-chat .glyphicon,
-span.tab-chat-count
-{ position: absolute;
-  display: block;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  line-height: 30px;
-}
-
-a.tab-chat .glyphicon {
-  font-size: 140%;
-  color: #f00;
-}
-
-span.tab-chat-count {
-  font-size: 80%;
-  font-weight: bold;
-  color: #fff;
-  z-index: 10;
 }
 
 .tabbed-select: {

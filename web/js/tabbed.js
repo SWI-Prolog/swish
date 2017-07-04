@@ -44,7 +44,7 @@
  */
 
 define([ "jquery", "form", "config", "preferences", "modal",
-	 "laconic", "search" ],
+	 "laconic", "search", "chatbell" ],
        function($, form, config, preferences, modal) {
 var tabbed = {
   tabTypes: {},
@@ -405,16 +405,13 @@ var tabbed = {
 		      $.el.span({class:"tab-dirty",
 		                 title:"Tab is modified. "+
 				       "See File/Save and Edit/View changes"}),
-	       chat = $.el.a({class:"tab-chat",
-			      title:"Chat messages available"
-			     },
-			     form.widgets.glyphIcon("bell"),
-			     $.el.span({class:"tab-chat-count"})),
+	       chat = $.el.a({class:'tab-chat'}),
 		      $.el.span({class:"tab-title"}, label),
 		      close_button);
       var li = $.el.li({role:"presentation"}, a1);
 
-      $(chat).on("click", function(ev) {
+      $(chat).chatbell()
+             .on("click", function(ev) {
 	var id = $(ev.target).closest("a.compact").data("id");
 	$("#"+id).find(".storage").storage('chat');
 	return false;
@@ -474,14 +471,7 @@ var tabbed = {
       var a = this.tabbed('anchor');
 
       if ( a ) {
-	var span = a.find(".tab-chat");
-
-	if ( chats && chats.count ) {
-	  span.find(".tab-chat-count").text(chats.count);
-	  span.addClass('chat-alert');
-	} else {
-	  span.removeClass('chat-alert');
-	}
+	a.find(".chat-bell").chatbell('chats', chats);
       }
 
       return this;

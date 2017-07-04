@@ -1,0 +1,31 @@
+a.chat-bell {
+  position: relative;
+  vertical-align: middle;
+  height: 30px;
+  width: 22px;
+}
+
+a.chat-bell .glyphicon,
+span.chat-bell-count
+{ position: absolute;
+  display: block;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  line-height: 30px;
+}
+
+a.chat-bell .glyphicon {
+  font-size: 140%;
+  color: #f00;
+}
+
+span.chat-bell-count {
+  font-size: 80%;
+  font-weight: bold;
+  color: #fff;
+  z-index: 10;
+}
+
