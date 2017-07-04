@@ -891,14 +891,14 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	return label;
       }
 
-      if ( sel[0].cell ) {
+      if ( sel[0].selections ) {
 	var label = "";
 
 	for(var i=0; i<sel.length; i++) {
 	  var ed = sel[i];
 	  if ( label != "" )
 	    label += ",";
-	  label += ed.cell + editorLabel(ed.selections);
+	  label += (ed.cell||"") + editorLabel(ed.selections);
 	}
 	return label;
       } else {
