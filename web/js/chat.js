@@ -45,9 +45,12 @@
 define([ "jquery", "config", "preferences", "form", "utils" ],
        function($, config, preferences, form, utils) {
 
+var MIN_RECONNECT_DELAY =   1000;
+var MAX_RECONNECT_DELAY = 300000;
+
 (function($) {
   var pluginName = 'chat';
-  var reconnect_delay = 10;
+  var reconnect_delay = MIN_RECONNECT_DELAY;
   var last_open = null;
 
   /** @lends $.fn.chat */
@@ -127,13 +130,17 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
       };
       data.connection.onclose = function(ev) {
 	if ( last_open == null ) {
-	  if ( reconnect_delay < 60000 )
-	    reconnect_delay *= 2;
+	  reconnect_delay *= 2;
+	  if ( reconnect_delay > MAX_RECONNECT_DELAY )
+	    reconnect_delay = MAX_RECONNECT_DELAY;
 	} else {
 	  if ( getTime() - last_open > 300000 )
-	    reconnect_delay = 10;
-	  else if ( reconnect_delay < 300000 )
-	    reconnect_delay *= 2;
+	  { reconnect_delay = MIN_RECONNECT_DELAY;
+	  } else
+	  { reconnect_delay *= 2;
+	    if ( reconnect_delay > MAX_RECONNECT_DELAY )
+	      reconnect_delay = MAX_RECONNECT_DELAY;
+	  }
 	}
 	setTimeout(function() {
 	  elem.chat('connect');
@@ -148,8 +155,6 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 	  console.log(e);
       };
       data.connection.onopen = function() {
-	elem.chat('empty_queue');
-	$(".storage").storage('chat_status');
       };
     },
 
@@ -231,7 +236,7 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
      * user
      */
     welcome: function(e) {
-      var data = $(this).data(pluginName);
+      var data = this.data(pluginName);
 
       if ( data.wsid && data.wsid != e.wsid ) {
 	this.html("");				/* server restart? */
@@ -250,6 +255,8 @@ define([ "jquery", "config", "preferences", "form", "utils" ],
 
       if ( e.check_login )
 	$("#login").login('update', "check");
+      $(".storage").storage('chat_status');
+      this.chat('empty_queue');
     },
 
     userCount: function(cnt) {
