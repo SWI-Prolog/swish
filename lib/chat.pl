@@ -39,7 +39,8 @@
 	    chat_to_profile/2,		% +ProfileID, :HTML
 	    chat_about/2,		% +DocID, +Message
 
-	    notifications//1		% +Options
+	    notifications//1,		% +Options
+	    broadcast_bell//1		% +Options
 	  ]).
 :- use_module(library(http/hub)).
 :- use_module(library(http/http_dispatch)).
@@ -88,6 +89,11 @@ browsers which in turn may have multiple SWISH windows opened.
   3. The user may be logged in, either based on the cookie or on
      HTTP authentication.
 */
+
+:- multifile swish_config:config/2.
+
+swish_config:config(hangout, 'Hangout.swinb').
+
 
 		 /*******************************
 		 *	ESTABLISH WEBSOCKET	*
@@ -765,8 +771,8 @@ noble_avatar_url(HREF, _Options) :-
 		 *	   BROADCASTING		*
 		 *******************************/
 
-%%	chat_broadcast(+Message)
-%%	chat_broadcast(+Message, +Channel)
+%%	chat_broadcast(+Message) is det.
+%%	chat_broadcast(+Message, +Channel) is det.
 %
 %	Send Message to all known SWISH clients. Message is a valid JSON
 %	object, i.e., a dict or option list.
@@ -795,6 +801,9 @@ subscribed(Channel, WSID) :-
 	subscription(WSID, Channel, _).
 subscribed(Channel, SubChannel, WSID) :-
 	subscription(WSID, Channel, SubChannel).
+subscribed(gitty, SubChannel, WSID) :-
+	swish_config:config(hangout, SubChannel),
+	\+ subscription(WSID, gitty, SubChannel).
 
 
 		 /*******************************
@@ -1181,8 +1190,6 @@ html_string(HTML, String) :-
 		 *	       UI		*
 		 *******************************/
 
-:- multifile swish_config:config/2.
-
 %%	notifications(+Options)//
 %
 %	The  chat  element  is  added  to  the  navbar  and  managed  by
@@ -1201,6 +1208,35 @@ notifications(_Options) -->
 		       ])
 		 ])).
 notifications(_Options) -->
+	[].
+
+%!	broadcast_bell(+Options)//
+%
+%	Adds a bell to indicate central chat messages
+
+broadcast_bell(_Options) -->
+	{ swish_config:config(chat, true),
+	  swish_config:config(hangout, Hangout),
+	  atom_concat('gitty:', Hangout, HangoutID)
+	}, !,
+	html([ a([ class(['dropdown-toggle', 'broadcast-bell']),
+		   'data-toggle'(dropdown)
+		 ],
+		 [ span([ id('broadcast-bell'),
+			  'data-document'(HangoutID)
+			], []),
+		   b(class(caret), [])
+		 ]),
+	       ul([ class(['dropdown-menu', 'pull-right']),
+		    id('chat-menu')
+		  ],
+		  [ li(a('data-action'('chat-shared'),
+			 'Open hangout')),
+		    li(a('data-action'('chat-about-file'),
+			 'Open chat for current file'))
+		  ])
+	     ]).
+broadcast_bell(_Options) -->
 	[].
 
 

@@ -192,11 +192,11 @@ var cellTypes = {
 	  copyData("st_type");
 	  copyData("chats");
 
-	  var docid = elem.storage('docid', undefined, storage);
-	  var prefs = preferences.getVal(docid)||{fullscreen:true};
+	  var docid      = elem.storage('docid', undefined, storage);
+	  var fullscreen = preferences.getDocVal(docid, 'fullscreen', true);
 
 	  elem.notebook('value', content.text(),
-			{ fullscreen: prefs.fullscreen
+			{ fullscreen: fullscreen
 			});
 	  content.remove();
 	} else {
@@ -212,9 +212,7 @@ var cellTypes = {
 	  }
 	});
 	elem.on("fullscreen", function(ev, val) {
-	  var prefs = preferences.getVal(docid)||{};
-	  prefs.fullscreen = val;
-	  preferences.setVal(docid, prefs);
+	  preferences.setDocVal(docid, 'fullscreen', val);
 	});
       }); /* end .each() */
     },

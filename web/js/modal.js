@@ -443,6 +443,8 @@ define([ "jquery", "config", "preferences", "links", "form",
   };
 }(jQuery));
 
+  var ntfid = 1;
+
   return {
     ajaxError: function(jqXHR) {
       $(".swish-event-receiver").trigger("ajaxError", jqXHR);
@@ -453,11 +455,62 @@ define([ "jquery", "config", "preferences", "links", "form",
     alert: function(options) {
       $(".swish-event-receiver").trigger("alert", options);
     },
+    help: function(options) {
+      $(".swish-event-receiver").trigger("help", options);
+    },
     show: function(options) {
       $(".swish-event-receiver").trigger("show", options);
     },
     server_form: function(options) {
       $(".swish-event-receiver").trigger("server_form", options);
+    },
+
+    /**
+     * Provide a brief notification for an element, typically an
+     * icon or similar object.
+     *
+     * @param {Object} options
+     * @param {String} options.html provides the inner html of the message.
+     * @param {Number} [options.fadeIn=400] provide the fade in time.
+     * @param {Number} [options.fadeOut=400] provide the fade out time.
+     * @param {Number} [options.time=5000] provide the show time.  The
+     * value `0` prevents a timeout.
+     */
+    notify: function(elem, options) {
+      var id = "ntf-"+(options.wsid||ntfid++);
+
+      var div  = $.el.div({ class:"notification notify-arrow",
+			    id:id
+			  });
+      var epos = elem.offset();
+
+      $("body").append(div);
+      if ( options.html )
+	$(div).html(options.html);
+      else if ( options.dom )
+	$(div).append(options.dom);
+
+      $(div).css({ left: epos.left+elem.width()-$(div).outerWidth()+15,
+		   top:  epos.top+elem.height()+12
+		 })
+	    .on("click", function(){$(div).remove();})
+	    .show(options.fadeIn||400);
+
+      if ( options.time !== 0 ) {
+	var time = options.time;
+
+	if ( !time )
+	  time = elem.hasClass("myself") ? 1000 : 5000;
+
+	setTimeout(function() {
+	  $(div).hide(options.fadeOut||400, function() {
+	    $("#"+id).remove();
+	    if ( options.onremove )
+	      options.onremove(options);
+	    elem.chat('unnotify', options.wsid);
+	  });
+	}, time);
+      }
     }
   };
 });

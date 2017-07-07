@@ -50,7 +50,7 @@ a.tab-chat {
   display: none;
 }
 
-a.tab-chat.chat-alert {
+a.tab-chat.chat-available {
   display: inline-block;
   height: 30px;
   width: 22px;

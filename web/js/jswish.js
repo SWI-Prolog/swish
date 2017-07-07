@@ -108,15 +108,6 @@ preferences.setDefault("emacs-keybinding", false);
 		      glyph("eye-open", function() {
 	  menuBroadcast("follow-file");
 	}) : undefined,
-	"Chat ...": icon("chat", function() {
-	  menuBroadcast("chat-about-file");
-	}),
-	"Chat help room ...": icon("chathelp", function() {
-	  $("body").swish('playFile', {
-	    file:"Help.swinb",
-	    chat:'large'
-	  });
-	}),
 	"Start TogetherJS ...": icon("togetherjs", function() {
 	  $("body").swish('collaborate');
 	}),
@@ -221,6 +212,22 @@ preferences.setDefault("emacs-keybinding", false);
 	  elem.swish('collaborate');
 
 	$("#chat").chat('');
+	$("#broadcast-bell")
+		.chatbell({
+		  empty_title: "Click to open chat"
+		});
+	$("#chat-menu").on("click", "a", function(ev) {
+	  var a = $(ev.target).closest("a");
+	  switch ( a.data('action') ) {
+	  case 'chat-shared':
+	    $("body").swish('playFile', {
+	      file: config.swish.hangout,
+	      chat: 'large'
+	    });
+	  case 'chat-about-file':
+	    menuBroadcast("chat-about-file");
+	  }
+	});
 
 	setInterval(function(){
 	  $(".each-minute").trigger("minute");
@@ -365,14 +372,18 @@ preferences.setDefault("emacs-keybinding", false);
     /**
      * Open a source.  If we are in fullscreen mode and the current
      * object cannot be opened by the current fullscreen node, we
-     * leave fullscreen mode and retry.  Called by playFile and playURL.
+     * leave fullscreen mode.  Called by playFile and playURL.
      */
-    setSource: function(options) {
-      menuBroadcast("source", options);
-      if ( !this.find(".storage").storage('match', options) ) {
-	if ( this.swish('exitFullscreen') )
-	  menuBroadcast("source", options);
+    setSource: function(src) {
+      var st = this.swish('isFullscreen');
+
+      if ( !(st && st.storage('setSource', src)) ) {
+	if ( st )
+	  this.swish('exitFullscreen');
+	this.find(".tabbed").tabbed('tabFromSource', src);
       }
+
+      return this;
     },
 
 
@@ -601,6 +612,21 @@ preferences.setDefault("emacs-keybinding", false);
       }
 
       return false;
+    },
+
+    /**
+     * Detect fullscreen mode
+     * @return {jQuery} storage object that is running in fullscreen
+     * mode.
+     */
+    isFullscreen: function() {
+      var content = this.find(".container.tile-top");
+
+      if ( content.hasClass("fullscreen") ) {
+	var st = content.find(".storage");
+	if ( st.length != 0 )
+	  return st;
+      }
     },
 
     /**

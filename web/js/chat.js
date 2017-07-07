@@ -42,8 +42,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "preferences", "form", "utils" ],
-       function($, config, preferences, form, utils) {
+define([ "jquery", "config", "preferences", "form", "modal", "utils" ],
+       function($, config, preferences, form, modal, utils) {
 
 var MIN_RECONNECT_DELAY =   1000;
 var MAX_RECONNECT_DELAY = 300000;
@@ -349,6 +349,12 @@ var MAX_RECONNECT_DELAY = 300000;
     'chat-message': function(e) {
       var rooms = $("div.chatroom").chatroom('rooms', e.docid);
 
+      $(".storage").storage('chat_message', e);
+
+      if ( e.docid == "gitty:"+config.swish.hangout ) {
+	$("#broadcast-bell").chatbell('chat-message', e);
+      }
+
       if ( rooms.length > 0 ) {
 	rooms.chatroom('add', e);
 	e.displayed = true;
@@ -360,8 +366,17 @@ var MAX_RECONNECT_DELAY = 300000;
 	  this.chat('notifyUser', msg);
 	}
       }
+    },
 
-      $(".storage").storage('chat_message', e);
+    /**
+     * Indicate we have read all messages upto a certain time stamp.
+     * @param {String} docid is the document id for which we should
+     * update the counter.
+     * @param {Number} time is the time of the last message read
+     * (seconds after 1/1/1970)
+     */
+    'read_until'(docid, time) {
+      preferences.setDocVal(docid, 'chatBar', time);
     },
 
 
@@ -370,53 +385,47 @@ var MAX_RECONNECT_DELAY = 300000;
 		 *******************************/
 
     /**
-     * Present a notification associated with a user
+     * Get the broadcast room
+     */
+    broadcast_room() {
+      return this.closest(".swish")
+                 .find(".storage")
+                 .storage('match', {file:config.swish.hangout});
+    },
+
+    /**
+     * Present a notification associated with a user. We ignore open and
+     * close of the broadcast room if we do not have this open when the
+     * message arrives.
      *
-     * @param {Object} options
-     * @param {String} options.html provides the inner html of the message.
-     * @param {Number} [options.fadeIn=400] provide the fade in time.
-     * @param {Number} [options.fadeOut=400] provide the fade out time.
-     * @param {Number} [options.time=5000] provide the show time.  The
-     * value `0` prevents a timeout.
      */
     notifyUser: function(options) {
       var elem = this;
+
+      function isBroadcast(options) {
+	return ( ( options.event == 'opened' ||
+		   options.event == 'closed' ) &&
+		 options.event_argv &&
+		 options.event_argv[0] == config.swish.hangout
+	       );
+      }
+
+      if ( isBroadcast(options) && !this.chat('broadcast_room') )
+	return this;
+
       var user_li = this.chat('addUser', options);
 
       if ( user_li.length > 0 ) {
-	var div  = $.el.div({ class:"notification notify-arrow",
-			      id:"ntf-"+options.wsid
-			    });
-	var epos = user_li.offset();
-
-	$("body").append(div);
-	$(div).html(options.html)
-	      .css({ left: epos.left+user_li.width()-$(div).outerWidth()+15,
-		     top:  epos.top+user_li.height()+12
-		   })
-	      .on("click", function(){$(div).remove();})
-	      .show(options.fadeIn||400);
-
-	if ( options.time !== 0 ) {
-	  var time = options.time;
-
-	  if ( !time )
-	    time = user_li.hasClass("myself") ? 1000 : 5000;
-
-	  setTimeout(function() {
-	    $(div).hide(options.fadeOut||400, function() {
-	      elem.chat('unnotify', options.wsid);
-	    });
-	  }, time);
-	}
+	options.onremove = function() {
+	  elem.chat('unnotify', options.wsid);
+	};
+	modal.notify(user_li, options);
 
 	this.chat('updateFiles', options);
       }
     },
 
     unnotify: function(wsid) {
-      $("#ntf-"+wsid).remove();
-
       if ( $("#"+wsid).hasClass("removed") )
 	this.chat('removeUser', wsid);
 
@@ -502,8 +511,8 @@ var MAX_RECONNECT_DELAY = 300000;
 	if ( lost ) {
 	  elem.data('lost-timer',
 		    setTimeout(function() {
-		      if ( $("#"+wsid.wsid).hasClass("lost") )
-			$("#"+wsid.wsid).remove();
+		      if ( li.hasClass("lost") )
+			li.remove();
 		    }, 60000));
 	} else {
 	  var tmo = elem.data('lost-timer');

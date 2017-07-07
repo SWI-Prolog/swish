@@ -403,7 +403,7 @@ storage_get(raw, Dir, Type, FileOrHash, _Request) :-
 storage_get(json, Dir, Type, FileOrHash, _Request) :-
 	gitty_data_or_default(Dir, Type, FileOrHash, Code, Meta),
 	chat_count(Meta, Count),
-	reply_json_dict(json{data:Code, meta:Meta, chats:_{count:Count}}).
+	reply_json_dict(json{data:Code, meta:Meta, chats:_{total:Count}}).
 storage_get(history(Depth, Includes), Dir, _, File, _Request) :-
 	gitty_history(Dir, File, History, [depth(Depth),includes(Includes)]),
 	reply_json_dict(History).

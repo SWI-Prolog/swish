@@ -2,7 +2,7 @@
 
 <html>
   <head>
-  <title>SWISH chat service</title>
+  <title>Chat with SWISH users</title>
   </head>
   <body>
 
@@ -10,16 +10,31 @@
 <p>
 The <span style="color:darkblue">SWI</span><span
 style="color:maroon">SH</span> chat services allows you to chat with
-users about a file. <span style="color:darkblue">SWI</span><span
-style="color:maroon">SH</span> displays an <i>avatar</i> for each user
-with whom you share an open file. If you select <b>File/Chat ...</b> the
-current notebook or program gets a chat window displayed below it,
-preloaded with older chat messages about this file.  A chat message
-may include one or more <b>payload</b> objects that are made visible
-as buttons.  Most payloads are added using the <a class="btn
-btn-xs btn-primary">Send <b class="caret"></b></a> button menu.  Defined
-payloads are:
-</p>
+other <span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> users.  Each file acts as a chat room,
+while the <b>Hangout</b> room allows you to attrack attention to the
+file you are working on.  The <b>bell</b> at the top-right shows the
+status of the hangout room and any message sent to the hangout room
+appears briefly below the bell.  The associated <i>dropdown menu</i>
+provides access to both the hangout room and the room associated with
+the currently active file.
+
+<p>
+<span style="color:darkblue">SWI</span><span
+style="color:maroon">SH</span> displays an <b>avatar</b> for each user
+with whom you share an open file to make you aware of other users.
+Operations such as opening, reloading or closing a file are briefly
+indicated to people with whom you share an open file. The <i>avatar</i>
+is taken from your identity provider or <a
+href="https://en.gravatar.com">gravatar.com</a> if you are logged in.
+Otherwise it is a randomly generated avatar that is stored in your
+browser's local store.
+
+<p>
+A chat message may include one or more <b>payload</b> objects that are
+made visible as buttons. Most payloads are added using the <a class="btn
+btn-xs btn-primary">Send <b class="caret"></b></a> button menu. Defined
+payloads are: </p>
 
   <ul>
     <li>The <b>selection</b>.  If you have made a selection on the
@@ -42,15 +57,15 @@ file to <b>ask for support</b>.
 </p>
 
 
-<h3 id="chat-help">The shared chat room</h3>
+<h3 id="chat-help">The hangout room</h3>
 
-<p class="dropup">
-The notebook <a href="/p/Help.swinb">Help.swinb</a> provides a place to
-find buddies. It can be opened from <b>File/Chat help room ...</b> and
-messages may be cross-posted to this shared space using <b>Broadcast to
-help room</b> from the <a class="btn btn-xs btn-primary">Send <b
-class="caret"></b></a> button. The message that appears in the shared
-room contains a link to the file from which it was created.
+<p class="dropup"> The notebook <a
+href="/p/Hangout.swinb">Hangout.swinb</a> provides a place to find
+buddies. Messages may be cross-posted to this shared space using
+<b>Broadcast to hangout</b> from the <a class="btn btn-xs
+btn-primary">Send <b class="caret"></b></a> button. The message that
+appears in the hangout room contains a link to the file from which it was
+created.
 <p>
 
 <h3 id="chat-markdown">Markdown in chat messages</h3>

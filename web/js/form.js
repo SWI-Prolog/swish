@@ -599,6 +599,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 
       populateMenu: function(menu, client, actions) {
 	var ul = menu.find(".dropdown-menu");
+	var data = ul.data("menu")||{};
 
 	function runMenu(ev, a) {
 	  var action = $(a).data('action');
@@ -626,7 +627,12 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 	  }
 	}
 
-	ul.on("click", "a", function(ev) { runMenu(ev, this); } );
+	if ( !data.bound ) {
+	  data.bound = true;
+	  ul.on("click", "a", function(ev) { runMenu(ev, this); } );
+	}
+
+	ul.data("menu", data);
 
 	return menu;
       }

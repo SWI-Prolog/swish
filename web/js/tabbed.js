@@ -86,10 +86,6 @@ var tabbed = {
 
 	elem.addClass("tabbed");
 	elem.tabbed('makeTabbed');
-	// Current tab could not handle source, create a new one
-	elem.on("source", function(ev, src) {
-	  elem.tabbed('tabFromSource', src);
-	});
 	elem.on("trace-location", function(ev, prompt) {
 	  elem.tabbed('showTracePort', prompt);
 	});
@@ -201,20 +197,39 @@ var tabbed = {
      * (new) tab, open the data in this tab.
      */
     tabFromSource: function(src) {
+      var elem = this;
       var select = this.find("div.tabbed-select");
-      if ( select.length > 0 ) {
-	var tab = $(select[0]).closest(".tab-pane");
-	this.tabbed('show', tab.attr("id"));
-	if ( typeof(src) == "object" )
-	  delete src.newTab;
-	this.tabbed('setSource', tab, src);
-      } else {
-	var tab = this.tabbed('newTab', $("<span></span>"));
-	if ( typeof(src) == "object" )
-	  delete src.newTab;
-	if ( !this.tabbed('setSource', tab, src) ) {
-	  this.tabbed('removeTab', tab.attr("id"));
+
+      if ( typeof(src) == "string" )
+	src = {data:src};
+
+      function inNewTab() {
+	var tab = elem.tabbed('newTab', $("<span></span>"));
+	if ( !elem.tabbed('setSource', tab, src) ) {
+	  elem.tabbed('removeTab', tab.attr("id"));
 	}
+      }
+
+      if ( select.length > 0 ) {
+	var tab = select.first().closest(".tab-pane");
+	this.tabbed('show', tab.attr("id"));
+	this.tabbed('setSource', tab, src);
+      } else if ( src.newTab ) {
+	inNewTab();
+      } else
+      { var tab;
+
+	this.find(".storage").each(function(i, st) {
+	  if ( $(st).storage('setSource', src) ) {
+	    tab = $(st).closest(".tab-pane");
+	    return false;
+	  }
+        });
+
+	if ( tab )
+	  this.tabbed('show', tab.attr("id"));
+	else
+	  inNewTab();
       }
 
       return this;
@@ -236,7 +251,7 @@ var tabbed = {
 	tab.tabbed('title', tabType.label, tabType.dataType);
 	tab.append(content);
 	tabType.create(content);
-	$(content).trigger("source", src);
+	$(content).storage('setSource', src);
 	return true;
       }
 
@@ -465,17 +480,35 @@ var tabbed = {
     /**
      * Set the chat message feedback for this tab
      * @param {Object} [chats]
-     * @param {Number} [chats.count] number of pending chat messages
+     * @param {Number} [chats.count] number of available chat messages
+     * on the document.
      */
     chats: function(chats) {
       var a = this.tabbed('anchor');
 
       if ( a ) {
-	a.find(".chat-bell").chatbell('chats', chats);
+	a.find(".chat-bell").chatbell('update', chats);
       }
 
       return this;
     },
+
+    /**
+     * Increment the chat count and possibly associate the bell
+     * with the document identifier.
+     * @param {String} [docid] is the document identifier to associate
+     * with.
+     */
+    'chats++': function(docid) {
+      var a = this.tabbed('anchor');
+
+      if ( a ) {
+	a.find(".chat-bell").chatbell('chats++', docid);
+      }
+
+      return this;
+    },
+
 
     /**
      * Default empty tab content that allows the user to transform

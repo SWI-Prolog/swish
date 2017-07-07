@@ -41,11 +41,13 @@
 :- use_module(library(filesex)).
 :- use_module(library(option)).
 :- use_module(library(sha)).
+:- use_module(library(apply)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
 
 :- http_handler(swish(chat/messages), chat_messages, [ id(chat_messages) ]).
+:- http_handler(swish(chat/status),   chat_status,   [ id(chat_status)   ]).
 
 :- setting(directory, callable, data(chat),
 	   'The directory for storing chat messages.').
@@ -94,6 +96,15 @@ chat_file(DocID, File) :-
     chat_dir_file(DocID, Dir, File),
     make_directory_path(Dir).
 
+%!  existing_chat_file(+DocID, -File) is semidet.
+%
+%   True when File is the path of   the  file holding chat messages from
+%   DocID.
+
+existing_chat_file(DocID, File) :-
+    chat_dir_file(DocID, _, File),
+    exists_file(File).
+
 %!  chat_store(+Message:dict) is det.
 %
 %   Add a chat message to the chat  store. If `Message.create == false`,
@@ -102,7 +113,8 @@ chat_file(DocID, File) :-
 %   an ongoing chat so we know to which version chat messages refer.
 
 chat_store(Message) :-
-    chat{docid:DocID} :< Message,
+    chat{docid:DocIDS} :< Message,
+    atom_string(DocID, DocIDS),
     chat_file(DocID, File),
     (	del_dict(create, Message, false, Message1)
     ->	exists_file(File)
@@ -111,10 +123,12 @@ chat_store(Message) :-
     !,
     strip_chat(Message1, Message2),
     with_mutex(chat_store,
-               setup_call_cleanup(
-                   open(File, append, Out, [encoding(utf8)]),
-                   format(Out, '~q.~n', [Message2]),
-                   close(Out))).
+               (   setup_call_cleanup(
+                       open(File, append, Out, [encoding(utf8)]),
+                       format(Out, '~q.~n', [Message2]),
+                       close(Out)),
+                   increment_message_count(DocID)
+               )).
 chat_store(_).
 
 %!  strip_chat(_Message0, -Message) is det.
@@ -140,12 +154,11 @@ strip_chat_user(User, User).
 %
 %     - max(+Max)
 %     Maximum number of messages to retrieve.  Default is 25.
-%     - max_age(+Seconds)
-%     Do not retrieve older messages
+%     - after(+TimeStamp)
+%     Only get messages after TimeStamp
 
 chat_messages(DocID, Messages, Options) :-
-    chat_dir_file(DocID, _, File),
-    (   exists_file(File)
+    (   existing_chat_file(DocID, File)
     ->  read_messages(File, Messages0, Options),
         filter_old(Messages0, Messages, Options)
     ;   Messages = []
@@ -198,25 +211,57 @@ line_starts(Stream, To, Starts) :-
     ).
 
 filter_old(Messages0, Messages, Options) :-
-    option(max_age(Age), Options),
+    option(after(After), Options),
+    After > 0,
     !,
-    get_time(Now),
-    NotBefore is Now - Age,
-    exclude(older(NotBefore), Messages0, Messages).
+    include(after(After), Messages0, Messages).
 filter_old(Messages, Messages, _).
 
-older(NotBefore, Message) :-
+after(After, Message) :-
     is_dict(Message),
-    Message.get(time) < NotBefore.
+    Message.get(time) > After.
 
+%!  chat_message_count(+DocID, -Count) is det.
+%
+%   Count the number of message stored for   DocID.  This is the same as
+%   the number of lines.
+
+:- dynamic  message_count/2.
+:- volatile message_count/2.
+
+chat_message_count(DocID, Count) :-
+    message_count(DocID, Count),
+    !.
+chat_message_count(DocID, Count) :-
+    count_messages(DocID, Count),
+    asserta(message_count(DocID, Count)).
+
+count_messages(DocID, Count) :-
+    (   existing_chat_file(DocID, File)
+    ->  setup_call_cleanup(
+            open(File, read, In, [encoding(iso_latin_1)]),
+            (   skip(In, 256),
+                line_count(In, Line)
+            ),
+            close(In)),
+        Count is Line - 1
+    ;   Count = 0
+    ).
+
+increment_message_count(DocID) :-
+    clause(message_count(DocID, Count0), _, CRef),
+    !,
+    Count is Count0+1,
+    asserta(message_count(DocID, Count)),
+    erase(CRef).
+increment_message_count(_).
 
 %!  swish_config:chat_count_about(+DocID, -Count)
 %
 %   True when Count is the number of messages about DocID
 
 swish_config:chat_count_about(DocID, Count) :-
-    chat_messages(DocID, Messages, []),
-    length(Messages, Count).
+    chat_message_count(DocID, Count).
 
 
 		 /*******************************
@@ -230,7 +275,32 @@ swish_config:chat_count_about(DocID, Count) :-
 chat_messages(Request) :-
     http_parameters(Request,
                     [ docid(DocID, []),
-                      max(Max, [nonneg, default(25)])
+                      max(Max, [nonneg, optional(true)]),
+                      after(After, [number, optional(true)])
                     ]),
-    chat_messages(DocID, Messages, [max(Max)]),
+    include(ground, [max(Max), after(After)], Options),
+    chat_messages(DocID, Messages, Options),
     reply_json_dict(Messages).
+
+%!  chat_status(+Request)
+%
+%   HTTP handler that returns chat status for document
+
+chat_status(Request) :-
+    http_parameters(Request,
+                    [ docid(DocID, []),
+                      max(Max, [nonneg, optional(true)]),
+                      after(After, [number, optional(true)])
+                    ]),
+    include(ground, [max(Max), after(After)], Options),
+    chat_message_count(DocID, Total),
+    (   Options == []
+    ->  Count = Total
+    ;   chat_messages(DocID, Messages, Options),
+        length(Messages, Count)
+    ),
+    reply_json_dict(
+        json{docid: DocID,
+             total: Total,
+             count: Count
+            }).

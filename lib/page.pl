@@ -144,7 +144,7 @@ swish_reply3(json, Options) :-
 	option(code(Code), Options), !,
 	option(meta(Meta), Options, _{}),
 	option(chat_count(Count), Options, 0),
-	reply_json_dict(json{data:Code, meta:Meta, chats:_{count:Count}}).
+	reply_json_dict(json{data:Code, meta:Meta, chats:_{total:Count}}).
 swish_reply3(_, Options) :-
 	swish_config:reply_page(Options), !.
 swish_reply3(_, Options) :-
@@ -346,7 +346,8 @@ swish_navbar(Options) -->
 			 ul([class([nav, 'navbar-nav', 'navbar-right'])],
 			    [ li(\notifications(Options)),
 			      li(\search_box(Options)),
-			      \li_login_button(Options)
+			      \li_login_button(Options),
+			      li(\broadcast_bell(Options))
 			    ])
 		       ])
 		 ])).

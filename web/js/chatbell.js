@@ -42,36 +42,176 @@
  * @requires jquery
  */
 
-define([ "jquery", "form", "laconic" ],
-       function($, form) {
+define([ "jquery", "form", "modal", "config", "preferences",
+	 "laconic", "chatroom"
+       ],
+       function($, form, modal, config, preferences) {
 
 (function($) {
   var pluginName = 'chatbell';
 
   /** @lends $.fn.chatbell */
   var methods = {
+    /**
+     * @param {Object} [options]
+     * @param {String} [options.docid] Associate with a document id.
+     * If default, try the `data-document` attribute.
+     * @param {String} [options.empty_title] Title attribute if there
+     * are no new messages
+     */
     _init: function(options) {
+      options = options||{};
+
       return this.each(function() {
 	var elem = $(this);
-	var data = {};			/* private data */
+	var data = $.extend({}, options); /* private data */
+
+	data.docid = options.docid||elem.data('document');
+	elem.data(pluginName, data);	/* store with element */
 
 	elem.addClass("chat-bell");
 	elem.attr('title', "Messages available");
 	elem.append(form.widgets.glyphIcon("bell"),
-		    $.el.span({class:"chat-bell-count"}));
-
-	elem.data(pluginName, data);	/* store with element */
+		    $.el.span({class:"chat-bell-count"}, "-"));
+	elem.chatbell('update');
       });
     },
 
+    /**
+     * Set the chat counter and optionally associate the chat bell
+     * with a document (`docid`)
+     * @param {Object} chats
+     * @param {Number} chats.count number of chat messages to report
+     * @param {String} [chats.docid] associate bell with document
+     */
     chats: function(chats) {
-      if ( chats && chats.count ) {
-	this.find(".chat-bell-count").text(chats.count);
-	this.addClass('chat-alert');
-	this.attr('title', chats.count + " messages available");
+      var data = this.data(pluginName);
+      var span = this.find(".chat-bell-count");
+      var elem = this;
+
+      function empty() {
+	span.text("-");
+	elem.removeClass('chat-available chat-alert');
+	elem.attr('title', data.empty_title||"No messages available");
+      }
+
+      if ( chats == undefined ) {
+	delete data.docid;
+	delete data.count;
+	delete data.total;
+
+	empty();
       } else {
-	this.removeClass('chat-alert');
-	this.attr('title', "No messages available");
+	var count = chats.count == undefined ? chats.total : chats.count;
+
+	if ( chats.docid ) data.docid = chats.docid;
+	if ( chats.count ) data.count = chats.count;
+	if ( chats.total ) data.total = chats.total;
+
+	if ( chats.total > 0 ) {
+	  this.addClass('chat-available');
+	  if ( count > 0 ) {
+	    span.text(count);
+	    this.addClass('chat-alert');
+	    this.attr('title', count + " new messages");
+	  } else {
+	    span.text(chats.total);
+	    this.removeClass('chat-alert');
+	    this.attr('title', chats.total + " old messages");
+	  }
+	} else {
+	  empty();
+	}
+      }
+
+      return this;
+    },
+
+    'chats++': function(docid) {
+      var data = this.data(pluginName);
+
+      if ( data.total != undefined ) data.total++; else data.total = 1;
+      if ( data.count != undefined ) data.count++;
+      if (      docid != undefined ) data.docid = docid;
+
+      if ( data.total ) {
+	this.chatbell('chats', {
+	  total: data.total,
+	  count: data.count
+	});
+      }
+
+      return this;
+    },
+
+    /**
+     * Update the chat bell.
+     * @param {Object} [chats]
+     * @param {Number} [chats.total]
+     * @param {Number} [chats.count]
+     * @param {Number} [chats.docid]
+     */
+    update: function(chats) {
+      var data = this.data(pluginName);
+
+      chats = chats||{};
+
+      if ( chats.total != undefined &&
+	   chats.count != undefined ) {
+	this.chatbell('chats', chats);
+      } else {
+	var docid = chats.docid||data.docid;
+	var after = preferences.getDocVal(docid, 'chatBar', 0);
+
+	if ( docid && after ) {
+	  var elem = $(this);
+
+	  $.get(config.http.locations.chat_status,
+		{ docid: docid,
+		  after: after
+		},
+		function(chats) {
+		  elem.chatbell('chats', chats);
+		});
+	} else if ( chats.total != undefined ) {
+	  this.chatbell('chats', chats);
+	}
+      }
+
+      return this;
+    },
+
+    /**
+     * Sent by the chatroom if the user saw the last message.
+     */
+    read_until: function(docid, time) {
+      return this.each(function() {
+	var elem = $(this);
+	var data = elem.data(pluginName);
+
+	if ( data.docid == docid && data.total ) {
+	  elem.chatbell('chats', {total: data.total, count:0});
+	}
+      });
+    },
+
+    /**
+     * Handle an incomming chat message.  If the message is not from
+     * myself, display as a short notification.
+     */
+    'chat-message': function(msg) {
+      if ( msg.is_self == undefined )
+	msg.is_self = this.chatroom('is_self', msg);
+
+      this.chatbell('chats++');
+
+      if ( !msg.is_self ) {
+	var elem = this.chatroom('render', msg);
+	var options = {
+	  dom: elem
+	};
+
+	modal.notify(this, options);
       }
     }
   }; // methods

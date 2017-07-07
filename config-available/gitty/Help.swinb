@@ -1,9 +1,0 @@
-<div class="notebook">
-
-<div class="nb-cell markdown">
-### The help chat room
-
-This notebook acts as a place for exchanging chat messages with all other users of this service.  You can send messages to this room from the room itself or using the __Broadcast to help room__ option from the __Send__ button on any other file.  In the latter case the message appears in this room with a link to the file from which it originates.
-</div>
-
-</div>

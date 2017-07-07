@@ -130,6 +130,23 @@ define(["jquery"],
 	}
       }
       return defaults[name];
+    },
+
+    /**
+     * Set a preference value for a document.
+     */
+    setDocVal: function(docid, name, value) {
+      var prefs = preferences.getVal(docid)||{};
+      prefs[name] = value;
+      preferences.setVal(docid, prefs);
+    },
+
+    /**
+     * Get a preference value for a document.
+     */
+    getDocVal: function(docid, name, def) {
+      var prefs = preferences.getVal(docid)||{};
+      return prefs[name] === undefined ? def : prefs[name];
     }
   }
 

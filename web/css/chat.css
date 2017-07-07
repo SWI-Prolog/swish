@@ -42,6 +42,21 @@ li.user.lost
 { opacity: 0.2;
 }
 
+.navbar-nav > li > a.broadcast-bell {
+  padding: 15px 5px 9px;
+}
+
+#broadcast-bell {
+  display: inline-block;
+  height: 30px;
+  width: 26px;
+}
+
+#broadcast-bell .glyphicon {
+  font-size: 200%;
+}
+
+
 /* http://www.cssarrowplease.com/ */
 
 .notify-arrow {

@@ -99,9 +99,6 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  ev.stopPropagation();
 	}
 
-	elem.on("source", function(ev, src) {
-	  onStorage(ev, 'setSource', src);
-	});
 	elem.on("save", function(ev, data) {
 	  onStorage(ev, 'save', data);
 	});
@@ -146,6 +143,28 @@ define([ "jquery", "config", "modal", "form", "gitty",
     },
 
     /**
+     * @returns {Boolean} `true` if the storage can represent the
+     * requested type
+     */
+    supportsType: function(src) {
+      var data = this.data(pluginName);
+      var type = tabbed.tabTypes[data.typeName];
+
+      if ( typeof(src) == "string" )
+	src = {data:src};
+
+      if ( (src.meta && src.meta.name) || src.url )
+      { var name = (src.meta && src.meta.name) ? src.meta.name : src.url;
+	var ext  = name.split('.').pop();
+
+	if ( ext != type.dataType )
+	  return false;
+      }
+
+      return true;
+    },
+
+    /**
      * @param {String|Object} src becomes the new contents of the editor
      * @param {String} src.data contains the data in the case that
      * `src` is an object.
@@ -154,21 +173,12 @@ define([ "jquery", "config", "modal", "form", "gitty",
      */
     setSource: function(src) {
       var data = this.data(pluginName);
-      var type = tabbed.tabTypes[data.typeName];
 
       if ( typeof(src) == "string" )
 	src = {data:src};
 
-      if ( src.newTab )
-	return "propagate";
-
-      if ( (src.meta && src.meta.name) || src.url )
-      { var name = (src.meta && src.meta.name) ? src.meta.name : src.url;
-	var ext  = name.split('.').pop();
-
-	if ( ext != type.dataType )
-	  return "propagate";
-      }
+      if ( !this.storage('supportsType', src) )
+	return undefined;
 
       if ( this.storage('unload', "setSource") == false )
 	return false;
@@ -206,18 +216,27 @@ define([ "jquery", "config", "modal", "form", "gitty",
     /**
      * Update the label and icon shown in the tab
      */
-    update_tab_title: function() {
+    update_tab_title: function(action) {
       return this.each(function() {
-	var elem = $(this);
-	var data = elem.data(pluginName);
-	var type = tabbed.tabTypes[data.typeName];
+	var elem  = $(this);
+	var docid = elem.storage('docid');
 
-	var title = (filebase(data.file) ||
-		     filebase(basename(data.url)) ||
-		     type.label);
+	if ( action == 'chats++' ) {
+	  elem.tabbed('chats++', docid);
+	} else {
+	  var data  = elem.data(pluginName);
+	  var type  = tabbed.tabTypes[data.typeName];
 
-	elem.tabbed('title', title, type.dataType);
-	elem.tabbed('chats', data.chats);
+	  var title = (filebase(data.file) ||
+		       filebase(basename(data.url)) ||
+		       type.label);
+
+	  if ( docid && data.chats )
+	    data.chats.docid = docid;
+
+	  elem.tabbed('title', title, type.dataType);
+	  elem.tabbed('chats', data.chats);
+	}
       });
     },
 
@@ -383,7 +402,10 @@ define([ "jquery", "config", "modal", "form", "gitty",
 		                  });
 
 		   if ( method == "POST" )
-		     data.chats = 0;	/* forked file has no chats */
+		     data.chats = {		/* forked file has no chats */
+		       docid: elem.storage('docid'),
+		       total: 0
+		     };
 		   elem.storage('update_tab_title');
 		   elem.storage('chat', (data.meta||{}).chat||'update');
 		   $(".storage").storage('chat_status', true);
@@ -958,7 +980,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  else
 	    utils.flash(chat);
 	} else if ( action != 'update' ) {
-	  var percentage = (action == 'large' ? 60 : 20);
+	  var percentage = (action == 'large' ? 80 : 20);
 	  chat = $($.el.div({class:"chatroom"}));
 
 	  chat.chatroom({docid:docid});
@@ -968,13 +990,13 @@ define([ "jquery", "config", "modal", "form", "gitty",
       } else if ( action == 'update' ) {
 	this.storage('close_chat');
       } else if ( !data.st_type ) {
-	modal.alert("The chat facility is bound to named documents.<br>"+
+	modal.alert("You can only chat about a saved document.<br>"+
 		    "Please save your document and try again.");
       } else {
 	modal.alert("The chat facility is only available for "+
 		    "user-saved files.<br>"+
-		    "You can use the <b>File/Chat help room</b> menu to "+
-		    "access the shared chat room.");
+		    "You can use the <b>Open hangout</b> menu from "+
+		    "the top-right bell to access the hangout room.");
       }
 
       return this;
@@ -1002,12 +1024,14 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	if ( msg.docid == elem.storage('docid') ) {
 	  var data = elem.data(pluginName);
 
-	  if ( data.chats && data.chats.count )
-	    data.chats.count++;
-	  else
-	    data.chats = {count:1};
+	  if ( data.chats ) {
+	    if ( data.chats.total != undefined ) data.chats.total++;
+	    if ( data.chats.count != undefined ) data.chats.count++;
+	  } else {
+	    data.chats = {total:1};
+	  }
 
-	  elem.storage('update_tab_title');
+	  elem.storage('update_tab_title', 'chats++');
 	}
       });
     },
