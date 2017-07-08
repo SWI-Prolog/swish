@@ -227,6 +227,7 @@ define([ "jquery", "config", "preferences", "links", "form",
 	        .on("hidden.bs.modal", function() {
 		  if ( options.onclose )
 		    options.onclose();
+		  saveNotagain($(this));
 		  $(this).remove();
 		});
 
@@ -357,6 +358,19 @@ define([ "jquery", "config", "preferences", "links", "form",
     }
   }; // methods
 
+  function saveNotagain(elem) {
+    if ( !elem.hasClass("modal") )
+      elem = elem.closest(".modal");
+
+    elem.find("[data-notagain]")
+	.each(function() {
+      if ( $(this).prop("checked") ) {
+	preferences.setNotAgain($(this).attr("data-notagain"));
+	return false;
+      }
+    });
+  }
+
   function closeButton() {
     var button = $.el.button({ type:"button", class:"close",
 			       "data-dismiss":"modal"
@@ -365,14 +379,7 @@ define([ "jquery", "config", "preferences", "links", "form",
 	.html("&times;")
 	.on("click", function(ev) {
 	  ev.preventDefault();
-	  $(ev.target).closest(".modal")
-	              .find("[data-notagain]")
-		      .each(function() {
-	    if ( $(this).prop("checked") ) {
-	      preferences.setNotAgain($(this).attr("data-notagain"));
-	      return false;
-	    }
-	  });
+	  saveNotagain($(ev.target));
 	});
 
     return button;
