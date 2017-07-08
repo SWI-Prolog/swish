@@ -91,9 +91,13 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	text = $.el.textarea({ placeholder:"Type chat message here ..."
 			     }),
 
-	elem.append($.el.div({class:"chat-conversation"},
-			     $.el.div({class:"stretch"}),
-			     $.el.div({class:"inner"})),
+	elem.append($.el.div(
+		      {class:"chat-conversation"},
+		      $.el.div({class:"chat-outer-wrapper"},
+			 $.el.div({class:"chat-inner-wrapper"},
+			   $.el.div({class:"chat-content-wrapper"},
+			      $.el.div({class:"chat-stretch"}),
+			      $.el.div({class:"chat-content"}))))),
 	    close = $.el.span({class:"glyphicon menu glyphicon-remove-circle"}),
 		    $.el.div({class:"chat-input"},
 			     $.el.table({class:"chat-input"},
@@ -128,13 +132,25 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	$(close).on("click", function() {
 	  elem.tile('close');
 	});
-	$(text).keypress(function(ev) {
-	  if ( ev.which == 13 ) {
-	    elem.chatroom('send');
-	    ev.preventDefault();
-	    return false;
-	  }
-	});
+	if ( options.oneline ) {
+	  $(text).keypress(function(ev) {
+	    if ( ev.which == 13 ) {
+	      elem.chatroom('send');
+	      ev.preventDefault();
+	      return false;
+	    }
+	  });
+	} else {
+	  $(text).on('keyup', function() {
+	    var that = $(this);
+	    if ( that.scrollTop() ) {
+	      var newh = that.height() + parseFloat(that.css('line-height'));
+
+	      that.animate({ height: newh }, 200,
+			   function() { elem.chatroom('scrollToBottom'); });
+	    }
+	  });
+	}
 	if ( options.docid == hangout ) {
 	  $(text).focus(function() {
 	    if ( $(text).val() == "" ) {
@@ -161,7 +177,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	  ev.preventDefault();
 	  return false;
 	});
-	elem.on("click", ".inner a", links.followLink);
+	elem.on("click", ".chat-content a", links.followLink);
 	elem.on("pane.resize", function() {
 	  elem.chatroom('scrollToBottom', true);
 	});
@@ -171,6 +187,8 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	elem.on("activate-tab", function() {
 	  elem.chatroom('read_until');
 	});
+
+	$(text).height(parseFloat($(text).css('line-height'))+5);
 
 	elem.chatroom('load_from_server');
       });
@@ -217,8 +235,10 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	options.broadcast = hangout;
 
       if ( msg.text != "" || has_payload ) {
-	if ( options.clear !== false )
+	if ( options.clear !== false ) {
 	  ta.val("");
+	  ta.height(parseFloat(ta.css('line-height')+5));
+	}
 
 	msg.payload = payload;
 	msg.docid   = options.docid||data.docid;
@@ -351,7 +371,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	data.messages.push(msg);
 
 	elem = this.chatroom('render', msg);
-	this.find(".inner").append(elem);
+	this.find(".chat-content").append(elem);
 	this.chatroom('scrollToBottom');
 
 	if ( seen )
@@ -450,7 +470,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       var data = this.data(pluginName);
 
       if ( data.docid != docid ) {
-	this.find(".inner").html("");
+	this.find(".chat-content").html("");
 	data.docid = docid;
 	this.chatroom('load_from_server', ifempty);
       }
@@ -476,14 +496,15 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
     scrollToBottom: function(onlydown) {
       this.each(function() {
 	var elem = $(this);
-	inner = elem.find("div.inner");
-	conv  = elem.find(".chat-conversation");
-	var height = inner.height();
-	var room   = conv.height() - height - 4 - 4;
+	scroll  =   elem.find("div.chat-inner-wrapper");
+	wrap    = scroll.find("div.chat-content-wrapper");
+	content =   wrap.find("div.chat-content");
+	var height = content[0].scrollHeight;
+	var room   = wrap.height() - height - 8;
 
 	if ( room > 0 || onlydown !== true ) {
-	  conv.find("div.stretch").height(room > 0 ? room : 0);
-	  conv.scrollTop(height);
+	  wrap.find("div.chat-stretch").height(room > 0 ? room : 0);
+	  scroll.scrollTop(height);
 	}
       });
 

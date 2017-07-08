@@ -1,8 +1,14 @@
+/*
+Content resizing and scrolling of teh chatroom is based on
+https://blogs.msdn.microsoft.com/kurlak/2015/02/20/filling-the-remaining-height-of-a-container-while-handling-overflow-in-css-ie8-firefox-chrome-safari/
+*/
+
 div.chatroom
 { width: 100%;
   height: 100%;
   position: relative;
   overflow: hidden;
+  display: table;
 }
 
 div.chatroom span.glyphicon.menu
@@ -19,21 +25,35 @@ div.chatroom span.glyphicon.menu:hover
 
 div.chat-conversation
 { width: 100%;
-  height: calc(100% - 2.5em);
-  overflow: auto;
-  padding: 5px;
+  display:table-row;
+  height: 100%;
 }
 
-div.chat-input
-{ border-top: 1px solid #888;
-  box-sizing: border-box;
-  width: 100%;
-  height: 2.5em;
+div.chat-outer-wrapper
+{ display: table-cell;
+  height: 100%
+}
+
+div.chat-inner-wrapper
+{ height: 100%;
+  position: relative;
+  overflow: auto;
+}
+
+div.chat-content-wrapper
+{ position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+div.chat-content:
+{
 }
 
 table.chat-input
 { width: 100%;
-  height: 100%;
 }
 
 td.chat-send
@@ -53,17 +73,18 @@ td.chat-text
 }
 
 table.chat-input textarea
-{ resize:none;
+{ resize: vertical;
   box-sizing: border-box;
   width: 100%;
-  height: 2.5em;
-  border: 0px;
+  border: 1px solid #888;
+  border-radius: 5px;
 }
 
 div.chatroom div.chat-message
 { position:relative;
   font-size: 90%;
   margin-right: 10%;
+  margin-left: 5px;
   margin-bottom: 1ex;
   background-color: #eee;
   border: 1px solid #ccc;
@@ -72,7 +93,7 @@ div.chatroom div.chat-message
 }
 
 div.chatroom div.chat-message.self
-{ margin-right: 0px;
+{ margin-right: 5px;
   margin-left: 10%;
 }
 
