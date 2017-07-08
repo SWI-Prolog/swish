@@ -394,10 +394,9 @@ var MAX_RECONNECT_DELAY = 300000;
     },
 
     /**
-     * Present a notification associated with a user. We ignore open and
-     * close of the broadcast room if we do not have this open when the
-     * message arrives.
-     *
+     * Present a notification associated with a user. We do not
+     * add a user icon for open and close on the broadcast room if
+     * we do not have this open when the message arrives.
      */
     notifyUser: function(options) {
       var elem = this;
@@ -411,11 +410,11 @@ var MAX_RECONNECT_DELAY = 300000;
       }
 
       if ( isBroadcast(options) && !this.chat('broadcast_room') )
-	return this;
+	options.create_user = false;
 
       var user_li = this.chat('addUser', options);
 
-      if ( user_li.length > 0 ) {
+      if ( user_li && user_li.length > 0 ) {
 	options.onremove = function() {
 	  elem.chat('unnotify', options.wsid);
 	};
@@ -458,8 +457,12 @@ var MAX_RECONNECT_DELAY = 300000;
       var li = $("#"+options.wsid);
 
       if ( li.length == 0 )
-      { li = $(li_user(options.wsid, options));
-	this.prepend(li);
+      { if ( options.create_user != false ) {
+	  li = $(li_user(options.wsid, options));
+	  this.prepend(li);
+        } else {
+	  return null;
+	}
       } else {
 	this.chat('lost', li, false);
       }
