@@ -185,6 +185,10 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
      * @param {Object} [options]
      * @param {Array}  [options.payload] Payloads (queries, etc)
      * @param {String} [options.docid] Addressed document of not self
+     * @param {String} [options.broadcast] Also broadcast the message
+     * to the indicated document id.
+     * @param {Bool}   [options.clear] if `false`, do not clear the
+     * message window after sending.
      */
     send: function(options) {
       options = options||{};
@@ -213,6 +217,9 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	options.broadcast = hangout;
 
       if ( msg.text != "" || has_payload ) {
+	if ( options.clear !== false )
+	  ta.val("");
+
 	msg.payload = payload;
 	msg.docid   = options.docid||data.docid;
 	if ( options.class )
