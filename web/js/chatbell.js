@@ -163,7 +163,8 @@ define([ "jquery", "form", "modal", "config", "preferences",
 	var docid = chats.docid||data.docid;
 	var after = preferences.getDocVal(docid, 'chatBar', 0);
 
-	if ( docid && after ) {
+			/* fetch if we want unread or we don't know total */
+	if ( docid && (after || chats.total == undefined) ) {
 	  var elem = $(this);
 
 	  $.get(config.http.locations.chat_status,
