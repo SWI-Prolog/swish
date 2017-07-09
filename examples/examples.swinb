@@ -3,7 +3,7 @@
 <div class="nb-cell markdown">
 # Welcome to SWISH
 
-You are reading a SWISH _notebook_.  A notebook is a mixture of _text_, _programs_ and _queries_.  This notebook gives an overview of example programs shipped with SWISH.
+You are reading a SWISH _notebook_.  A notebook is a mixture of _text_, _programs_ and _queries_.  This notebook only contains text and gives an overview of example programs shipped with SWISH.
 
   - *First steps*
     - [Knowledge bases](example/kb.pl) provides a really simple
@@ -47,6 +47,13 @@ You are reading a SWISH _notebook_.  A notebook is a mixture of _text_, _program
     - [Japanese source](example/japanese.pl) gives example source from
       the Japanese Wikipedia site on Prolog, illustrating multi-lingual
       capabilities of SWI-Prolog and SWISH.
+      
+### Other public SWISH instances
+      
+  - [cplint on SWISH](http://cplint.lamping.unife.it/) is another SWISH powered side by Fabrizio 
+    Riguzzi, Riccardo Zese and Giuseppe Cota dedicated to probabilistic logic programming.
+  - [LPS on SWISH](http://lpsdemo.interprolog.com/) is a SWISH powered side from Imperial College
+    London about the [Logic Production System](http://lps.doc.ic.ac.uk/) language.
 </div>
 
 </div>
