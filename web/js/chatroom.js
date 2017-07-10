@@ -143,10 +143,12 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	} else {
 	  $(text).on('keyup', function() {
 	    var that = $(this);
-	    if ( that.scrollTop() ) {
-	      var newh = that.height() + parseFloat(that.css('line-height'));
+	    var h;
 
-	      that.animate({ height: newh }, 200,
+	    if ( that.scrollTop() != 0 && (h=that.height()) < 500 ) {
+	      h += parseFloat(that.css('line-height'));
+
+	      that.animate({ height: h }, 200,
 			   function() { elem.chatroom('scrollToBottom'); });
 	    }
 	  });
