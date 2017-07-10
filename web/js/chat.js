@@ -375,7 +375,7 @@ var MAX_RECONNECT_DELAY = 300000;
      * @param {Number} time is the time of the last message read
      * (seconds after 1/1/1970)
      */
-    'read_until'(docid, time) {
+    read_until: function(docid, time) {
       preferences.setDocVal(docid, 'chatBar', time);
     },
 
@@ -387,7 +387,7 @@ var MAX_RECONNECT_DELAY = 300000;
     /**
      * Get the broadcast room
      */
-    broadcast_room() {
+     broadcast_room: function() {
       return this.closest(".swish")
                  .find(".storage")
                  .storage('match', {file:config.swish.hangout});
