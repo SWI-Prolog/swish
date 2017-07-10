@@ -537,6 +537,8 @@ var cellTypes = {
 
       if ( val == undefined ) {
 	var dom = $.el.div({class:"notebook"});
+
+	this.notebook('assignCellNames', false);
 	this.find(".nb-cell").each(function() {
 	  cell = $(this);
 	  if ( !(options.skipEmpty && cell.nbCell('isEmpty')) )
@@ -589,9 +591,11 @@ var cellTypes = {
      * if functions are used that require named cells.  Calling this
      * method has no effect if all cells already have a name.
      */
-    assignCellNames: function() {
+    assignCellNames: function(check) {
       this.find(".nb-cell").nbCell('assignName');
-      return this.notebook('checkModified');
+      if ( check != false )
+	this.notebook('checkModified');
+      return this;
     },
 
 
