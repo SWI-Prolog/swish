@@ -165,6 +165,8 @@ _not_ see exactly the same UI for cooperation.  What about
 
 ### Bugs
 
+  - Tokenizing unicode atoms: \w only matches ASCII letters.
+
   - Colouring of /library/http/html_write.pl.  Broken sequences:
     - DCG exports
     - ?- [file].
