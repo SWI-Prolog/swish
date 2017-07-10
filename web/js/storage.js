@@ -449,11 +449,11 @@ define([ "jquery", "config", "modal", "form", "gitty",
       if ( meta.public === undefined )
 	meta.public = true;
 
-      if ( !modify ) {
-	if ( profile.identity )
+      if ( profile.identity ) {
+	if ( !modify )
 	  modify = ["login", "owner"];
-	else
-	  modify = ["any", "login", "owner"];
+      } else
+      { modify = ["any", "login", "owner"];
       }
 
       canmodify = ( profile.identity == meta.identity ||
