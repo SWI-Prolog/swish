@@ -5,13 +5,13 @@
   if (typeof exports == "object" && typeof module == "object") // CommonJS
     mod(require("../../lib/codemirror"));
   else if (typeof define == "function" && define.amd) // AMD
-    define(["../../lib/codemirror"], mod);
+    define(["../../lib/codemirror", "./prolog-ctype"], mod);
   else // Plain browser env
     mod(CodeMirror);
-})(function(CodeMirror) {
+})(function(CodeMirror, ctype) {
 "use strict";
 
-CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
+  CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
 
   function chain(stream, state, f) {
     state.tokenize = f;
@@ -315,8 +315,8 @@ CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
 		 "number");
     }
 
-    if ( isSymbolChar.test(ch) ) {
-      stream.eatWhile(isSymbolChar);
+    if ( ctype.symbol(ch) ) {
+      stream.eatWhile(ctype.symbol);
       var atom = stream.current();
       if ( atom == "." && peekSpace(stream) ) {
 	if ( nesting(state) ) {
@@ -332,7 +332,7 @@ CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
 	return ret("symbol", "operator", atom);
     }
 
-    stream.eatWhile(/[\w_]/);
+    stream.eatWhile(ctype.id_continue);
     var word = stream.current();
     if ( stream.peek() == "{" && config.dicts ) {
       state.tagName = word;			/* tmp state extension */
@@ -343,11 +343,11 @@ CodeMirror.defineMode("prolog", function(cmConfig, parserConfig) {
 	return ret("var", "anon", word);
       } else {
 	var sec = word.charAt(1);
-	if ( sec == sec.toUpperCase() )
+	if ( ctype.uppercase(sec) )
 	  return ret("var", "var-2", word);
       }
       return ret("var", "var", word);
-    } else if ( ch == ch.toUpperCase() ) {
+    } else if ( ctype.uppercase(ch) ) {
       return ret("var", "var", word);
     } else if ( stream.peek() == "(" ) {
       state.functorName = word;			/* tmp state extension */
