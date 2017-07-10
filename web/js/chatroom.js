@@ -521,14 +521,14 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 
   var payload_handlers = {
     selection: function(selection) {
-      var storage = this.chatroom('storage');
-      var label   = storage.storage('getSelectionLabel', selection.selection);
+      var label   = $().storage('getSelectionLabel', selection.selection);
       var btn = $($.el.button({ class:"btn btn-xs btn-primary"
 			      },
 			      label + " ",
 			      form.widgets.glyphIcon("eye-open")));
-      btn.on("click", function() {
-	storage.storage('restoreSelection', selection.selection);
+      btn.on("click", function(ev) {
+	$(ev.target).chatroom('storage')
+	            .storage('restoreSelection', selection.selection);
       });
 
       this.append(" ", btn, " ");
