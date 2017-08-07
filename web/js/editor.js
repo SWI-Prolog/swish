@@ -1134,14 +1134,21 @@ define([ "cm/lib/codemirror",
 				     /\/\*\* *<?examples>?/igm, {dir:-1,max:1});
       var end    = this.prologEditor('search', /\*\//, {start:start.line,max:1});
 
-      if ( start.length == 1 && end.length == 1 ) {
+      if ( start.length == 1 )
+      { var end = this.prologEditor('search', /\*\//,
+				    {start:start[0].line, max:1});
 	var current = this.prologEditor('getExamples', source);
 
 	if ( current && current.indexOf(query) != -1 )
 	{ modal.alert("Query is already in examples");
 	  return this;
 	}
+	if ( end.length != 1 )
+	{ modal.alert("/** <examples> block is not terminated with */");
+	  return this;
+	}
 
+	query = query.split("\n").join("\n   ");
 	cm.setSelection({line:end[0].line-1, ch:0});
 	cm.replaceSelection("?- "+query+"\n");
       } else
@@ -1158,25 +1165,25 @@ define([ "cm/lib/codemirror",
      * @param {RegExp} re is the regular expression to search for
      * @param {Object} [options]
      * @param {number} [options.max] is the max number of hits to return
-     * @returns {Array.object} list of objects holding the matching line
-     * content and line number.
      * @param {number} [options.dir=1] is -1 to search backwards
      * @param {number} [options.start] to start at a given line
+     * @param {number} [options.end] to end at a given line
+     * @returns {Array.object} list of objects holding the matching line
+     * content and line number.
      */
     search: function(re, options) {
       var cm      = this.data(pluginName).cm;
       var dir     = options.dir||1;
-      var start   = cm.firstLine();
-      var end     = cm.lastLine();
+      var start   = options.start == undefined ? cm.firstLine() : options.start;
+      var end     = options.end   == undefined ? cm.lastLine()  : options.end;
       var matches = [];
 
-      if ( dir == -1 )
+      if ( (dir == -1 && end > start) ||
+	   (dir == 1 && start > end) )
       { var tmp = start;
 	start = end;
 	end = tmp;
       }
-      if ( options.start !== undefined )
-	start = options.start;
 
       if ( (dir > 0 && start > end) ||
 	   (dir < 0 && start < end) )
