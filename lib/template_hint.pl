@@ -43,6 +43,7 @@
 :- use_module(library(pldoc/doc_process)).
 :- use_module(library(pldoc/doc_wiki)).
 :- use_module(library(pldoc/doc_modes)).
+:- use_module(library(doc_http)).
 :- use_module(library(http/html_write)).
 :- use_module(library(memfile)).
 :- use_module(library(sgml)).
@@ -66,6 +67,10 @@ SWISH editor.
 @tbd	What about safely?
 @tbd	Dedicated template for the rendering support?
 */
+
+:- if(current_predicate(doc_enable/1)).
+:- initialization(doc_enable(true)).
+:- endif.
 
 %%	visible_predicate_templates(+Module, +Options, -Templates) is det.
 %
