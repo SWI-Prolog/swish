@@ -1,6 +1,6 @@
 <div class="notebook">
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md1">
 # Downloading (graphics) files
 
 The SWISH R interface defines the predicates below for downloading files.  This can be combined with the normal R device manipulation for downloading images.
@@ -13,44 +13,55 @@ The SWISH R interface defines the predicates below for downloading files.  This 
 The example illustrates the options using the sine function as defined below.
 </div>
 
-<div class="nb-cell program">
+<div class="nb-cell program" name="p1">
 % Y is sin(X) for X in 0..Max
 sin(Max, X, Y) :-
     between(0, Max, X),
     Y is sin(X*pi/180).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md2">
 First, we create an [R dataframe](example/Rdataframe.swinb), load the "ggplot2" library and show the inline SVG.
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q1">
 r_data_frame(df, [x=X,y=Y], sin(360, X, Y)),
 &lt;- library("ggplot2"),
 &lt;- ggplot(data=df, aes(x=x, y=y)) + geom_line().
 </div>
 
-<div class="nb-cell markdown">
-In the next examples we use r_download/0.  This displays the graphics inline, but also provides a download button that allows you to download the SVG to your computer. 
+<div class="nb-cell markdown" name="md3">
+In the next examples we use r_download/0.  This displays the graphics inline, but also provides a download button that allows you to download the SVG to your computer.
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q2">
 r_data_frame(df, [x=X,y=Y], sin(360, X, Y)),
 &lt;- library("ggplot2"),
 &lt;- ggplot(data=df, aes(x=x, y=y)) + geom_line(),
 r_download.
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md4">
 And finally, we save the graphics to a device (in this example PDF) that we create explicitly.  Note that r_download/0 calls `graphics.off()` before trying to download the generated files.
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q3">
 &lt;- pdf("sine.pdf"),
 r_data_frame(df, [x=X,y=Y], sin(360, X, Y)),
 &lt;- library("ggplot2"),
 &lt;- ggplot(data=df, aes(x=x, y=y)) + geom_line(),
 r_download.
+</div>
+
+<div class="nb-cell markdown" name="md5">
+## Download a file
+
+The example below shows how any file that is saved from R can be made available for download from SWISH.
+</div>
+
+<div class="nb-cell query" data-tabled="true" name="q4">
+&lt;- write.csv(mtcars, file="cars.csv"),
+r_download("cars.csv").
 </div>
 
 </div>
