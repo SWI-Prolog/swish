@@ -73,7 +73,22 @@ Allow tracing pengine execution under SWISH.
 user:message_hook(trace_mode(_), _, _) :-
 	pengine_self(_), !.
 
+%!	trace_pengines
+%
+%	If true, trace in the browser. If false, use the default tracer.
+%	This allows for debugging  pengine   issues  using the graphical
+%	tracer from the Prolog environment using:
+%
+%	    ?- retractall(swish_trace:trace_pengines).
+%	    ?- tspy(<some predicate>).
+
+:- dynamic
+	trace_pengines/0.
+
+trace_pengines.
+
 user:prolog_trace_interception(Port, Frame, _CHP, Action) :-
+	trace_pengines,
 	pengine_self(Pengine),
 	prolog_frame_attribute(Frame, predicate_indicator, PI),
 	debug(trace, 'HOOK: ~p ~p', [Port, PI]),
@@ -100,6 +115,7 @@ user:prolog_trace_interception(Port, Frame, _CHP, Action) :-
 	trace_action(Reply, Port, Frame, Action), !,
 	debug(trace, 'Action: ~p --> ~p', [Reply, Action]).
 user:prolog_trace_interception(Port, Frame0, _CHP, nodebug) :-
+	trace_pengines,
 	pengine_self(_),
 	prolog_frame_attribute(Frame0, goal, Goal),
 	prolog_frame_attribute(Frame0, level, Depth),
