@@ -226,6 +226,14 @@ swish_config:reply_logged_out(Options) :-
 swish_config:reply_logged_out(_) :-
     broadcast(swish(logout(-))).        % ?
 
+:- listen(swish(logout(http)), cancel_session_profile).
+
+cancel_session_profile :-
+    (   http_in_session(_)
+    ->  forall(http_session_retract(profile_id(ProfileID)),
+               broadcast(swish(logout(ProfileID))))
+    ;   true
+    ).
 
 %!  create_profile(+UserInfo, +IDProvider, -ProfileID)
 %
