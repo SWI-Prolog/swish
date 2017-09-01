@@ -176,6 +176,7 @@ swish_config:config(chat,		true).
 :- use_module(swish:lib/render).
 :- use_module(swish:lib/trace).
 :- use_module(swish:lib/projection).
+:- use_module(swish:lib/attvar).
 :- use_module(swish:lib/jquery).
 :- use_module(swish:lib/dashboard).
 :- use_module(swish:lib/swish_debug).
