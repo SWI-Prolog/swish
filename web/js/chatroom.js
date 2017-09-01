@@ -237,15 +237,17 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	options.broadcast = hangout;
 
       if ( msg.text != "" || has_payload ) {
-	if ( options.clear !== false ) {
-	  ta.val("");
-	  ta.height(parseFloat(ta.css('line-height')+5));
-	}
-
+	msg.uuid    = utils.generateUUID();
 	msg.payload = payload;
 	msg.docid   = options.docid||data.docid;
 	if ( options.class )
 	  msg.class = options.class;
+
+	if ( options.clear == true ) {
+	  this.chatroom('clear');
+	} else {
+	  data.clear = msg.uuid;
+	}
 
 	$("#chat").chat('send', msg);
 	if ( options.broadcast ) {
@@ -380,7 +382,18 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	  this.chatroom('read_until', msg);
       }
 
+      if ( msg.uuid && msg.uuid == data.clear ) {
+	this.chatroom('clear');
+      }
+
       return this;
+    },
+
+    clear: function() {
+      var ta = this.find("textarea");
+
+      ta.val("");
+      ta.height(parseFloat(ta.css('line-height')+5));
     },
 
     load_from_server: function(ifempty) {
