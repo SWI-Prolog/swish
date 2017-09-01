@@ -369,6 +369,14 @@ var MAX_RECONNECT_DELAY = 300000;
     },
 
     /**
+     * Some action was forbidden
+     */
+
+     forbidden: function(e) {
+       modal.alert(e.message||"Action is forbidden");
+     },
+
+    /**
      * Indicate we have read all messages upto a certain time stamp.
      * @param {String} docid is the document id for which we should
      * update the counter.

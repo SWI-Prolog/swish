@@ -113,7 +113,7 @@ start_chat(Request) :-
 	start_chat(Request, [identity(Identity)]).
 
 start_chat(Request, Options) :-
-	authorized(chat, Options),
+	authorized(chat(open), Options),
 	(   http_in_session(Session)
 	->  CheckLogin = false
 	;   http_open_session(Session, []),
@@ -936,11 +936,22 @@ json_message(Dict, WSID) :-
 	wsid_visitor(WSID, Visitor),
 	update_visitor_data(Visitor, _{name:Name}, 'set-nick-name').
 json_message(Dict, WSID) :-
-	_{type: "chat-message", docid:_} :< Dict, !,
+	_{type: "chat-message", docid:DocID} :< Dict, !,
 	chat_add_user_id(WSID, Dict, Message),
-	chat_relay(Message).
+	(   ws_authorized(chat(post(Message, DocID)), Message.user)
+	->  chat_relay(Message)
+	;   chat_spam(Msg),
+	    hub_send(WSID, json(json{type:forbidden,
+				     action:chat_post,
+				     about:DocID,
+				     message:Msg
+				    }))
+	).
 json_message(Dict, _WSID) :-
 	debug(chat(ignored), 'Ignoring JSON message ~p', [Dict]).
+
+chat_spam("Due to frequent spamming we were forced to limit \c
+	   posting chat messages to users who are logged in.").
 
 dict_file_name(Dict, File) :-
 	atom_string(File, Dict.get(file)).

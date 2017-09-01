@@ -34,7 +34,8 @@
 */
 
 :- module(swish_pep,
-          [ authorized/2                               % +Request, +Action
+          [ authorized/2,               % +Action, +Options
+            ws_authorized/2             % +Action, +WSID
           ]).
 :- use_module(library(debug)).
 :- use_module(library(option)).
@@ -86,8 +87,10 @@ Examples are:
 %         Update (save) a physical file outside the versioned gitty
 %         store.
 %     * Social options
-%       - chat
+%       - chat(open)
 %         Open websocket chat channel
+%       - chat(post(Message, About))
+%         Post a chat message about a specific topic
 %
 %   @throws http_reply(forbidden(URL)) if the action is not allowed. Can
 %   we generate a JSON error object?
@@ -105,6 +108,23 @@ authorized(Action, Options) :-
         option(path(Path), Request),
         throw(http_reply(forbidden(Path)))
     ).
+
+%!  ws_authorized(+Action, +WSUser) is semidet.
+%
+%   True when WSUser is allowed to  perform   action.  WSUser  is a dict
+%   containing the user info as  provided by chat:chat_add_user_id/3. It
+%   notably has a key `profile_id` if the user is logged on.
+%
+%   @tbd Generalise. Notably, how do we get the identity as
+%   authenticate/2 returns?
+
+ws_authorized(Action, _WSUser) :-
+    var(Action),
+    !,
+    instantiation_error(Action).
+ws_authorized(chat(post(_,_)), WSUser) :-
+    _Profile = WSUser.get(profile_id).
+
 
 :- multifile
     approve/2,
@@ -130,7 +150,7 @@ approve(file(update(_File, _Meta)), Auth) :-
     user_property(Auth, login(local)).
 approve(run(any, _), Auth) :-
     user_property(Auth, login(local)).
-approve(chat, _).
+approve(chat(open), _).
 
 %!  deny(+Auth, +Id)
 
