@@ -1053,7 +1053,7 @@ define([ "jquery", "config", "preferences",
   function handleCreate() {
     var elem = this.pengine.options.runner;
     var data = elem.data(pluginName);
-    var options = {};
+    var options = {width: elem.width()};
     var bps;
     var resvar = config.swish.residuals_var || "Residuals";
 

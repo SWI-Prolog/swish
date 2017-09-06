@@ -484,12 +484,18 @@ find_source(Predicate, File, Line) :-
 :- multifile pengines:prepare_goal/3.
 
 pengines:prepare_goal(Goal0, Goal, Options) :-
+	forall(set_screen_size(Options), true),
 	option(breakpoints(Breakpoints), Options),
 	Breakpoints \== [],
 	pengine_self(Pengine),
 	pengine_property(Pengine, source(File, Text)),
 	maplist(set_file_breakpoints(Pengine, File, Text), Breakpoints),
 	Goal = (debug, Goal0).
+
+set_screen_size(Options) :-
+	option(width(Pixels), Options),
+	pengine_self(Pengine),
+	asserta(Pengine:screen_property(width(Pixels))).
 
 set_file_breakpoints(_Pengine, PFile, Text, Dict) :-
 	debug(trace(break), 'Set breakpoints at ~p', [Dict]),
