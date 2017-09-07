@@ -369,6 +369,8 @@ define([ "jquery", "config", "preferences",
 	data.query   = query;
 	data.answers = 0;
 
+	elem.prologRunner('setScreenDimensions');
+
 	/* Load pengines.js incrementally because we wish to ask the
 	   one from the pengine server rather than a packaged one.
 	*/
@@ -401,6 +403,34 @@ define([ "jquery", "config", "preferences",
 	return this;
       });
     }, //_init()
+
+    setScreenDimensions: function() {
+      var data = this.data(pluginName);
+      var pre  = $.el.pre({class: "measure"}, "xxxxxxxxxx");
+      var sw   = this.width();
+      var sh;
+      var container;
+
+      container = this.closest(".prolog-runners");
+      if ( container.length == 0 )
+	container = this.closest(".nb-view");
+      if ( container.length )
+	sh = container.height();
+
+      this.append(pre);
+      var cw = $(pre).width()/10;
+      var ch = $(pre).height();
+      $(pre).remove();
+
+      data.screen = {
+        width: sw,
+	cols: Math.floor(sw/cw)
+      };
+      if ( sh !== undefined ) {
+	data.screen.height = sh;
+	data.screen.rows   = Math.floor(sh/ch);
+      }
+    },
 
     /**
      * Add a _positive_ answer to the runner.  The answer is embedded in
@@ -1053,7 +1083,7 @@ define([ "jquery", "config", "preferences",
   function handleCreate() {
     var elem = this.pengine.options.runner;
     var data = elem.data(pluginName);
-    var options = {width: elem.width()};
+    var options = $.extend({}, data.screen);
     var bps;
     var resvar = config.swish.residuals_var || "Residuals";
 

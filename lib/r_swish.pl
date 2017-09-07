@@ -59,7 +59,8 @@ connection library.
 
 :- multifile
 	r_call:r_console/2,
-	r_call:r_display_images/1.
+	r_call:r_display_images/1,
+	r_call:r_console_property/1.
 
 %%	r_call:r_console(+Stream, ?Data)
 %
@@ -74,6 +75,13 @@ send_html(HTML) :-
 	phrase(html(HTML), Tokens),
 	with_output_to(string(HTMlString), print_html(Tokens)),
 	pengine_output(HTMlString).
+
+%!	r_call:r_console_property(?Property)
+%
+%	Relay the size of the console
+
+r_call:r_console_property(size(Rows, Cols)) :-
+	swish:tty_size(Rows, Cols).
 
 %%	r_call:r_display_images(+Images)
 %

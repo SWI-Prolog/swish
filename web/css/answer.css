@@ -57,6 +57,13 @@ pre.console
   margin: 0px;
 }
 
+pre.measure
+{ padding: 0px;
+  border: 0px;
+  margin: 0px;
+  display: inline;
+}
+
 span.format
 { white-space: pre;
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;

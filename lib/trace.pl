@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015-2016, VU University Amsterdam
+    Copyright (c)  2015-2017, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -484,7 +484,7 @@ find_source(Predicate, File, Line) :-
 :- multifile pengines:prepare_goal/3.
 
 pengines:prepare_goal(Goal0, Goal, Options) :-
-	forall(set_screen_size(Options), true),
+	forall(set_screen_property(Options), true),
 	option(breakpoints(Breakpoints), Options),
 	Breakpoints \== [],
 	pengine_self(Pengine),
@@ -492,10 +492,31 @@ pengines:prepare_goal(Goal0, Goal, Options) :-
 	maplist(set_file_breakpoints(Pengine, File, Text), Breakpoints),
 	Goal = (debug, Goal0).
 
-set_screen_size(Options) :-
-	option(width(Pixels), Options),
+%!	swish:tty_size(-Rows, -Cols)
+%
+%	Emulate obtaining the screen size. Note that the reported number
+%	of columns is the height  of  the   container  as  the height of
+%	answer pane itself is determined by the content.
+
+set_screen_property(Options) :-
 	pengine_self(Pengine),
-	asserta(Pengine:screen_property(width(Pixels))).
+	screen_property(Property),
+	option(Property, Options),
+	assertz(Pengine:screen_property(Property)).
+
+screen_property(height(_)).
+screen_property(width(_)).
+screen_property(rows(_)).
+screen_property(cols(_)).
+
+swish:tty_size(Rows, Cols) :-
+	pengine_self(Pengine),
+	Pengine:screen_property(rows(Rows)),
+	Pengine:screen_property(cols(Cols)).
+
+%!	set_file_breakpoints(+Pengine, +File, +Text, +Dict)
+%
+%	Set breakpoints for included files.
 
 set_file_breakpoints(_Pengine, PFile, Text, Dict) :-
 	debug(trace(break), 'Set breakpoints at ~p', [Dict]),
@@ -511,6 +532,10 @@ set_file_breakpoints(_Pengine, PFile, Text, Dict) :-
 	    maplist(set_pengine_breakpoint(PFile, File, IncludedText), List)
 	;   debug(trace(break), 'Not in included source', [])
 	).
+
+%!	set_pengine_breakpoint(+Pengine, +File, +Text, +Dict)
+%
+%	Set breakpoints on the main Pengine source
 
 set_pengine_breakpoint(Owner, File, Text, Line) :-
 	debug(trace(break), 'Try break at ~q:~d', [File, Line]),
@@ -651,7 +676,7 @@ sandbox:safe_primitive(system:tracing).
 sandbox:safe_primitive(edinburgh:debug).
 sandbox:safe_primitive(system:deterministic(_)).
 sandbox:safe_primitive(swish_trace:residuals(_,_)).
-
+sandbox:safe_primitive(swish:tty_size(_Rows, _Cols)).
 
 		 /*******************************
 		 *	      MESSAGES		*
