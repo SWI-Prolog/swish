@@ -789,7 +789,11 @@ style(neck(Neck),     neck, [ text(Text) ]) :-
 style(head(Class, Head), Type, [ text, arity(Arity) ]) :-
 	goal_arity(Head, Arity),
 	head_type(Class, Type).
+style(goal_term(Class, {_}), brace_term_open-brace_term_close,
+      [ name({}), arity(1) | More ]) :-
+	goal_type(Class, _Type, More).
 style(goal(Class, Goal), Type, [ text, arity(Arity) | More ]) :-
+	Goal \= {_},
 	goal_arity(Goal, Arity),
 	goal_type(Class, Type, More).
 style(file_no_depend(Path), file_no_depends,		   [text, path(Path)]).
