@@ -281,6 +281,8 @@ classification of tokens.
 		     "delimiter": "atom",
 		     "module": "atom",
 
+		     "constraint": "atom",
+
 		     "head_exported": "atom",
 		     "head_public": "atom",
 		     "head_extern": "atom",
