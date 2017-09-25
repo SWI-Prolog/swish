@@ -1,6 +1,6 @@
 <div class="notebook">
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md1">
 # Welcome to SWISH
 
 You are reading a SWISH _notebook_.  A notebook is a mixture of _text_, _programs_ and _queries_.  This notebook only contains text and gives an overview of example programs shipped with SWISH.
@@ -19,7 +19,7 @@ You are reading a SWISH _notebook_.  A notebook is a mixture of _text_, _program
     - [English grammar](example/grammar.pl) DCG rules for parsing
       some simple English sentences and show the result as an SVG
       tree.
-  - *Puzzles*
+  - *Puzzles and constraints*
     - [Einstein's Riddle](example/houses_puzzle.pl) A famous puzzle
       attributed to Einstein.
     - [N-Queens (traditional)](example/queens.pl) solves the N-queens
@@ -32,6 +32,8 @@ You are reading a SWISH _notebook_.  A notebook is a mixture of _text_, _program
       table.
     - [Knights and Knaves (clp(b))](example/knights_and_knaves.pl)
       solves boolean problems.
+    - [Mortgage (clp(q,r))](example/mortgage.swinb)
+      Compute mortgages.
   - *Side effects and I/O*
     - [Read and write](example/io.pl) demonstrates that you can read from
       and write to the web interface.

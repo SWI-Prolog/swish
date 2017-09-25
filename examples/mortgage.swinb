@@ -1,0 +1,52 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# Using clp(QR)
+
+This example is extracted from the [OFAI clp(Q,R) Manual](http://www.ofai.at/cgi-bin/get-tr?download=1&amp;paper=oefai-tr-95-09.pdf) by Christian Holzbaur.  It defines the _mortgage_ relation between the following arguments:
+
+  - `P` is the balance at _T0_
+  - `T` is the number of interest periods (e.g., years)
+  - `I` is the interest ratio where e.g., `0.1` means 10%
+  - `B` is the balance at the end of the period
+  - `MP` is the withdrawal amount for each interest period.
+  
+@see [Programming with Constraints: An Introduction - Kim Marriott, Peter J. Stuckey](https://books.google.nl/books?id=jBYAleHTldsC&amp;lpg=PA184&amp;ots=QifwRiYDxL&amp;dq=mortgage%20relation%20prolog&amp;pg=PA177#v=onepage&amp;q=mortgage%20relation%20prolog&amp;f=false) which descibes the same example with more background.
+</div>
+
+<div class="nb-cell program" name="p1">
+:- use_module(library(clpr)).
+
+mg(P,T,I,B,MP):-
+    { T = 1,
+      B + MP = P * (1 + I)
+    }.
+mg(P,T,I,B,MP):-
+    { T &gt; 1,
+      P1 = P * (1 + I) - MP,
+      T1 = T - 1
+    },
+    mg(P1, T1, I, B, MP).
+</div>
+
+<div class="nb-cell markdown" name="md2">
+We can use the above program to compute the balance if we get an interest of 5% over a period of 30 years.
+</div>
+
+<div class="nb-cell query" name="q1">
+mg(1000, 30, 5/100, B, 0).
+</div>
+
+<div class="nb-cell markdown" name="md3">
+We can however also compute the linear relation between the initial balance, the final balance and the withdrawal:
+</div>
+
+<div class="nb-cell query" name="q2">
+mg(B0, 30, 5/100, B, MP).
+</div>
+
+<div class="nb-cell markdown" name="md4">
+In the above we used the _imprecise_ library `clpr`.  In the queries we used a rational number for the interest.  You can replace `clpr` with `clpq` to get exact results.
+</div>
+
+</div>
