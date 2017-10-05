@@ -178,8 +178,12 @@ ext_separator(tsv, 0'\t).
 
 input_filters(In, _ContentType, [], In, Options) :-
     !,
-    option(encoding(Enc), Options, utf8),
-    set_stream(In, encoding(Enc)).
+    (   option(encoding(Enc), Options)
+    ->  set_stream(In, encoding(Enc))
+    ;   set_stream(In, encoding(bom))
+    ->  true
+    ;   set_stream(In, encoding(utf8))
+    ).
 input_filters(In, ContentType, [gzip|T], In2, Options) :-
     !,
     zopen(In, In1, [format(gzip)]),
