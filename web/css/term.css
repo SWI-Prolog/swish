@@ -10,9 +10,10 @@
 .pl-anon	  {color:#800;}  /* _ */
 .pl-avar	  {color:#888;}  /* _GXXX */
 .pl-var		  {color:#800;}
-.pl-atom	  {color:#762;}
-.pl-functor	  {color: #000; font-style: italic;}
-.pl-comment	  {color: #060; font-style: italic;}
+.pl-atom	  {color:#730;}
+.pl-quoted-atom   {color:#008; white-space:pre;}
+.pl-functor	  {color:#000; font-style: italic;}
+.pl-comment	  {color:#060; font-style: italic;}
 
 /* just to make elements more visible
 .pl-curl{color:yellow;}

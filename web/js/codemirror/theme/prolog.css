@@ -1,8 +1,8 @@
 .cm-s-prolog span.cm-number	       {color: #000;}
 .cm-s-prolog span.cm-neg-number	       {color: #000;}
-.cm-s-prolog span.cm-atom	       {color: #762;}
-.cm-s-prolog span.cm-uatom	       {color: #762;}
-.cm-s-prolog span.cm-qatom	       {color: #008;}
+.cm-s-prolog span.cm-atom	       {color: #730;}
+.cm-s-prolog span.cm-uatom	       {color: #730;}
+.cm-s-prolog span.cm-qatom	       {color: #008; white-space: pre;}
 .cm-s-prolog span.cm-string	       {color: #008; font-style: italic;}
 .cm-s-prolog span.cm-string_terminal   {color: #008; font-style: italic;}
 .cm-s-prolog span.cm-bqstring	       {color: #040; font-style: italic;}
@@ -57,7 +57,7 @@
 /* Only on FF :(
 .cm-s-prolog span.cm-instantiation_error {text-decoration: underline wavy red; }
 */
-.cm-s-prolog span.cm-link	       {color: #762;}
+.cm-s-prolog span.cm-link	       {color: #730;}
 .cm-s-prolog span.cm-expanded	       {color: blue; text-decoration: underline;}
 .cm-s-prolog span.cm-undefined_import  {color: red;}
 .cm-s-prolog span.cm-unused_import     {color: blue; background: pink; }
