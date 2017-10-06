@@ -153,12 +153,19 @@ valid_c3_data(Data0, Data) :-
 	->  Data0 = Data
 	;   Data = Data0.put(rows,Rows)
 	).
-valid_c3_data(Data, Data) :-
-	Columns = Data.get(columns), !,
-	must_be(acyclic, Columns),
-	must_be(list,Columns),
-	maplist(must_be(list),Columns).
-
+valid_c3_data(Data0, Data) :-
+	Columns0 = Data0.get(columns), !,
+	must_be(acyclic, Columns0),
+	(   rows_to_matrix(Columns0, Columns)
+	->  true
+	;   maplist(is_list, Columns0)
+	->  Columns = Columns0
+	),
+	must_be(list(ground), Columns),
+	(   same_term(Columns0, Columns)
+	->  Data0 = Data
+	;   Data = Data0.put(columns,Columns)
+	).
 valid_c3_data(Data, Data) :-
 	throw(error(c3_no_data(Data), _)).
 
@@ -182,7 +189,8 @@ rows_to_matrix(Dicts, [Keys|Rows]) :-
 	maplist(compound_arguments, Compounds, Rows).
 :- endif.
 rows_to_matrix(Compounds, Rows) :-
-	dif(Name/Arity, []/2),		% avoid lists
+	functor([_], F, A),
+	dif(Name/Arity, F/A),		% avoid lists
 	maplist(name_arity_compound(Name, Arity), Compounds, Rows), !.
 rows_to_matrix(Lists, Lists) :-
 	maplist(length_list(_Columns), Lists).
