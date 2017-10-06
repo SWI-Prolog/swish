@@ -1,5 +1,7 @@
 node_modules
 bower_components
+swish-bower-components.zip
+.bower-senitel
 passwd
 data
 log
