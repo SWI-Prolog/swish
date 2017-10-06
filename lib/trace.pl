@@ -509,10 +509,18 @@ screen_property(width(_)).
 screen_property(rows(_)).
 screen_property(cols(_)).
 
+%!	swish:tty_size(-Rows, -Cols) is det.
+%
+%	Find the size of the output window. This is only registered when
+%	running _ask_. Notably during compilation it   is  not known. We
+%	provided dummy values to avoid failing.
+
 swish:tty_size(Rows, Cols) :-
 	pengine_self(Pengine),
+	current_predicate(Pengine:screen_property/1), !,
 	Pengine:screen_property(rows(Rows)),
 	Pengine:screen_property(cols(Cols)).
+swish:tty_size(24, 80).
 
 %!	set_file_breakpoints(+Pengine, +File, +Text, +Dict)
 %
