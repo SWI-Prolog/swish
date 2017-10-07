@@ -20,6 +20,12 @@ involved with using authenticated access.  In a nutshell:
 swish_config:config(public_access, true).
 
 :- use_module(swish(lib/plugin/http_authenticate), []).
+% Make adding users available from the toplevel
+:- use_module(user:swish(lib/plugin/http_authenticate),
+              [ swish_add_user/3,	% +User, +Passwd, +Fields
+                swish_add_user/1,	% +Dict
+                swish_add_user/0
+              ]).
 
 % Can be set to `basic` when HTTPS is used.  Using `basic` saves
 % one round trip but requires HTTPS to avoid exchanging the password
