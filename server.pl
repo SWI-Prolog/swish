@@ -33,6 +33,7 @@
 	  ]).
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
+:- use_module(library(broadcast)).
 :- use_module(swish).
 
 /** <module> Load the SWISH server for local usage
@@ -61,7 +62,9 @@ http://localhost:3050/
 server :-
 	server(localhost:3050).
 server(Port) :-
+	broadcast(http(pre_server_start)),
 	http_server(http_dispatch,
 		    [ port(Port),
 		      workers(16)
-		    ]).
+		    ]),
+	broadcast(http(post_server_start)).
