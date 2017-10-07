@@ -76,7 +76,7 @@ packs: $(PACKFILES)
 $(PACKFILES)::
 	@echo "Checking $(shell dirname $@) ..."
 	@if [ ! "`git submodule status $(shell dirname $@) | head -c 1`" = " " ]; then \
-	  @echo "  Updating $(shell dirname $@) ..." ; \
+	  echo "  Updating $(shell dirname $@) ..." ; \
 	  git submodule update --init $(shell dirname $@) ; \
 	  $(SWIPL) $(ATTACH_PACKDIR) -g 'pack_rebuild($(shell basename $$(dirname $@)))' -t halt ;\
 	fi
