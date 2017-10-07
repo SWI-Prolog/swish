@@ -46,7 +46,7 @@ clean::
 
 bower-zip: .bower-senitel
 .bower-senitel: $(BOWER_ARCHIVE)
-	unzip -u $(BOWER_ARCHIVE)
+	unzip -q -u $(BOWER_ARCHIVE)
 	touch $@
 
 $(BOWER_ARCHIVE)::
