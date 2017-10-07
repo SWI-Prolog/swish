@@ -7,6 +7,7 @@ CM=$(shell find codemirror -name '*.js')
 JQ=jquery.jsdoc
 CONF=conf.json
 MAIN=swish.js
+RJS=r.js
 
 all:	src min require.js
 
@@ -20,7 +21,7 @@ min:	swish-min.js swish-min.js.gz
 
 swish-min.js:	build.js $(JS) $(CM)
 	rm -f swish-min.js.new swish-min.js.new.map
-	r.js -o build.js
+	$(RJS) -o build.js
 	sed -i 's@//# sourceMappingURL=swish-min.js.new.map@//# sourceMappingURL=swish-min.js.map@' swish-min.js.new
 	mv swish-min.js.new swish-min.js
 	if [ -f swish-min.js.new.map ]; then \
