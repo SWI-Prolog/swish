@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015, VU University Amsterdam
+    Copyright (c)  2017, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@
 */
 
 :- module(swish_logging,
-	  [
+	  [ create_log_dir/0
 	  ]).
 :- use_module(library(http/http_log)).
 :- use_module(library(broadcast)).
@@ -98,3 +98,30 @@ gc_text_hash :-
 	    fail
 	;   true
 	).
+
+%!	create_log_dir
+%
+%	Create the directory for holding the log files
+
+create_log_dir :-
+	setting(http:logfile, Term),
+	directory_spec(Term, DirSpec),
+	(   absolute_file_name(DirSpec, _,
+			       [ file_type(directory),
+				 access(write)
+			       ])
+	->  true
+	;   absolute_file_name(DirSpec, Dir,
+			       [ solutions(all)
+			       ]),
+	    catch(make_directory(Dir), _, fail)
+	->  true
+	).
+
+directory_spec(Atom, Dir) :-
+	atomic(Atom), !,
+	file_directory_name(Atom, Dir).
+directory_spec(Term, DirTerm) :-
+	Term =.. [Alias,Atom],
+	file_directory_name(Atom, Dir),
+	DirTerm =.. [Alias,Dir].
