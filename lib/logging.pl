@@ -108,7 +108,8 @@ create_log_dir :-
 	directory_spec(Term, DirSpec),
 	(   absolute_file_name(DirSpec, _,
 			       [ file_type(directory),
-				 access(write)
+				 access(write),
+				 file_errors(fail)
 			       ])
 	->  true
 	;   absolute_file_name(DirSpec, Dir,
