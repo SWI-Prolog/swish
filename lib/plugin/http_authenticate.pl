@@ -342,6 +342,7 @@ writeable_passwd_file(File) :-
 %	Interactively add a user to the SWISH password file.
 
 swish_add_user :-
+	on_signal(int, _, interrupted),
 	writeable_passwd_file(File),
 	(   exists_file(File)
 	->  Action = update
@@ -360,6 +361,9 @@ swish_add_user :-
 	;   print_message(warning, password_mismatch),
 	    fail
 	).
+
+interrupted(_Sig) :-
+	halt(2).
 
 read_string(Prompt, String) :-
 	format(user_error, '~w', [Prompt]),
