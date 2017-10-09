@@ -166,7 +166,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	    }
 	  });
 	}
-	elem.on("click", ".inner button", function(ev) {
+	elem.on("click", ".chat-message button", function(ev) {
 	  var button = $(ev.target).closest("button");
 	  var val;
 
