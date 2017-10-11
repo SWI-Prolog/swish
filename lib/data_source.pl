@@ -239,6 +239,10 @@ data_property(M:Id, Property) :-
 property(columns(_)).
 property(column_names(_)).
 property(rows(_)).
+property(hash(_)).
+property(file_last_modified(_)).
+property(materialized(_)).
+property(source(_)).
 
 property(columns(Count), Hash) :-
     data_signature_db(Hash, Signature),
@@ -249,7 +253,13 @@ property(column_names(Names), Hash) :-
 property(rows(Count), Hash) :-
     data_signature_db(Hash, Signature),
     predicate_property(Signature, number_of_clauses(Count)).
-
+property(hash(Hash), Hash).
+property(file_last_modified(TimeStamp), Hash) :-
+    data_materialized(Hash, _, TimeStamp, _, _).
+property(materialized(TimeStamp), Hash) :-
+    data_materialized(Hash, TimeStamp, _, _, _).
+property(source(SourceTerm), Hash) :-
+    data_source_db(Hash, SourceTerm, _Lock).
 
 %!  swish:goal_expansion(+Dict, -DataGoal)
 %
