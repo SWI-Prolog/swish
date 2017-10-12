@@ -791,7 +791,7 @@ define([ "jquery", "config", "preferences",
 	  if ( elem.prologRunner('alive') ) {
 	    $(".prolog-editor").trigger('pengine-died', data.prolog.id);
 	    data.prolog.abort();
-	    this.prologRunner('setState', 'aborted');
+	    elem.prologRunner('setState', 'aborted');
 	  }
 	});
 	this.remove();
