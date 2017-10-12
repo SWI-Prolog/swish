@@ -1794,7 +1794,7 @@ function glyphButtonGlyph(elem, action, glyph) {
 }
 
 function sep() {
-  return $.el.span({class:"thin-space"}, " ");
+  return $.el.span({class:"menu-space"}, " ");
 }
 
 		 /*******************************

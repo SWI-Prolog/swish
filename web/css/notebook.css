@@ -7,6 +7,10 @@
   height: 100%;
 }
 
+.nb-toolbar
+{ padding-left: 20px;
+}
+
 .nb-toolbar, .nb-content
 { width: 100%;
 }
@@ -251,3 +255,9 @@ a.btn-image
 .nb-cell.program.background span.image-icon
 { background-image: url("../icons/global.png");
 }
+
+span.menu-space
+{ width: 2ex;
+  display: inline-block;
+}
+
