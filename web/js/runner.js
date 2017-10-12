@@ -104,6 +104,9 @@ define([ "jquery", "config", "preferences",
 	elem.on("pane.resize", function() {
 	  elem.prologRunners('scrollToBottom', true);
 	});
+	elem.on("scroll-to-bottom", function(ev, arg) {
+	  elem.prologRunners('scrollToBottom', arg);
+	});
 
 	elem.data(pluginName, data);
       });
@@ -131,7 +134,7 @@ define([ "jquery", "config", "preferences",
 
       data.inner.append(runner);
       $(runner).prologRunner(query);
-      this.prologRunners('scrollToBottom');
+      this.trigger('scroll-to-bottom');
 
       return this;
     },
@@ -779,7 +782,7 @@ define([ "jquery", "config", "preferences",
      */
     close: function() {
       if ( this.length ) {
-	var runners = RS(this);
+	var parents = this.parent();
 
 	this.each(function() {
 	  var elem = $(this);
@@ -793,7 +796,7 @@ define([ "jquery", "config", "preferences",
 	});
 	this.remove();
 
-	runners.prologRunners('scrollToBottom', true);
+	parents.trigger('scroll-to-bottom', true);
       }
       return this;
     },
@@ -819,7 +822,7 @@ define([ "jquery", "config", "preferences",
 	this.removeClass("iconic");
       }
 
-      RS(this).prologRunners('scrollToBottom', true);
+      this.trigger('scroll-to-bottom', true);
 
       return this;
     },
@@ -898,13 +901,15 @@ define([ "jquery", "config", "preferences",
 
      var runners = RS(this);
      if ( !aliveState(state) ) {
+       var elem = this;
        $(".prolog-editor").trigger('pengine-died', data.prolog.id);
        data.prolog.destroy();
-       setTimeout(function() { runners.prologRunners('scrollToBottom') }, 100);
+       setTimeout(function() { elem.trigger('scroll-to-bottom') }, 100);
      } else if ( state == "wait-next" || state == "true" ) {
-       setTimeout(function() { runners.prologRunners('scrollToBottom') }, 100);
+       var elem = this;
+       setTimeout(function() { elem.trigger('scroll-to-bottom') }, 100);
      } else {
-       runners.prologRunners('scrollToBottom');
+       this.trigger('scroll-to-bottom');
      }
 
      return this;
@@ -1282,7 +1287,7 @@ define([ "jquery", "config", "preferences",
     } else {
       console.log(msg.data);
     }
-    RS(elem).prologRunners('scrollToBottom');
+    elem.trigger('scroll-to-bottom');
   }
 
   function handleError() {
