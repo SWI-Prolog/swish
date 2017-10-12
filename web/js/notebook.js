@@ -175,6 +175,13 @@ var cellTypes = {
 	  }
 	});
 
+	/* monitor output on runners */
+	elem.on("scroll-to-bottom", function(ev, arg) {
+	  if ( arg != true ) {
+	    $(ev.target).closest(".nb-cell").nbCell('ensure_in_view', 'bottom');
+	  }
+	});
+
 	elem.data(pluginName, data);	/* store with element */
 
 					/* restore content */
@@ -859,6 +866,23 @@ var cellTypes = {
       }
     },
 
+    ensure_in_view: function(where) {
+      var top  = this.position().top;
+      var view = this.closest(".nb-view");
+      var stop = view.scrollTop();
+      var vh   = view.height();
+
+      if ( top > stop &&
+	   top + this.height() < stop + vh )
+	return;
+
+      if ( where != 'top' ) {
+	top = top + this.height() - vh + 40;
+      }
+
+      this.nbCell('active', true);
+      view.scrollTop(top);
+    },
 
     type: function(type) {
       var data = this.data(pluginName);
