@@ -107,6 +107,7 @@ var cellTypes = {
 	elem.append(toolbar = $.el.div(
             {class:"nb-toolbar"},
 	    glyphButton("trash", "delete", "Delete cell", "warning"),
+	    sep(),
 	    glyphButton("copy", "copy", "Copy cell", "default"),
 	    glyphButton("paste", "paste", "Paste cell below", "default"),
 	    sep(),
@@ -114,6 +115,9 @@ var cellTypes = {
 	    glyphButton("chevron-down", "down", "Move cell down", "default"),
 	    sep(),
 	    glyphButton("plus", "insertBelow", "Insert cell below", "primary"),
+	    sep(),
+	    glyphButton("erase", "clear_all", "Clear all query output", "warning"),
+	    glyphButton("play", "run_all", "Run all queries", "primary"),
 	    glyphButton("fullscreen", "fullscreen", "Full screen", "default")
 	    ));
 	elem.append(notebookMenu());
@@ -648,6 +652,13 @@ var cellTypes = {
 	  success: complete
 	});
       }
+    },
+
+    /**
+     * Erase all query output, killing possibly running queries
+     */
+    clear_all: function() {
+      this.find(".prolog-runner").prologRunner('close');
     }
   }; // methods
 
