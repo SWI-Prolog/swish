@@ -633,15 +633,30 @@ var cellTypes = {
     run_all: function(why) {
       var queries = [];
 
+      why = why||'all';
+
+      this.notebook('clear_all');
+
       this.find(".nb-cell.query").each(function() {
-	if ( $(this).data('run') == 'onload' )
+	if ( why == 'all' || $(this).data('run') == why )
 	  queries.push(this);
       });
 
+      function cont(pengine) {
+	switch(pengine.state) {
+	  case 'error':
+	  case 'aborted':
+	    return false;
+	}
+
+	return true;
+      }
+
       if ( queries.length > 0 ) {
 	queries.current = 0;
-	var complete = function() {
-	  if ( ++queries.current < queries.length ) {
+	var complete = function(pengine) {
+	  if ( cont(pengine) &&
+	       ++queries.current < queries.length ) {
 	    $(queries[queries.current]).nbCell('run', {
 	      complete: complete
 	    })
@@ -649,7 +664,7 @@ var cellTypes = {
 	};
 
 	$(queries[0]).nbCell('run', {
-	  success: complete
+	  complete: complete
 	});
       }
     },
