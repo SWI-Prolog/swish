@@ -245,6 +245,13 @@ define([ "jquery", "config", "preferences",
      * results as a table.
      * @param {Boolean} [query.title=true] If `false`, suppress the
      * title.
+     * @param {Function} [query.success] Called when the query completed
+     * with success (`true`).  `this` is the runner, the first argument
+     * is the Pengine.
+     * @param {Function} [query.complete] Called when the query
+     * completed, regardless of the result. Passes the same arguments as
+     * `query.success`. The `state` property of the Pengine contains the
+     * result state.  See `this.setState()`.
      */
     _init: function(query) {
       return this.each(function() {
@@ -781,6 +788,7 @@ define([ "jquery", "config", "preferences",
 	  if ( elem.prologRunner('alive') ) {
 	    $(".prolog-editor").trigger('pengine-died', data.prolog.id);
 	    data.prolog.abort();
+	    this.prologRunner('setState', 'aborted');
 	  }
 	});
 	this.remove();
@@ -871,6 +879,7 @@ define([ "jquery", "config", "preferences",
 
      if ( data.prolog.state != state ) {
        var stateful = this.find(".show-state");
+       var query = data.query;
 
        stateful.removeClass(data.prolog.state).addClass(state);
        data.prolog.state = state;
@@ -880,6 +889,11 @@ define([ "jquery", "config", "preferences",
        } else if ( state == "wait-input" ) {
 	 this.find("input").focus();
        }
+
+       if ( state == "true" && query.success )
+	 query.success.call(this, data.prolog);
+       if ( !aliveState(state) && query.complete )
+	 query.complete.call(this, data.prolog);
      }
 
      var runners = RS(this);

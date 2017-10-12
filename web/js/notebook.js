@@ -568,6 +568,7 @@ var cellTypes = {
 	});
 
 	this.find(".nb-cell").nbCell('onload');
+	this.notebook('run_all', 'onload');
 	this.notebook('updatePlaceHolder');
       }
     },
@@ -620,6 +621,33 @@ var cellTypes = {
 	       }
              });
       this.find(".nb-content").append(placeholder);
+    },
+
+    /**
+     * Run the notebook
+     */
+    run_all: function(why) {
+      var queries = [];
+
+      this.find(".nb-cell.query").each(function() {
+	if ( $(this).data('run') == 'onload' )
+	  queries.push(this);
+      });
+
+      if ( queries.length > 0 ) {
+	queries.current = 0;
+	var complete = function() {
+	  if ( ++queries.current < queries.length ) {
+	    $(queries[queries.current]).nbCell('run', {
+	      complete: complete
+	    })
+	  }
+	};
+
+	$(queries[0]).nbCell('run', {
+	  success: complete
+	});
+      }
     }
   }; // methods
 
@@ -1334,9 +1362,13 @@ var cellTypes = {
    * Run a query cell.
    * @param {Object} [options]
    * @param {Any}    [options.bindings] Initial bindings.  If this is a
-		     string, it is simply prepended to the query.  If
-		     it is an object, it is translated into a sequence
-		     of Prolog unifications to bind the variables.
+   *		     string, it is simply prepended to the query.  If
+   *		     it is an object, it is translated into a sequence
+   *		     of Prolog unifications to bind the variables.
+   * @param {Function} [options.success] Function run on success.  See
+   *		     `prologRunner._init()`.
+   * @param {Function} [options.complete] Function run on complete.  See
+   *		     `prologRunner._init()`.
    */
   methods.run.query = function(options) {	/* query */
     var programs = this.nbCell('programs');
@@ -1368,8 +1400,9 @@ var cellTypes = {
 		  title:        false,
 		  query_editor: this.find(".prolog-editor.query")
                 };
-    if ( programs[0] )
-      query.editor = programs[0];
+    if ( programs[0]  )     query.editor   = programs[0];
+    if ( options.success  ) query.success  = options.success;
+    if ( options.complete ) query.complete = options.complete;
 
     var runner = $.el.div({class: "prolog-runner"});
     this.find(".prolog-runner").prologRunner('close');
@@ -1382,11 +1415,6 @@ var cellTypes = {
 		 *******************************/
 
 /* These methods are executed after all cells have been initialised */
-
-  methods.onload.query = function() {
-    if ( this.data("run") == "onload" )
-      this.nbCell("run");
-  };
 
   methods.onload.html = function() {
     return methods.run.html.call(this,
