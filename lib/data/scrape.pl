@@ -35,7 +35,9 @@
 
 :- module(swish_data_scrape, []).
 :- use_module(library(sgml)).
+:- use_module(library(http/http_open)).
 :- use_module(library(option)).
+:- use_module(library(hash_stream)).
 :- use_module(library(apply)).
 :- use_module(library(xpath)).
 :- use_module(library(sandbox)).
@@ -64,7 +66,7 @@ scrape(URL, Proj, DOM, {Convert}, Options0, Hash) :-
     ),
     default_options(URL, DefOptions),
     merge_options(Options0, DefOptions, Options),
-    load_structure(URL, DOM, Options), !,
+    load_page(URL, DOM, Version, Options), !,
     safe_goal(Convert),
     dict_pairs(Proj, _, Pairs),
     pairs_keys_values(Pairs, Keys, Values),
@@ -72,9 +74,38 @@ scrape(URL, Proj, DOM, {Convert}, Options0, Hash) :-
     Head =.. [Hash|Values],
     forall(call(Convert),
            'data assert'(Head)),
-    'data materialized'(Hash, Signature, -).
+    'data materialized'(Hash, Signature, Version).
 scrape(URL, Proj, DOM, Convert, Options, _Hash) :-
     throw(error(failure_error(scrape(URL, Proj, DOM, Convert, Options)))).
+
+load_page(URL, DOM, Version, Options) :-
+    setup_call_catcher_cleanup(
+        ( http_open(URL, Pair,
+                    [ header(last_modified, LastModified),
+                      header(etag, Etag)
+                    | Options
+                    ]),
+          stream_pair(Pair, In0, Out),
+          close(Out),
+          open_hash_stream(In0, In, [algorithm(sha1)])
+        ),
+        load_structure(In, DOM, Options),
+        Catcher,
+        finalize(Catcher, In, Etag, LastModified, Version)).
+
+finalize(exit, In, Etag, LastModified, Version) :-
+    stream_hash(In, SHA1),
+    close(In),
+    (   parse_time(LastModified, LastModStamp)
+    ->  true
+    ;   LastModStamp = (-)
+    ),
+    source_tag(Etag, LastModStamp, SHA1, Version).
+
+source_tag('',   -,    SHA1, version{sha1:SHA1}) :- !.
+source_tag(Etag, -,    SHA1, version{sha1:SHA1, etag:Etag}).
+source_tag('',   Time, SHA1, version{sha1:SHA1, last_modified:Time}).
+source_tag(Etag, Time, SHA1, version{sha1:SHA1, etag:Etag, last_modified:Time}).
 
 safe_option(dialect(_)).
 safe_option(space(_)).

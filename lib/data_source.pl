@@ -90,14 +90,26 @@ maintained over a SWISH Pengine invocation.
 'data assert'(Term) :-
     assertz(Term).
 
-'data materialized'(Hash, Signature, SourceID) :-
+%!  'data materialized'(+Hash, +Signature, +SourceVersion) is det.
+%
+%   Called by a data plugin  to  indicate   that  loading  the  data has
+%   finished.
+%
+%   @arg Hash is the has of the original data source
+%   @arg Signature is a term Hash(Arg1, Arg2, ...), where `Arg1`, ...
+%   are atoms or small integers that indicate the field names.
+%   @arg SourceVersion is a term that indicates the identity of the source.
+%   this is typically a dict containing e.g., a time stamp, content
+%   hash, HTTP =Etag= value, etc.
+
+'data materialized'(Hash, Signature, SourceVersion) :-
     statistics(cputime, CPU1),
     get_time(Now),
     nb_current('$data_source_materalize', stats(Time0, CPU0)),
     CPU  is CPU1 - CPU0,
     Wall is Now - Time0,
     assertz(data_signature_db(Hash, Signature)),
-    assertz(data_materialized(Hash, Now, SourceID, CPU, Wall)).
+    assertz(data_materialized(Hash, Now, SourceVersion, CPU, Wall)).
 
 'data failed'(_Hash, Signature) :-
     functor(Signature, Name, Arity),
@@ -229,6 +241,16 @@ data_dump(Id, Range, Table) :-
 %       data.
 %     - rows(-Rows)
 %       Number of rows in the table
+%     - hash(-Hash)
+%       Get the internal (hashed) identifier for the data source
+%     - source_version(-SourceVersion)
+%       A term (often a dict) that provides version information
+%       about the source.  Details depend on the source.
+%     - materialized(-TimeStamp)
+%       The data source was materialized at TimeStamp.
+%     - source(-Term)
+%       Description of the original source term used to declare
+%       the data source
 
 data_property(M:Id, Property) :-
     data_hash(M:Id, Hash),
@@ -240,7 +262,7 @@ property(columns(_)).
 property(column_names(_)).
 property(rows(_)).
 property(hash(_)).
-property(file_last_modified(_)).
+property(source_version(_)).
 property(materialized(_)).
 property(source(_)).
 
@@ -254,8 +276,8 @@ property(rows(Count), Hash) :-
     data_signature_db(Hash, Signature),
     predicate_property(Signature, number_of_clauses(Count)).
 property(hash(Hash), Hash).
-property(file_last_modified(TimeStamp), Hash) :-
-    data_materialized(Hash, _, TimeStamp, _, _).
+property(source_version(SourceVersion), Hash) :-
+    data_materialized(Hash, _, SourceVersion, _, _).
 property(materialized(TimeStamp), Hash) :-
     data_materialized(Hash, TimeStamp, _, _, _).
 property(source(SourceTerm), Hash) :-

@@ -42,6 +42,7 @@
 :- use_module(library(date)).
 :- use_module(library(zlib)).
 :- use_module(library(http/http_open)).
+:- use_module(library(hash_stream)).
 
 :- use_module('../data_source').
 
@@ -75,15 +76,19 @@ swish_data_source:source(csv(URL, Options),
 import_csv(URL, Options, Hash) :-
     input_format(URL, Options, Filters, Options1),
     setup_call_catcher_cleanup(
-        http_open(URL, In,
-                  [ header(content_type, ContentType),
-                    header(last_modified, LastModified)
-                  ]),
-        ( input_filters(In, ContentType, Filters, In1, Options1),
-          load_csv_stream(In1, Hash, Signature, Options1)
+        (   http_open(URL, HTTPIO,
+                      [ header(content_type, ContentType),
+                        header(last_modified, LastModified),
+                        header(etags, Etag)
+                      ]),
+            stream_pair(HTTPIO, In0, Out),
+            close(Out),
+            open_hash_stream(In0, In, [algorithm(sha1)]),
+            input_filters(In, ContentType, Filters, In1, Options1)
         ),
+        load_csv_stream(In1, Hash, Signature, Options1),
         Catcher,
-        finalize(Catcher, In1, Hash, LastModified,
+        finalize(Catcher, In, In1, Hash, LastModified, Etag,
                  import_csv(URL,Options1),
                  Signature)).
 
@@ -120,18 +125,25 @@ column_key(Any, Key) :-
     format(atom(Key), '~w', [Any]).
 
 
-finalize(exit, In, Hash, LastModified, _Action, Signature) :-
+finalize(exit, HTTPIn, In, Hash, LastModified, Etag, _Action, Signature) :-
     !,
+    stream_hash(HTTPIn, SHA1),
     close(In),
     (   parse_time(LastModified, LastModStamp)
     ->  true
     ;   LastModStamp = (-)
     ),
-    'data materialized'(Hash, Signature, LastModStamp).
-finalize(Reason, In, Hash, _LastModified, Action, Signature) :-
+    source_tag(Etag, LastModStamp, SHA1, SourceID),
+    'data materialized'(Hash, Signature, SourceID).
+finalize(Reason, _, In, Hash, _LastModified, _Etag, Action, Signature) :-
     close(In),
     'data failed'(Hash, Signature),
     failed(Reason, Action).
+
+source_tag('',   -,    SHA1, version{sha1:SHA1}) :- !.
+source_tag(Etag, -,    SHA1, version{sha1:SHA1, etag:Etag}).
+source_tag('',   Time, SHA1, version{sha1:SHA1, last_modified:Time}).
+source_tag(Etag, Time, SHA1, version{sha1:SHA1, etag:Etag, last_modified:Time}).
 
 failed(exception(Ex), _) :-
     throw(Ex).
