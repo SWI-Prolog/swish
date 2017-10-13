@@ -73,6 +73,7 @@
 :- use_module(chatstore).
 :- use_module(authenticate).
 :- use_module(pep).
+:- use_module(content_filter).
 
 :- html_meta(chat_to_profile(+, html)).
 
@@ -974,6 +975,12 @@ forbidden(Message, _DocID, Why) :-
 	Payloads = Message.get(payload),
 	member(Payload, Payloads),
 	large_payload(Payload, Why), !.
+forbidden(Message, _DocID, Why) :-
+	eval_content(Message.get(text), _WC, Score),
+	user_score(Message, Score, Cummulative, _Count),
+	Score*2 + Cummulative < 0,
+	!,
+	Why = "Chat messages must be in English and avoid offensive language".
 
 large_payload(Payload, Why) :-
 	Selections = Payload.get(selection),
@@ -985,6 +992,29 @@ large_payload(Payload, Why) :-
 large_payload(Payload, Why) :-
 	string_length(Payload.get(query), QLen), QLen > 1000, !,
 	Why = "Query too long (max. 1000 characters)".
+
+user_score(Message, MsgScore, Cummulative, Count) :-
+	Profile	= Message.get(user).get(profile_id), !,
+	block(Profile, MsgScore, Cummulative, Count).
+user_score(_, _, 0, 1).
+
+%!	block(+User, +Score, -Cummulative, -Count)
+%
+%	Keep a count and cummulative score for a user.
+
+:- dynamic
+	blocked/4.
+
+block(User, Score, Cummulative, Count) :-
+	blocked(User, Score0, Count0, Time), !,
+	get_time(Now),
+	Cummulative = Score0*(0.5**((Now-Time)/600)) + Score,
+	Count is Count0 + 1,
+	asserta(blocked(User, Cummulative, Count, Now)),
+	retractall(blocked(User, Score0, Count0, Time)).
+block(User, Score, Score, 1) :-
+	get_time(Now),
+	asserta(blocked(User, Score, 1, Now)).
 
 
 		 /*******************************
