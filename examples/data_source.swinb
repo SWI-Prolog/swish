@@ -1,0 +1,75 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# SWISH data sources
+
+A data source allows you to make external data available from SWISH programs.  A data source _declaration_ declares how the data must be loaded.  The following data sources are provided:
+
+  - Attach [CSV](example/data_source_csv.swinb) from the web
+  - [Scrape](example/data_source_scrape.swinb) web pages
+  - Query [SPARQL](example/data_source_sparql.swinb) endpoints
+
+## Using SWISH data sources
+
+The actual loading happens _lazily_, while the loaded data is _shared_ between SWISH queries.  The overall structure is as below, where `Name` is an atom denoting the data source and `Spec` is a term that tells the system how to obtain the data.  Different SWISH programs may use a different name for the data source; the data is shared as long as the secure hash of the `Spec` is equal.
+
+```
+:- data_source(Name, Spec).
+```
+
+_Materializing_ the data source results in a predicate with _facts_ and a declaration of the _argument names_.   The following predicates are available after declaring a data source:
+
+  - [[data_record/2]]
+  - [[data_row/2]]
+  - [[data_property/2]]
+  
+### Our first example: accessing a CSV file
+
+Below we attach a CSV file from the Plotly project.  Details on the CSV data source are at [CSV demo](example/data_source_csv.swinb).
+</div>
+
+<div class="nb-cell program" data-background="true" name="p1">
+:- data_source(apple,
+               csv('https://raw.githubusercontent.com/plotly/datasets/master/2014_apple_stock.csv',
+                   [])).
+</div>
+
+<div class="nb-cell markdown" name="md2">
+After declaring the data source the first action is typically to ask for a record of it to validate that the source is attached collectly and to see which columns are present.
+</div>
+
+<div class="nb-cell query" name="q1">
+data_record(apple, R).
+</div>
+
+<div class="nb-cell markdown" name="md3">
+In the next step we typically define rules on top of the plain data record that make the relations we need for further processing the data available.  For this purpose a _dict_ is translated into a goal using _goal_expansion/2_.  So, we can define a traditional Prolog predicate as below and list it to see what happens:
+</div>
+
+<div class="nb-cell program" data-background="true" name="p2">
+apple_stock_price(Date, Price) :-
+    apple{'AAPL_x':Date, 'AAPL_y':Price}.
+</div>
+
+<div class="nb-cell query" name="q2">
+listing(apple_stock_price/2).
+</div>
+
+<div class="nb-cell markdown" name="md4">
+Finally we show the connection to the rendering libraries to vizualise the data.
+</div>
+
+<div class="nb-cell program" name="p3">
+:- use_rendering(c3).
+</div>
+
+<div class="nb-cell query" name="q3">
+findall(_{date:_Date,price:_Price},
+        apple_stock_price(_Date, _Price),
+        _Rows),
+Chart = c3{data:_{x:date, rows:_Rows},
+           axis:_{x:_{type: 'timeseries',
+                      tick: _{count: 12, format: '%Y-%m-%d'}}}}.
+</div>
+
+</div>

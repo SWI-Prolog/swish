@@ -1,0 +1,52 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# The SPARQL data source
+
+The SPARQL data source allows for querying SPARQL endpoints.  It takes two arguments
+
+  1. The SPARQL query as a string
+  2. A list of options that is passed to sparql_query/3.
+  
+The column names are created from the variable names used in the _projection_ of the =SELECT=
+query.  In addion, a column-name `_t` column is added that represents the type, which is one
+of
+
+  - `iri` if the value is an IRI
+  - A *dataType IRI* if the value is a typed literal ("Value"^^IRI)
+  - A *language tag* if the value is a language string ("Text"@lang)
+  
+## Example
+
+The query below uses [wikidata](https://www.wikidata.org) to find the compositions by Mozart.  The query is
+one of the wikidata example queries.  Below the data source declaration we query for a full record and define
+a predicate to access composition titles and their publication date.
+</div>
+
+<div class="nb-cell program" data-background="true" name="p1">
+:- data_source(mozart,
+               sparql("SELECT DISTINCT  ?item ?itemLabel ?catalog_code ?publication_data
+                       WHERE
+                       { ?item wdt:P86 wd:Q254 ;
+                         wdt:P528 ?catolog_code ;
+                         wdt:P577 ?publication_data .
+                         SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\" }
+                       }",
+                      [ endpoint('https://query.wikidata.org/bigdata/namespace/wdq/sparql')
+                      ])).
+</div>
+
+<div class="nb-cell query" name="q1">
+data_record(mozart, R).
+</div>
+
+<div class="nb-cell program" data-background="true" name="p2">
+mozart_composition(Title, Date) :-
+    mozart{itemLabel:Title, publication_data:Date}.
+</div>
+
+<div class="nb-cell query" data-tabled="true" name="q2">
+mozart_composition(Title, Date).
+</div>
+
+</div>

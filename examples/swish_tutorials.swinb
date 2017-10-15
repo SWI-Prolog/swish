@@ -1,16 +1,17 @@
 <div class="notebook">
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md1">
 # SWISH Tutorials
 
 This notebook provides an overview of tutorials about using SWISH.
 
   - [Rendering answers graphically](example/rendering.swinb)
   - [Using HTML cells in notebooks](example/htmlcell.swinb)
+  - [Accessing external data](example/data_source.swinb)
   - [Access the SWISH interface from Prolog](example/jquery.swinb)
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md2">
 ## Embedded R support
 
 The [R project](https://www.r-project.org/) provides statistical computing and data vizualization.  SWISH can access R through [Rserve](https://rforge.net/Rserve/).  The *prototype* client for Rserve is available as the _pack_ [rserve_client](http://www.swi-prolog.org/pack/list?p=rserve_client).  The GitHub repository [rserve-sandbox](https://github.com/JanWielemaker/rserve-sandbox) provides the matching Rserve server as a [Docker](https://www.docker.com/) specification.
@@ -22,11 +23,11 @@ The notebooks below explain the basics of using R from SWISH.  You can test whet
   - [Downloading (graphics) files](example/Rdownload.swinb)
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q1">
 &lt;- 'R.Version'().
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md3">
 ### More elaborate examples
 
   - [EM Clustering of the Iris Dataset](example/iris.swinb)

@@ -1,0 +1,35 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# The CSV data source
+
+This data source connects CSV files from the web to Prolog predicates.  The `csv` specification accepts two arguments:
+
+  1. The *URL* to load the data from
+  2. An option list to control the conversion.  Currently this processes:
+     - encoding(+Encoding)
+       Set the encoding for processing the data.  Default is guessed
+       from the URL header or `utf8` if there is no clue.
+     - column_names(+ColumnNames)
+       Names for the columns. If not provided, the first row is assumed
+       to hold the column names.
+       
+## Example
+
+Below we attach the _IRIS dataset_.  See also the [iris](example/iris.swinb) notebook, which uses R to perform machine learning on the iris dataset.
+</div>
+
+<div class="nb-cell program" name="p1">
+:- data_source(iris,
+               csv('https://raw.githubusercontent.com/uiuc-cse/data-fa14/gh-pages/data/iris.csv',
+                   [])).
+
+iris(SepalLen, SepalW, PetalLen, PetalW, Species) :-
+    iris{sepal_length:SepalLen,sepal_width:SepalW,petal_length:PetalLen,petal_width:PetalW,species:Species}.
+</div>
+
+<div class="nb-cell query" data-tabled="true" name="q1">
+iris(SL,SW,PL,PW,Species).
+</div>
+
+</div>

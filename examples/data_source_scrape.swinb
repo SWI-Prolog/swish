@@ -1,0 +1,47 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# The Scrape data source
+
+The `scrape` data source provides access to data from HTML or XML web pages.  It takes the following arguments:
+
+  1. The *url* to scrape from
+  2. The *projection*, binding variable names to variables as a _dict_,
+  3. A variable that is bound to the *DOM* of the page
+  4. A Prolog _body term_ encloses in `{}` that is used to translate the
+     DOM into a series of facts.  This often uses xpath/3.
+  5. An option list that is used for http_open/3 for the HTTP request and the load_structure/3 predicate used to realise the DOM.
+  
+The data source contains all answers of the _body term_, typically applied on `DOM`, using the column names and values as defined by the _projection_.
+
+## Example
+
+Below is an example that scrapes an HTML table and a query that reproduces the add-on download table.
+</div>
+
+<div class="nb-cell program" name="p1">
+:- use_module(library(xpath)).
+
+:- data_source(addon, 
+               scrape('http://www.swi-prolog.org/pack/list',
+                      _{name:Name, version:Version, downloads:Downloads,
+                        title:Title},
+                      DOM,
+                      { xpath(DOM, //table(@class=packlist), Table),
+                        xpath(Table, //tr, Row),
+                        xpath(Row, td/a(text), Name),
+                        xpath(Row, td(@class='pack-version', text), Version),
+                        xpath(Row, td(@class='pack-downloads', self), 
+                              element(td, _, [DownloadsAtom|_])),
+                        atom_number(DownloadsAtom, Downloads),
+                        xpath(Row, td(@class='pack-title', text), Title)
+                      },
+                      [])).
+</div>
+
+<div class="nb-cell query" data-tabled="true" name="q1">
+order_by([desc(Downloads)],
+         addon{name:Name, version:Version, downloads:Downloads, title:Title}).
+</div>
+
+</div>
