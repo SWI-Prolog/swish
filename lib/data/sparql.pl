@@ -77,7 +77,7 @@ import_sparql(Query, Options, Hash) :-
         finalize(Catcher, Hash, State, import_sparql(Query, Options))).
 
 finalize(exit, Hash, state(Signature), _Action) :-
-    'data materialized'(Hash, Signature, -).
+    'data materialized'(Hash, Signature, version{}).
 finalize(Reason, Hash, state(Signature), Action) :-
     (   Signature == (-)
     ->  true
