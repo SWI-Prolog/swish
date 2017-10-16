@@ -95,6 +95,8 @@ stale_module_property(M, thread_status, Status) :-
 	pengine_property(Pengine, module(M)),
 	pengine_property(Pengine, thread(Thread)),
 	catch(thread_property(Thread, status(Status)), _, fail).
+stale_module_property(M, module_class, Class) :-
+	module_property(M, module(Class)).
 stale_module_property(M, program_space, Space) :-
 	module_property(M, program_space(Space)).
 stale_module_property(M, program_size, Size) :-
