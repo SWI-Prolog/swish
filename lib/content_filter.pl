@@ -62,7 +62,7 @@ eval_content(Text, WordCount, Score) :-
     wordlist(Tokens, Words),
     length(Words, WordCount),
     foldl(acc_score, Words, 0-0, Score0-_Acc),
-    Score = max(-100, min(100, Score0)).
+    Score is max(-100, min(100, Score0)).
 
 acc_score(Word, V0-A0, V-A) :-
     downcase_atom(Word, Lower),
@@ -106,10 +106,15 @@ glued_identifier(Word) :-
 glued_identifier(Word) :-
     atom_concat(Pre, Rest, Word),
     atom_length(Pre, L),
-    L > 0,
+    L > 2,
     id_part(Pre),
     glued_identifier(Rest),
     !.
+glued_identifier(Word) :-
+    (   atom_concat(Pre, Rest, Word),
+        atom_number(Rest, _)
+    ->  id_part(Pre)
+    ).
 
 id_part(Part) :-
     atom_length(Part, 1),
