@@ -56,8 +56,8 @@ This module provides persistent hashes for a goal and its dependencies.
 %
 %   Create a hash for Goal and its dependencies.
 
-permahash(Goal, Hash) :-
-    swish_provenance(Goal, Provenance),
+permahash(M:Goal, Hash) :-
+    swish_provenance(M:Goal, Provenance),
     storage_store_term(Provenance, ProvHash),
     storage_store_term(goal{goal:Goal,
                             prov:ProvHash}, Hash).
