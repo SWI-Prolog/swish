@@ -37,6 +37,7 @@
           [ swish_provenance/2
           ]).
 :- use_module(library(apply)).
+:- use_module(library(pengines)).
 :- use_module(library(lists)).
 :- use_module(library(signature)).              % from pcache pack
 :- use_module(storage).
@@ -51,25 +52,33 @@
 %
 %   Provide provenance information for running Goal.
 
-swish_provenance(Goal, ['<local>'-LocalPreds|Used]) :-
+swish_provenance(Goal, ['<local>'-Source|Used]) :-
     goal_provenance(Goal, Prov0),
-    select(PengineSrc-Preds, Prov0, Prov1),
-    maplist(local_def, Preds, LocalPreds),
-    split_string(PengineSrc, "/", "/", ["pengine:", IdS, "src"]),
+    select(SourceID-Preds, Prov0, Prov1),
+    split_string(SourceID, "/", "/", ["pengine:", IdS, "src"]),
     !,
+    local_source(SourceID, Preds, Source),
     atom_string(Module, IdS),
     maplist(file_prov(Module), Prov1, Used).
 
 file_prov(Module, FileURL-Preds0, Hash-Preds) :-
     atom_concat('swish://', File, FileURL),
     !,
-    storage_meta_data(File, Hash),
+    storage_meta_data(File, Meta),
+    Hash = Meta.commit,
     maplist(unqualify(Module), Preds0, Preds).
 file_prov(_, Prov, Prov).
 
 unqualify(M, Pred0, Pred) :-
     Pred0.head = M:Plain,
     Pred = Pred0.put(head, Plain).
+
+local_source(SourceID, _Preds, [source{text:Source}]) :-
+    pengine_self(Me),
+    pengine_property(Me, source(SourceID, Source)),
+    !.
+local_source(_, Preds, Source) :-
+    maplist(local_def, Preds, Source).
 
 local_def(Pred0, predicate{head:Head, clauses:Clauses}) :-
     M:Head = Pred0.head,
