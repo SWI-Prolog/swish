@@ -82,19 +82,21 @@ their own version.
 :- http_handler(swish('p/'), web_storage, [ id(web_storage), prefix ]).
 
 :- listen(http(pre_server_start),
-	  open_gittystore).
+	  open_gittystore(_)).
 
 :- dynamic  storage_dir/1.
 :- volatile storage_dir/1.
 
-open_gittystore :-
-	storage_dir(_), !.
-open_gittystore :-
-	with_mutex(web_storage, open_gittystore_guarded).
+open_gittystore(Dir0) :-
+	storage_dir(Dir), !,
+	Dir = Dir0.
+open_gittystore(Dir) :-
+	with_mutex(web_storage, open_gittystore_guarded(Dir0)),
+	Dir = Dir0.
 
-open_gittystore_guarded :-
-	storage_dir(_), !.
-open_gittystore_guarded :-
+open_gittystore_guarded(Dir) :-
+	storage_dir(Dir), !.
+open_gittystore_guarded(Dir) :-
 	setting(directory, Spec),
 	absolute_file_name(Spec, Dir,
 			   [ file_type(directory),
@@ -103,7 +105,7 @@ open_gittystore_guarded :-
 			   ]), !,
 	gitty_open(Dir, []),
 	asserta(storage_dir(Dir)).
-open_gittystore_guarded :-
+open_gittystore_guarded(Dir) :-
 	setting(directory, Spec),
 	absolute_file_name(Spec, Dir,
 			   [ solutions(all)
@@ -133,7 +135,7 @@ create_store(Dir) :-
 web_storage(Request) :-
 	authenticate(Request, Auth),
 	option(method(Method), Request),
-	open_gittystore,
+	open_gittystore(_),
 	storage(Method, Request, [identity(Auth)]).
 
 :- multifile
@@ -511,13 +513,11 @@ random_char(Char) :-
 %	@arg Meta is a dict holding the meta data about the file.
 
 storage_file(File) :-
-	open_gittystore,
-	storage_dir(Dir),
+	open_gittystore(Dir),
 	gitty_file(Dir, File, _Head).
 
 storage_file(File, Data, Meta) :-
-	open_gittystore,
-	storage_dir(Dir),
+	open_gittystore(Dir),
 	(   var(File)
 	->  gitty_file(Dir, File, _Head)
 	;   true
@@ -525,8 +525,7 @@ storage_file(File, Data, Meta) :-
 	gitty_data(Dir, File, Data, Meta).
 
 storage_meta_data(File, Meta) :-
-	open_gittystore,
-	storage_dir(Dir),
+	open_gittystore(Dir),
 	(   var(File)
 	->  gitty_file(Dir, File, _Head)
 	;   true
@@ -569,14 +568,12 @@ current_meta_property(modify(_List),	 derived).
 %	permanent links to arbitrary objects.
 
 storage_store_term(Term, Hash) :-
-	open_gittystore,
-	storage_dir(Dir),
+	open_gittystore(Dir),
 	with_output_to(string(S), write_canonical(Term)),
 	gitty_save(Dir, S, term, Hash).
 
 storage_load_term(Hash, Term) :-
-	open_gittystore,
-	storage_dir(Dir),
+	open_gittystore(Dir),
 	gitty_load(Dir, Hash, Data, term),
 	term_string(Term, Data).
 
@@ -641,8 +638,7 @@ storage_unpack :-
 %	@tbd We should only demand public on public servers.
 
 swish_search:typeahead(file, Query, FileInfo, _Options) :-
-	open_gittystore,
-	storage_dir(Dir),
+	open_gittystore(Dir),
 	gitty_file(Dir, File, Head),
 	gitty_commit(Dir, Head, Meta),
 	Meta.get(public) == true,
@@ -672,8 +668,7 @@ swish_search:typeahead(store_content, Query, FileInfo, Options) :-
 	limit(25, search_store_content(Query, FileInfo, Options)).
 
 search_store_content(Query, FileInfo, Options) :-
-	open_gittystore,
-	storage_dir(Dir),
+	open_gittystore(Dir),
 	gitty_file(Dir, File, Head),
 	gitty_data(Dir, Head, Data, Meta),
 	Meta.get(public) == true,
