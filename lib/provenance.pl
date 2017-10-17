@@ -54,7 +54,7 @@ This module provides persistent hashes for a goal and its dependencies.
 
 %!  permahash(:Goal, -Hash) is det.
 %
-%   Create a hash for Goal and its dependencies
+%   Create a hash for Goal and its dependencies.
 
 permahash(Goal, Hash) :-
     swish_provenance(Goal, Provenance),
@@ -70,8 +70,8 @@ swish_provenance(Goal, Provenance) :-
     goal_provenance(Goal, Prov0),
     (   select(SourceID-Preds, Prov0, Prov1),
         split_string(SourceID, "/", "/", ["pengine:", IdS, "src"])
-    ->  local_source(SourceID, Preds, Source),
-        atom_string(Module, IdS),
+    ->  atom_string(Module, IdS),
+        local_source(Module, SourceID, Preds, Source),
         convlist(file_prov(Module), Prov1, Used),
         (   Used \== []
         ->  Provenance = prov{ local: Source,
@@ -95,12 +95,14 @@ unqualify(M, Pred0, Pred) :-
     Pred0.head = M:Plain,
     Pred = Pred0.put(head, Plain).
 
-local_source(SourceID, _Preds, [source{gitty:Hash}]) :-
+local_source(Module, SourceID, Preds0,
+             [source{gitty:Hash, predicates:Preds}]) :-
     pengine_self(Me),
     pengine_property(Me, source(SourceID, Source)),
     !,
-    storage_store_term(source{text:Source}, Hash).
-local_source(_, Preds, Source) :-
+    storage_store_term(source{text:Source}, Hash),
+    maplist(unqualify(Module), Preds0, Preds).
+local_source(_Module, _SourceID, Preds, Source) :-
     maplist(local_def, Preds, Source).
 
 local_def(Pred0, predicate{head:Head, clauses:Clauses}) :-
