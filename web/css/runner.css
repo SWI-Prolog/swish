@@ -34,7 +34,7 @@ div.prolog-runner:focus {
 div.prolog-runner.iconic > div.runner-results { display: none; }
 
 div.runner-title {
-  padding: 0px 5px 2px;
+  padding: 0px 5px 0px;
   border: 2px solid #333;
   border-radius: 5px;
   box-sizing: border-box;
@@ -116,7 +116,7 @@ div.runner-title > button {
 }
 
 div.runner-title > button.rtb-toggleIconic
-{ padding: 8px 0px;
+{ padding: 6px 0px 0px 0px;
 }
 
 div.runner-title > button:hover {

@@ -345,7 +345,8 @@ define([ "jquery", "config", "preferences",
 	    titleBarButton("minus",         "Iconify",      'toggleIconic'),
 	    titleBarButton("download",      "Download CSV", 'downloadCSV'),
 	    stateButton(),
-	    qspan));
+	    qspan,
+            $.el.br({clear:"all"})));
 	} else {
 	  var close = glyphButton("remove-circle", "Close");
 	  elem.append(close);
