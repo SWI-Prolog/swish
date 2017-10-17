@@ -34,7 +34,8 @@
 */
 
 :- module(swish_provenance,
-          [ swish_provenance/2
+          [ swish_provenance/2,                 % :Goal, -Provenance
+            permahash/2                         % :Goal, -Hash
           ]).
 :- use_module(library(apply)).
 :- use_module(library(pengines)).
@@ -43,23 +44,45 @@
 :- use_module(storage).
 
 :- meta_predicate
-    swish_provenance(:, -).
+    swish_provenance(:, -),
+    permahash(:, -).
 
 /** <module> SWISH provenance collection
+
+This module provides persistent hashes for a goal and its dependencies.
 */
 
-%!  swish_provenance(:Goal, -Provenance) is det.
+%!  permahash(:Goal, -Hash) is det.
+%
+%   Create a hash for Goal and its dependencies
+
+permahash(Goal, Hash) :-
+    swish_provenance(Goal, Provenance),
+    storage_store_term(Provenance, ProvHash),
+    storage_store_term(goal{goal:Goal,
+                            prov:ProvHash}, Hash).
+
+%!  swish_provenance(:Goal, -Provenance:dict) is det.
 %
 %   Provide provenance information for running Goal.
 
-swish_provenance(Goal, ['<local>'-Source|Used]) :-
+swish_provenance(Goal, Provenance) :-
     goal_provenance(Goal, Prov0),
-    select(SourceID-Preds, Prov0, Prov1),
-    split_string(SourceID, "/", "/", ["pengine:", IdS, "src"]),
-    !,
-    local_source(SourceID, Preds, Source),
-    atom_string(Module, IdS),
-    maplist(file_prov(Module), Prov1, Used).
+    (   select(SourceID-Preds, Prov0, Prov1),
+        split_string(SourceID, "/", "/", ["pengine:", IdS, "src"])
+    ->  local_source(SourceID, Preds, Source),
+        atom_string(Module, IdS),
+        convlist(file_prov(Module), Prov1, Used),
+        (   Used \== []
+        ->  Provenance = prov{ local: Source,
+                               import: Used }
+        ;   Provenance = prov{ local: Source }
+        )
+    ;   convlist(file_prov(_), Prov0, Used),
+        Used \== []
+    ->  Provenance = prov{ import: Used }
+    ;   Provenance = prov{}
+    ).
 
 file_prov(Module, FileURL-Preds0, Hash-Preds) :-
     atom_concat('swish://', File, FileURL),
@@ -67,16 +90,16 @@ file_prov(Module, FileURL-Preds0, Hash-Preds) :-
     storage_meta_data(File, Meta),
     Hash = Meta.commit,
     maplist(unqualify(Module), Preds0, Preds).
-file_prov(_, Prov, Prov).
 
 unqualify(M, Pred0, Pred) :-
     Pred0.head = M:Plain,
     Pred = Pred0.put(head, Plain).
 
-local_source(SourceID, _Preds, [source{text:Source}]) :-
+local_source(SourceID, _Preds, [source{gitty:Hash}]) :-
     pengine_self(Me),
     pengine_property(Me, source(SourceID, Source)),
-    !.
+    !,
+    storage_store_term(source{text:Source}, Hash).
 local_source(_, Preds, Source) :-
     maplist(local_def, Preds, Source).
 
