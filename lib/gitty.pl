@@ -46,6 +46,8 @@
 	    gitty_hash/2,		% +Store, ?Hash
 
 	    gitty_fsck/1,		% +Store
+	    gitty_save/4,		% +Store, +Data, +Type, -Hash
+	    gitty_load/4,		% +Store, +Hash, -Data, -Type
 
 	    gitty_reserved_meta/1,	% ?Key
 	    is_gitty_hash/1,		% @Term
@@ -431,6 +433,20 @@ load_object(Store, Hash, Data) :-
 load_object(Store, Hash, Data, Type, Size) :-
 	store_driver_module(Store, Module),
 	Module:load_object(Store, Hash, Data, Type, Size).
+
+%!	gitty_save(+Store, +Data, +Type, -Hash) is det.
+%!	gitty_load(+Store, +Hash, -Data, -Type) is det.
+%
+%	Low level objects store. These predicate   allows  for using the
+%	store as an arbitrary content store.
+%
+%	@arg Data is a string
+%	@arg Type is an atom denoting the object type.
+
+gitty_save(Store, Data, Type, Hash) :-
+	save_object(Store, Data, Type, Hash).
+gitty_load(Store, Hash, Data, Type) :-
+	load_object(Store, Hash, Data, Type, _Size).
 
 %%	gitty_hash(+Store, ?Hash) is nondet.
 %

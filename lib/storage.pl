@@ -41,7 +41,10 @@
 	    storage_fsck/0,
 	    storage_repack/0,
 	    storage_repack/1,			% +Options
-	    storage_unpack/0
+	    storage_unpack/0,
+
+	    storage_store_term/2,		% +Term, -Hash
+	    storage_load_term/2			% +Hash, -Term
 	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
@@ -558,6 +561,24 @@ current_meta_property(author(_String),	 dict).
 current_meta_property(identity(_String), dict).
 current_meta_property(avatar(_String),	 dict).
 current_meta_property(modify(_List),	 derived).
+
+%!	storage_store_term(+Term, -Hash) is det.
+%!	storage_load_term(+Hash, -Term) is det.
+%
+%	Add/retrieve terms from the gitty store.  This is used to create
+%	permanent links to arbitrary objects.
+
+storage_store_term(Term, Hash) :-
+	open_gittystore,
+	storage_dir(Dir),
+	with_output_to(string(S), write_canonical(Term)),
+	gitty_save(Dir, S, term, Hash).
+
+storage_load_term(Hash, Term) :-
+	open_gittystore,
+	storage_dir(Dir),
+	gitty_load(Dir, Hash, Data, term),
+	term_string(Term, Data).
 
 
 		 /*******************************
