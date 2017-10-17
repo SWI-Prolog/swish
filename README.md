@@ -11,6 +11,24 @@ your programs online for at least multiple years.
 
   - http://swish.swi-prolog.org/
 
+## Running swish within Docker container
+
+If you don't want to install all the dependencies you can use provided Docker image. `cd` to your swish root directory and execute
+
+    docker build -t swish .
+
+to build the swish Docker image. Then you can run it with
+
+    docker run -it -p 3050:3050 swish
+
+and point your browser to [http://localhost:3050](http://localhost:3050) to enjoy swish.
+
+If you want persistent swish storage you can execute
+
+    docker run -it -v ~/swish_data:/home/swisher/data -p 3050:3050 swish
+
+to have your swish programs and notebooks saved in `~/swish_data` on your machine.
+
 ## Installation
 
 ### Get submodules
