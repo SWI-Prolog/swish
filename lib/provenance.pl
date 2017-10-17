@@ -69,9 +69,10 @@ permahash(Goal, Hash) :-
 swish_provenance(Goal, Provenance) :-
     goal_provenance(Goal, Prov0),
     (   select(SourceID-Preds, Prov0, Prov1),
-        split_string(SourceID, "/", "/", ["pengine:", IdS, "src"])
-    ->  atom_string(Module, IdS),
-        local_source(Module, SourceID, Preds, Source),
+        split_string(SourceID, "/", "/", ["pengine:", IdS, "src"]),
+        atom_string(Module, IdS),
+        Preds \== []
+    ->  local_source(Module, SourceID, Preds, Source),
         convlist(file_prov(Module), Prov1, Used),
         (   Used \== []
         ->  Provenance = prov{ local: Source,
