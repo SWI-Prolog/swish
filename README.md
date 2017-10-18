@@ -3,21 +3,24 @@
 There are three ways to use SWISH, which we list in increasing order of
 complexity:
 
-  1. [Use the online version](#online-version)
+  1. [Use the online version](#online-versions)
   2. [Deploy the Docker image](#docker-image)
   3. [Install locally](#local-installation)
 
-## Online version
+## Online versions
 
 SWISH can be used to access [SWI-Prolog](http://www.swi-prolog.org) at
 the address below. We try to keep this server continuously online. You
-can use this server for playing, courses or sharing and discussing
-ideas. We have not yet dealt with scalable hosting nor with really
-reliable and scalable storage for saved programs. We hope to keep all
-your programs online for at least multiple years.
+can use these servers for playing, courses or sharing and discussing
+ideas.
 
-  - http://swish.swi-prolog.org/
+  - http://swish.swi-prolog.org/ (plain Prolog and R)
+  - http://cplint.lamping.unife.it/ (probabilistic and machine learning
+    extensions)
 
+We have not yet dealt with scalable hosting nor with really reliable and
+scalable storage for saved programs. We hope to keep all your programs
+online for at least multiple years.
 
 ## Docker image
 
@@ -92,15 +95,22 @@ you            need            the             [nightly            build
 system    from    the     current      git     development    repository
 [swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
 
-Jun 18, 2017: SWI-Prolog 7.5.9 works fine.
+Oct 18, 2017: SWI-Prolog 7.7.0 works fine.
 
 ### Other dependencies
 
-The   avatar   system   requires    the     `convert`    utility    from
-[ImageMagic](http://www.imagemagick.org). This is available as a package
-for virtually any Linux system, e.g., on Debian based systems do
+Rendering Prolog terms [as
+graphs](https://swish.swi-prolog.org/example/render_graphviz.swinb)
+requires [Graphviz](http://www.graphviz.org/). The avatar system
+requires the `convert` utility from
+[ImageMagic](http://www.imagemagick.org). These are available as
+packages for virtually any Linux system, e.g., on Debian based systems
+do
 
     sudo apt-get install imagemagick
+    sudo apt-get install graphviz
+
+
 
 ## Running SWISH
 
@@ -111,7 +121,7 @@ from the Windows explorer.
 Now direct your browser to http://localhost:3050/
 
 If you want  to  know  what  the   latest  version  looks  like,  go  to
-http://swish.swi-prolog.org/
+https://swish.swi-prolog.org/
 
 ### Configuring SWISH
 
