@@ -1,5 +1,12 @@
 # SWISH: A web based SWI-Prolog environment
 
+There are three ways to use SWISH, which we list in increasing order of
+complexity:
+
+  1. [Use the online version](#online-version)
+  2. [Deploy the Docker image](#docker-image)
+  3. [Install locally](#local-installation)
+
 ## Online version
 
 SWISH can be used to access [SWI-Prolog](http://www.swi-prolog.org) at
@@ -11,7 +18,24 @@ your programs online for at least multiple years.
 
   - http://swish.swi-prolog.org/
 
-## Installation
+
+## Docker image
+
+We maintain [Docker](https://hub.docker.com) images at the [swipl
+organization at Docker Hub](https://hub.docker.com/u/swipl/).  A
+bluffer's guide to run SWISH with R if you have Docker installed
+is as simple as this:
+
+    docker run -d --net=none --name=rserve swipl/rserve
+    docker run -d -p 3050:3050 --volumes-from rserve -v $(pwd):/data swipl/swish
+
+There are many configuration options for SWISH, notably for
+authentication, email notifications and extension plugins. See the
+[docker-swish](https://github.com/SWI-Prolog/docker-swish) repo for
+details.
+
+
+## Local installation
 
 ### Get submodules
 
