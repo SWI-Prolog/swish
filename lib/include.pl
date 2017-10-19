@@ -189,8 +189,11 @@ classify_include(File, FileClass) :-
     atom(File),
     !,
     add_extension(File, FileExt),
-    catch(storage_meta_data(FileExt, _Meta), _, fail),
-    atom_concat('swish://', FileExt, Id),
+    catch(storage_meta_data(FileExt, Meta), _, fail),
+    (   is_hash(File)
+    ->  format(atom(Id), 'swish://~w@~w', [Meta.name, File])
+    ;   atom_concat('swish://', FileExt, Id)
+    ),
     FileClass = file(Id).
 classify_include(Spec, FileClass) :-
     absolute_file_name(Spec, Path, [ file_type(prolog), access(read) ]),
