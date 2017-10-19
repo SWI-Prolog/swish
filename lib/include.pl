@@ -61,11 +61,12 @@ We allow for hierarchical and circular includes.
 
 swish:term_expansion(:- include(FileIn), Expansion) :-
     include_file_id(FileIn, File),
+    arg(2, File, IncludeID),
     (   prolog_load_context(module, Module),
-        clause(Module:'swish included'(File), true)
+        clause(Module:'swish included'(IncludeID), true)
     ->  Expansion = []
     ;   Expansion = [ (:- discontiguous('swish included'/1)),
-                      'swish included'(File),
+                      'swish included'(IncludeID),
                       (:- include(stream(URI, Stream, [close(true)])))
                     ],
         '$push_input_context'(swish_include),
@@ -74,19 +75,17 @@ swish:term_expansion(:- include(FileIn), Expansion) :-
         '$pop_input_context'
     ).
 
-%!  include_data(+FileSpec, -URI, -Data)
+%!  include_data(+FileID, -URI, -Data)
 %
 %   Fetch the data to be included and obtain the URI for it.
 
-include_data(Name, URI, Data) :-        % Deal with gitty files
-    atom(Name),
+include_data(file(Name, _Data, gitty(Meta)), URI, Data) :-
     !,
-    add_extension(Name, FileExt),
-    catch(storage_file(FileExt, Data, _Meta),
+    catch(storage_file(Meta.commit, Data, _Meta),
           error(existence_error(_,_),_),
           fail),
-    atom_concat('swish://', FileExt, URI).
-include_data(Spec, URI, Data) :-
+    atom_concat('swish://', Name, URI).
+include_data(file(Spec, Spec, filesystem), URI, Data) :-
     absolute_file_name(Spec, Path, [ file_type(prolog), access(read) ]),
     read_file_to_string(Path, Data, []),
     Spec =.. [Alias,_],
@@ -94,15 +93,18 @@ include_data(Spec, URI, Data) :-
     format(atom(URI), 'swish://~w/~w', [Alias, NameExt]).
 
 
-%!  include_file_id(+FileIn, -File) is det.
+%!  include_file_id(+FileIn, -FileID) is det.
 %
 %   Normalise an include file identifier and verify its safeness.
 
-include_file_id(FileIn, File) :-
+include_file_id(FileIn, file(File, IncludeID, gitty(Meta))) :-
     atomic(FileIn),
     !,
-    atom_string(File, FileIn).
-include_file_id(FileIn, File) :-
+    atom_string(File0, FileIn),
+    add_extension(File0, File),
+    storage_meta_data(File, Meta),
+    IncludeID = Meta.data.
+include_file_id(FileIn, file(File, File, filesystem)) :-
     compound(FileIn),
     FileIn =.. [Alias,NameIn],
     atom_string(Name, NameIn),
@@ -179,23 +181,20 @@ prolog_colour:term_colours((:- include(FileIn)),
                              ]
                            ]) :-
     debug(include, 'Classifying ~p', [FileIn]),
-    (   catch(include_file_id(FileIn, File), _, fail)
-    ->  classify_include(File, FileClass)
+    (   catch(include_file_id(FileIn, FileID), _, fail)
+    ->  classify_include(FileID, FileClass)
     ;   FileClass = nofile
     ),
     debug(include, 'Class ~p', [FileClass]).
 
-classify_include(File, FileClass) :-
-    atom(File),
+classify_include(file(Name, _DataHash, gitty(Meta)), FileClass) :-
     !,
-    add_extension(File, FileExt),
-    catch(storage_meta_data(FileExt, Meta), _, fail),
-    (   is_hash(File)
-    ->  format(atom(Id), 'swish://~w@~w', [Meta.name, File])
-    ;   atom_concat('swish://', FileExt, Id)
+    (   is_hash(Name)
+    ->  format(atom(Id), 'swish://~w@~w', [Meta.name, Name])
+    ;   atom_concat('swish://', Name, Id)
     ),
     FileClass = file(Id).
-classify_include(Spec, FileClass) :-
+classify_include(file(Spec, Spec, filesystem), FileClass) :-
     absolute_file_name(Spec, Path, [ file_type(prolog), access(read) ]),
     Spec =.. [Alias,_],
     file_base_name(Path, NameExt),
