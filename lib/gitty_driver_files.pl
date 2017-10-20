@@ -57,6 +57,7 @@
 :- use_module(library(lists)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
+:- use_module(library(debug)).
 :- use_module(library(dcg/basics)).
 
 /** <module> Gitty plain files driver
@@ -122,7 +123,12 @@ gitty_file(Store, Head, Hash) :-
 
 %%	load_plain_commit(+Store, +Hash, -Meta:dict) is semidet.
 %
-%	Load the commit data as a dict.
+%	Load the commit data as a  dict.   Loaded  commits are cached in
+%	commit/3.  Note  that  only  adding  a  fact  to  the  cache  is
+%	synchronized. This means that during  a   race  situation we may
+%	load the same object  multiple  times   from  disk,  but this is
+%	harmless while a lock  around   the  whole  predicate serializes
+%	loading different objects, which is not needed.
 
 load_plain_commit(Store, Hash, Meta) :-
 	must_be(atom, Store),
@@ -131,8 +137,15 @@ load_plain_commit(Store, Hash, Meta) :-
 load_plain_commit(Store, Hash, Meta) :-
 	load_object(Store, Hash, String, _, _),
 	term_string(Meta0, String, []),
-	assertz(commit(Store, Hash, Meta0)),
+	with_mutex(gitty_commit_cache,
+		   assert_cached_commit(Store, Hash, Meta0)),
 	Meta = Meta0.
+
+assert_cached_commit(Store, Hash, Meta) :-
+	commit(Store, Hash, Meta0), !,
+	assertion(Meta0 =@= Meta).
+assert_cached_commit(Store, Hash, Meta) :-
+	assertz(commit(Store, Hash, Meta)).
 
 %%	store_object(+Store, +Hash, +Header:string, +Data:string) is det.
 %
