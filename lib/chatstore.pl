@@ -107,10 +107,6 @@ chat_dir_file(DocID, Path, File) :-
     atomic_list_concat([Dir, D1, D2], /, Path),
     atomic_list_concat([Path, Name], /, File).
 
-chat_file(DocID, File) :-
-    chat_dir_file(DocID, Dir, File),
-    make_directory_path(Dir).
-
 %!  existing_chat_file(+DocID, -File) is semidet.
 %
 %   True when File is the path of   the  file holding chat messages from
@@ -130,12 +126,13 @@ existing_chat_file(DocID, File) :-
 chat_store(Message) :-
     chat{docid:DocIDS} :< Message,
     atom_string(DocID, DocIDS),
-    chat_file(DocID, File),
+    chat_dir_file(DocID, Dir, File),
     (	del_dict(create, Message, false, Message1)
     ->	exists_file(File)
     ;	Message1 = Message
     ),
     !,
+    make_directory_path(Dir),
     strip_chat(Message1, Message2),
     with_mutex(chat_store,
                (   setup_call_cleanup(
