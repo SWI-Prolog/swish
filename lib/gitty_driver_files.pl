@@ -3,7 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015, VU University Amsterdam
+    Copyright (c)  2015-2017, VU University Amsterdam
+			      CWI Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -45,6 +46,9 @@
 	    gitty_hash/2,		% +Store, ?Hash
 	    load_plain_commit/3,	% +Store, +Hash, -Meta
 	    load_object/5,		% +Store, +Hash, -Data, -Type, -Size
+	    load_object_header/4,	% +Store, +Hash, -Type, -Size
+
+	    gitty_object_file/3,	% +Store, +Hash, -File
 
 	    gitty_rescan/1		% Store
 	  ]).
@@ -162,18 +166,32 @@ ensure_directory(Dir) :-
 %	Load the given object.
 
 load_object(Store, Hash, Data, Type, Size) :-
-	hash_file(Store, Hash, Path),
+	gitty_object_file(Store, Hash, Path),
 	setup_call_cleanup(
 	    gzopen(Path, read, In, [encoding(utf8)]),
 	    read_object(In, Data, Type, Size),
 	    close(In)).
 
+%!	load_object_header(+Store, +Hash, -Type, -Size) is det.
+%
+%	Load the header of an object
+
+load_object_header(Store, Hash, Type, Size) :-
+	gitty_object_file(Store, Hash, Path),
+	setup_call_cleanup(
+	    gzopen(Path, read, In, [encoding(utf8)]),
+	    read_object_hdr(In, Type, Size),
+	    close(In)).
+
 read_object(In, Data, Type, Size) :-
+	read_object_hdr(In, Type, Size),
+	read_string(In, _, Data).
+
+read_object_hdr(In, Type, Size) :-
 	get_code(In, C0),
 	read_hdr(C0, In, Hdr),
 	phrase((nonblanks(TypeChars), " ", integer(Size)), Hdr),
-	atom_codes(Type, TypeChars),
-	read_string(In, _, Data).
+	atom_codes(Type, TypeChars).
 
 read_hdr(C, In, [C|T]) :-
 	C > 0, !,
@@ -272,7 +290,7 @@ gitty_hash(Store, Hash) :-
 	atom_length(File, 36),
 	atomic_list_concat([E0,E1,File], Hash).
 gitty_hash(Store, Hash) :-
-	hash_file(Store, Hash, File),
+	gitty_object_file(Store, Hash, File),
 	exists_file(File).
 
 %%	delete_object(+Store, +Hash)
@@ -280,13 +298,18 @@ gitty_hash(Store, Hash) :-
 %	Delete an existing object
 
 delete_object(Store, Hash) :-
-	hash_file(Store, Hash, File),
+	gitty_object_file(Store, Hash, File),
 	delete_file(File).
 
-hash_file(Store, Hash, Path) :-
-	sub_atom(Hash, 0, 2, _, Dir0),
-	sub_atom(Hash, 2, 2, _, Dir1),
-	sub_atom(Hash, 4, _, 0, File),
+%!	gitty_object_file(+Store, +Hash, -Path) is det.
+%
+%	True when Path is the file  at   which  the  object with Hash is
+%	stored.
+
+gitty_object_file(Store, Hash, Path) :-
+	sub_string(Hash, 0, 2, _, Dir0),
+	sub_string(Hash, 2, 2, _, Dir1),
+	sub_string(Hash, 4, _, 0, File),
 	atomic_list_concat([Store, Dir0, Dir1, File], /, Path).
 
 
