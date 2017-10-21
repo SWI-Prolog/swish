@@ -124,12 +124,12 @@ compile_weekday(N, N) :-
     integer(N),
     !,
     must_be(between(1,7), N).
-compile_weekday(Name, N) :-
-    downcase_atom(Name, Lwr),
-    (   day(N, Name),
-        sub_atom(Name, 0, _, _, Lwr)
+compile_weekday(Day, N) :-
+    downcase_atom(Day, Lwr),
+    (   sub_atom(Lwr, 0, 3, _, Abbr),
+        day(N, Abbr)
     ->  !
-    ;   domain_error(day, Name)
+    ;   domain_error(day, Day)
     ).
 
 %!  http_consider_cronstart
