@@ -46,18 +46,31 @@
 	    gitty_hash/2,		% +Store, ?Hash
 	    load_plain_commit/3,	% +Store, +Hash, -Meta
 	    load_object/5,		% +Store, +Hash, -Data, -Type, -Size
-	    load_object_header/4,	% +Store, +Hash, -Type, -Size
-
 	    gitty_object_file/3,	% +Store, +Hash, -File
+
+	    repack_objects/2,           % +Store, +Options
+            pack_objects/6,             % +Store, +Objs, +Packs, +PackDir,
+					% -File, +Opts
+            unpack_packs/1,             % +Store
+            unpack_pack/2,              % +Store, +PackFile
+
+            attach_pack/2,		% +Store, +PackFile
+            gitty_fsck/1,               % +Store
+            fsck_pack/1,                % +PackFile
+            load_object_from_pack/4,	% +Hash, -Data, -Type, -Size
 
 	    gitty_rescan/1		% Store
 	  ]).
+:- use_module(library(apply)).
 :- use_module(library(zlib)).
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(debug)).
+:- use_module(library(zlib)).
+:- use_module(library(hash_stream)).
+:- use_module(library(option)).
 :- use_module(library(dcg/basics)).
 
 /** <module> Gitty plain files driver
@@ -79,15 +92,22 @@ to rounding the small objects to disk allocation units.
 */
 
 :- dynamic
-	head/3,				% Store, Name, Hash
-	store/2,			% Store, Updated
-	commit/3,			% Store, Hash, Meta
-	heads_input_stream_cache/2.	% Store, Stream
+    head/3,				% Store, Name, Hash
+    store/2,				% Store, Updated
+    commit/3,				% Store, Hash, Meta
+    heads_input_stream_cache/2,		% Store, Stream
+    pack_object/6,                      % Hash, Type, Size, Offset, Store,PackFile
+    attached_packs/1,                   % Store
+    attached_pack/2.                    % Store, PackFile
+
 :- volatile
-	head/3,
-	store/2,
-	commit/3,
-	heads_input_stream_cache/2.
+    head/3,
+    store/2,
+    commit/3,
+    heads_input_stream_cache/2,
+    pack_object/6,
+    attached_packs/1,
+    attached_pack/2.
 
 % enable/disable syncing remote servers running on  the same file store.
 % This facility requires shared access to files and thus doesn't work on
@@ -99,17 +119,18 @@ remote_sync(false).
 remote_sync(true).
 :- endif.
 
-%%	gitty_close(+Store) is det.
+%!  gitty_close(+Store) is det.
 %
-%	Close resources associated with a store.
+%   Close resources associated with a store.
 
 gitty_close(Store) :-
-	(   retract(heads_input_stream_cache(Store, In))
-	->  close(In)
-	;   true
-	),
-	retractall(head(Store,_,_)),
-	retractall(store(Store,_)).
+    (   retract(heads_input_stream_cache(Store, In))
+    ->  close(In)
+    ;   true
+    ),
+    retractall(head(Store,_,_)),
+    retractall(store(Store,_)),
+    retractall(pack_object(_,_,_,_,Store,_)).
 
 
 %%	gitty_file(+Store, ?File, ?Head) is nondet.
@@ -152,22 +173,25 @@ assert_cached_commit(Store, Hash, Meta) :-
 %	Store the actual object. The store  must associate Hash with the
 %	concatenation of Hdr and Data.
 
+store_object(Store, Hash, _Hdr, _Data) :-
+        pack_object(Hash, _Type, _Size, _Offset, Store, _Pack), !.
 store_object(Store, Hash, Hdr, Data) :-
-	sub_atom(Hash, 0, 2, _, Dir0),
-	sub_atom(Hash, 2, 2, _, Dir1),
-	sub_atom(Hash, 4, _, 0, File),
-	directory_file_path(Store, Dir0, D0),
-	ensure_directory(D0),
-	directory_file_path(D0, Dir1, D1),
-	ensure_directory(D1),
-	directory_file_path(D1, File, Path),
-	(   exists_file(Path)
+        gitty_object_file(Store, Hash, Path),
+        with_mutex(gitty_file, exists_or_create(Path, Out0)),
+	(   var(Out0)
 	->  true
 	;   setup_call_cleanup(
-		gzopen(Path, write, Out, [encoding(utf8)]),
+		zopen(Out0, Out, [format(gzip)]),
 		format(Out, '~s~s', [Hdr, Data]),
 		close(Out))
 	).
+
+exists_or_create(Path, _Out) :-
+	exists_file(Path), !.
+exists_or_create(Path, Out) :-
+        file_directory_name(Path, Dir),
+        make_directory_path(Dir),
+        open(Path, write, Out, [encoding(utf8), lock(write)]).
 
 ensure_directory(Dir) :-
 	exists_directory(Dir), !.
@@ -178,8 +202,12 @@ ensure_directory(Dir) :-
 %
 %	Load the given object.
 
+load_object(_Store, Hash, Data, Type, Size) :-
+        load_object_from_pack(Hash, Data0, Type0, Size0), !,
+        f(Data0, Type0, Size0) = f(Data, Type, Size).
 load_object(Store, Hash, Data, Type, Size) :-
 	gitty_object_file(Store, Hash, Path),
+        exists_file(Path),
 	setup_call_cleanup(
 	    gzopen(Path, read, In, [encoding(utf8)]),
 	    read_object(In, Data, Type, Size),
@@ -242,8 +270,10 @@ gitty_scan_sync(Store) :-
 	store(Store, _), !.
 gitty_scan_sync(Store) :-
 	remote_sync(true), !,
+        gitty_attach_packs(Store),
 	restore_heads_from_remote(Store).
 gitty_scan_sync(Store) :-
+        gitty_attach_packs(Store),
 	read_heads_from_objects(Store).
 
 %%	read_heads_from_objects(+Store) is det.
@@ -287,6 +317,19 @@ gitty_scan_latest(Store) :-
 
 gitty_hash(Store, Hash) :-
 	var(Hash), !,
+        (   gitty_attach_packs(Store),
+            pack_object(Hash, _Type, _Size, _Offset, Store, _Pack)
+        ;   gitty_file_object(Store, Hash)
+        ).
+gitty_hash(Store, Hash) :-
+        (   gitty_attach_packs(Store),
+            pack_object(Hash, _Type, _Size, _Offset, Store, _Pack)
+        ->  true
+        ;   gitty_object_file(Store, Hash, File),
+            exists_file(File)
+        ).
+
+gitty_file_object(Store, Hash) :-
 	access_file(Store, exist),
 	directory_files(Store, Level0),
 	member(E0, Level0),
@@ -302,9 +345,6 @@ gitty_hash(Store, Hash) :-
 	member(File, Files),
 	atom_length(File, 36),
 	atomic_list_concat([E0,E1,File], Hash).
-gitty_hash(Store, Hash) :-
-	gitty_object_file(Store, Hash, File),
-	exists_file(File).
 
 %%	delete_object(+Store, +Hash)
 %
@@ -522,5 +562,451 @@ delete_head(Store, Head) :-
 %	Set the head of the given File to Hash
 
 set_head(Store, File, Hash) :-
-	retractall(head(Store, File, _)),
-	asserta(head(Store, File, Hash)).
+        (   head(Store, File, Hash0)
+        ->  (   Hash == Hash0
+            ->  true
+            ;   asserta(head(Store, File, Hash)),
+                retractall(head(Store, File, Hash0))
+            )
+        ;   asserta(head(Store, File, Hash))
+        ).
+
+
+		 /*******************************
+		 *	      PACKS		*
+		 *******************************/
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+<pack file> := <header>
+               <file>*
+<header>    := "gitty(Version).\n" <object>* "end_of_header.\n"
+<object>    := obj(Hash, Type, Size, FileSize)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+pack_version(1).
+
+%!  repack_objects(+Store, +Options) is det.
+%
+%   Repack  objects  of  Store  for  reduced  disk  usage  and  enhanced
+%   performance. By default this picks up all  file objects of the store
+%   and all existing small pack files.  Options:
+%
+%     - small_pack(+Bytes)
+%     Consider all packs with less than Bytes as small and repack them.
+%     Default 10Mb
+%     - min_files(+Count)
+%     Do not repack if there are less than Count new files.
+%     Default 1,000.
+
+:- debug(gitty(pack)).
+
+repack_objects(Store, Options) :-
+    option(min_files(MinFiles), Options, 1_000),
+    findall(Object, gitty_file_object(Store, Object), Objects),
+    length(Objects, NewFiles),
+    debug(gitty(pack), 'Found ~D file objects', [NewFiles]),
+    (   NewFiles >= MinFiles
+    ->  pack_files(Store, ExistingPacks),
+        option(small_pack(MaxSize), Options, 10_000_000),
+        include(small_file(MaxSize), ExistingPacks, PackFiles),
+        length(PackFiles, PackCount),
+        debug(gitty(pack), 'Found ~D small packs', [PackCount]),
+        directory_file_path(Store, pack, PackDir),
+        make_directory_path(PackDir),
+        pack_objects(Store, Objects, PackFiles, PackDir, _PackFile, Options)
+    ;   debug(gitty(pack), 'Nothing to do', [])
+    ).
+
+small_file(MaxSize, File) :-
+    size_file(File, Size),
+    Size < MaxSize.
+
+%!  pack_objects(+Store, +Objects, +Packs, +PackDir,
+%!               -PackFile, +Options) is det.
+%
+%   Pack the given objects and pack files into a new pack.
+
+pack_objects(Store, Objects, Packs, PackDir, PackFile, Options) :-
+    with_mutex(gitty_pack,
+	       pack_objects_sync(Store, Objects, Packs, PackDir,
+                                 PackFile, Options)).
+
+pack_objects_sync(_Store, [], [Pack], _, [Pack], _) :-
+    !.
+pack_objects_sync(Store, Objects, Packs, PackDir, PackFilePath, Options) :-
+    length(Objects, ObjCount),
+    length(Packs, PackCount),
+    debug(gitty(pack), 'Repacking ~D objects and ~D packs',
+          [ObjCount, PackCount]),
+    maplist(object_info(Store), Objects, FileInfo),
+    maplist(pack_info(Store), Packs, PackInfo),
+    append([FileInfo|PackInfo], Info0),
+    sort(1, @<, Info0, Info),           % remove possible duplicates
+    (   PackCount > 0
+    ->  length(Info, FinalObjCount),
+        debug(gitty(pack), 'Total ~D objects', [FinalObjCount])
+    ;   true
+    ),
+    directory_file_path(PackDir, 'pack-create', TmpPack),
+    setup_call_cleanup(
+	(   open(TmpPack, write, Out0, [type(binary), lock(write)]),
+	    open_hash_stream(Out0, Out, [algorithm(sha1)])
+	),
+        (   write_signature(Out),
+            maplist(write_header(Out), Info),
+            format(Out, 'end_of_header.~n', []),
+            maplist(add_file(Out, Store), Info),
+	    stream_hash(Out, SHA1)
+        ),
+        close(Out)),
+    format(atom(PackFile), 'pack-~w.pack', [SHA1]),
+    directory_file_path(PackDir, PackFile, PackFilePath),
+    rename_file(TmpPack, PackFilePath),
+    debug(gitty(pack), 'Attaching ~p', [PackFilePath]),
+    attach_pack(Store, PackFilePath),
+    remove_objects_after_pack(Store, Objects, Options),
+    delete(Packs, PackFilePath, RmPacks),
+    remove_repacked_packs(Store, RmPacks, Options),
+    debug(gitty(pack), 'Packing completed', []).
+
+object_info(Store, Object, obj(Object, Type, Size, FileSize)) :-
+    gitty_object_file(Store, Object, File),
+    load_object_header(Store, Object, Type, Size),
+    size_file(File, FileSize).
+
+pack_info(Store, PackFile, Objects) :-
+    attach_pack(Store, PackFile),
+    pack_read_header(PackFile, _Version, _DataOffset, Objects).
+
+write_signature(Out) :-
+    pack_version(Version),
+    format(Out, "gitty(~d).~n", [Version]).
+
+write_header(Out, obj(Object, Type, Size, FileSize)) :-
+    format(Out, 'obj(~q,~q,~d,~d).~n', [Object, Type, Size, FileSize]).
+
+%!  add_file(+Out, +Store, +Object) is det.
+%
+%   Add Object from Store to the pack stream Out.
+
+add_file(Out, Store, obj(Object, _Type, _Size, _FileSize)) :-
+    gitty_object_file(Store, Object, File),
+    exists_file(File),
+    !,
+    setup_call_cleanup(
+        open(File, read, In, [type(binary)]),
+        copy_stream_data(In, Out),
+        close(In)).
+add_file(Out, Store, obj(Object, Type, Size, FileSize)) :-
+    pack_object(Object, Type, Size, Offset, Store, PackFile),
+    setup_call_cleanup(
+        open(PackFile, read, In, [type(binary)]),
+        (   seek(In, Offset, bof, Offset),
+            copy_stream_data(In, Out, FileSize)
+        ),
+        close(In)).
+
+
+%!  gitty_fsck(+Store) is det.
+%
+%   Validate all packs associated with Store
+
+gitty_fsck(Store) :-
+    pack_files(Store, PackFiles),
+    maplist(fsck_pack, PackFiles).
+
+%!  fsck_pack(+File) is det.
+%
+%   Validate the integrity of the pack file File.
+
+fsck_pack(File) :-
+    debug(gitty(pack), 'fsck ~p', [File]),
+    check_pack_hash(File),
+    debug(gitty(pack), 'fsck ~p: checking objects', [File]),
+    check_pack_objects(File),
+    debug(gitty(pack), 'fsck ~p: done', [File]).
+
+check_pack_hash(File) :-
+    file_base_name(File, Base),
+    file_name_extension(Plain, Ext, Base),
+    must_be(oneof([pack]), Ext),
+    atom_concat('pack-', Hash, Plain),
+    setup_call_cleanup(
+        (   open(File, read, In0, [type(binary)]),
+            open_hash_stream(In0, In, [algorithm(sha1)])
+        ),
+        (   setup_call_cleanup(
+                open_null_stream(Null),
+                copy_stream_data(In, Null),
+                close(Null)),
+            stream_hash(In, SHA1)
+        ),
+        close(In)),
+    assertion(Hash == SHA1).
+
+check_pack_objects(PackFile) :-
+    setup_call_cleanup(
+        open(PackFile, read, In, [type(binary)]),
+        (  read_header(In, Version, DataOffset, Objects),
+           set_stream(In, encoding(utf8)),
+           foldl(check_object(In, PackFile, Version), Objects, DataOffset, _)
+        ),
+        close(In)).
+
+check_object(In, PackFile, _Version,
+             obj(Object, Type, Size, FileSize),
+             Offset0, Offset) :-
+    Offset is Offset0+FileSize,
+    byte_count(In, Here),
+    (   Here == Offset0
+    ->  true
+    ;   print_message(warning, pack(reposition(Here, Offset0))),
+        seek(In, Offset0, bof, Offset0)
+    ),
+    (   setup_call_cleanup(
+            zopen(In, In2, [multi_part(false), close_parent(false)]),
+            catch(read_object(In2, Data, RType, RSize), E,
+                  ( print_message(error,
+                                  gitty(PackFile, fsck(read_object(Object, E)))),
+                    fail)),
+            close(In2))
+    ->  byte_count(In, End),
+        (   End == Offset
+        ->  true
+        ;   print_message(error,
+                          gitty(PackFile, fsck(object_end(Object, End,
+                                                          Offset0, Offset,
+                                                          Data))))
+        ),
+        assertion(Type == RType),
+        assertion(Size == RSize),
+        gitty:check_object(Object, Data, Type, Size)
+    ;   true
+    ).
+
+
+%!  gitty_attach_packs(+Store) is det.
+%
+%   Attach all packs for Store
+
+gitty_attach_packs(Store) :-
+    attached_packs(Store),
+    !.
+gitty_attach_packs(Store) :-
+    with_mutex(gitty_attach_packs,
+               gitty_attach_packs_sync(Store)).
+
+gitty_attach_packs_sync(Store) :-
+    attached_packs(Store),
+    !.
+gitty_attach_packs_sync(Store) :-
+    pack_files(Store, PackFiles),
+    maplist(attach_pack(Store), PackFiles),
+    asserta(attached_packs(Store)).
+
+pack_files(Store, Packs) :-
+    directory_file_path(Store, pack, PackDir),
+    exists_directory(PackDir),
+    !,
+    directory_files(PackDir, Files),
+    convlist(is_pack(PackDir), Files, Packs).
+pack_files(_, []).
+
+is_pack(PackDir, File, Path) :-
+    file_name_extension(_, pack, File),
+    directory_file_path(PackDir, File, Path).
+
+%!  attach_pack(+Store, +PackFile)
+%
+%   Load the index of Pack into memory.
+
+attach_pack(Store, PackFile) :-
+    attached_pack(Store, PackFile),
+    !.
+attach_pack(Store, PackFile) :-
+    retractall(pack_object(_,_,_,_,_,PackFile)),
+    pack_read_header(PackFile, Version, DataOffset, Objects),
+    foldl(assert_object(Store, PackFile, Version), Objects, DataOffset, _),
+    assertz(attached_pack(Store, PackFile)).
+
+pack_read_header(PackFile, Version, DataOffset, Objects) :-
+    setup_call_cleanup(
+        open(PackFile, read, In, [type(binary)]),
+        read_header(In, Version, DataOffset, Objects),
+        close(In)).
+
+read_header(In, Version, DataOffset, Objects) :-
+    read(In, Signature),
+    (   Signature = gitty(Version)
+    ->  true
+    ;   domain_error(gitty_pack_file, Objects)
+    ),
+    read(In, Term),
+    read_index(Term, In, Objects),
+    get_code(In, Code),
+    assertion(Code == 0'\n),
+    byte_count(In, DataOffset).
+
+read_index(end_of_header, _, []) :-
+    !.
+read_index(Object, In, [Object|T]) :-
+    read(In, Term2),
+    read_index(Term2, In, T).
+
+assert_object(Store, Pack, _Version,
+              obj(Object, Type, Size, FileSize),
+              Offset0, Offset) :-
+    Offset is Offset0+FileSize,
+    assertz(pack_object(Object, Type, Size, Offset0, Store, Pack)).
+
+%!  detach_pack(+Store, +Pack) is det.
+%
+%   Remove a pack file from the memory index.
+
+detach_pack(Store, Pack) :-
+    retractall(pack_object(_, _, _, _, Store, Pack)),
+    retractall(attached_pack(Store, Pack)).
+
+%!  load_object_from_pack(+Hash, -Data, -Type, -Size) is semidet.
+%
+%   True when Hash is in a pack and can be loaded.
+
+load_object_from_pack(Hash, Data, Type, Size) :-
+    pack_object(Hash, Type, Size, Offset, _Store, Pack),
+    setup_call_cleanup(
+        open(Pack, read, In, [type(binary)]),
+        read_object_at(In, Offset, Data, Type, Size),
+        close(In)).
+
+read_object_at(In, Offset, Data, Type, Size) :-
+    seek(In, Offset, bof, Offset),
+    read_object_here(In, Data, Type, Size).
+
+read_object_here(In, Data, Type, Size) :-
+    stream_property(In, encoding(Enc)),
+    setup_call_cleanup(
+        ( set_stream(In, encoding(utf8)),
+          zopen(In, In2, [multi_part(false), close_parent(false)])
+        ),
+        read_object(In2, Data, Type, Size),
+        ( close(In2),
+          set_stream(In, encoding(Enc))
+        )).
+
+%!  unpack_packs(+Store) is det.
+%
+%   Unpack all packs.
+
+unpack_packs(Store) :-
+    absolute_file_name(Store, AbsStore, [file_type(directory),
+                                         access(read)]),
+    pack_files(AbsStore, Packs),
+    maplist(unpack_pack(AbsStore), Packs).
+
+%!  unpack_pack(+Store, +Pack) is det.
+%
+%   Turn a pack back into a plain object files
+
+unpack_pack(Store, PackFile) :-
+    pack_read_header(PackFile, _Version, DataOffset, Objects),
+    setup_call_cleanup(
+        open(PackFile, read, In, [type(binary)]),
+        foldl(create_file(Store, In), Objects, DataOffset, _),
+        close(In)),
+    detach_pack(Store, PackFile),
+    delete_file(PackFile).
+
+create_file(Store, In, obj(Object, _Type, _Size, FileSize), Offset0, Offset) :-
+    Offset is Offset0+FileSize,
+    gitty_object_file(Store, Object, Path),
+    with_mutex(gitty_file, exists_or_recreate(Path, Out)),
+	(   var(Out)
+	->  true
+	;   setup_call_cleanup(
+                seek(In, Offset0, bof, Offset0),
+                copy_stream_data(In, Out, FileSize),
+                close(Out))
+	).
+
+exists_or_recreate(Path, _Out) :-
+	exists_file(Path), !.
+exists_or_recreate(Path, Out) :-
+        file_directory_name(Path, Dir),
+        make_directory_path(Dir),
+        open(Path, write, Out, [type(binary), lock(write)]).
+
+
+%!  remove_objects_after_pack(+Store, +Objects, +Options) is det.
+%
+%   Remove the indicated (file) objects from Store.
+
+remove_objects_after_pack(Store, Objects, Options) :-
+    debug(gitty(pack), 'Deleting plain files', []),
+    maplist(delete_object(Store), Objects),
+    (   option(prune_empty_directories(true), Options, true)
+    ->  debug(gitty(pack), 'Pruning empty directories', []),
+        prune_empty_directories(Store)
+    ;   true
+    ).
+
+%!  remove_repacked_packs(+Store, +Packs, +Options)
+%
+%   Remove packs that have been repacked.
+
+remove_repacked_packs(Store, Packs, Options) :-
+    maplist(remove_pack(Store, Options), Packs).
+
+remove_pack(Store, _Options, Pack) :-
+    detach_pack(Store, Pack),
+    delete_file(Pack).
+
+%!  prune_empty_directories(+Dir) is det.
+%
+%   Prune directories that are  empty  below   Dir.  Dir  itself  is not
+%   removed, even if it is empty.
+
+prune_empty_directories(Dir) :-
+    prune_empty_directories(Dir, 0).
+
+prune_empty_directories(Dir, Level) :-
+    directory_files(Dir, AllFiles),
+    exclude(hidden, AllFiles, Files),
+    (   Files == [],
+        Level > 0
+    ->  delete_directory_async(Dir)
+    ;   convlist(prune_empty_directories(Dir, Level), Files, Left),
+        (   Left == [],
+            Level > 0
+        ->  delete_directory_async(Dir)
+        ;   true
+        )
+    ).
+
+hidden(.).
+hidden(..).
+
+prune_empty_directories(Parent, Level0, File, _) :-
+    directory_file_path(Parent, File, Path),
+    exists_directory(Path),
+    !,
+    Level is Level0 + 1,
+    prune_empty_directories(Path, Level),
+    fail.
+prune_empty_directories(_, _, File, File).
+
+delete_directory_async(Dir) :-
+    with_mutex(gitty_file, delete_directory_async2(Dir)).
+
+delete_directory_async2(Dir) :-
+    catch(delete_directory(Dir), E,
+          (   \+ exists_directory(Dir)
+          ->  true
+          ;   \+ empty_directory(Dir)
+          ->  true
+          ;   throw(E)
+          )).
+
+empty_directory(Dir) :-
+    directory_files(Dir, AllFiles),
+    exclude(hidden, AllFiles, []).

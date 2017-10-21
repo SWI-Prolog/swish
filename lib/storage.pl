@@ -36,7 +36,12 @@
 	  [ storage_file/1,			% ?File
 	    storage_file/3,			% +File, -Data, -Meta
 	    storage_meta_data/2,		% +File, -Meta
-	    storage_meta_property/2	        % +Meta, ?Property
+	    storage_meta_property/2,	        % +Meta, ?Property
+
+	    storage_fsck/0,
+	    storage_repack/0,
+	    storage_repack/1,			% +Options
+	    storage_unpack/0
 	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
@@ -510,6 +515,10 @@ storage_file(File) :-
 storage_file(File, Data, Meta) :-
 	open_gittystore,
 	storage_dir(Dir),
+	(   var(File)
+	->  gitty_file(Dir, File, _Head)
+	;   true
+	),
 	gitty_data(Dir, File, Data, Meta).
 
 storage_meta_data(File, Meta) :-
@@ -548,6 +557,45 @@ current_meta_property(time(_Seconds),  dict).
 current_meta_property(author(_String), dict).
 current_meta_property(avatar(_String), dict).
 current_meta_property(modify(_List),   derived).
+
+
+		 /*******************************
+		 *	    MAINTENANCE		*
+		 *******************************/
+
+%!	storage_fsck
+%
+%	Enumerate and check the consistency of the entire store.
+
+storage_fsck :-
+	open_gittystore,
+	storage_dir(Dir),
+	gitty_fsck(Dir).
+
+%!	storage_repack is det.
+%!	storage_repack(+Options) is det.
+%
+%	Repack  the  storage  directory.  Currently  only  supports  the
+%	`files` driver. For database drivers  this   is  supposed  to be
+%	handled by the database.
+
+storage_repack :-
+	storage_repack([]).
+storage_repack(Options) :-
+	open_gittystore,
+	storage_dir(Dir),
+	(   gitty_driver(Dir, files)
+	->  gitty_driver_files:repack_objects(Dir, Options)
+	;   print_message(informational, gitty(norepack(driver)))
+	).
+
+storage_unpack :-
+	open_gittystore,
+	storage_dir(Dir),
+	(   gitty_driver(Dir, files)
+	->  gitty_driver_files:unpack_packs(Dir)
+	;   print_message(informational, gitty(nounpack(driver)))
+	).
 
 
 		 /*******************************

@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2015, VU University Amsterdam
+    Copyright (c)  2014-2017, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 :- module(gitty,
 	  [ gitty_open/2,		% +Store, +Options
 	    gitty_close/1,		% +Store
+	    gitty_driver/2,		% +Store, -Driver
 
 	    gitty_file/3,		% +Store, ?Name, ?Hash
 	    gitty_create/5,		% +Store, +Name, +Data, +Meta, -Commit
@@ -43,6 +44,8 @@
 	    gitty_data/4,		% +Store, +Name, -Data, -Meta
 	    gitty_history/4,		% +Store, +Name, -History, +Options
 	    gitty_hash/2,		% +Store, ?Hash
+
+	    gitty_fsck/1,		% +Store
 
 	    gitty_reserved_meta/1,	% ?Key
 	    is_gitty_hash/1,		% @Term
@@ -139,6 +142,14 @@ driver_module(bdb,   gitty_driver_bdb).
 store_driver_module(Store, Module) :-
 	atom(Store), !,
 	gitty_store_type(Store, Module).
+
+%!	gitty_driver(+Store, -Driver)
+%
+%	Get the current gitty driver
+
+gitty_driver(Store, Driver) :-
+	store_driver_module(Store, Module),
+	driver_module(Driver, Module), !.
 
 %%	gitty_close(+Store) is det.
 %
@@ -373,18 +384,41 @@ size_in_bytes(Data, Size) :-
 	    close(Out)).
 
 
+%!	gitty_fsck(+Store) is det.
+%
+%	Check the integrity of store.
+
+gitty_fsck(Store) :-
+	forall(gitty_hash(Store, Hash),
+	       fsck_object_msg(Store, Hash)),
+	store_driver_module(Store, M),
+	M:gitty_fsck(Store).
+
+fsck_object_msg(Store, Hash) :-
+	fsck_object(Store, Hash), !.
+fsck_object_msg(Store, Hash) :-
+	print_message(error, gitty(Store, fsck(bad_object(Hash)))).
+
 %%	fsck_object(+Store, +Hash) is semidet.
 %
 %	Test the integrity of object Hash in Store.
 
-:- public fsck_object/2.
+:- public
+	fsck_object/2,
+	check_object/4.
+
 fsck_object(Store, Hash) :-
 	load_object(Store, Hash, Data, Type, Size),
+	check_object(Hash, Data, Type, Size).
+
+check_object(Hash, Data, Type, Size) :-
 	format(string(Hdr), '~w ~d\u0000', [Type, Size]),
 	sha_new_ctx(Ctx0, []),
 	sha_hash_ctx(Ctx0, Hdr, Ctx1, _),
 	sha_hash_ctx(Ctx1, Data, _, HashBin),
 	hash_atom(HashBin, Hash).
+
+
 
 
 %%	load_object(+Store, +Hash, -Data) is det.
