@@ -587,8 +587,7 @@ storage_load_term(Hash, Term) :-
 %	Enumerate and check the consistency of the entire store.
 
 storage_fsck :-
-	open_gittystore,
-	storage_dir(Dir),
+	open_gittystore(Dir),
 	gitty_fsck(Dir).
 
 %!	storage_repack is det.
@@ -601,16 +600,14 @@ storage_fsck :-
 storage_repack :-
 	storage_repack([]).
 storage_repack(Options) :-
-	open_gittystore,
-	storage_dir(Dir),
+	open_gittystore(Dir),
 	(   gitty_driver(Dir, files)
 	->  gitty_driver_files:repack_objects(Dir, Options)
 	;   print_message(informational, gitty(norepack(driver)))
 	).
 
 storage_unpack :-
-	open_gittystore,
-	storage_dir(Dir),
+	open_gittystore(Dir),
 	(   gitty_driver(Dir, files)
 	->  gitty_driver_files:unpack_packs(Dir)
 	;   print_message(informational, gitty(nounpack(driver)))
