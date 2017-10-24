@@ -85,11 +85,10 @@ swish_provenance(Goal, Provenance) :-
     ;   Provenance = prov{}
     ).
 
-file_prov(Module, FileURL-Preds0, Hash-Preds) :-
-    atom_concat('swish://', File, FileURL),
+file_prov(Module, URI-Preds0, Hash-Preds) :-
+    Module:'swish included'(gitty(CommitHash, _DataHash, URI)),
     !,
-    storage_meta_data(File, Meta),
-    Hash = Meta.commit,
+    Hash = CommitHash,
     maplist(unqualify(Module), Preds0, Preds).
 
 unqualify(M, Pred0, Pred) :-
