@@ -137,7 +137,7 @@ include_file_id(FileIn, file(File, IncludeID, gitty(Meta)), Options) :-
     ;   storage_meta_data(File, Meta)
     ),
     atom_concat('swish://', Meta.name, URI),
-    IncludeID0 = gitty(Meta.data, URI),
+    IncludeID0 = gitty(Meta.commit, Meta.data, URI),
     (   prolog_load_context(module, Module),
         clause(Module:'swish included'(IncludeIDPrev), true),
         compatible_versions(IncludeIDPrev, IncludeID0, Version)
@@ -156,11 +156,13 @@ include_file_id(FileIn, file(File, File, filesystem), _) :-
     File =.. [Alias,Name].
 
 compatible_versions(Version, Version, _) :- !.
-compatible_versions(gitty(DataHash, _), gitty(DataHash, _), _) :- !.
-compatible_versions(gitty(Hash1, URI), gitty(Hash2, URI), Version) :- !,
+compatible_versions(gitty(_, DataHash, _), gitty(_, DataHash, _), _) :- !.
+compatible_versions(Gitty1, Gitty2, Version) :- !,
+    Gitty1 = gitty(_, _, URI),
+    Gitty2 = gitty(_, _, URI),
     (   var(Version)
     ->  true
-    ;   throw(error(version_error(gitty(Hash1, URI), gitty(Hash2, URI)), _))
+    ;   throw(error(version_error(Gitty1, Gitty2), _))
     ).
 
 safe_name(Name) :-
