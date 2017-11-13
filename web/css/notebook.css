@@ -237,6 +237,10 @@ div.notebook-menu {
   margin-bottom: 1ex;
 }
 
+.nb-cell.markdown .predicates .pred-tag
+{ float: right;
+}
+
 a.btn-image
 { padding: 1px 2px;
 }
