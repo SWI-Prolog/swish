@@ -551,12 +551,13 @@ meta_property(modify(Modify), _, Meta) :-
 	;   Modify = [any,login,owner]
 	).
 
-current_meta_property(peer(_Atom),     dict).
-current_meta_property(public(_Bool),   dict).
-current_meta_property(time(_Seconds),  dict).
-current_meta_property(author(_String), dict).
-current_meta_property(avatar(_String), dict).
-current_meta_property(modify(_List),   derived).
+current_meta_property(peer(_Atom),	 dict).
+current_meta_property(public(_Bool),	 dict).
+current_meta_property(time(_Seconds),	 dict).
+current_meta_property(author(_String),	 dict).
+current_meta_property(identity(_String), dict).
+current_meta_property(avatar(_String),	 dict).
+current_meta_property(modify(_List),	 derived).
 
 
 		 /*******************************
