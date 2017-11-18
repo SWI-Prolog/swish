@@ -159,10 +159,10 @@ gitty_close(Store) :-
 	store_driver_module(Store, M),
 	M:gitty_close(Store).
 
-%%	gitty_file(+Store, ?File, ?Head) is nondet.
+%%	gitty_file(+Store, ?Head, ?Hash) is nondet.
 %
-%	True when File entry in the  gitty   store  and Head is the HEAD
-%	revision.
+%	True when Hash is an entry in the gitty Store and Head is the
+%	HEAD revision.
 
 gitty_file(Store, Head, Hash) :-
 	store_driver_module(Store, M),
