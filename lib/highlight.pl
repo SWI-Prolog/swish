@@ -875,6 +875,7 @@ neck_text(directive,    (:-)).
 head_type(exported,	 head_exported).
 head_type(public(_),	 head_public).
 head_type(extern(_),	 head_extern).
+head_type(extern(_,_),	 head_extern).
 head_type(dynamic,	 head_dynamic).
 head_type(multifile,	 head_multifile).
 head_type(unreferenced,	 head_unreferenced).
@@ -898,6 +899,7 @@ goal_type(dynamic(Line),      goal_dynamic,	 [line(Line)]).
 goal_type(multifile(Line),    goal_multifile,	 [line(Line)]).
 goal_type(expanded,	      goal_expanded,	 []).
 goal_type(extern(_),	      goal_extern,	 []).
+goal_type(extern(_,_),	      goal_extern,	 []).
 goal_type(recursion,	      goal_recursion,	 []).
 goal_type(meta,		      goal_meta,	 []).
 goal_type(foreign(_),	      goal_foreign,	 []).
