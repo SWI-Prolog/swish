@@ -204,7 +204,9 @@ var cellTypes = {
 	  copyData("chats");
 
 	  var docid      = elem.storage('docid', undefined, storage);
-	  var fullscreen = preferences.getDocVal(docid, 'fullscreen', true);
+	  var fullscreen = preferences.getDocVal(
+					   docid, 'fullscreen',
+					   config.swish.notebook.fullscreen);
 
 	  elem.notebook('value', content.text(),
 			{ fullscreen: fullscreen
