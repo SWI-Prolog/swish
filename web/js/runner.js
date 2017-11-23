@@ -976,7 +976,7 @@ define([ "jquery", "config", "preferences",
 	   data.stacks[s].usage = data.stacks[s].usage.slice(1);
 	 data.stacks[s].usage.push(u);
 	 spark.sparkline(data.stacks[s].usage,
-			 { height: spark.parent().height(),
+			 { height: "2em",
 			   composite: i>0,
 			   chartRangeMin: 0,
 			   chartRangeMax: 4,
