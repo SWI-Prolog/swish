@@ -10,3 +10,6 @@
 [submodule "pack/hdt"]
 	path = pack/hdt
 	url = https://github.com/JanWielemaker/hdt4swipl.git
+[submodule "pack/wordnet"]
+	path = pack/wordnet
+	url = https://github.com/JanWielemaker/wordnet.git
