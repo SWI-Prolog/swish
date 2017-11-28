@@ -214,7 +214,7 @@ var tabbed = {
 	var tab = select.first().closest(".tab-pane");
 	this.tabbed('show', tab.attr("id"));
 	this.tabbed('setSource', tab, src);
-      } else if ( src.newTab ) {
+      } else if ( src.newTab || preferences.getVal("new-tab") ) {
 	inNewTab();
       } else
       { var tab;
