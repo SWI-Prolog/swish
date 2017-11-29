@@ -15,7 +15,7 @@ can use these servers for playing, courses or sharing and discussing
 ideas.
 
   - http://swish.swi-prolog.org/ (plain Prolog and R)
-  - http://cplint.lamping.unife.it/ (probabilistic and machine learning
+  - http://cplint.ml.unife.it/ (probabilistic and machine learning
     extensions)
 
 We have not yet dealt with scalable hosting nor with really reliable and
