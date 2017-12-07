@@ -34,6 +34,7 @@
 
 :- module(swish_page,
 	  [ swish_reply/2,			% +Options, +Request
+	    swish_reply_resource/1,		% +Request
 	    swish_page//1,			% +Options
 
 	    swish_navbar//1,			% +Options
@@ -109,15 +110,19 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 %	  Control showing the _beware limited edition_ warning.
 
 swish_reply(Options, Request) :-
-	authenticate(Request, Auth),
-	swish_reply2([identity(Auth)|Options], Request).
+	(   option(identity(_), Options)
+	->  Options2 = Options
+	;   authenticate(Request, Auth),
+	    Options2 = [identity(Auth)|Options]
+	),
+	swish_reply2(Options2, Request).
 
 swish_reply2(Options, Request) :-
 	option(method(Method), Request),
 	Method \== get, Method \== head, !,
 	swish_rest_reply(Method, Request, Options).
 swish_reply2(_, Request) :-
-	serve_resource(Request), !.
+	swish_reply_resource(Request), !.
 swish_reply2(Options, Request) :-
 	swish_reply_config(Request, Options), !.
 swish_reply2(SwishOptions, Request) :-
@@ -301,11 +306,11 @@ confirm_access(_, _).
 eval_condition(loaded, Path) :-
 	source_file(Path).
 
-%%	serve_resource(+Request) is semidet.
+%%	swish_reply_resource(+Request) is semidet.
 %
 %	Serve /swish/Resource files.
 
-serve_resource(Request) :-
+swish_reply_resource(Request) :-
 	option(path_info(Info), Request),
 	resource_prefix(Prefix),
 	sub_atom(Info, 0, _, _, Prefix), !,
