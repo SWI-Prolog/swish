@@ -49,7 +49,6 @@
 :- use_module(authenticate).
 :- use_module(pep).
 :- use_module(library(http/http_dispatch)).
-:- use_module(library(http/http_parameters)).
 
 :- meta_predicate
     swish_provenance(:, -),
