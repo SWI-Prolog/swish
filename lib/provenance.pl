@@ -40,7 +40,9 @@
 :- use_module(library(apply)).
 :- use_module(library(pengines)).
 :- use_module(library(lists)).
+:- use_module(library(option)).
 :- use_module(library(signature)).              % from pcache pack
+:- use_module(config).
 :- use_module(page).
 :- use_module(storage).
 :- use_module(gitty).
@@ -65,10 +67,24 @@ This module provides persistent hashes for a goal and its dependencies.
 %   Create a hash for Goal and its dependencies.
 
 permahash(M:Goal, Hash) :-
+    goal_string(Goal, String),
     swish_provenance(M:Goal, Provenance),
     storage_store_term(Provenance, ProvHash),
-    storage_store_term(goal{goal:Goal,
+    storage_store_term(goal{goal:String,
                             prov:ProvHash}, Hash).
+
+goal_string(Goal, String) :-
+    State = state(''),
+    (   nb_current('$variable_names', Bindings),
+        maplist(bind, Bindings),
+        with_output_to(string(String), portray_clause(Goal)),
+        nb_setarg(1, State, String),
+        fail
+    ;   arg(1, State, String)
+    ).
+
+bind(Name=Var) :-
+    Var = '$VAR'(Name).
 
 %!  swish_provenance(:Goal, -Provenance:dict) is det.
 %
@@ -135,9 +151,16 @@ clause_of(M:Pred, Clause) :-
 
 permalink(Request) :-
     authenticate(Request, Auth),
+    permalink(Request, [identity(Auth)]).
+
+permalink(Request, _Options) :-
+    swish_reply_resource(Request), !.
+permalink(Request, Options) :-
+    swish_reply_config(Request, Options), !.
+permalink(Request, Options) :-
     option(path_info(Hash), Request),
     is_gitty_hash(Hash),
-    authorized(gitty(download(Hash, permalink)), [identity(Auth)]),
+    authorized(gitty(download(Hash, permalink)), Options),
     storage_load_term(Hash, PermaData),
     _{goal:Goal, prov:Prov} :< PermaData,
     storage_load_term(Prov, ProvData),
@@ -147,6 +170,7 @@ permalink(Request) :-
     swish_reply([ code(Code),
                   q(Goal),
                   show_beware(false)
+                | Options
                 ],
                 Request).
 
