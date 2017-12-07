@@ -41,7 +41,13 @@
 :- use_module(library(pengines)).
 :- use_module(library(lists)).
 :- use_module(library(signature)).              % from pcache pack
+:- use_module(page).
 :- use_module(storage).
+:- use_module(gitty).
+:- use_module(authenticate).
+:- use_module(pep).
+:- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_parameters)).
 
 :- meta_predicate
     swish_provenance(:, -),
@@ -51,6 +57,8 @@
 
 This module provides persistent hashes for a goal and its dependencies.
 */
+
+:- http_handler(swish('q/'), permalink,   [ id(permalink), prefix ]).
 
 %!  permahash(:Goal, -Hash) is det.
 %
@@ -115,3 +123,43 @@ clause_of(M:Pred, Clause) :-
     ->  Clause = Pred
     ;   Clause = (Pred :- Body)
     ).
+
+		 /*******************************
+		 *      RESTORE A PERMALINK	*
+		 *******************************/
+
+%!  permalink(+Request)
+%
+%   Open a query and  source  from   a  permalink.  Normally  mounted on
+%   `/q/hash`.
+
+permalink(Request) :-
+    authenticate(Request, Auth),
+    option(path_info(Hash), Request),
+    is_gitty_hash(Hash),
+    authorized(gitty(download(Hash, permalink)), [identity(Auth)]),
+    storage_load_term(Hash, PermaData),
+    _{goal:Goal, prov:Prov} :< PermaData,
+    storage_load_term(Prov, ProvData),
+    _{local:Local} :< ProvData,
+    maplist(source, Local, Sources),
+    atomics_to_string(Sources, "\n", Code),
+    swish_reply([ code(Code),
+                  q(Goal),
+                  show_beware(false)
+                ],
+                Request).
+
+source(Prov, Source) :-
+    storage_load_term(Prov.get(gitty), LocalData),
+    Source = LocalData.get(text).
+
+
+
+		 /*******************************
+		 *            SANDBOX		*
+		 *******************************/
+
+:- multifile sandbox:safe_meta_predicate/1.
+
+sandbox:safe_meta_predicate(swish_provenance:permahash/2).
