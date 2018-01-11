@@ -102,13 +102,15 @@ swish_provenance(Goal, Provenance) :-
                                import: Used }
         ;   Provenance = prov{ local: Source }
         )
-    ;   convlist(file_prov(_), Prov0, Used),
+    ;   Goal = M:_,
+        convlist(file_prov(M), Prov0, Used),
         Used \== []
     ->  Provenance = prov{ import: Used }
     ;   Provenance = prov{}
     ).
 
 file_prov(Module, URI-Preds0, Hash-Preds) :-
+    current_predicate(Module:'swish included'/1),
     Module:'swish included'(gitty(CommitHash, _DataHash, URI)),
     !,
     Hash = CommitHash,
