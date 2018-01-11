@@ -204,6 +204,10 @@ strip_stack(Error, Error).
 %	we can detect that the tracer is   operating  on a SWISH goal by
 %	inspecting the stack and we can  save/restore the debug state to
 %	deal with debugging next solutions.
+%
+%	The binding `_residuals = '$residuals'(Residuals)`   is added to
+%	the   residual   goals   by     pengines:event_to_json/4    from
+%	pengines_io.pl.
 
 :- meta_predicate swish_call(0).
 
