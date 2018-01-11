@@ -178,6 +178,19 @@ source(Prov, Source) :-
     Source = LocalData.get(text).
 
 
+		 /*******************************
+		 *             HOOK		*
+		 *******************************/
+
+:- multifile
+    swish_config:config/2,
+    swish_trace:pre_context/3.
+
+swish_config:config(permahash_var, '_swish__permahash').
+
+swish_trace:pre_context('_swish__permahash', Goal, Hash) :-
+    permahash(Goal, Hash).
+
 
 		 /*******************************
 		 *            SANDBOX		*

@@ -1106,6 +1106,12 @@ define([ "jquery", "config", "preferences",
     var options = $.extend({}, data.screen);
     var bps;
     var resvar = config.swish.residuals_var || "Residuals";
+    var hashvar = config.swish.permahash_var;
+
+    if ( hashvar )
+      hashvar = ", "+hashvar;
+    else
+      hashvar = "";
 
     registerSources(this.pengine);
 
@@ -1116,7 +1122,7 @@ define([ "jquery", "config", "preferences",
 
     this.pengine.ask("'$swish wrapper'((\n" +
 		     termNoFullStop(data.query.query) +
-		     "\n), ["+resvar+"])", options);
+		     "\n), ["+resvar+hashvar+"])", options);
     elem.prologRunner('setState', "running");
   }
 
