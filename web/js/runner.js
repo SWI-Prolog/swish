@@ -454,6 +454,36 @@ define([ "jquery", "config", "preferences",
     renderAnswer: function(answer) {
       var data = this.data('prologRunner');
       var even = (++data.answers % 2 == 0);
+      var obj = removeSpecialBindings(answer);
+
+      function removeSpecialBindings(answer) {
+	var obj = {};
+	var bindings = answer.variables;
+	var projection = answer.projection;
+	var prefix = "_swish__";
+
+	for (var i = 0; i < bindings.length; i++) {
+	  var vars = bindings[i].variables;
+
+	  for (var v = 0; v < vars.length; v++) {
+	    if ( vars[v].startsWith(prefix) ) {
+	      var name = vars[v].replace(prefix, "");
+	      obj[name] = bindings[i].value;
+	      bindings.splice(i, 1);
+	      i--;
+	    }
+	  }
+	}
+
+	for(var i = 0; i < projection.length; i++) {
+	  if ( projection[i].startsWith(prefix) ) {
+	    projection.splice(i, 1);
+	    i--;
+	  }
+	}
+
+	return obj;
+      }
 
       if ( data.query.tabled ) {
 	if ( data.answers == 1 ) {
