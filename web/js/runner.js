@@ -344,6 +344,7 @@ define([ "jquery", "config", "preferences",
 	    titleBarButton("remove-circle", "Close",        'close'),
 	    titleBarButton("minus",         "Iconify",      'toggleIconic'),
 	    titleBarButton("download",      "Download CSV", 'downloadCSV'),
+	    titleBarButton("link",          "Permalink",    'permalink'),
 	    stateButton(),
 	    qspan,
             $.el.br({clear:"all"})));
@@ -889,6 +890,26 @@ define([ "jquery", "config", "preferences",
       prolog.downloadCSV(query, data.query.source, options);
 
       return this;
+    },
+
+    /**
+     * Generate a permalink
+     */
+
+    permalink: function() {
+      var data = this.data('prologRunner');
+
+      if ( data.permahash ) {
+	var href = config.http.locations.permalink + data.permahash;
+	modal.show({
+	  title: "Query permalink",
+	  body: function() {
+	    this.append($.el.a({href:href}, href));
+	  }
+	});
+      } else {
+	modal.alert("No permahash");
+      }
     },
 
   /**
