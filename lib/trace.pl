@@ -240,10 +240,7 @@ no_lco.
 %	goals typically live in global variables   that  are not visible
 %	when formulating the answer  from   the  projection variables as
 %	done in library(pengines_io).
-%
-%	This relies on the SWI-Prolog 7.3.14 residual goal extension.
 
-:- if(current_predicate(prolog:residual_goals//0)).
 residuals(TypeIn, Goals) :-
 	phrase(prolog:residual_goals, Goals0),
 	maplist(unqualify_residual(TypeIn), Goals0, Goals).
@@ -252,9 +249,6 @@ unqualify_residual(M, M:G, G) :- !.
 unqualify_residual(T, M:G, G) :-
 	predicate_property(T:G, imported_from(M)), !.
 unqualify_residual(_, G, G).
-:- else.
-residuals(_, []).
-:- endif.
 
 
 		 /*******************************
