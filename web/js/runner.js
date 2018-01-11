@@ -485,6 +485,12 @@ define([ "jquery", "config", "preferences",
 	return obj;
       }
 
+      // Would be better to avoid wrapping in HTML, but that
+      // requires extending pengines_io.pl
+      if ( obj.permahash ) {
+	data.permahash = $(obj.permahash).text().replace(/'/g,"");
+      }
+
       if ( data.query.tabled ) {
 	if ( data.answers == 1 ) {
 	  if ( answer.projection && answer.projection.length > 0 ) {
