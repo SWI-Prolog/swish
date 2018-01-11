@@ -1116,7 +1116,7 @@ define([ "jquery", "config", "preferences",
 
     this.pengine.ask("'$swish wrapper'((\n" +
 		     termNoFullStop(data.query.query) +
-		     "\n), "+resvar+")", options);
+		     "\n), ["+resvar+"])", options);
     elem.prologRunner('setState', "running");
   }
 
