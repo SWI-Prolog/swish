@@ -405,13 +405,13 @@ storage_get(Request, Format, Options) :-
 storage_get(swish, Dir, Type, FileOrHash, Request) :-
 	gitty_data_or_default(Dir, Type, FileOrHash, Code, Meta),
 	chat_count(Meta, Count),
-	swish_reply([ code(Code),
-		      file(FileOrHash),
-		      st_type(gitty),
-		      meta(Meta),
-		      chat_count(Count)
-		    ],
-		    Request).
+	swish_show([ code(Code),
+		     file(FileOrHash),
+		     st_type(gitty),
+		     meta(Meta),
+		     chat_count(Count)
+		   ],
+		   Request).
 storage_get(raw, Dir, Type, FileOrHash, _Request) :-
 	gitty_data_or_default(Dir, Type, FileOrHash, Code, Meta),
 	file_mime_type(Meta.name, MIME),
@@ -497,6 +497,21 @@ random_char(Char) :-
 	Max is Len - 1,
 	random_between(0, Max, I),
 	sub_atom(From, I, 1, _, Char).
+
+
+%!	swish_show(+Options, +Request)
+%
+%	Hande a document.  This dispatches .lnk permahash documents.
+
+swish_show(Options, Request) :-
+	option(meta(Meta), Options),
+	file_name_extension(_, lnk, Meta.get(name)),
+	!,
+	option(code(Permahash), Options),
+	http_link_to_id(permalink, path_postfix(Permahash), HREF),
+	http_redirect(see_other, HREF, Request).
+swish_show(Options, Request) :-
+	swish_reply(Options, Request).
 
 
 		 /*******************************
