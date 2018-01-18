@@ -261,10 +261,12 @@ define([ "jquery", "config", "preferences",
 	var elem = $(this);
 	var data = {};
 
-	function titleBarButton(glyph, title, action) {
+	function titleBarButton(glyph, title, action, display) {
 	  var btn = $.el.button({title:title, class:"rtb-"+action},
 				$.el.span({class:"glyphicon glyphicon-"+glyph}));
 	  $(btn).on("click", function() { elem.prologRunner(action); });
+	  if ( display == false )
+	    $(btn).hide();
 	  return btn;
 	}
 
@@ -344,7 +346,7 @@ define([ "jquery", "config", "preferences",
 	    titleBarButton("remove-circle", "Close",        'close'),
 	    titleBarButton("minus",         "Iconify",      'toggleIconic'),
 	    titleBarButton("download",      "Download CSV", 'downloadCSV'),
-	    titleBarButton("link",          "Permalink",    'permalink'),
+	    titleBarButton("link",          "Permalink",    'permalink', false),
 	    stateButton(),
 	    qspan,
             $.el.br({clear:"all"})));
@@ -490,6 +492,7 @@ define([ "jquery", "config", "preferences",
       // requires extending pengines_io.pl
       if ( obj.permahash ) {
 	data.permahash = $(obj.permahash).text().replace(/'/g,"");
+	this.find(".rtb-permalink").show({duration:400});
       }
 
       if ( data.query.tabled ) {
