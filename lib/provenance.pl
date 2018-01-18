@@ -167,7 +167,8 @@ permalink(Request, Options) :-
     storage_load_term(Prov, ProvData),
     (   _{local:Local} :< ProvData
     ->  maplist(source, Local, Sources),
-        atomics_to_string(Sources, "\n", Code)
+        atomics_to_string(Sources, "\n", Code0),
+        import_versions(ProvData, Code0, Code)
     ;   Code = ""
     ),
     swish_reply([ code(Code),
@@ -180,6 +181,40 @@ permalink(Request, Options) :-
 source(Prov, Source) :-
     storage_load_term(Prov.get(gitty), LocalData),
     Source = LocalData.get(text).
+
+%!  import_versions(+ProvData, +Code0, -Code) is det.
+%
+%   If there are imported files, check  that their versions are current.
+%   If not, prepend an include statement to import the right version.
+
+import_versions(ProvData, Code0, Code) :-
+    _{import:Import} :< ProvData,
+    convlist(import_version, Import, Strings),
+    Strings \== [],
+    !,
+    append(Strings, [Code0], AllStrings),
+    atomics_to_string(AllStrings, "\n", Code).
+import_versions(_, Code, Code).
+
+%!  import_version(+Import, -String) is semidet.
+%
+%   If Import is not the HEAD of the  imported file, unify String with a
+%   header that includes the specific version.
+%
+%   @tbd We also have the hashes  of   the  predicates from the imported
+%   files that are used. We could use   this to verify that the imported
+%   predicates have not changed and therefore  we can (still) import the
+%   HEAD rather than the specific version.
+
+import_version(Hash-_Predicates, String) :-
+    storage_meta_data(Hash, Meta),
+    \+ Meta.get(symbolic) == "HEAD",
+    format_time(string(Date), '%+', Meta.time),
+    file_name_extension(Base, _, Meta.name),
+    format(string(String),
+           '% Permalink: using "~w" from ~s\n\c
+            :- include(~q, [version(~q)]).',
+           [ Base, Date, Base, Hash ]).
 
 
 		 /*******************************
