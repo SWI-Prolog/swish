@@ -896,9 +896,8 @@ define([ "jquery", "config", "preferences",
     },
 
     /**
-     * Generate a permalink
+     * Save a permalink
      */
-
     permalink: function() {
       var runner = this;
       var data = this.data('prologRunner');
@@ -945,9 +944,40 @@ define([ "jquery", "config", "preferences",
     },
 
     save_permalink: function(as) {
+      var runner = this;
       var data = this.data('prologRunner');
+      var post = {
+        data: data.permahash,
+	type: "lnk",
+	meta: as
+      };
 
-      console.log(as);
+      delete post.meta.link;
+
+      $.ajax({ url: config.http.locations.web_storage,
+               dataType: "json",
+	       contentType: "application/json",
+	       type: "POST",
+	       data: JSON.stringify(post),
+	       success: function(reply) {
+		 if ( reply.error ) {
+		   modal.alert(errorString("Could not save", reply));
+		 } else {
+		   modal.feedback({ html: "Saved",
+				    owner: runner
+		                  });
+		 }
+	       },
+	       error: function(jqXHR, textStatus, errorThrown) {
+		 if ( jqXHR.status == 403 ) {
+		   modal.alert("Permission denied.  Please try a different name");
+		 } else {
+		   alert('Save failed: '+textStatus);
+		 }
+	       }
+             });
+
+      return this;
     },
 
   /**
