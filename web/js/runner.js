@@ -904,6 +904,8 @@ define([ "jquery", "config", "preferences",
 
       if ( data.permahash ) {
 	var href = config.http.locations.permalink + data.permahash;
+	href = location.protocol + "//" + location.host + href;
+
 	modal.show({
 	  title: "Query permalink",
 	  body: function() {
