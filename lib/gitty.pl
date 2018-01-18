@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2017, VU University Amsterdam
+    Copyright (c)  2014-2018, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@
 	    gitty_driver/2,		% +Store, -Driver
 
 	    gitty_file/3,		% +Store, ?Name, ?Hash
+	    gitty_file/4,		% +Store, ?Name, ?Ext, ?Hash
 	    gitty_create/5,		% +Store, +Name, +Data, +Meta, -Commit
 	    gitty_update/5,		% +Store, +Name, +Data, +Meta, -Commit
 	    gitty_commit/3,		% +Store, +Name, -Meta
@@ -162,13 +163,16 @@ gitty_close(Store) :-
 	M:gitty_close(Store).
 
 %%	gitty_file(+Store, ?Head, ?Hash) is nondet.
+%%	gitty_file(+Store, ?Head, ?Ext, ?Hash) is nondet.
 %
 %	True when Hash is an entry in the gitty Store and Head is the
 %	HEAD revision.
 
 gitty_file(Store, Head, Hash) :-
+	gitty_file(Store, Head, _Ext, Hash).
+gitty_file(Store, Head, Ext, Hash) :-
 	store_driver_module(Store, M),
-	M:gitty_file(Store, Head, Hash).
+	M:gitty_file(Store, Head, Ext, Hash).
 
 %%	gitty_create(+Store, +Name, +Data, +Meta, -Commit) is det.
 %

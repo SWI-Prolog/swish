@@ -35,7 +35,7 @@
 
 :- module(gitty_driver_files,
 	  [ gitty_close/1,		% +Store
-	    gitty_file/3,		% +Store, ?Name, ?Hash
+	    gitty_file/4,		% +Store, ?Name, ?Ext, ?Hash
 
 	    gitty_update_head/4,	% +Store, +Name, +OldCommit, +NewCommit
 	    delete_head/2,		% +Store, +Name
@@ -92,7 +92,7 @@ to rounding the small objects to disk allocation units.
 */
 
 :- dynamic
-    head/3,				% Store, Name, Hash
+    head/4,				% Store, Name, Ext, Hash
     store/2,				% Store, Updated
     commit/3,				% Store, Hash, Meta
     heads_input_stream_cache/2,		% Store, Stream
@@ -101,7 +101,7 @@ to rounding the small objects to disk allocation units.
     attached_pack/2.                    % Store, PackFile
 
 :- volatile
-    head/3,
+    head/4,
     store/2,
     commit/3,
     heads_input_stream_cache/2,
@@ -128,19 +128,19 @@ gitty_close(Store) :-
     ->  close(In)
     ;   true
     ),
-    retractall(head(Store,_,_)),
+    retractall(head(Store,_,_,_)),
     retractall(store(Store,_)),
     retractall(pack_object(_,_,_,_,Store,_)).
 
 
-%%	gitty_file(+Store, ?File, ?Head) is nondet.
+%%	gitty_file(+Store, ?File, ?Ext, ?Head) is nondet.
 %
 %	True when File entry in the  gitty   store  and Head is the HEAD
 %	revision.
 
-gitty_file(Store, Head, Hash) :-
+gitty_file(Store, Head, Ext, Hash) :-
 	gitty_scan(Store),
-	head(Store, Head, Hash).
+	head(Store, Head, Ext, Hash).
 
 %%	load_plain_commit(+Store, +Hash, -Meta:dict) is semidet.
 %
@@ -278,15 +278,20 @@ gitty_scan_sync(Store) :-
 
 %%	read_heads_from_objects(+Store) is det.
 %
-%	Establish the head(Store,File,Hash)  relation   by  reading  all
-%	objects and adding a fact for the most recent commit.
+%       Establish the head(Store,File,Ext,Hash) relation  by reading all
+%       objects and adding a fact for the most recent commit.
 
 read_heads_from_objects(Store) :-
 	gitty_scan_latest(Store),
 	forall(retract(latest(Name, Hash, _Time)),
-	       assert(head(Store, Name, Hash))),
+	       assert_head(Store, Name, Hash)),
 	get_time(Now),
 	assertz(store(Store, Now)).
+
+assert_head(Store, Name, Hash) :-
+	file_name_extension(_, Ext, Name),
+        assertz(head(Store, Name, Ext, Hash)).
+
 
 %%	gitty_scan_latest(+Store)
 %
@@ -294,7 +299,7 @@ read_heads_from_objects(Store) :-
 %	named entry.
 
 gitty_scan_latest(Store) :-
-	retractall(head(Store, _, _)),
+	retractall(head(Store, _, _, _)),
 	retractall(latest(_, _, _)),
 	(   gitty_hash(Store, Hash),
 	    load_object(Store, Hash, Data, commit, _Size),
@@ -399,12 +404,12 @@ gitty_update_head_sync(Store, Name, OldCommit, NewCommit, HeadsOut) :-
 gitty_update_head_sync2(Store, Name, OldCommit, NewCommit) :-
 	gitty_scan(Store),		% fetch remote changes
 	(   OldCommit == (-)
-	->  (   head(Store, Name, _)
+	->  (   head(Store, Name, _, _)
 	    ->	throw(error(gitty(file_exists(Name),_)))
-	    ;	assertz(head(Store, Name, NewCommit))
+	    ;	assert_head(Store, Name, NewCommit)
 	    )
-	;   (   retract(head(Store, Name, OldCommit))
-	    ->	assertz(head(Store, Name, NewCommit))
+	;   (   retract(head(Store, Name, _, OldCommit))
+	    ->	assert_head(Store, Name, NewCommit)
 	    ;	throw(error(gitty(not_at_head(Name, OldCommit)), _))
 	    )
 	).
@@ -443,10 +448,10 @@ remote_update(Store) :-
 
 update_head(Store, head(Name, OldCommit, NewCommit)) :-
 	(   OldCommit == (-)
-	->  \+ head(Store, Name, _)
-	;   retract(head(Store, Name, OldCommit))
+	->  \+ head(Store, Name, _, _)
+	;   retract(head(Store, Name, _, OldCommit))
 	), !,
-	assert(head(Store, Name, NewCommit)).
+	assert_head(Store, Name, NewCommit).
 update_head(_, _).
 
 %%	remote_updates(+Store, -List) is det.
@@ -536,15 +541,15 @@ restore_heads(Store, In) :-
 
 restore_heads(end_of_file, _, _) :- !.
 restore_heads(head(File, _, Hash), In, Store) :-
-	retractall(head(Store, File, _)),
-	assertz(head(Store, File, Hash)),
+	retractall(head(Store, File, _, _)),
+	assert_head(Store, File, Hash),
 	read(In, Term),
 	restore_heads(Term, In, Store).
 
 save_heads(Store, Out) :-
 	get_time(Now),
 	format(Out, 'epoch(~0f).~n~n', [Now]),
-	forall(head(Store, File, Hash),
+	forall(head(Store, File, _, Hash),
 	       format(Out, '~q.~n', [head(File, -, Hash)])).
 
 
@@ -555,20 +560,21 @@ save_heads(Store, Out) :-
 %	should they do their own thing?
 
 delete_head(Store, Head) :-
-	retractall(head(Store, Head, _)).
+	retractall(head(Store, Head, _, _)).
 
 %%	set_head(+Store, +File, +Hash) is det.
 %
 %	Set the head of the given File to Hash
 
 set_head(Store, File, Hash) :-
-        (   head(Store, File, Hash0)
+	file_name_extension(_, Ext, File),
+        (   head(Store, File, _, Hash0)
         ->  (   Hash == Hash0
             ->  true
-            ;   asserta(head(Store, File, Hash)),
-                retractall(head(Store, File, Hash0))
+            ;   asserta(head(Store, File, Ext, Hash)),
+                retractall(head(Store, File, _, Hash0))
             )
-        ;   asserta(head(Store, File, Hash))
+        ;   asserta(head(Store, File, Ext, Hash))
         ).
 
 

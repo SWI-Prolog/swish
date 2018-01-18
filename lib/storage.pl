@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2017, VU University Amsterdam
+    Copyright (c)  2014-2018, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@
 
 :- module(web_storage,
 	  [ storage_file/1,			% ?File
+	    storage_file_extension/2,		% ?File, ?Extension
 	    storage_file/3,			% +File, -Data, -Meta
 	    storage_meta_data/2,		% +File, -Meta
 	    storage_meta_property/2,	        % +Meta, ?Property
@@ -518,7 +519,8 @@ swish_show(Options, Request) :-
 		 *	    INTERFACE		*
 		 *******************************/
 
-%%	storage_file(?File) is semidet.
+%%	storage_file(?File) is nondet.
+%!	storage_file_extension(?File, ?Extension) is nondet.
 %%	storage_file(+File, -Data, -Meta) is semidet.
 %%	storage_meta_data(+File, -Meta) is semidet.
 %
@@ -528,8 +530,11 @@ swish_show(Options, Request) :-
 %	@arg Meta is a dict holding the meta data about the file.
 
 storage_file(File) :-
+	storage_file_extension(File, _).
+
+storage_file_extension(File, Ext) :-
 	open_gittystore(Dir),
-	gitty_file(Dir, File, _Head).
+	gitty_file(Dir, File, Ext, _Head).
 
 storage_file(File, Data, Meta) :-
 	open_gittystore(Dir),
