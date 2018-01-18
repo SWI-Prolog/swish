@@ -165,9 +165,11 @@ permalink(Request, Options) :-
     storage_load_term(Hash, PermaData),
     _{goal:Goal, prov:Prov} :< PermaData,
     storage_load_term(Prov, ProvData),
-    _{local:Local} :< ProvData,
-    maplist(source, Local, Sources),
-    atomics_to_string(Sources, "\n", Code),
+    (   _{local:Local} :< ProvData
+    ->  maplist(source, Local, Sources),
+        atomics_to_string(Sources, "\n", Code)
+    ;   Code = ""
+    ),
     swish_reply([ code(Code),
                   q(Goal),
                   show_beware(false)
