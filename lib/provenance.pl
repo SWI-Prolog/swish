@@ -35,7 +35,8 @@
 
 :- module(swish_provenance,
           [ swish_provenance/2,                 % :Goal, -Provenance
-            permahash/2                         % :Goal, -Hash
+            permahash/2,                        % :Goal, -Hash
+            current_permahash/3                 % ?Name, -Meta, -Hash
           ]).
 :- use_module(library(apply)).
 :- use_module(library(pengines)).
@@ -215,6 +216,25 @@ import_version(Hash-_Predicates, String) :-
            '% Permalink: using "~w" from ~s\n\c
             :- include(~q, [version(~q)]).',
            [ Base, Date, Base, Hash ]).
+
+
+		 /*******************************
+		 *            ENUMERATE		*
+		 *******************************/
+
+%!  current_permahash(?Name, -Meta, -Hash) is nondet.
+%
+%   Enumerate saved permahashes.
+%
+%   @arg Name is the name of the permahash file
+%   @arg Meta is the meta data of this file (author, time, tags, etc.)
+%   @arg Hash is the permahash
+
+current_permahash(Name, Hash, Meta) :-
+    storage_file_extension(Name, lnk),
+    storage_file(Name, HashString, Meta),
+    atom_string(Hash, HashString),
+    is_gitty_hash(Hash).
 
 
 		 /*******************************
