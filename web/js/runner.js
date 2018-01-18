@@ -900,21 +900,54 @@ define([ "jquery", "config", "preferences",
      */
 
     permalink: function() {
+      var runner = this;
       var data = this.data('prologRunner');
 
       if ( data.permahash ) {
 	var href = config.http.locations.permalink + data.permahash;
 	href = location.protocol + "//" + location.host + href;
+	var profile = $("#login").login('get_profile',
+					[ "display_name", "avatar", "email",
+					  "identity"
+					]);
+	var author  = profile.display_name;
 
-	modal.show({
-	  title: "Query permalink",
-	  body: function() {
-	    this.append($.el.a({href:href}, href));
-	  }
+	function savePermalink() {
+	  this.append($.el.form(
+            { class:"form-horizontal"},
+	      form.fields.hidden("identity", profile.identity),
+	      profile.identity ? undefined :
+			       form.fields.hidden("avatar", profile.avatar),
+	      form.fields.link(href),
+	      form.fields.fileName(null, false),
+	      form.fields.title(),
+	      form.fields.description(),
+	      form.fields.tags([]),
+	      form.fields.author(author, profile.identity),
+	      form.fields.buttons(
+	      { label: "Save permalink",
+		action: function(ev, as) {
+			  runner.prologRunner('save_permalink', as);
+			  return false;
+			}
+	      })));
+	}
+
+	form.showDialog({
+	  title: "Save permalink",
+	  body:	 savePermalink
 	});
       } else {
 	modal.alert("No permahash");
       }
+
+      return this;
+    },
+
+    save_permalink: function(as) {
+      var data = this.data('prologRunner');
+
+      console.log(as);
     },
 
   /**

@@ -186,9 +186,16 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 
     fields: {
       fileName: function(name, public, example, disabled) {
-	var labeltext = config.swish.community_examples ? "Public | Example | name" : "Public | name"
+	var labeltext;
 	var empty = "(leave empty for generated random name)"
 	var fork, input;
+	var community_examples = config.swish.community_examples && example != undefined;
+
+	if ( community_examples )
+	  labeltext = "Public | Example | name";
+	else
+	  labeltext = "Public | name";
+
         var elem =
 	$.el.div({class:"form-group"},
 		 label("name", labeltext),
@@ -200,7 +207,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 					     checkbox("public",
 						      { checked: public
 						      })),
-				   config.swish.community_examples ?
+				   community_examples ?
 				   $.el.span({class:"input-group-addon",
 				              title:"If checked, add to examples menu"
 				             },
@@ -212,18 +219,23 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 					      title:"Public name of your program",
 					      value:name,
 					      disabled:disabled}),
-			    fork = $.el.span({class:"input-group-btn"
-				             },
-					     $.el.button({ class: "btn btn-success",
-							   type: "button"
-							 }, "Fork"))
+			   name ?
+			     fork = $.el.span({class:"input-group-btn"
+					      },
+					      $.el.button({ class: "btn btn-success",
+							    type: "button"
+							  }, "Fork")) : undefined
 				  )));
-	$(fork).on("click", function() {
-	  var btn = $(input).closest("form").find(".btn.btn-primary");
-	  $(input).attr("placeholder", "Fork as " + empty);
-	  $(input).val("");
-	  btn.text(btn.text().replace("Update", "Fork"));
-	});
+
+	if ( fork ) {
+	  $(fork).on("click", function() {
+	    var btn = $(input).closest("form").find(".btn.btn-primary");
+	    $(input).attr("placeholder", "Fork as " + empty);
+	    $(input).val("");
+	    btn.text(btn.text().replace("Update", "Fork"));
+	  });
+	}
+
 	return elem;
       },
 
@@ -258,6 +270,20 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 	return elem;
       },
 
+      link: function(link) {
+	var options = {
+	  readonly: true,
+	  title: "Permalink",
+	  value: link
+	};
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("link", "Link"),
+		 $.el.div({class:valgridw()},
+			  textInput("link", options)));
+	return elem;
+      },
+
       date: function(stamp, labels, name) {
 	name = name||label;
 	var elem =
@@ -288,6 +314,18 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
 			  textarea("commit_message",
 				   { value:msg,
 				     placeholder:"Describe your changes here"
+				   })));
+	return elem;
+      },
+
+      description: function(msg) {
+	var elem =
+	$.el.div({class:"form-group"},
+		 label("description", "Description"),
+		 $.el.div({class:valgridw()},
+			  textarea("description",
+				   { value:msg,
+				     placeholder:"Description"
 				   })));
 	return elem;
       },
