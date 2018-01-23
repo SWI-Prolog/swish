@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2017, VU University Amsterdam
+    Copyright (C): 2014-2018, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -44,7 +44,7 @@
  */
 
 define([ "jquery", "form", "config", "preferences", "modal",
-	 "laconic", "search", "chatbell" ],
+	 "laconic", "search", "chatbell", "sourcelist" ],
        function($, form, config, preferences, modal) {
 var tabbed = {
   tabTypes: {},
@@ -182,10 +182,13 @@ var tabbed = {
 	if ( data.newTab ) {
 	  dom = data.newTab();
 	} else {
+	  var sl;
 	  dom = this.tabbed('tabSelect');
 	  $(dom).append(this.tabbed('profileForm'),
 			$.el.hr(),
-			this.tabbed('searchForm'));
+			this.tabbed('searchForm'),
+		        sl = $.el.div({class:"sourcelist"}));
+	  $(sl).sourcelist();
 	}
       }
 
@@ -589,6 +592,9 @@ var tabbed = {
       return dom;
     },
 
+    /**
+     * Find sources
+     */
     searchForm: function() {
       var sform = $.el.form({class: "search-sources"},
 	$.el.label({class:"control-label"}, 'Open source file containing'),
@@ -611,6 +617,11 @@ var tabbed = {
       $(sform).find("input.search").search();
 
       return sform;
+    },
+
+    sourceList: function() {
+
+
     },
 
     profileForm: function() {
