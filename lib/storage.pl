@@ -60,6 +60,8 @@
 :- use_module(library(broadcast)).
 :- use_module(library(readutil)).
 :- use_module(library(solution_sequences)).
+:- use_module(library(dcg/basics)).
+:- use_module(library(pcre)).
 
 :- use_module(page).
 :- use_module(gitty).
@@ -81,6 +83,7 @@ their own version.
 	   'The directory for storing files.').
 
 :- http_handler(swish('p/'), web_storage, [ id(web_storage), prefix ]).
+:- http_handler(swish('source_list'), source_list, [ id(source_list) ]).
 
 :- listen(http(pre_server_start),
 	  open_gittystore(_)).
@@ -703,6 +706,246 @@ search_file(File, Meta, Data, Query, FileInfo, Options) :-
 	FileInfo = Meta.put(_{type:"store", file:File,
 			      line:LineNo, text:Line, query:Query
 			     }).
+
+
+		 /*******************************
+		 *	   SOURCE LIST		*
+		 *******************************/
+
+%%	source_list(+Request)
+%
+%	List source files.  Request parameters:
+%
+%	  - q(Query)
+%	    Query is a string for which the following sub strings
+%	    are treated special:
+%	    $ "..." :
+%	    A quoted string is taken as a string search
+%	    $ /.../[xim]*
+%	    Regular expression search
+%	    $ tag:Tag :
+%	    Must have tag containing
+%	    $ type:Type :
+%	    Limit to one of `pl`, `swinb` or `lnk`
+%	    $ user:User :
+%	    Must have user containing.  If User is `me` must be
+%	    owned by current user
+%	    $ name:Name :
+%	    Must have name containing
+%	  - o(Order)
+%	    Order by `time` (default), `name`, `author` or `type`
+%	  - offset(+Offset)
+%	  - limit(+Limit)
+%
+%	Reply is a JSON object containing `count` (total matches),
+%	`cpu` (CPU time) and `matches` (list of matching sources)
+%
+%	@tbd Search the content when searching a .lnk file?
+%	@tbd Speedup expensive searches.  Cache?  Use external DB?
+
+source_list(Request) :-
+	authenticate(Request, Auth),
+	http_parameters(Request,
+			[ q(Q, [optional(true)]),
+			  o(Order, [ oneof([time,name,author,type]),
+				     default(time)
+				   ]),
+			  offset(Offset, [default(0)]),
+			  limit(Limit, [default(25)])
+			]),
+	order(Order, Field),
+	statistics(cputime, CPU0),
+	findall(Source, source(Q, Auth, Source), AllSources),
+	statistics(cputime, CPU1),
+	length(AllSources, Count),
+	CPU is CPU1 - CPU0,
+	sort(Field, @=<, AllSources, Ordered),
+	list_offset_limit(Ordered, Offset, Limit, Sources),
+	reply_json_dict(json{total:Count, cpu:CPU, matches:Sources}).
+
+list_offset_limit(List0, Offset, Limit, List) :-
+	list_offset(List0, Offset, List1),
+	list_limit(List1, Limit, List).
+
+list_offset([_|T0], Offset, T) :-
+	succ(O1, Offset), !,
+	list_offset(T0, O1, T).
+list_offset(List, _, List).
+
+list_limit([H|T0], Limit, [H|T]) :-
+	succ(L1, Limit), !,
+	list_limit(T0, L1, T).
+list_limit(_, _, []).
+
+order(type, ext) :- !.
+order(Field, Field).
+
+source(Q, Auth, Source) :-
+	parse_query(Q, Query),
+	type_constraint(Query, Query1, Type),
+	partition(content_query, Query1,
+		  ContentConstraints, MetaConstraints),
+	storage_file_extension(File, Type),
+	source_data(File, Meta, Source),
+	visible(Meta, Auth, MetaConstraints),
+	maplist(matches_meta(Source, Auth), MetaConstraints),
+	matches_content(ContentConstraints, File).
+
+content_query(string(_)).
+content_query(regex(_)).
+
+source_data(File, Meta, Source) :-
+	storage_meta_data(File, Meta),
+	file_name_extension(_, Type, File),
+	Info = _{time:_, tags:_, author:_, avatar:_, name:_},
+	Info >:< Meta,
+	bound(Info, Info2),
+	Source = Info2.put(_{type:st_gitty, ext:Type}).
+
+bound(Dict0, Dict) :-
+	dict_pairs(Dict0, Tag, Pairs0),
+	include(bound, Pairs0, Pairs),
+	dict_pairs(Dict, Tag, Pairs).
+
+bound(_-V) :- nonvar(V).
+
+%!	visible(+FileMeta, +Auth, +MetaConstraints) is semidet.
+
+visible(Meta, Auth, Constraints) :-
+	memberchk(user("me"), Constraints),
+	!,
+	owns(Auth, Meta).
+visible(Meta, _Auth, _Constraints) :-
+	Meta.get(public) == true, !.
+visible(Meta, Auth, _Constraints) :-
+	owns(Auth, Meta).
+
+%!	owns(+Auth, +Meta) is semidet.
+%
+%	True if the file represented  by  Meta   is  owned  by  the user
+%	identified as Auth. If this is a  strong identity we must give a
+%	strong answer.
+%
+%	@tbd Weaker identity on the basis of author, avatar
+%	properties and/or IP properties.
+
+owns(Auth, Meta) :-
+	user_property(Auth, identity(Id)),
+	!,
+	storage_meta_property(Meta, identity(Id)).
+
+%!	matches_meta(+Source, +Auth, +Query) is semidet.
+%
+%	True when Source matches the meta-data requirements
+
+matches_meta(Dict, _, tag(Tag)) :- !,
+	memberchk(Tag, Dict.get(tags)).
+matches_meta(Dict, _, name(Name)) :- !,
+	sub_atom_icasechk(Dict.get(name), _At, Name).
+matches_meta(Dict, _, user(Name)) :-
+	Name \== "me", !,
+	sub_atom_icasechk(Dict.get(author), _At, Name).
+
+matches_content([], _) :- !.
+matches_content(Constraints, File) :-
+	storage_file(File, Data, _Meta),
+	maplist(match_content(Data), Constraints).
+
+match_content(Data, string(S)) :-
+	sub_atom_icasechk(Data, _, S).
+match_content(Data, regex(RE)) :-
+	re_match(RE, Data).
+
+%!	type_constraint(+Query0, -Query, -Type) is det.
+%
+%	Extract the type constraints from  the   query  as we can handle
+%	that efficiently.
+
+type_constraint(Query0, Query, Type) :-
+	partition(is_type, Query0, Types, Query),
+	(   Types == []
+	->  true
+	;   Types = [type(Type)]
+	->  true
+	;   maplist(arg(1), Types, List),
+	    freeze(Type, memberchk(Type, List))
+	).
+
+is_type(type(_)).
+
+%!	parse_query(+String, -Query) is det.
+%
+%	Parse a query, resulting in a list of Name(Value) pairs. Name is
+%	one of `tag`, `user`, `type`, `string` or `regex`.
+%
+%	@tbd: Should we allow for logical combinations?
+
+parse_query(Q, Query) :-
+	var(Q), !,
+	Query = [].
+parse_query(Q, Query) :-
+	string_codes(Q, Codes),
+	phrase(query(Query), Codes).
+
+query([H|T]) -->
+	blanks,
+	query1(H), !,
+	query(T).
+query([]) -->
+	blanks.
+
+query1(Q) -->
+	tag(Tag, Value), !,
+	{Q =.. [Tag,Value]}.
+query1(Q) -->
+	"\"", string(Codes), "\"", !,
+	{ string_codes(String, Codes),
+	  Q = string(String)
+	}.
+query1(Q) -->
+	"/", string(Codes), "/", re_flags(Flags), !,
+	{ string_codes(String, Codes),
+	  re_compile(String, RE, Flags),
+	  Q = regex(RE)
+	}.
+query1(Q) -->
+	next_word(String),
+	{ re_compile(String, RE,
+		     [ extended(true),
+		       caseless(true)
+		     ]),
+	  Q = regex(RE)
+	}.
+
+re_flags([H|T]) -->
+	re_flag(H), !,
+	re_flags(T).
+re_flags([]) -->
+	blank.
+re_flags([]) -->
+	eos.
+
+re_flag(caseless(true))  --> "i".
+re_flag(extended(true))  --> "x".
+re_flag(multiline(true)) --> "m".
+re_flag(dotall(true))    --> "s".
+
+next_word(String) -->
+	blanks,
+	string(Codes),
+	( blank ; eos ),
+	{Codes \== []}, !,
+	{ string_codes(String, Codes) }.
+
+tag(name, Value) --> "name:", next_word(Value).
+tag(tag,  Value) --> "tag:",  next_word(Value).
+tag(user, Value) --> "user:", next_word(Value).
+tag(type, Value) --> "type:", type(Value).
+
+type(pl)    --> "pl".
+type(swinb) --> "swinb".
+type(lnk)   --> "lnk".
+
 
 		 /*******************************
 		 *	      MESSAGES		*

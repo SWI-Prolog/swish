@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015-2017, VU University Amsterdam
+    Copyright (c)  2015-2018, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@
 :- use_module(library(http/http_json)).
 :- use_module(library(prolog_source)).
 :- use_module(library(option)).
+:- use_module(library(debug)).
 :- use_module(library(solution_sequences)).
 
 :- use_module(config).
@@ -63,7 +64,6 @@ search from the server side. What do we want to search for?
 */
 
 :- http_handler(swish(typeahead), typeahead, [id(swish_typeahead)]).
-:- http_handler(swish(search),    search,    [id(swish_search)]).
 
 %%	search_box(+Options)//
 %
@@ -193,14 +193,3 @@ sow(Text, Offset) :-
 	;   char_type(Start, upper),
 	    char_type(Before, lower)
 	), !.
-
-%%	search(+Request)
-%
-%	Handle an actual search  request  from   the  SWISH  search box.
-%	Returns an HTML  document  with  the   actual  results  that  is
-%	displayed in a modal dialog.
-
-search(_Request) :-
-	reply_html_page(search,
-			[],
-			h1('Search results')).
