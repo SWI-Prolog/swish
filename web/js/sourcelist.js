@@ -105,11 +105,16 @@ define([ "jquery", "config", "laconic" ],
       for(var i=0; i<data.matches.length; i++)
       { var match = data.matches[i];
 
-	table.append($.el.tr($.el.td(match.name),
+	table.append($.el.tr($.el.td($.el.a(match.name)),
 			     $.el.td(match.author),
 			     $.el.td((match.tags||[]).join(" ")),
 			     $.el.td(humanize(match.time))));
       }
+
+      table.on("click", "a", function(ev) {
+	var a = $(ev.target).closest("a");
+	$("body").swish('playFile', { file:a.text() });
+      });
     }
   }; // methods
 
