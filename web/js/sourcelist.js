@@ -97,8 +97,8 @@ define([ "jquery", "config", "laconic" ],
 
       this.append(table = $.el.table({},
 				     $.el.tr(h("Name"),
-					     h("User"),
 					     h("Tags"),
+					     h("User"),
 					     h("Modified"))));
       table = $(table);
 
@@ -106,8 +106,8 @@ define([ "jquery", "config", "laconic" ],
       { var match = data.matches[i];
 
 	table.append($.el.tr($.el.td($.el.a(match.name)),
-			     $.el.td(match.author),
 			     $.el.td((match.tags||[]).join(" ")),
+			     $.el.td(match.author),
 			     $.el.td(humanize(match.time))));
       }
 
