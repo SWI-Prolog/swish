@@ -502,15 +502,14 @@ random_char(Char) :-
 
 %!	swish_show(+Options, +Request)
 %
-%	Hande a document.  This dispatches .lnk permahash documents.
+%	Hande a document. First calls the   hook  open_hook/2 to rewrite
+%	the document. This is used for e.g., permahashes.
 
-swish_show(Options, Request) :-
-	option(meta(Meta), Options),
-	file_name_extension(_, lnk, Meta.get(name)),
-	!,
-	option(code(Permahash), Options),
-	http_link_to_id(permalink, path_postfix(Permahash), HREF),
-	http_redirect(see_other, HREF, Request).
+:- multifile open_hook/2.
+
+swish_show(Options0, Request) :-
+	open_hook(Options0, Options), !,
+	swish_reply(Options, Request).
 swish_show(Options, Request) :-
 	swish_reply(Options, Request).
 

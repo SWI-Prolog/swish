@@ -143,6 +143,29 @@ clause_of(M:Pred, Clause) :-
     ).
 
 		 /*******************************
+		 *        HOOK FOR .LNK		*
+		 *******************************/
+
+:- multifile
+    web_storage:open_hook/2.
+
+web_storage:open_hook(Options0, Options) :-
+    option(meta(Meta), Options0),
+    file_name_extension(_, lnk, Meta.get(name)),
+    option(code(HashCode), Options0),
+    atom_string(Hash, HashCode),
+    is_gitty_hash(Hash),
+    !,
+    permalink_code_query(Hash, Code, Query),
+    merge_options([ code(Code),
+                    q(Query),
+                    type(pl),
+                    show_beware(false)
+                  ],
+                  Options0, Options).
+
+
+		 /*******************************
 		 *      RESTORE A PERMALINK	*
 		 *******************************/
 
@@ -163,21 +186,24 @@ permalink(Request, Options) :-
     option(path_info(Hash), Request),
     is_gitty_hash(Hash),
     authorized(gitty(download(Hash, permalink)), Options),
+    permalink_code_query(Hash, Code, Query),
+    swish_reply([ code(Code),
+                  q(Query),
+                  show_beware(false)
+                | Options
+                ],
+                Request).
+
+permalink_code_query(Hash, Code, Query) :-
     storage_load_term(Hash, PermaData),
-    _{goal:Goal, prov:Prov} :< PermaData,
+    _{goal:Query, prov:Prov} :< PermaData,
     storage_load_term(Prov, ProvData),
     (   _{local:Local} :< ProvData
     ->  maplist(source, Local, Sources),
         atomics_to_string(Sources, "\n", Code0),
         import_versions(ProvData, Code0, Code)
     ;   Code = ""
-    ),
-    swish_reply([ code(Code),
-                  q(Goal),
-                  show_beware(false)
-                | Options
-                ],
-                Request).
+    ).
 
 source(Prov, Source) :-
     storage_load_term(Prov.get(gitty), LocalData),
