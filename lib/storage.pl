@@ -753,13 +753,13 @@ source_list(Request) :-
 			  offset(Offset, [default(0)]),
 			  limit(Limit, [default(25)])
 			]),
-	order(Order, Field),
+	order(Order, Field, Cmp),
 	statistics(cputime, CPU0),
 	findall(Source, source(Q, Auth, Source), AllSources),
 	statistics(cputime, CPU1),
 	length(AllSources, Count),
 	CPU is CPU1 - CPU0,
-	sort(Field, @=<, AllSources, Ordered),
+	sort(Field, Cmp, AllSources, Ordered),
 	list_offset_limit(Ordered, Offset, Limit, Sources),
 	reply_json_dict(json{total:Count, cpu:CPU, matches:Sources}).
 
@@ -777,8 +777,9 @@ list_limit([H|T0], Limit, [H|T]) :-
 	list_limit(T0, L1, T).
 list_limit(_, _, []).
 
-order(type, ext) :- !.
-order(Field, Field).
+order(type,  ext,   @=<) :- !.
+order(time,  time,  @>=) :- !.
+order(Field, Field, @=<).
 
 source(Q, Auth, Source) :-
 	parse_query(Q, Query),

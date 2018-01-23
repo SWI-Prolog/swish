@@ -88,6 +88,13 @@ define([ "jquery", "config", "laconic" ],
 	return $.el.th(title);
       }
 
+      function humanize(stamp) {
+	var d = new Date(stamp*1000);
+	var s = d.toISOString();
+
+	return s.slice(0, 10) + " " + s.slice(11,19);
+      }
+
       this.append(table = $.el.table({},
 				     $.el.tr(h("Name"),
 					     h("User"),
@@ -101,7 +108,7 @@ define([ "jquery", "config", "laconic" ],
 	table.append($.el.tr($.el.td(match.name),
 			     $.el.td(match.author),
 			     $.el.td((match.tags||[]).join(" ")),
-			     $.el.td(match.time)));
+			     $.el.td(humanize(match.time))));
       }
     }
   }; // methods
