@@ -1,22 +1,5 @@
 # SWISH TODO list
 
-## Infrastructure
-
-  - How/where to distribute the built files?  Generate a zip?  Distinct
-    git?
-
-## Design
-
-  - Modularize navbar population?
-  - Allow using rendering infrastructure as module in other web applications.
-
-## Window handling
-
-  - Specify more about sized: minimum size, flexibility.  Probably
-    requires extending jquery.splitter.
-  - Allow moving panes around using drag/drop.  Allow organizing
-    in tabs?
-
 ## Query editor
 
   - Quickly create a query from a predicate?
@@ -120,12 +103,6 @@ _not_ see exactly the same UI for cooperation.  What about
 
 ## SWISH as Prolog frontend for local usage
 
-  - Deal with login
-    - Limit to localhost.  Proposed by Douglas Miles:
-      - Generate random initial URL
-      - Fire on this URL
-      - Establish session cookie
-      - Demand this cookie and destroy the initial URL
   - Improve source search
     - Full search
     - Search file names
@@ -145,27 +122,9 @@ _not_ see exactly the same UI for cooperation.  What about
 
 ### Chat
 
-  - Turn `main' chat to be easy visible and notify all users
-    - Bell in main navbar with messages in central chat
-      - Incremented on new chats
-      - Menu to define action on new chat
-        - Ignore
-	- Alert
-	- Open chat
-	- When not online, mail me
-      - Click opens chat
-      - Only keep last N/period
-    - Menu "Chat about this file"
-    - Get Anna's new avatars
-
-### HTTPS
-
-  - Move swish.swi-prolog.org to https-only (redirect)
-    - Test dropping and resuming connections.
+  - Get Anna's new avatars
 
 ### Bugs
-
-  - Tokenizing unicode atoms: \w only matches ASCII letters.
 
   - Colouring of /library/http/html_write.pl.  Broken sequences:
     - DCG exports
