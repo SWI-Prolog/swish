@@ -95,7 +95,7 @@ define([ "jquery", "config", "laconic" ],
 	return s.slice(0, 10) + " " + s.slice(11,19);
       }
 
-      this.append(table = $.el.table({},
+      this.append(table = $.el.table({class:"table"},
 				     $.el.tr(h("Name"),
 					     h("Tags"),
 					     h("User"),
