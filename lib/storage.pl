@@ -213,7 +213,10 @@ storage(put, Request, Options) :-
 	request_file(Request, Dir, File),
 	(   Dict.get(update) == "meta-data"
 	->  gitty_data(Dir, File, Data, _OldMeta)
-	;   option(data(Data), Dict, "")
+	;   writeable(File)
+	->  option(data(Data), Dict, "")
+	;   option(path(Path), Request),
+	    throw(http_reply(forbidden(Path)))
 	),
 	meta_data(Dir, Dict, PrevMeta, Meta, Options),
 	storage_url(File, URL),
@@ -239,6 +242,9 @@ storage(delete, Request, Options) :-
 	gitty_update(Dir, File, "", Meta, Commit),
 	broadcast(swish(deleted(File, Commit))),
 	reply_json_dict(true).
+
+writeable(File) :-
+	\+ file_name_extension(_, lnk, File).
 
 %%	update_error(+Error, +Storage, +Data, +File, +URL)
 %
