@@ -42,8 +42,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "laconic" ],
-       function($, config) {
+define([ "jquery", "config", "form", "laconic" ],
+       function($, config, form) {
 
 (function($) {
   var pluginName = 'sourcelist';
@@ -82,6 +82,7 @@ define([ "jquery", "config", "laconic" ],
 
     fill: function(data) {
       this.html("");
+      var body;
       var table;
 
       function h(title) {
@@ -95,25 +96,33 @@ define([ "jquery", "config", "laconic" ],
 	return s.slice(0, 10) + " " + s.slice(11,19);
       }
 
-      this.append(table = $.el.table({class:"table"},
-				     $.el.tr(h("Name"),
-					     h("Tags"),
-					     h("User"),
-					     h("Modified"))));
-      table = $(table);
+      this.append(table =
+		  $.el.table({class:"table table-striped table-hover "+
+				    "table-condensed"},
+			     $.el.thead($.el.tr(h("Type"),
+						h("Name"),
+						h("Tags"),
+						h("User"),
+						h("Modified"))),
+			     body = $.el.tbody()));
+      body = $(body);
 
       for(var i=0; i<data.matches.length; i++)
       { var match = data.matches[i];
+	var ext   = match.name.split(".").pop();
+	var base  = match.name.slice(0, -(ext.length+1));
 
-	table.append($.el.tr($.el.td($.el.a(match.name)),
-			     $.el.td((match.tags||[]).join(" ")),
-			     $.el.td(match.author),
-			     $.el.td(humanize(match.time))));
+	body.append($.el.tr({"data-name":match.name},
+			    $.el.td(form.widgets.typeIcon(ext)),
+			    $.el.td(base),
+			    $.el.td((match.tags||[]).join(" ")),
+			    $.el.td(match.author),
+			    $.el.td(humanize(match.time))));
       }
 
-      table.on("click", "a", function(ev) {
-	var a = $(ev.target).closest("a");
-	$("body").swish('playFile', { file:a.text() });
+      $(table).on("click", "tr", function(ev) {
+	var tr = $(ev.target).closest("tr");
+	$("body").swish('playFile', { file:tr.attr("data-name") });
       });
     }
   }; // methods

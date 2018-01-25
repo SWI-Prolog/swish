@@ -2,3 +2,7 @@ div.sourcelist
 { margin: auto;
   width: 90%;
 }
+
+div.sourcelist span.dropdown-icon
+{ margin-left: 5px;
+}
