@@ -832,8 +832,13 @@ visible(Meta, Auth, _Constraints) :-
 
 owns(Auth, Meta) :-
 	user_property(Auth, identity(Id)),
-	!,
-	storage_meta_property(Meta, identity(Id)).
+	storage_meta_property(Meta, identity(Id)),
+	!.
+owns(Auth, Meta) :-				% trusted local host
+	Peer = Auth.get(peer),
+	Peer == Auth.get(peer),
+	sub_atom(Meta.get(peer), 0, _, _, '127.0.0.'),
+	!.
 
 %!	matches_meta(+Source, +Auth, +Query) is semidet.
 %
