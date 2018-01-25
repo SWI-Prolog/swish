@@ -14,6 +14,11 @@
   background-image: url("../icons/select.png");
 }
 
+.type-icon.lnk {
+  background-image: url("../icons/lnk.png");
+}
+
+.type-icon.swinb {
 /* Actually, these are icons for dropdown menus */
 
 .type-icon.chat {
