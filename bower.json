@@ -7,7 +7,7 @@
   "dependencies":
   { "jquery": "*",
     "jquery.splitter": "0.15",
-    "bootstrap": "*",
+    "bootstrap": "3",
     "typeahead.js": "git://github.com/twitter/typeahead.js.git#master",
     "laconic": "*",
     "requirejs": "*",
