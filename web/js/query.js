@@ -115,12 +115,17 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
 	elem.on("current-program", function(ev, editor) {
 	  elem[pluginName]('setProgramEditor', $(editor));
 	});
-	elem.on("program-loaded", function(ev, editor) {
-	  if ( $(data.editor).data('prologEditor') ==
-	       $(editor).data('prologEditor') ) {
-	    var exl = data.examples();
-	    elem.queryEditor('setQuery', exl && exl[0] ? exl[0] : "");
+	elem.on("program-loaded", function(ev, options) {
+	  var query = options.query;
+
+	  if ( query == undefined ) {
+	    if ( $(data.editor).data('prologEditor') ==
+		 $(options.editor).data('prologEditor') ) {
+	      var exl = data.examples();
+	      query = exl && exl[0] ? exl[0] : "";
+	    }
 	  }
+	  elem.queryEditor('setQuery', query);
 	});
       });
     },
