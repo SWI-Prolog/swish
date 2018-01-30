@@ -59,6 +59,18 @@ var tabbed = {
   }
 };
 
+tabbed.tabTypes.permalink = {
+  dataType: "lnk",
+  typeName: "program",
+  label: "Program",
+  create: function(dom, options) {
+    $(dom).addClass("prolog-editor")
+	  .prologEditor($.extend({save:true}, options))
+	  .prologEditor('makeCurrent');
+  }
+};
+
+
 (function($) {
   var pluginName = 'tabbed';
   var tabid = 0;

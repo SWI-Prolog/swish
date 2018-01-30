@@ -155,9 +155,8 @@ define([ "jquery", "config", "modal", "form", "gitty",
 
       if ( (src.meta && src.meta.name) || src.url )
       { var name = (src.meta && src.meta.name) ? src.meta.name : src.url;
-	var ext  = name.split('.').pop();
 
-	if ( ext != type.dataType )
+	if ( tabbed.type(name)["typeName"] != type.typeName )
 	  return false;
       }
 
