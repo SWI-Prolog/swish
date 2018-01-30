@@ -356,8 +356,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       }
 
       if ( what == "only-meta-data" ) {
-	meta = gitty.reduceMeta(meta, data.meta)
-	if ( $.isEmptyObject(meta) ) {
+	if ( $.isEmptyObject(gitty.reduceMeta(meta, data.meta)) ) {
 	  alert("No change");
 	  return;
 	}
