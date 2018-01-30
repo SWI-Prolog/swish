@@ -223,11 +223,14 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	if ( action == 'chats++' ) {
 	  elem.tabbed('chats++', docid);
 	} else {
-	  var data  = elem.data(pluginName);
-	  var type  = tabbed.tabTypes[data.typeName];
+	  var data = elem.data(pluginName);
+	  var file = data.file||data.url;
+	  var type;
 
-	  var title = (filebase(data.file) ||
-		       filebase(basename(data.url)) ||
+	  if ( !file || !(type = tabbed.type(file)) )
+	    type = tabbed.tabTypes[data.typeName];
+
+	  var title = (filebase(file) ||
 		       type.label);
 
 	  if ( docid && data.chats )
