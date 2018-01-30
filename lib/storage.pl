@@ -430,7 +430,12 @@ storage_get(raw, Dir, Type, FileOrHash, _Request) :-
 storage_get(json, Dir, Type, FileOrHash, _Request) :-
 	gitty_data_or_default(Dir, Type, FileOrHash, Code, Meta),
 	chat_count(Meta, Count),
-	reply_json_dict(json{data:Code, meta:Meta, chats:_{total:Count}}).
+	JSON0 = json{data:Code, meta:Meta, chats:_{total:Count}},
+	(   open_hook(json, JSON0, JSON)
+	->  true
+	;   JSON = JSON0
+	),
+	reply_json_dict(JSON).
 storage_get(history(Depth, Includes), Dir, _, File, _Request) :-
 	gitty_history(Dir, File, History, [depth(Depth),includes(Includes)]),
 	reply_json_dict(History).
@@ -514,10 +519,10 @@ random_char(Char) :-
 %	Hande a document. First calls the   hook  open_hook/2 to rewrite
 %	the document. This is used for e.g., permahashes.
 
-:- multifile open_hook/2.
+:- multifile open_hook/3.
 
 swish_show(Options0, Request) :-
-	open_hook(Options0, Options), !,
+	open_hook(swish, Options0, Options), !,
 	swish_reply(Options, Request).
 swish_show(Options, Request) :-
 	swish_reply(Options, Request).

@@ -147,9 +147,9 @@ clause_of(M:Pred, Clause) :-
 		 *******************************/
 
 :- multifile
-    web_storage:open_hook/2.
+    web_storage:open_hook/3.
 
-web_storage:open_hook(Options0, Options) :-
+web_storage:open_hook(swish, Options0, Options) :-
     option(meta(Meta), Options0),
     file_name_extension(_, lnk, Meta.get(name)),
     option(code(HashCode), Options0),
@@ -163,6 +163,13 @@ web_storage:open_hook(Options0, Options) :-
                     show_beware(false)
                   ],
                   Options0, Options).
+web_storage:open_hook(json, JSON0, JSON) :-
+    file_name_extension(_, lnk, JSON0.get(meta).get(name)),
+    atom_string(Hash, JSON0.get(data)),
+    is_gitty_hash(Hash),
+    !,
+    permalink_code_query(Hash, Code, Query),
+    JSON = JSON0.put(_{data:Code, query:Query}).
 
 
 		 /*******************************
