@@ -346,8 +346,11 @@ define([ "jquery", "config", "modal", "form", "gitty",
       }
 
       if ( data.file &&
-	   !(meta && meta.default) &&
-	   (!meta || meta.name == data.file) ) {
+	   ( what == "only-meta-data" ||
+	     ( !(meta && meta.default) &&
+	       (!meta || meta.name == data.file)
+	     )
+	   ) ) {
 	url += encodeURI(data.file);
 	method = "PUT";
       }
