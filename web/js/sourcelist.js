@@ -92,10 +92,45 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       }
     },
 
-    fill: function(data) {
+    /**
+     * Go to a page
+     */
+
+    page: function(move) {
+      var data = this.data(pluginName);
+
+      if ( data && data.page ) {
+	var q = $.extend({}, data.page.query);
+
+	if ( q.offset == undefined )
+	  q.offset = 0;
+
+	switch(move) {
+	  case "first": q.offset  = 0; break;
+	  case "prev":  q.offset -= data.page.size; break;
+	  case "next":  q.offset += data.page.size; break;
+	  case "last":  q.offset  = data.page.total - data.page.size; break;
+	  default: return;
+	}
+
+	q.offset = Math.max(0, q.offset);
+	this[pluginName]('update', q);
+      }
+    },
+
+    /**
+     * Fill the result table
+     */
+    fill: function(results) {
+      var data = this.data(pluginName);
       var body;
 
-      current_query = data.query;
+      current_query = results.query;
+      data.page = { query:  results.query,
+                    offset: results.offset,
+		    size:   results.matches.length,
+		    total:  results.total
+                  };
 
       function h(title) {
 	return $.el.th(title);
@@ -127,11 +162,11 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	$(body).html("");
       }
 
-      if ( data.query.q )
-	this.find("input.search").val(data.query.q);
+      if ( results.query.q )
+	this.find("input.search").val(results.query.q);
 
-      for(var i=0; i<data.matches.length; i++)
-      { var match = data.matches[i];
+      for(var i=0; i<results.matches.length; i++)
+      { var match = results.matches[i];
 	var ext   = match.name.split(".").pop();
 	var base  = match.name.slice(0, -(ext.length+1));
 
@@ -142,7 +177,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 			    $.el.td(match.author),
 			    $.el.td(humanize(match.time))));
       }
-      this[pluginName]('search_footer', data);
+      this[pluginName]('search_footer', results);
 
       this.find("table").on("click", "tr", function(ev) {
 	var tr = $(ev.target).closest("tr");
@@ -160,16 +195,24 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       }
 
       if ( footer.find(".f-total").length == 0 ) {
-	footer.append(btn("start",    "fast-backward"),
-		      btn("backward", "step-backward"),
+	footer.append(btn("first", "fast-backward"),
+		      btn("prev",  "step-backward"),
 		      $.el.button({class:"btn btn-default"},
 				  $.el.span({class: "f-from"}),
 				  $.el.label("to"),
 				  $.el.span({class: "f-to"}),
 				  $.el.label("from"),
 				  $.el.span({class: "f-total"})),
-		      btn("forward", "step-forward"),
-		      btn("end",     "fast-forward"));
+		      btn("next", "step-forward"),
+		      btn("last", "fast-forward"));
+
+	footer.on("click", "button", function(ev) {
+	  var b   = $(ev.target).closest("button");
+	  var act = b.data('action');
+
+	  if ( act )
+	    b.closest("div.sourcelist")[pluginName]("page", act)
+	});
       }
 
       if ( data.matches.length < data.total ) {

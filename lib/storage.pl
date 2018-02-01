@@ -755,8 +755,8 @@ source_list(Request) :-
 			  o(Order, [ oneof([time,name,author,type]),
 				     default(time)
 				   ]),
-			  offset(Offset, [default(0)]),
-			  limit(Limit, [default(10)])
+			  offset(Offset, [integer, default(0)]),
+			  limit(Limit, [integer, default(10)])
 			]),
 	order(Order, Field, Cmp),
 	statistics(cputime, CPU0),
