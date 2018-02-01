@@ -187,24 +187,25 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
     search_footer: function(data) {
       var footer = this.find("div.search-footer");
-      var bopts = {class: "btn-primary"};
+      var bopts = {};
 
-      function btn(action, icon) {
+      function btn(action, dir, icon) {
 	bopts.action = action;
+	bopts.class  = "btn-primary "+dir;
 	return form.widgets.glyphIconButton(icon, bopts);
       }
 
       if ( footer.find(".f-total").length == 0 ) {
-	footer.append(btn("first", "fast-backward"),
-		      btn("prev",  "step-backward"),
+	footer.append(btn("first", "backward", "fast-backward"),
+		      btn("prev",  "backward", "step-backward"),
 		      $.el.button({class:"btn btn-default"},
 				  $.el.span({class: "f-from"}),
 				  $.el.label("to"),
 				  $.el.span({class: "f-to"}),
 				  $.el.label("from"),
 				  $.el.span({class: "f-total"})),
-		      btn("next", "step-forward"),
-		      btn("last", "fast-forward"));
+		      btn("next", "forward", "step-forward"),
+		      btn("last", "forward", "fast-forward"));
 
 	footer.on("click", "button", function(ev) {
 	  var b   = $(ev.target).closest("button");
@@ -216,9 +217,20 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       }
 
       if ( data.matches.length < data.total ) {
+	var end = data.offset + data.matches.length;
 	footer.show();
+	if ( data.offset == 0 ) {
+	  footer.find(".backward").attr("disabled", "disabled");
+	} else {
+	  footer.find(".backward").removeAttr("disabled");
+	}
+	if ( end >= data.total ) {
+	  footer.find(".forward").attr("disabled", "disabled");
+	} else {
+	  footer.find(".forward").removeAttr("disabled");
+	}
 	footer.find(".f-from") .text(""+data.offset);
-	footer.find(".f-to")   .text(""+(data.offset+data.matches.length));
+	footer.find(".f-to")   .text(""+end);
 	footer.find(".f-total").text(""+data.total);
       } else {
 	footer.hide();
