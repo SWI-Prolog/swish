@@ -81,9 +81,7 @@ define([ "jquery", "config", "form", "laconic" ],
     },
 
     fill: function(data) {
-      this.html("");
       var body;
-      var table;
 
       function h(title) {
 	return $.el.th(title);
@@ -96,16 +94,23 @@ define([ "jquery", "config", "form", "laconic" ],
 	return s.slice(0, 10) + " " + s.slice(11,19);
       }
 
-      this.append(table =
-		  $.el.table({class:"table table-striped table-hover "+
-				    "table-condensed"},
-			     $.el.thead($.el.tr(h("Type"),
-						h("Name"),
-						h("Tags"),
-						h("User"),
-						h("Modified"))),
-			     body = $.el.tbody()));
-      body = $(body);
+      body = this.find("tbody");
+      if ( body.length == 0 ) {
+	this.append($.el.div({class:"search-form input-group"}),
+		    table =
+		    $.el.table({class:"table table-striped table-hover "+
+				      "table-condensed"},
+			       $.el.thead($.el.tr(h("Type"),
+						  h("Name"),
+						  h("Tags"),
+						  h("User"),
+						  h("Modified"))),
+			       body = $.el.tbody()));
+	this[pluginName]('search_form');
+	body = $(body);
+      } else {
+	$(body).html("");
+      }
 
       for(var i=0; i<data.matches.length; i++)
       { var match = data.matches[i];
@@ -120,12 +125,85 @@ define([ "jquery", "config", "form", "laconic" ],
 			    $.el.td(humanize(match.time))));
       }
 
-      $(table).on("click", "tr", function(ev) {
+      this.find("table").on("click", "tr", function(ev) {
 	var tr = $(ev.target).closest("tr");
 	$("body").swish('playFile', { file:tr.attr("data-name") });
       });
+    },
+
+    search_form: function() {
+      var elem = this;
+      var div = this.find("div.search-form");
+      var submit;
+
+      function btn(title, members) {
+	var ul;
+	var div = $.el.div({class:"btn-group"},
+		    $.el.button({ type:"button",
+			          class:"btn btn-default dropdown-toggle",
+			          'data-toggle':"dropdown",
+			          'aria-haspopup': true,
+			          'aria-expanded': false
+			        },
+				title, " ",
+				$.el.span({class:"caret"})),
+		    ul=$.el.ul({class:"dropdown-menu"}));
+
+	function add(item) {
+	  if ( title == "Type" )
+	    return $.el.a({'data-tag':"type", 'data-value':item},
+			  form.widgets.typeIcon(item), " ."+item);
+	  else
+	    return $.el.a({'data-tag':item}, item);
+	}
+
+	for(var i=0; i<members.length; i++) {
+	  $(ul).append($.el.li(add(members[i])));
+	}
+
+	return div;
+      }
+
+      div.append(
+	$.el.input({ type: "text",
+		     class: "form-control search",
+		     placeholder: "Search sources"
+		   }),
+	$.el.div({ class: "input-group-btn" },
+		 btn("Filter", ["name", "user", "tag"]),
+		 btn("Type",   ["pl", "swinb", "lnk"]),
+		 submit=
+		 $.el.button({class:"btn btn-default", type:"submit"},
+			     $.el.i({class:"glyphicon glyphicon-search"}))));
+
+      div.on("click", "a", function(ev) {
+	var a = $(ev.target).closest("a");
+
+	function tag(tag, value) {
+	  var input = div.find("input");
+	  var val = input.val();
+
+	  if ( val.trim() == "" )
+	    val = tag+":";
+	  else
+	    val = val.trim() + " " + tag + ":";
+
+	  val += value||"";
+
+	  input.val(val);
+	}
+
+	tag(a.data('tag'), a.data('value'));
+      });
+      $(submit).on("click", function(ev) {
+	var q = elem.find("input").val();
+	ev.preventDefault();
+	elem[pluginName]('update', {q:q});
+	return false;
+      });
     }
   }; // methods
+
 
   /**
    * List available sources.
