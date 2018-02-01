@@ -42,8 +42,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "form", "laconic" ],
-       function($, config, form) {
+define([ "jquery", "config", "form", "modal", "laconic" ],
+       function($, config, form, modal) {
 
 (function($) {
   var pluginName = 'sourcelist';
@@ -82,11 +82,11 @@ define([ "jquery", "config", "form", "laconic" ],
 	  dataType: "json",
 	  success: function(reply) {
 	    reply.query = query;
-	    add_to_cache(query_cache, query);
+	    add_to_cache(query_cache, reply);
 	    elem.sourcelist('fill', reply);
 	  },
 	  error: function(jqXHDR) {
-	    modal.ajaxError(jqXHR);
+	    modal.ajaxError(jqXHDR);
 	  }
 	});
       }
@@ -95,7 +95,7 @@ define([ "jquery", "config", "form", "laconic" ],
     fill: function(data) {
       var body;
 
-      current_query = data;
+      current_query = data.query;
 
       function h(title) {
 	return $.el.th(title);
@@ -126,6 +126,9 @@ define([ "jquery", "config", "form", "laconic" ],
       } else {
 	$(body).html("");
       }
+
+      if ( data.query.q )
+	this.find("input.search").val(data.query.q);
 
       for(var i=0; i<data.matches.length; i++)
       { var match = data.matches[i];
@@ -266,7 +269,7 @@ define([ "jquery", "config", "form", "laconic" ],
     if ( query != undefined ) {
       for(var i=cache.length-1; i>=0; i--) {
 	var entry = cache[i];
-	if ( qmatch(query, entry) )
+	if ( qmatch(query, entry.query) )
 	  return entry;
       }
     }
