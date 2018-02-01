@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2016, VU University Amsterdam
+    Copyright (C): 2014-2018, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -48,6 +48,9 @@ define([ "jquery", "config", "form", "laconic" ],
 (function($) {
   var pluginName = 'sourcelist';
 
+  var current_query;
+  var query_cache = [];
+
   /** @lends $.fn.sourcelist */
   var methods = {
     _init: function(options) {
@@ -55,7 +58,7 @@ define([ "jquery", "config", "form", "laconic" ],
 	var elem = $(this);
 	var data = {};			/* private data */
 
-	elem[pluginName]('update');
+	elem[pluginName]('update', current_query);
 
 	elem.data(pluginName, data);	/* store with element */
       });
@@ -66,22 +69,33 @@ define([ "jquery", "config", "form", "laconic" ],
      */
     update: function(query) {
       var elem = this;
+      var reply;
 
-      $.ajax({
-        url: config.http.locations.source_list,
-	data: query||{},
-	dataType: "json",
-	success: function(reply) {
-	  elem.sourcelist('fill', reply);
-	},
-	error: function(jqXHDR) {
-	  modal.ajaxError(jqXHR);
-	}
-      });
+      if ( (reply = from_cache(query_cache, query)) ) {
+	elem.sourcelist('fill', reply);
+      } else {
+	query = query||{};
+
+	$.ajax({
+	  url: config.http.locations.source_list,
+	  data: query,
+	  dataType: "json",
+	  success: function(reply) {
+	    reply.query = query;
+	    add_to_cache(query_cache, query);
+	    elem.sourcelist('fill', reply);
+	  },
+	  error: function(jqXHDR) {
+	    modal.ajaxError(jqXHR);
+	  }
+	});
+      }
     },
 
     fill: function(data) {
       var body;
+
+      current_query = data;
 
       function h(title) {
 	return $.el.th(title);
@@ -238,6 +252,29 @@ define([ "jquery", "config", "form", "laconic" ],
     }
   }; // methods
 
+
+  /**
+   * Cache management.  These functions should eventually merge results
+   * and select sub-results without contacting the server.
+   */
+  function from_cache(cache, query) {
+    function qmatch(q, e) {
+      if ( q.q == e.q && q.offset == e.offset )
+	return e;
+    }
+
+    if ( query != undefined ) {
+      for(var i=cache.length-1; i>=0; i--) {
+	var entry = cache[i];
+	if ( qmatch(query, entry) )
+	  return entry;
+      }
+    }
+  }
+
+  function add_to_cache(cache, result) {
+    cache.push(result);
+  }
 
   /**
    * List available sources.
