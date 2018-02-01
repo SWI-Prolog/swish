@@ -198,7 +198,7 @@ tabbed.tabTypes.permalink = {
 	  dom = this.tabbed('tabSelect');
 	  $(dom).append(this.tabbed('profileForm'),
 			$.el.hr(),
-			this.tabbed('searchForm'),
+			//this.tabbed('searchForm'),
 		        sl = $.el.div({class:"sourcelist"}));
 	  $(sl).sourcelist();
 	}

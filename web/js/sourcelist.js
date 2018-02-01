@@ -105,7 +105,8 @@ define([ "jquery", "config", "form", "laconic" ],
 						  h("Tags"),
 						  h("User"),
 						  h("Modified"))),
-			       body = $.el.tbody()));
+			       body = $.el.tbody()),
+		   $.el.div({class:"search-footer"}));
 	this[pluginName]('search_form');
 	body = $(body);
       } else {
@@ -124,11 +125,44 @@ define([ "jquery", "config", "form", "laconic" ],
 			    $.el.td(match.author),
 			    $.el.td(humanize(match.time))));
       }
+      this[pluginName]('search_footer', data);
 
       this.find("table").on("click", "tr", function(ev) {
 	var tr = $(ev.target).closest("tr");
 	$("body").swish('playFile', { file:tr.attr("data-name") });
       });
+    },
+
+    search_footer: function(data) {
+      var footer = this.find("div.search-footer");
+      var bopts = {class: "btn-primary"};
+
+      function btn(action, icon) {
+	bopts.action = action;
+	return form.widgets.glyphIconButton(icon, bopts);
+      }
+
+      if ( footer.find(".f-total").length == 0 ) {
+	footer.append(btn("start",    "fast-backward"),
+		      btn("backward", "step-backward"),
+		      $.el.button({class:"btn btn-default"},
+				  $.el.span({class: "f-from"}),
+				  $.el.label("to"),
+				  $.el.span({class: "f-to"}),
+				  $.el.label("from"),
+				  $.el.span({class: "f-total"})),
+		      btn("forward", "step-forward"),
+		      btn("end",     "fast-forward"));
+      }
+
+      if ( data.matches.length < data.total ) {
+	footer.show();
+	footer.find(".f-from") .text(""+data.offset);
+	footer.find(".f-to")   .text(""+(data.offset+data.matches.length));
+	footer.find(".f-total").text(""+data.total);
+      } else {
+	footer.hide();
+      }
     },
 
     search_form: function() {
@@ -167,7 +201,7 @@ define([ "jquery", "config", "form", "laconic" ],
       div.append(
 	$.el.input({ type: "text",
 		     class: "form-control search",
-		     placeholder: "Search sources"
+		     placeholder: "Find files"
 		   }),
 	$.el.div({ class: "input-group-btn" },
 		 btn("Filter", ["name", "user", "tag"]),

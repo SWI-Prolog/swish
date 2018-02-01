@@ -6,3 +6,12 @@ div.sourcelist
 div.sourcelist span.dropdown-icon
 { margin-left: 5px;
 }
+
+div.search-footer > button > label
+{ margin-left: 5px;
+  margin-right: 5px;
+}
+
+div.search-footer
+{ text-align: center;
+}

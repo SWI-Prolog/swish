@@ -756,7 +756,7 @@ source_list(Request) :-
 				     default(time)
 				   ]),
 			  offset(Offset, [default(0)]),
-			  limit(Limit, [default(25)])
+			  limit(Limit, [default(10)])
 			]),
 	order(Order, Field, Cmp),
 	statistics(cputime, CPU0),
@@ -766,7 +766,8 @@ source_list(Request) :-
 	CPU is CPU1 - CPU0,
 	sort(Field, Cmp, AllSources, Ordered),
 	list_offset_limit(Ordered, Offset, Limit, Sources),
-	reply_json_dict(json{total:Count, cpu:CPU, matches:Sources}).
+	reply_json_dict(json{total:Count, offset:Offset, cpu:CPU,
+			     matches:Sources}).
 
 list_offset_limit(List0, Offset, Limit, List) :-
 	list_offset(List0, Offset, List1),
