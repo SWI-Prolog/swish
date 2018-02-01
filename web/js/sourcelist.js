@@ -58,9 +58,8 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	var elem = $(this);
 	var data = {};			/* private data */
 
-	elem[pluginName]('update', current_query);
-
 	elem.data(pluginName, data);	/* store with element */
+	elem[pluginName]('update', current_query);
       });
     },
 
