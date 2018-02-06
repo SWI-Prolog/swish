@@ -307,7 +307,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 		 $.el.button({class:"btn btn-default", type:"submit"},
 			     $.el.i({class:"glyphicon glyphicon-search"}))));
 
-      form.dyn_clear(div);
+      form.dyn_clear(div, submit);
 
       div.on("click", "a", function(ev) {
 	var a = $(ev.target).closest("a");
@@ -327,7 +327,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	    }
 	  }
 
-	  input.val(val);
+	  input.val(val).trigger('propertychange');
 	  if ( value )
 	    submit();
 	}

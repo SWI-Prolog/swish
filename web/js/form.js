@@ -184,7 +184,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
       $(".swish-event-receiver").trigger(event, data);
     },
 
-    dyn_clear: function(form) {
+    dyn_clear: function(form, onclear) {
       form.find('.has-clear input[type="text"]').on('input propertychange',
 						    function() {
 	var $this = $(this);
@@ -193,8 +193,10 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
       }).trigger('propertychange');
 
       form.find('.form-control-clear').click(function() {
-	$(this).siblings('input[type="text"]').val('')
-      .trigger('propertychange').focus();
+	var input = $(this).siblings('input[type="text"]');
+	input.val('').trigger('propertychange').focus();
+	if ( onclear )
+	  onclear.call(input);
       });
     },
 
