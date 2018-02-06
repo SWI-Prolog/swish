@@ -851,7 +851,11 @@ owns(Auth, Meta) :-				% trusted local host
 %	True when Source matches the meta-data requirements
 
 matches_meta(Dict, _, tag(Tag)) :- !,
-	memberchk(Tag, Dict.get(tags)).
+	(   Tag == ""
+	->  Dict.get(tags) \== []
+	;   member(Tagged, Dict.get(tags)),
+	    sub_atom_icasechk(Tagged, 0, Tag)
+	).
 matches_meta(Dict, _, name(Name)) :- !,
 	sub_atom_icasechk(Dict.get(name), _At, Name).
 matches_meta(Dict, _, user(Name)) :-
@@ -922,7 +926,8 @@ query1(Q) -->
 	}.
 query1(Q) -->
 	next_word(String),
-	{ re_compile(String, RE,
+	{ String \== "",
+	  re_compile(String, RE,
 		     [ extended(true),
 		       caseless(true)
 		     ]),
@@ -943,10 +948,8 @@ re_flag(multiline(true)) --> "m".
 re_flag(dotall(true))    --> "s".
 
 next_word(String) -->
-	blanks,
 	string(Codes),
-	( blank ; eos ),
-	{Codes \== []}, !,
+	( blank ; eos ), !,
 	{ string_codes(String, Codes) }.
 
 tag(name, Value) --> "name:", next_word(Value).
