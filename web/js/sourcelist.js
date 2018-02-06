@@ -157,6 +157,10 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 		   $.el.div({class:"search-footer"}));
 	this[pluginName]('search_form');
 	body = $(body);
+	body.on("click", "tr", function(ev) {
+	  var tr = $(ev.target).closest("tr");
+	  $("body").swish('playFile', { file:tr.attr("data-name") });
+	});
       } else {
 	$(body).html("");
       }
@@ -177,11 +181,6 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 			    $.el.td(humanize(match.time))));
       }
       this[pluginName]('search_footer', results);
-
-      this.find("table").on("click", "tr", function(ev) {
-	var tr = $(ev.target).closest("tr");
-	$("body").swish('playFile', { file:tr.attr("data-name") });
-      });
     },
 
     search_footer: function(data) {
