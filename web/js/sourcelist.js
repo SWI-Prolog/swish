@@ -237,9 +237,10 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
     },
 
     search_form: function() {
+      var data = this.data(pluginName);
       var elem = this;
       var div = this.find("div.search-form");
-      var submit;
+      var btnsubmit;
 
       function btn(title, members) {
 	var ul;
@@ -269,6 +270,26 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	return div;
       }
 
+      function resettimeout(set) {
+	if ( data.tmo ) {
+	  clearTimeout(data.tmo);
+	  data.tmo = undefined;
+	}
+	if ( set == true )
+	  set = 1000;
+	if ( set )
+	  setTimeout(submit, set);
+      }
+
+      function submit(ev) {
+	if ( ev )
+	  ev.preventDefault();
+	resettimeout();
+	var q = elem.find("input").val();
+	elem[pluginName]('update', {q:q});
+	return false;
+      }
+
       div.append(
 	$.el.input({ type: "text",
 		     class: "form-control search",
@@ -277,7 +298,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	$.el.div({ class: "input-group-btn" },
 		 btn("Filter", ["name", "user", "tag"]),
 		 btn("Type",   ["pl", "swinb", "lnk"]),
-		 submit=
+		 btnsubmit=
 		 $.el.button({class:"btn btn-default", type:"submit"},
 			     $.el.i({class:"glyphicon glyphicon-search"}))));
 
@@ -300,15 +321,24 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	  }
 
 	  input.val(val);
+	  if ( value )
+	    submit();
 	}
 
 	tag(a.data('tag'), a.data('value'));
       });
-      $(submit).on("click", function(ev) {
-	var q = elem.find("input").val();
-	ev.preventDefault();
-	elem[pluginName]('update', {q:q});
-	return false;
+
+      $(btnsubmit).on("click", function(ev) {
+	return submit(ev);
+      });
+
+      elem.find("input").keydown(function(ev) {
+	if ( ev.which == 13 )
+	  return submit(ev);
+	if ( from_cache(query_cache, div.find("input").val()) ) {
+	  resettimeout(200);
+	} else
+	  resettimeout(true);
       });
     }
   }; // methods
