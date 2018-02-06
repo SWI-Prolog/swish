@@ -287,13 +287,17 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	function tag(tag, value) {
 	  var input = div.find("input");
 	  var val = input.val();
+	  var tagv = tag + ":" + (value||"");
 
-	  if ( val.trim() == "" )
-	    val = tag+":";
-	  else
-	    val = val.trim() + " " + tag + ":";
-
-	  val += value||"";
+	  if ( val.trim() == "" ) {
+	    val = tagv;
+	  } else {
+	    if ( value && RegExp("\\b"+tag+":").test(val) ) {
+	      val = val.replace(RegExp("\\b"+tag+":\\S*"), tagv);
+	    } else {
+	      val = val.trim() + " " + tagv;
+	    }
+	  }
 
 	  input.val(val);
 	}
