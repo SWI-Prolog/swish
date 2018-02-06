@@ -20,3 +20,15 @@ div.btn-transparent button.dropdown-toggle {
 div.btn-transparent > button:hover {
   opacity: 0.8;
 }
+
+
+/* dynamic input clear button */
+::-ms-clear {
+  display: none;
+}
+
+.form-control-clear {
+  z-index: 10;
+  pointer-events: auto;
+  cursor: pointer;
+}

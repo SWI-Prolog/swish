@@ -291,16 +291,23 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       }
 
       div.append(
-	$.el.input({ type: "text",
-		     class: "form-control search",
-		     placeholder: "Find files"
-		   }),
+	$.el.div({class:"form-group has-feedback has-clear"},
+		 $.el.input({
+		   type: "text",
+		   class: "form-control search",
+		   placeholder: "Find files"
+		 }),
+		 $.el.span({class:"form-control-clear glyphicon "+
+				  "glyphicon-remove form-control-feedback "+
+				  "hidden"})),
 	$.el.div({ class: "input-group-btn" },
 		 btn("Filter", ["name", "user", "tag"]),
 		 btn("Type",   ["pl", "swinb", "lnk"]),
 		 btnsubmit=
 		 $.el.button({class:"btn btn-default", type:"submit"},
 			     $.el.i({class:"glyphicon glyphicon-search"}))));
+
+      form.dyn_clear(div);
 
       div.on("click", "a", function(ev) {
 	var a = $(ev.target).closest("a");
