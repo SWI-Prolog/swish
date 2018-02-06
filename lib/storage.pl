@@ -821,13 +821,13 @@ bound(_-V) :- nonvar(V).
 visible(Meta, Auth, Constraints) :-
 	memberchk(user("me"), Constraints),
 	!,
-	owns(Auth, Meta).
+	owns(Auth, Meta, me).
 visible(Meta, _Auth, _Constraints) :-
 	Meta.get(public) == true, !.
 visible(Meta, Auth, _Constraints) :-
-	owns(Auth, Meta).
+	owns(Auth, Meta, _).
 
-%!	owns(+Auth, +Meta) is semidet.
+%!	owns(+Auth, +Meta, ?How) is semidet.
 %
 %	True if the file represented  by  Meta   is  owned  by  the user
 %	identified as Auth. If this is a  strong identity we must give a
@@ -836,15 +836,16 @@ visible(Meta, Auth, _Constraints) :-
 %	@tbd Weaker identity on the basis of author, avatar
 %	properties and/or IP properties.
 
-owns(Auth, Meta) :-
+owns(Auth, Meta, me) :-
 	user_property(Auth, identity(Id)),
 	storage_meta_property(Meta, identity(Id)),
 	!.
-owns(Auth, Meta) :-				% trusted local host
+owns(Auth, Meta, localhost) :-			% trusted local host
 	Peer = Auth.get(peer),
-	Peer == Auth.get(peer),
-	sub_atom(Meta.get(peer), 0, _, _, '127.0.0.'),
-	!.
+	(   Peer == Meta.get(peer)
+	->  true
+	;   sub_atom(Meta.get(peer), 0, _, _, '127.0.0.')
+	).
 
 %!	matches_meta(+Source, +Auth, +Query) is semidet.
 %
@@ -859,8 +860,10 @@ matches_meta(Dict, _, tag(Tag)) :- !,
 matches_meta(Dict, _, name(Name)) :- !,
 	sub_atom_icasechk(Dict.get(name), _At, Name).
 matches_meta(Dict, _, user(Name)) :-
-	Name \== "me", !,
-	sub_atom_icasechk(Dict.get(author), _At, Name).
+	(   Name \== "me"
+	->  sub_atom_icasechk(Dict.get(author), _At, Name)
+	;   true		% handled in visible/3
+	).
 
 matches_content([], _) :- !.
 matches_content(Constraints, File) :-
