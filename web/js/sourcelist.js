@@ -328,7 +328,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	  }
 
 	  input.val(val).trigger('propertychange');
-	  if ( value )
+	  if ( value || tag == "tag" )
 	    submit();
 	}
 
