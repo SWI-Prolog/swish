@@ -71,9 +71,13 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       var reply;
 
       if ( (reply = from_cache(query_cache, query)) ) {
-	elem.sourcelist('fill', reply);
+	elem.sourcelist('fill', reply, query);
       } else {
 	query = query||{};
+
+	query.q = query.q||"";
+	query.offset = query.offset||0;
+	query.limit  = query.limit||10;
 
 	$.ajax({
 	  url: config.http.locations.source_list,
@@ -82,7 +86,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	  success: function(reply) {
 	    reply.query = query;
 	    add_to_cache(query_cache, reply);
-	    elem.sourcelist('fill', reply);
+	    elem.sourcelist('fill', reply, query);
 	  },
 	  error: function(jqXHDR) {
 	    modal.ajaxError(jqXHDR);
@@ -104,11 +108,16 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	if ( q.offset == undefined )
 	  q.offset = 0;
 
+	function roundUp(v, n) {
+	  return Math.floor((v+(n-1))/n) * n;
+	}
+
 	switch(move) {
 	  case "first": q.offset  = 0; break;
 	  case "prev":  q.offset -= data.page.size; break;
 	  case "next":  q.offset += data.page.size; break;
-	  case "last":  q.offset  = data.page.total - data.page.size; break;
+	  case "last":  q.offset  = roundUp(data.page.total, data.page.size) -
+				    data.page.size; break;
 	  default: return;
 	}
 
@@ -120,14 +129,14 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
     /**
      * Fill the result table
      */
-    fill: function(results) {
+    fill: function(results, query) {
       var data = this.data(pluginName);
       var body;
 
-      current_query = results.query;
-      data.page = { query:  results.query,
-                    offset: results.offset,
-		    size:   results.matches.length,
+      current_query = query;
+      data.page = { query:  query,
+                    offset: query.offset,
+		    size:   query.limit,
 		    total:  results.total
                   };
 
@@ -165,10 +174,11 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	$(body).html("");
       }
 
-      if ( results.query.q )
-	this.find("input.search").val(results.query.q);
+      this.find("input.search").val(results.query.q);
+      var i = query.offset - results.query.offset;
+      var e = Math.min(i+query.limit, results.matches.length);
 
-      for(var i=0; i<results.matches.length; i++)
+      for(; i<e; i++)
       { var match = results.matches[i];
 	var ext   = match.name.split(".").pop();
 	var base  = match.name.slice(0, -(ext.length+1));
@@ -180,10 +190,10 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 			    $.el.td(match.author),
 			    $.el.td(humanize(match.time))));
       }
-      this[pluginName]('search_footer', results);
+      this[pluginName]('search_footer', results, query);
     },
 
-    search_footer: function(data) {
+    search_footer: function(data, query) {
       var footer = this.find("div.search-footer");
       var bopts = {};
 
@@ -214,10 +224,11 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	});
       }
 
-      if ( data.matches.length < data.total ) {
-	var end = data.offset + data.matches.length;
+      var end = Math.min(query.offset+query.limit, data.total);
+
+      if ( query.offset > 0 || end < data.total ) {
 	footer.show();
-	if ( data.offset == 0 ) {
+	if ( query.offset == 0 ) {
 	  footer.find(".backward").attr("disabled", "disabled");
 	} else {
 	  footer.find(".backward").removeAttr("disabled");
@@ -227,7 +238,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	} else {
 	  footer.find(".forward").removeAttr("disabled");
 	}
-	footer.find(".f-from") .text(""+data.offset);
+	footer.find(".f-from") .text(""+query.offset);
 	footer.find(".f-to")   .text(""+end);
 	footer.find(".f-total").text(""+data.total);
       } else {
@@ -355,21 +366,47 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
    * and select sub-results without contacting the server.
    */
   function from_cache(cache, query) {
-    function qmatch(q, e) {
-      if ( q.q == e.q && q.offset == e.offset )
-	return e;
+    function qmatch(entry) {
+      var e = entry.query;
+      if ( query.q == e.q ) {
+	if ( query.offset >= e.offset &&
+	     (query.offset+query.limit <= e.offset + entry.matches.length ||
+	      e.offset + entry.matches.length == entry.total) )
+	  return e;
+	}
     }
 
     if ( query != undefined ) {
+      query.offset = query.offset || 0;
+      query.limit  = query.limit  || 10;
+
       for(var i=cache.length-1; i>=0; i--) {
 	var entry = cache[i];
-	if ( qmatch(query, entry.query) )
+	if ( qmatch(entry) )
 	  return entry;
       }
     }
   }
 
   function add_to_cache(cache, result) {
+    var qr = result.query;
+
+    qr.offset = qr.offset || 0;
+    qr.limit  = qr.limit  || 10;
+
+    for(var i=cache.length-1; i>=0; i--) {
+      var entry = cache[i];
+      var qc = entry.query;
+
+      if ( qc.q == qr.q ) {
+	if ( qc.offset + entry.matches.length == qr.offset ) {
+	  for(var i=0; i<result.matches.length; i++)
+	    entry.matches.push(result.matches[i]);
+	  return;
+	}
+      }
+    }
+
     cache.push(result);
   }
 
