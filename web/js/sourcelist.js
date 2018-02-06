@@ -69,12 +69,16 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
     update: function(query) {
       var elem = this;
       var reply;
+      var profile = $("#login").login('get_profile',
+				      [ "display_name", "avatar"
+				      ]);
 
       if ( (reply = from_cache(query_cache, query)) ) {
 	elem.sourcelist('fill', reply, query);
       } else {
 	query = query||{};
 
+	$.extend(query, profile);
 	query.q = query.q||"";
 	query.offset = query.offset||0;
 	query.limit  = query.limit||10;

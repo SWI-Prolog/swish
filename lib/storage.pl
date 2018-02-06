@@ -741,6 +741,10 @@ search_file(File, Meta, Data, Query, FileInfo, Options) :-
 %	    Order by `time` (default), `name`, `author` or `type`
 %	  - offset(+Offset)
 %	  - limit(+Limit)
+%	  - display_name
+%	  - avatar
+%	    Weak identity parameters used to identify _own_ documents
+%	    that are also weakly identified.
 %
 %	Reply is a JSON object containing `count` (total matches),
 %	`cpu` (CPU time) and `matches` (list of matching sources)
@@ -756,11 +760,14 @@ source_list(Request) :-
 				     default(time)
 				   ]),
 			  offset(Offset, [integer, default(0)]),
-			  limit(Limit, [integer, default(10)])
+			  limit(Limit, [integer, default(10)]),
+			  display_name(DisplayName, [optional(true)]),
+			  avatar(Avatar, [optional(true)])
 			]),
+	bound(Auth.put(_{display_name:DisplayName, avatar:Avatar}), AuthEx),
 	order(Order, Field, Cmp),
 	statistics(cputime, CPU0),
-	findall(Source, source(Q, Auth, Source), AllSources),
+	findall(Source, source(Q, AuthEx, Source), AllSources),
 	statistics(cputime, CPU1),
 	length(AllSources, Count),
 	CPU is CPU1 - CPU0,
