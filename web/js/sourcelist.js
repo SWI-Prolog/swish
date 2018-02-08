@@ -74,7 +74,21 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 				      ]);
 
       if ( (reply = from_cache(query_cache, query)) ) {
-	elem.sourcelist('fill', reply, query);
+	$.ajax({
+	  url: config.http.locations.source_modified,
+	  dataType: "json",
+	  success: function(json) {
+	    if ( json.modified < reply.modified ) {
+	      elem.sourcelist('fill', reply, query);
+	    } else {
+	      query_cache = [];
+	      elem[pluginName]('update', query);
+	    }
+	  },
+	  error: function(jqXHDR) {
+	    modal.ajaxError(jqXHDR);
+	  }
+	});
       } else {
 	query = query||{};
 

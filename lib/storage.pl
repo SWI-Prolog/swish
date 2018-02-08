@@ -82,8 +82,15 @@ their own version.
 :- setting(directory, callable, data(storage),
 	   'The directory for storing files.').
 
-:- http_handler(swish('p/'), web_storage, [ id(web_storage), prefix ]).
-:- http_handler(swish('source_list'), source_list, [ id(source_list) ]).
+:- http_handler(swish('p/'),
+		web_storage,
+		[ id(web_storage), prefix ]).
+:- http_handler(swish('source_list'),
+		source_list,
+		[ id(source_list) ]).
+:- http_handler(swish('source_modified'),
+		source_modified,
+		[ id(source_modified) ]).
 
 :- listen(http(pre_server_start),
 	  open_gittystore(_)).
@@ -766,6 +773,7 @@ source_list(Request) :-
 			]),
 	bound(Auth.put(_{display_name:DisplayName, avatar:Avatar}), AuthEx),
 	order(Order, Field, Cmp),
+	last_modified(Modified),
 	statistics(cputime, CPU0),
 	findall(Source, source(Q, AuthEx, Source), AllSources),
 	statistics(cputime, CPU1),
@@ -773,7 +781,8 @@ source_list(Request) :-
 	CPU is CPU1 - CPU0,
 	sort(Field, Cmp, AllSources, Ordered),
 	list_offset_limit(Ordered, Offset, Limit, Sources),
-	reply_json_dict(json{total:Count, offset:Offset, cpu:CPU,
+	reply_json_dict(json{total:Count, offset:Offset,
+			     cpu:CPU, modified:Modified,
 			     matches:Sources}).
 
 list_offset_limit(List0, Offset, Limit, List) :-
@@ -970,6 +979,61 @@ tag(type, Value) --> "type:", type(Value).
 type(pl)    --> "pl".
 type(swinb) --> "swinb".
 type(lnk)   --> "lnk".
+
+
+		 /*******************************
+		 *	  TRACK CHANGES		*
+		 *******************************/
+
+%!	source_modified(+Request)
+%
+%	Reply with the last modification  time   of  the source repo. If
+%	there is no modification we use the time the server was started.
+%
+%	This  is  a  poor  men's  solution  to  keep  the  client  cache
+%	consistent. Need to think about a   better way to cache searches
+%	client and/or server side.
+
+source_modified(Request) :-
+	authenticate(Request, _Auth),
+	last_modified(Time),
+	reply_json_dict(json{modified:Time}).
+
+:- dynamic gitty_last_modified/1.
+
+update_last_modified(_,_) :-
+	with_mutex(gitty_last_modified,
+		   update_last_modified_sync).
+
+update_last_modified_sync :-
+	get_time(Now),
+	retractall(gitty_last_modified(_)),
+	asserta(gitty_last_modified(Now)).
+
+last_modified(Time) :-
+	with_mutex(gitty_last_modified,
+		   last_modified_sync(Time)).
+
+last_modified_sync(Time) :-
+	(   gitty_last_modified(Time)
+	->  true
+	;   statistics(epoch, Time)
+	).
+
+:- unlisten(swish(_)),
+   listen(swish(Event), notify_event(Event)).
+
+% events on gitty files
+notify_event(updated(File, Commit)) :-
+    atom_concat('gitty:', File, DocID),
+    update_last_modified(Commit, DocID).
+notify_event(deleted(File, Commit)) :-
+    atom_concat('gitty:', File, DocID),
+    update_last_modified(Commit, DocID).
+notify_event(created(_File, Commit)) :-
+    storage_meta_data(Commit.get(previous), Meta),
+    atom_concat('gitty:', Meta.name, DocID),
+    update_last_modified(Commit, DocID).
 
 
 		 /*******************************
