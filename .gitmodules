@@ -13,3 +13,6 @@
 [submodule "pack/wordnet"]
 	path = pack/wordnet
 	url = https://github.com/JanWielemaker/wordnet.git
+[submodule "pack/pcache"]
+	path = pack/pcache
+	url = https://github.com/JanWielemaker/pcache.git
