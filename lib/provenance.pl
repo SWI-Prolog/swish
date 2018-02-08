@@ -209,7 +209,7 @@ permalink_code_query(Hash, Code, Query) :-
     ->  maplist(source, Local, Sources),
         atomics_to_string(Sources, "\n", Code0),
         import_versions(ProvData, Code0, Code)
-    ;   Code = ""
+    ;   import_versions(ProvData, "", Code)
     ).
 
 source(Prov, Source) :-
@@ -223,14 +223,14 @@ source(Prov, Source) :-
 
 import_versions(ProvData, Code0, Code) :-
     _{import:Import} :< ProvData,
-    convlist(import_version, Import, Strings),
+    convlist(import_version(Code0), Import, Strings),
     Strings \== [],
     !,
     append(Strings, [Code0], AllStrings),
     atomics_to_string(AllStrings, "\n", Code).
 import_versions(_, Code, Code).
 
-%!  import_version(+Import, -String) is semidet.
+%!  import_version(+Code0, +Import, -String) is semidet.
 %
 %   If Import is not the HEAD of the  imported file, unify String with a
 %   header that includes the specific version.
@@ -239,16 +239,29 @@ import_versions(_, Code, Code).
 %   files that are used. We could use   this to verify that the imported
 %   predicates have not changed and therefore  we can (still) import the
 %   HEAD rather than the specific version.
+%
+%   @tbd Currently assumes there is either  no local source (2nd clause)
+%   or the local source contains  all   required  `:-  include`. Is that
+%   true?
 
-import_version(Hash-_Predicates, String) :-
+import_version(Code0, Hash-_Predicates, String) :-
     storage_meta_data(Hash, Meta),
-    \+ Meta.get(symbolic) == "HEAD",
+    import_version(Code0, Hash, Meta, String).
+
+import_version(_Code0, Hash, Meta, String) :-
+    \+ Meta.get(symbolic) == "HEAD", !,
     format_time(string(Date), '%+', Meta.time),
     file_name_extension(Base, _, Meta.name),
     format(string(String),
            '% Permalink: using "~w" from ~s\n\c
             :- include(~q, [version(~q)]).',
            [ Base, Date, Base, Hash ]).
+import_version("", _Hash, Meta, String) :-
+    file_name_extension(Base, _, Meta.name),
+    format(string(String),
+           '% Permalink: using current version of "~w"\n\c
+            :- include(~q).',
+           [ Base, Base ]).
 
 
 		 /*******************************
