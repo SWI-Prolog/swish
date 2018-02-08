@@ -104,6 +104,7 @@ wiki_file_codes_to_dom(String, File, DOM) :-
 	prolog:doc_autolink_extension/2.
 
 prolog:doc_autolink_extension(swinb, notebook).
+prolog:doc_autolink_extension(lnk,   permalink).
 
 :- public
 	file//2.
@@ -133,7 +134,7 @@ file(File, Options) -->
 	html(a([class([alias,file]), href(HREF)], Label)).
 file(File, Options) -->
 	{ storage_file(File),
-	  option(label(Label), Options),
+	  option(label(Label), Options, File),
 	  http_location_by_id(swish, Swish),
 	  directory_file_path(Swish, p, StoreDir),
 	  directory_file_path(StoreDir, File, HREF)
