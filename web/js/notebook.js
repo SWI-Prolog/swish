@@ -1271,18 +1271,7 @@ var cellTypes = {
 	  "Projection":		   wrapSolution,
 	  "Order by":              wrapSolution,
 	  "Distinct":              wrapSolution,
-	  "Limit":		   wrapSolution,
-	  "---":		   null,
-	  "Download answers as CSV": function() {
-	    var query  = cellText(this).replace(/\.\s*$/,"");
-	    var source = this.nbCell('programs')
-			     .prologEditor('getSource', "source", true);
-	    var options = {};
-	    var name   = this.attr("name");
-	    if ( name )
-	      options.disposition = name;
-	    prolog.downloadCSV(query, source, options);
-	  }
+	  "Limit":		   wrapSolution
         }
       });
 

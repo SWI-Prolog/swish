@@ -351,11 +351,12 @@ define([ "jquery", "config", "preferences",
 	    qspan,
             $.el.br({clear:"all"})));
 	} else {
-	  var close = glyphButton("remove-circle", "Close");
-	  elem.append(close);
-	  $(close).on("click", function() {
-	    elem.prologRunner('close');
-	  });
+	  elem.append($.el.div(
+	    {class:"runner-title runner-button-group"},
+	    titleBarButton("remove-circle", "Close",        'close'),
+	    titleBarButton("minus",         "Iconify",      'toggleIconic'),
+	    titleBarButton("download",      "Download CSV", 'downloadCSV'),
+	    titleBarButton("link",          "Permalink",    'permalink', false)));
 	}
 	if ( query.chunk )
 	  data.chunk = query.chunk;
