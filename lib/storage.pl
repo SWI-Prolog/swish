@@ -768,8 +768,8 @@ source_list(Request) :-
 				   ]),
 			  offset(Offset, [integer, default(0)]),
 			  limit(Limit, [integer, default(10)]),
-			  display_name(DisplayName, [optional(true)]),
-			  avatar(Avatar, [optional(true)])
+			  display_name(DisplayName, [optional(true), string]),
+			  avatar(Avatar, [optional(true), string])
 			]),
 	bound(Auth.put(_{display_name:DisplayName, avatar:Avatar}), AuthEx),
 	order(Order, Field, Cmp),
@@ -837,7 +837,7 @@ bound(_-V) :- nonvar(V).
 visible(Meta, Auth, Constraints) :-
 	memberchk(user("me"), Constraints),
 	!,
-	owns(Auth, Meta, me).
+	owns(Auth, Meta, user(_)).
 visible(Meta, _Auth, _Constraints) :-
 	Meta.get(public) == true, !.
 visible(Meta, Auth, _Constraints) :-
@@ -852,15 +852,18 @@ visible(Meta, Auth, _Constraints) :-
 %	@tbd Weaker identity on the basis of author, avatar
 %	properties and/or IP properties.
 
-owns(Auth, Meta, me) :-
-	user_property(Auth, identity(Id)),
-	storage_meta_property(Meta, identity(Id)),
-	!.
-owns(Auth, Meta, localhost) :-			% trusted local host
+owns(Auth, Meta, user(me)) :-
+	storage_meta_property(Meta, identity(Id)), !,
+	user_property(Auth, identity(Id)).
+owns(Auth, Meta, user(avatar)) :-
+	storage_meta_property(Meta, avatar(Id)),
+	user_property(Auth, avatar(Id)).
+owns(Auth, Meta, host(How)) :-		% trust same host and local host
 	Peer = Auth.get(peer),
 	(   Peer == Meta.get(peer)
-	->  true
+	->  How = same
 	;   sub_atom(Meta.get(peer), 0, _, _, '127.0.0.')
+	->  How = local
 	).
 
 %!	matches_meta(+Source, +Auth, +Query) is semidet.
