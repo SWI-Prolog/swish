@@ -967,14 +967,24 @@ re_flag(multiline(true)) --> "m".
 re_flag(dotall(true))    --> "s".
 
 next_word(String) -->
+	blanks, nonblank(H), string(Codes), ( blank ; eos ), !,
+	{ string_codes(String, [H|Codes]) }.
+
+tag(name, Value) --> "name:", tag_value(Value).
+tag(tag,  Value) --> "tag:",  tag_value(Value).
+tag(user, Value) --> "user:", tag_value(Value).
+tag(type, Value) --> "type:", type(Value).
+
+tag_value(String) -->
+	blanks, "\"", !, string(Codes), "\"", !,
+	{ string_codes(String, Codes) }.
+tag_value(String) -->
+	nonblank(H), !,
 	string(Codes),
 	( blank ; eos ), !,
-	{ string_codes(String, Codes) }.
-
-tag(name, Value) --> "name:", next_word(Value).
-tag(tag,  Value) --> "tag:",  next_word(Value).
-tag(user, Value) --> "user:", next_word(Value).
-tag(type, Value) --> "type:", type(Value).
+	{ string_codes(String, [H|Codes]) }.
+tag_value("") -->
+	"".
 
 type(pl)    --> "pl".
 type(swinb) --> "swinb".
