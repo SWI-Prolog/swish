@@ -288,11 +288,15 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 		    ul=$.el.ul({class:"dropdown-menu"}));
 
 	function add(item) {
-	  if ( title == "Type" )
-	    return $.el.a({'data-tag':"type", 'data-value':item},
-			  form.widgets.typeIcon(item), " ."+item);
-	  else
+	  if ( typeof(item) == "string" ) {
 	    return $.el.a({'data-tag':item}, item);
+	  } else if (item.i && item.v) {
+	    return $.el.a({'data-tag':item.t, 'data-value':item.v},
+			  form.widgets.typeIcon(item.i), " "+item.l);
+	  } else if (item.v) {
+	    return $.el.a({'data-tag':item.t, 'data-value':item.v},
+			  item.l);
+	  }
 	}
 
 	for(var i=0; i<members.length; i++) {
@@ -333,8 +337,14 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 				  "glyphicon-remove form-control-feedback "+
 				  "hidden"})),
 	$.el.div({ class: "input-group-btn" },
-		 btn("Filter", ["name", "user", "tag"]),
-		 btn("Type",   ["pl", "swinb", "lnk"]),
+		 btn("Filter", [{t:"name", l:"By name",   v:"name"},
+				"user",
+				"tag"
+			       ]),
+		 btn("Type",   [{t:"type", l:"Program",   i:"pl",    v:"pl"},
+				{t:"type", l:"Notebook",  i:"swinb", v:"swinb"},
+				{t:"type", l:"Permalink", i:"lnk",   v:"lnk"}
+			       ]),
 		 btnsubmit=
 		 $.el.button({class:"btn btn-default", type:"submit"},
 			     $.el.i({class:"glyphicon glyphicon-search"}))));
