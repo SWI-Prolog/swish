@@ -306,7 +306,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	if ( set == true )
 	  set = 1000;
 	if ( set )
-	  setTimeout(submit, set);
+	  data.tmo = setTimeout(submit, set);
       }
 
       function submit(ev) {
