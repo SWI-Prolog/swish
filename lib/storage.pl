@@ -872,6 +872,7 @@ matches_meta(Dict, _, tag(Tag)) :- !,
 	->  Dict.get(tags) \== []
 	;   member(Tagged, Dict.get(tags)),
 	    sub_atom_icasechk(Tagged, 0, Tag)
+	->  true
 	).
 matches_meta(Dict, _, name(Name)) :- !,
 	sub_atom_icasechk(Dict.get(name), _At, Name).
@@ -887,7 +888,7 @@ matches_content(Constraints, File) :-
 	maplist(match_content(Data), Constraints).
 
 match_content(Data, string(S)) :-
-	sub_atom_icasechk(Data, _, S).
+	sub_atom_icasechk(Data, _, S), !.
 match_content(Data, regex(RE)) :-
 	re_match(RE, Data).
 
