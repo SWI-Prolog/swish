@@ -871,16 +871,21 @@ matches_meta(Dict, _, tag(Tag)) :- !,
 	(   Tag == ""
 	->  Dict.get(tags) \== []
 	;   member(Tagged, Dict.get(tags)),
-	    sub_atom_icasechk(Tagged, 0, Tag)
+	    match_meta(Tag, Tagged)
 	->  true
 	).
 matches_meta(Dict, _, name(Name)) :- !,
-	sub_atom_icasechk(Dict.get(name), _At, Name).
+	match_meta(Name, Dict.get(name)).
 matches_meta(Dict, _, user(Name)) :-
 	(   Name \== "me"
-	->  sub_atom_icasechk(Dict.get(author), _At, Name)
+	->  match_meta(Name, Dict.get(author))
 	;   true		% handled in visible/3
 	).
+
+match_meta(regex(RE), Value) :- !,
+	re_match(RE, Value).
+match_meta(String, Value) :-
+	sub_atom_icasechk(Value, _, String).
 
 matches_content([], _) :- !.
 matches_content(Constraints, File) :-
@@ -979,6 +984,14 @@ tag(type, Value) --> "type:", type(Value).
 tag_value(String) -->
 	blanks, "\"", !, string(Codes), "\"", !,
 	{ string_codes(String, Codes) }.
+tag_value(Q) -->
+	blanks, "/", string(Codes), "/", re_flags(Flags), !,
+	{   Codes == []
+	->  Q = ""
+	;   string_codes(String, Codes),
+	    re_compile(String, RE, Flags),
+	    Q = regex(RE)
+	}.
 tag_value(String) -->
 	nonblank(H), !,
 	string(Codes),
