@@ -144,6 +144,7 @@ current_user_property(identity(_Atom),            dict).
 current_user_property(external_identity(_String), dict).
 current_user_property(identity_provider(_Atom),   dict).
 current_user_property(profile_id(_Atom),          dict).
+current_user_property(avatar(_String),            dict).
 
 current_user_property(login(_IdProvider),         derived).
 current_user_property(name(_Name),                broadcast).
