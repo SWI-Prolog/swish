@@ -1035,6 +1035,10 @@ update_last_modified_sync :-
 	asserta(gitty_last_modified(Now)).
 
 last_modified(Time) :-
+	debugging(swish(sourcelist)), !,	% disable caching
+	get_time(Now),
+	Time is Now + 60.
+last_modified(Time) :-
 	with_mutex(gitty_last_modified,
 		   last_modified_sync(Time)).
 
