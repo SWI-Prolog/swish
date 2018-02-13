@@ -1028,7 +1028,7 @@ last_modified(Time) :-
 last_modified_sync(Time) :-
 	(   gitty_last_modified(Time)
 	->  true
-	;   statistics(epoch, Time)
+	;   statistics(process_epoch, Time)
 	).
 
 :- unlisten(swish(_)),
