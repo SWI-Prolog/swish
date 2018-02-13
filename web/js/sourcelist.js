@@ -192,7 +192,11 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	$(body).html("");
       }
 
-      this.find("input.search").val(results.query.q);
+      // set the query, unless we are typing one
+      var input = this.find("input.search");
+      if ( !input.is(":focus") )
+	input.val(results.query.q);
+
       var i = query.offset - results.query.offset;
       var e = Math.min(i+query.limit, results.matches.length);
 
