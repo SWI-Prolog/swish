@@ -479,10 +479,12 @@ define([ "jquery", "config", "preferences",
 	  }
 	}
 
-	for(var i = 0; i < projection.length; i++) {
-	  if ( projection[i].startsWith(prefix) ) {
-	    projection.splice(i, 1);
-	    i--;
+	if ( projection ) {
+	  for(var i = 0; i < projection.length; i++) {
+	    if ( projection[i].startsWith(prefix) ) {
+	      projection.splice(i, 1);
+	      i--;
+	    }
 	  }
 	}
 
