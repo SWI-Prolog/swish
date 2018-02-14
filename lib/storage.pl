@@ -858,6 +858,8 @@ owns(Auth, Meta, user(me)) :-
 owns(Auth, Meta, user(avatar)) :-
 	storage_meta_property(Meta, avatar(Id)),
 	user_property(Auth, avatar(Id)).
+owns(Auth, Meta, user(nickname)) :-
+	Auth.get(display_name) == Meta.get(author).
 owns(Auth, Meta, host(How)) :-		% trust same host and local host
 	Peer = Auth.get(peer),
 	(   Peer == Meta.get(peer)
