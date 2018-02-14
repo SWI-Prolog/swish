@@ -805,6 +805,13 @@ order(Field, Field, @=<).
 
 source(Q, Auth, Source) :-
 	parse_query(Q, Query),
+	source_q(Query, Auth, Source).
+
+source_q([user("me")], Auth, _Source) :-
+	\+ _ = Auth.get(avatar),
+	\+ user_property(Auth, identity(_Id)), !,
+	fail.
+source_q(Query, Auth, Source) :-
 	type_constraint(Query, Query1, Type),
 	partition(content_query, Query1,
 		  ContentConstraints, MetaConstraints),

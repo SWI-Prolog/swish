@@ -49,6 +49,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
   var pluginName = 'sourcelist';
 
   var current_query = {q:"user:\"me\""};
+  var current_profile;
   var query_cache = [];
   var pending = [];
   var qid = 0;
@@ -64,6 +65,18 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 					/* populate search page */
 	elem[pluginName]('fill', undefined, current_query);
 	elem[pluginName]('update', current_query);
+	elem.on("login", function() {
+	  var profile = $("#login").login('get_profile',
+					  [ "display_name", "avatar"
+					  ]);
+	  if ( !(current_profile &&
+		 current_profile.display_name == profile.display_name &&
+		 current_profile.avatar == profile.avatar) ) {
+	    query_cache = [];
+	    current_profile = profile;
+	    elem[pluginName]('update', current_query);
+	  }
+	});
       });
     },
 
@@ -76,6 +89,8 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       var profile = $("#login").login('get_profile',
 				      [ "display_name", "avatar"
 				      ]);
+
+      current_profile = profile;
 
       if ( (reply = from_cache(query_cache, query)) ) {
 	$.ajax({
@@ -211,8 +226,10 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
       // set the query, unless we are typing one
       var input = this.find("input.search");
-      if ( !input.is(":focus") )
+      if ( !input.is(":focus") ) {
 	input.val(results ? results.query.q : query ? query.q : "");
+	input.trigger("propertychange", false);
+      }
 
       if ( results ) {
 	var i = query.offset - results.query.offset;
@@ -274,14 +291,22 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       var end = Math.min(query.offset+query.limit, results.total);
 
       if ( results.total == 0 ) {
-	var a;
-	noresults.show()
-	         .append($.el.div("No matching files"),
-			 $.el.div(a=$.el.a({href:"#"}, "help on search")));
-	$(a).on("click", function() {
-	  console.log("help");
-	  modal.help({file:"sourcelist.html"});
-	});
+	if ( noresults.find("div").length == 0 ) {
+	  var a;
+	  noresults.append(
+	    $.el.div($.el.span({class:"no-search-results-warning"},
+			       form.widgets.glyphIcon("alert"),
+			       " No matching files"), $.el.br(),
+		     "If you are a new user you may",
+		     $.el.ul($.el.li("Use the Examples menu from the navigation bar"),
+			     $.el.li("Use the Program or Notebook button above")),
+		     $.el.div(a=$.el.a({href:"#"}, "help on search"))));
+	  $(a).on("click", function() {
+	    console.log("help");
+	    modal.help({file:"sourcelist.html"});
+	  });
+	}
+	noresults.show();
 	footer.hide();
       } else
       { noresults.hide();
@@ -433,11 +458,13 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       inputel.keydown(function(ev) {
 	if ( ev.which == 13 )
 	  return submit(ev);
-      }).on("input propertychange", function(ev) {
-	if ( from_cache(query_cache, inputel.val()) ) {
-	  resettimeout(200);
-	} else
-	  resettimeout(true);
+      }).on("input propertychange", function(ev, propagate) {
+	if ( propagate != false ) {
+	  if ( from_cache(query_cache, inputel.val()) ) {
+	    resettimeout(200);
+	  } else
+	    resettimeout(true);
+	}
       });
     },
 

@@ -111,6 +111,7 @@ var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
 	      { delete config.swish.user;
 		elem.removeClass("logout").addClass("login");
 	      }
+	      $(".sourcelist").trigger("login");
 	    },
 	    "json");
     },

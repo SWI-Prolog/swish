@@ -255,6 +255,8 @@ var MAX_RECONNECT_DELAY = 300000;
 
       if ( e.check_login )
 	$("#login").login('update', "check");
+      else
+	$(".sourcelist").trigger("login");
       $(".storage").storage('chat_status');
       this.chat('empty_queue');
     },

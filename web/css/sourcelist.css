@@ -25,8 +25,7 @@ div.sourcelist div.search-results {
 div.search-no-results {
   display: none;
   position: absolute;
-  text-align: center;
-  top: 30px;
+  top: 0px;
   left: 0px;
   width: 100%;
 }
@@ -43,4 +42,9 @@ div.loading {
   background-size: 64px;
   background-repeat: no-repeat;
   background-position: 50% 100px;
+}
+
+span.no-search-results-warning {
+  background: #fee;
+  color: #b44;
 }
