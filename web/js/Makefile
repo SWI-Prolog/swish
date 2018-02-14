@@ -2,7 +2,7 @@ JS=answer.js diffview.js jswish.js preferences.js tabbed.js download.js \
    links.js prolog.js term.js chat.js editor.js login.js query.js utils.js \
    chatroom.js modal.js runner.js config.js form.js navbar.js search.js \
    diff.js gitty.js notebook.js storage.js difflib.js history.js pane.js \
-   swish.js
+   swish.js sourcelist.js
 CM=$(shell find codemirror -name '*.js')
 JQ=jquery.jsdoc
 CONF=conf.json
