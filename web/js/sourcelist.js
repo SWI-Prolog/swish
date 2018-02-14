@@ -281,7 +281,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
 	footer.on("click", "button", function(ev) {
 	  var b   = $(ev.target).closest("button");
-	  var act = b.results('action');
+	  var act = b.data('action');
 
 	  if ( act )
 	    b.closest("div.sourcelist")[pluginName]("page", act)
