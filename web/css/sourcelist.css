@@ -17,8 +17,17 @@ div.search-footer
 }
 
 div.sourcelist div.search-results {
+  margin-top: 1em;
   position: relative;
-  min-height: 200px;
+  min-height: 150px;
+}
+
+div.search-no-results {
+  position: absolute;
+  text-align: center;
+  top: 30px;
+  left: 0px;
+  width: 100%;
 }
 
 div.loading {
@@ -31,5 +40,5 @@ div.loading {
   background-image: url("../icons/loading.gif");
   background-size: 64px;
   background-repeat: no-repeat;
-  background-position: 50% 50%;
+  background-position: 50% 100px;
 }

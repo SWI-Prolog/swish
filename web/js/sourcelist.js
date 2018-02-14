@@ -194,6 +194,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 						    h("User"),
 						    h("Modified"))),
 				 body = $.el.tbody()),
+		      $.el.div({class:"search-no-results", display:"none"}),
 		      $.el.div({class:"loading search", display:"none"})),
 		    $.el.div({class:"search-footer"}));
 	this[pluginName]('search_form');
@@ -215,6 +216,11 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	var i = query.offset - results.query.offset;
 	var e = Math.min(i+query.limit, results.matches.length);
 
+	if ( i<e )
+	  $(table).show();
+	else
+	  $(table).hide();
+
 	for(; i<e; i++)
 	{ var match = results.matches[i];
 	  var ext   = match.name.split(".").pop();
@@ -231,8 +237,9 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       }
     },
 
-    search_footer: function(data, query) {
+    search_footer: function(results, query) {
       var footer = this.find("div.search-footer");
+      var noresults = this.find("div.search-no-results");
       var bopts = {};
 
       function btn(action, dir, icon) {
@@ -255,32 +262,46 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
 	footer.on("click", "button", function(ev) {
 	  var b   = $(ev.target).closest("button");
-	  var act = b.data('action');
+	  var act = b.results('action');
 
 	  if ( act )
 	    b.closest("div.sourcelist")[pluginName]("page", act)
 	});
       }
 
-      var end = Math.min(query.offset+query.limit, data.total);
+      var end = Math.min(query.offset+query.limit, results.total);
 
-      if ( query.offset > 0 || end < data.total ) {
-	footer.show();
-	if ( query.offset == 0 ) {
-	  footer.find(".backward").attr("disabled", "disabled");
-	} else {
-	  footer.find(".backward").removeAttr("disabled");
-	}
-	if ( end >= data.total ) {
-	  footer.find(".forward").attr("disabled", "disabled");
-	} else {
-	  footer.find(".forward").removeAttr("disabled");
-	}
-	footer.find(".f-from") .text(""+query.offset);
-	footer.find(".f-to")   .text(""+end);
-	footer.find(".f-total").text(""+data.total);
-      } else {
+      if ( results.total == 0 ) {
+	var a;
+	noresults.show()
+	         .append($.el.div("No matching files"),
+			 $.el.div(a=$.el.a({href:"#"}, "help on search")));
+	$(a).on("click", function() {
+	  console.log("help");
+	  modal.help({file:"sourcelist.html"});
+	});
 	footer.hide();
+      } else
+      { noresults.hide();
+
+	if ( query.offset > 0 || end < results.total ) {
+	  footer.show();
+	  if ( query.offset == 0 ) {
+	    footer.find(".backward").attr("disabled", "disabled");
+	  } else {
+	    footer.find(".backward").removeAttr("disabled");
+	  }
+	  if ( end >= results.total ) {
+	    footer.find(".forward").attr("disabled", "disabled");
+	  } else {
+	    footer.find(".forward").removeAttr("disabled");
+	  }
+	  footer.find(".f-from") .text(""+query.offset);
+	  footer.find(".f-to")   .text(""+end);
+	  footer.find(".f-total").text(""+results.total);
+	} else {
+	  footer.hide();
+	}
       }
     },
 
@@ -361,10 +382,10 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 		 btn("Filter", [{t:"user", l:"My files",        v:"me", q:"\""},
 				{t:"user", l:"By user",         v:"",   q:"\""},
 				{t:"user", l:"By user (regex)", v:"",   q:"/"},
-				{t:"name", l:"By name",         v:"",   q:"\""},
-				{t:"name", l:"By name (regex)", v:"",   q:"/"},
 				{t:"tag",  l:"By tag",          v:"",   q:"\""},
-				{t:"tag",  l:"By tag (regex)",  v:"",   q:"/"}
+				{t:"tag",  l:"By tag (regex)",  v:"",   q:"/"},
+				{t:"name", l:"By name",         v:"",   q:"\""},
+				{t:"name", l:"By name (regex)", v:"",   q:"/"}
 			       ]),
 		 btn("Type",   [{t:"type", l:"Program",   i:"pl",    v:"pl",    q:""},
 				{t:"type", l:"Notebook",  i:"swinb", v:"swinb", q:""},
