@@ -59,6 +59,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	var data = {};			/* private data */
 
 	elem.data(pluginName, data);	/* store with element */
+	elem[pluginName]('fill', undefined, current_query); /* populate search page */
 	elem[pluginName]('update', current_query);
       });
     },
@@ -151,12 +152,14 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       var data = this.data(pluginName);
       var body;
 
-      current_query = query;
-      data.page = { query:  query,
-                    offset: query.offset,
-		    size:   query.limit,
-		    total:  results.total
-                  };
+      if ( results ) {
+	current_query = query;
+	data.page = { query:  query,
+		      offset: query.offset,
+		      size:   query.limit,
+		      total:  results.total
+		    };
+      }
 
       function h(title) {
 	return $.el.th(title);
@@ -195,24 +198,26 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       // set the query, unless we are typing one
       var input = this.find("input.search");
       if ( !input.is(":focus") )
-	input.val(results.query.q);
+	input.val(results ? results.query.q : query ? query.q : "");
 
-      var i = query.offset - results.query.offset;
-      var e = Math.min(i+query.limit, results.matches.length);
+      if ( results ) {
+	var i = query.offset - results.query.offset;
+	var e = Math.min(i+query.limit, results.matches.length);
 
-      for(; i<e; i++)
-      { var match = results.matches[i];
-	var ext   = match.name.split(".").pop();
-	var base  = match.name.slice(0, -(ext.length+1));
+	for(; i<e; i++)
+	{ var match = results.matches[i];
+	  var ext   = match.name.split(".").pop();
+	  var base  = match.name.slice(0, -(ext.length+1));
 
-	body.append($.el.tr({"data-name":match.name},
-			    $.el.td(form.widgets.typeIcon(ext)),
-			    $.el.td(base),
-			    $.el.td((match.tags||[]).join(" ")),
-			    $.el.td(match.author),
-			    $.el.td(humanize(match.time))));
+	  body.append($.el.tr({"data-name":match.name},
+			      $.el.td(form.widgets.typeIcon(ext)),
+			      $.el.td(base),
+			      $.el.td((match.tags||[]).join(" ")),
+			      $.el.td(match.author),
+			      $.el.td(humanize(match.time))));
+	}
+	this[pluginName]('search_footer', results, query);
       }
-      this[pluginName]('search_footer', results, query);
     },
 
     search_footer: function(data, query) {
