@@ -50,6 +50,8 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
   var current_query;
   var query_cache = [];
+  var pending = [];
+  var qid = 0;
 
   /** @lends $.fn.sourcelist */
   var methods = {
@@ -97,6 +99,10 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	query.q = query.q||"";
 	query.offset = query.offset||0;
 	query.limit  = query.limit||10;
+	query.qid    = qid++;
+
+	pending.push(query);
+	elem[pluginName]('busy', true);
 
 	$.ajax({
 	  url: config.http.locations.source_list,
@@ -104,6 +110,9 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	  dataType: "json",
 	  success: function(reply) {
 	    reply.query = query;
+	    pending.pop();		/* should match qid */
+	    if ( pending.length == 0 )
+	      elem[pluginName]('busy', false);
 	    add_to_cache(query_cache, reply);
 	    elem.sourcelist('fill', reply, query);
 	  },
@@ -175,16 +184,18 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       body = this.find("tbody");
       if ( body.length == 0 ) {
 	this.append($.el.div({class:"search-form input-group"}),
-		    table =
-		    $.el.table({class:"table table-striped table-hover "+
-				      "table-condensed"},
-			       $.el.thead($.el.tr(h("Type"),
-						  h("Name"),
-						  h("Tags"),
-						  h("User"),
-						  h("Modified"))),
-			       body = $.el.tbody()),
-		   $.el.div({class:"search-footer"}));
+		    $.el.div({class:"search-results"},
+		      table =
+		      $.el.table({class:"table table-striped table-hover "+
+					"table-condensed"},
+				 $.el.thead($.el.tr(h("Type"),
+						    h("Name"),
+						    h("Tags"),
+						    h("User"),
+						    h("Modified"))),
+				 body = $.el.tbody()),
+		      $.el.div({class:"loading search", display:"none"})),
+		    $.el.div({class:"search-footer"}));
 	this[pluginName]('search_form');
 	body = $(body);
 	body.on("click", "tr", function(ev) {
@@ -395,14 +406,25 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	return submit(ev);
       });
 
-      elem.find("input").keydown(function(ev) {
+      var inputel = elem.find("input");
+      inputel.keydown(function(ev) {
 	if ( ev.which == 13 )
 	  return submit(ev);
-	if ( from_cache(query_cache, div.find("input").val()) ) {
+      }).on("input propertychange", function(ev) {
+	if ( from_cache(query_cache, inputel.val()) ) {
 	  resettimeout(200);
 	} else
 	  resettimeout(true);
       });
+    },
+
+    busy: function(busy) {
+      var div = this.find("div.loading");
+
+      if ( busy )
+	div.show();
+      else
+	div.hide();
     }
   }; // methods
 
