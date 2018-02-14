@@ -48,7 +48,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 (function($) {
   var pluginName = 'sourcelist';
 
-  var current_query;
+  var current_query = {q:"user:\"me\""};
   var query_cache = [];
   var pending = [];
   var qid = 0;
