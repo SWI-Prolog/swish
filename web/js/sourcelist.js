@@ -61,7 +61,8 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	var data = {};			/* private data */
 
 	elem.data(pluginName, data);	/* store with element */
-	elem[pluginName]('fill', undefined, current_query); /* populate search page */
+					/* populate search page */
+	elem[pluginName]('fill', undefined, current_query);
 	elem[pluginName]('update', current_query);
       });
     },
@@ -81,7 +82,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	  url: config.http.locations.source_modified,
 	  dataType: "json",
 	  success: function(json) {
-	    if ( json.modified < reply.modified ) {
+	    if ( json.modified < reply.modified+10 ) {
 	      elem.sourcelist('fill', reply, query);
 	    } else {
 	      query_cache = [];
@@ -117,6 +118,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	    elem.sourcelist('fill', reply, query);
 	  },
 	  error: function(jqXHDR) {
+	    pending.pop();
 	    modal.ajaxError(jqXHDR);
 	  }
 	});
@@ -194,8 +196,8 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 						    h("User"),
 						    h("Modified"))),
 				 body = $.el.tbody()),
-		      $.el.div({class:"search-no-results", display:"none"}),
-		      $.el.div({class:"loading search", display:"none"})),
+		      $.el.div({class:"search-no-results"}),
+		      $.el.div({class:"loading search"})),
 		    $.el.div({class:"search-footer"}));
 	this[pluginName]('search_form');
 	body = $(body);

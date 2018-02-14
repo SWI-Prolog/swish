@@ -23,6 +23,7 @@ div.sourcelist div.search-results {
 }
 
 div.search-no-results {
+  display: none;
   position: absolute;
   text-align: center;
   top: 30px;
@@ -31,6 +32,7 @@ div.search-no-results {
 }
 
 div.loading {
+  display: none;
   position: absolute;
   top: 0px;
   left: 0px;
