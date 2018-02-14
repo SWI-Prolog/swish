@@ -288,15 +288,20 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 		    ul=$.el.ul({class:"dropdown-menu"}));
 
 	function add(item) {
+	  var a;
+
 	  if ( typeof(item) == "string" ) {
 	    return $.el.a({'data-tag':item}, item);
-	  } else if (item.i && item.v) {
-	    return $.el.a({'data-tag':item.t, 'data-value':item.v},
-			  form.widgets.typeIcon(item.i), " "+item.l);
-	  } else if (item.v) {
-	    return $.el.a({'data-tag':item.t, 'data-value':item.v},
-			  item.l);
+	  } else if ( item.i) {
+	    a = $.el.a({'data-tag':item.t, 'data-value':item.v},
+		       form.widgets.typeIcon(item.i), " "+item.l);
+	  } else {
+	    a = $.el.a({'data-tag':item.t, 'data-value':item.v},
+		       item.l);
 	  }
+	  $(a).data('quote', item.q == undefined ? "\"" : item.q);
+
+	  return a;
 	}
 
 	for(var i=0; i<members.length; i++) {
@@ -337,13 +342,17 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 				  "glyphicon-remove form-control-feedback "+
 				  "hidden"})),
 	$.el.div({ class: "input-group-btn" },
-		 btn("Filter", [{t:"name", l:"By name",   v:"name"},
-				"user",
-				"tag"
+		 btn("Filter", [{t:"user", l:"My files",        v:"me", q:"\""},
+				{t:"user", l:"By user",         v:"",   q:"\""},
+				{t:"user", l:"By user (regex)", v:"",   q:"/"},
+				{t:"name", l:"By name",         v:"",   q:"\""},
+				{t:"name", l:"By name (regex)", v:"",   q:"/"},
+				{t:"tag",  l:"By tag",          v:"",   q:"\""},
+				{t:"tag",  l:"By tag (regex)",  v:"",   q:"/"}
 			       ]),
-		 btn("Type",   [{t:"type", l:"Program",   i:"pl",    v:"pl"},
-				{t:"type", l:"Notebook",  i:"swinb", v:"swinb"},
-				{t:"type", l:"Permalink", i:"lnk",   v:"lnk"}
+		 btn("Type",   [{t:"type", l:"Program",   i:"pl",    v:"pl",    q:""},
+				{t:"type", l:"Notebook",  i:"swinb", v:"swinb", q:""},
+				{t:"type", l:"Permalink", i:"lnk",   v:"lnk",   q:""}
 			       ]),
 		 btnsubmit=
 		 $.el.button({class:"btn btn-default", type:"submit"},
@@ -354,10 +363,10 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       div.on("click", "a", function(ev) {
 	var a = $(ev.target).closest("a");
 
-	function tag(tag, value) {
+	function tag(tag, value, q) {
 	  var input = div.find("input");
 	  var val = input.val();
-	  var tagv = tag + ":\"" + (value||"") + "\"";
+	  var tagv = tag + ":" + q + (value||"") + q;
 
 	  if ( val.trim() == "" ) {
 	    val = tagv;
@@ -374,7 +383,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	    submit();
 	}
 
-	tag(a.data('tag'), a.data('value'));
+	tag(a.data('tag'), a.data('value'), a.data('quote'));
       });
 
       $(btnsubmit).on("click", function(ev) {
