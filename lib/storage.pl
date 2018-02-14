@@ -981,15 +981,15 @@ next_word(String) -->
 	blanks, nonblank(H), string(Codes), ( blank ; eos ), !,
 	{ string_codes(String, [H|Codes]) }.
 
-tag(name, Value) --> "name:", tag_value(Value).
-tag(tag,  Value) --> "tag:",  tag_value(Value).
-tag(user, Value) --> "user:", tag_value(Value).
-tag(type, Value) --> "type:", type(Value).
+tag(name, Value) --> "name:", tag_value(Value, _).
+tag(tag,  Value) --> "tag:",  tag_value(Value, _).
+tag(user, Value) --> "user:", tag_value(Value, _).
+tag(type, Value) --> "type:", tag_value(String, string(_)), { atom_string(Value, String) }.
 
-tag_value(String) -->
+tag_value(String, string(quoted)) -->
 	blanks, "\"", !, string(Codes), "\"", !,
 	{ string_codes(String, Codes) }.
-tag_value(Q) -->
+tag_value(Q, regex) -->
 	blanks, "/", string(Codes), "/", re_flags(Flags), !,
 	{   Codes == []
 	->  Q = ""
@@ -997,18 +997,13 @@ tag_value(Q) -->
 	    re_compile(String, RE, Flags),
 	    Q = regex(RE)
 	}.
-tag_value(String) -->
+tag_value(String, string(nonquoted)) -->
 	nonblank(H), !,
 	string(Codes),
 	( blank ; eos ), !,
 	{ string_codes(String, [H|Codes]) }.
-tag_value("") -->
+tag_value("", empty) -->
 	"".
-
-type(pl)    --> "pl".
-type(swinb) --> "swinb".
-type(lnk)   --> "lnk".
-
 
 		 /*******************************
 		 *	  TRACK CHANGES		*
