@@ -230,7 +230,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  if ( !file || !(type = tabbed.type(file)) )
 	    type = tabbed.tabTypes[data.typeName];
 
-	  var title = (filebase(file) ||
+	  var title = (filebase(basename(file)) ||
 		       type.label);
 
 	  if ( docid && data.chats )
