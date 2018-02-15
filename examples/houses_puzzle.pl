@@ -54,7 +54,7 @@ houses(Hs) :-
 	next(h(_,fox,_,_,_), h(_,_,chesterfield,_,_), Hs),        % 11
 	next(h(_,_,kool,_,_), h(_,horse,_,_,_), Hs),              % 12
 	member(h(_,_,lucky,juice,_), Hs),                         % 13
-	member(h(japonese,_,kent,_,_), Hs),                       % 14
+	member(h(japanese,_,kent,_,_), Hs),                       % 14
 	next(h(norwegian,_,_,_,_), h(_,_,_,_,blue), Hs),          % 15
 	member(h(_,_,_,water,_), Hs),		% one of them drinks water
 	member(h(_,zebra,_,_,_), Hs).		% one of them owns a zebra
