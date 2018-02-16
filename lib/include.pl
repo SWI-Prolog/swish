@@ -90,6 +90,12 @@ include(File, Version) :-
 swish:term_expansion(:- include(FileIn), Expansion) :-
     swish:term_expansion(:- include(FileIn, []), Expansion).
 swish:term_expansion(:- include(FileIn, Options), Expansion) :-
+    setup_call_cleanup(
+        '$push_input_context'(swish_include),
+        expand_include(FileIn, Options, Expansion),
+        '$pop_input_context').
+
+expand_include(FileIn, Options, Expansion) :-
     include_file_id(FileIn, File, Options),
     arg(2, File, IncludeID),
     (   prolog_load_context(module, Module),
@@ -99,10 +105,8 @@ swish:term_expansion(:- include(FileIn, Options), Expansion) :-
                       'swish included'(IncludeID),
                       (:- include(stream(URI, Stream, [close(true)])))
                     ],
-        '$push_input_context'(swish_include),
         include_data(File, URI, Data),
-        open_string(Data, Stream),
-        '$pop_input_context'
+        open_string(Data, Stream)
     ).
 
 %!  include_data(+FileID, -URI, -Data)
