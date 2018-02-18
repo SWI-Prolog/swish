@@ -64,9 +64,8 @@ upload::
 	rsync $(BOWER_ARCHIVE) ops:/home/swipl/web/download/swish/$(BOWER_ARCHIVE)
 
 
-		 /*******************************
-		 *	       PACKS		*
-		 *******************************/
+################
+# PACKS
 
 PACKFILES=$(addprefix pack/, $(addsuffix /pack.pl, $(PACKS)))
 ATTACH_PACKDIR=-g 'attach_packs(pack,[duplicate(replace),search(first)])'
