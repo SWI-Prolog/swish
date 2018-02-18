@@ -58,9 +58,10 @@ configure those that need to be configured.
 
 Install [bower](http://bower.io) for your  platform.   On  Ubuntu,  this
 implies getting `node` and `npm` by installing two packages and next use
-`npm` to install `bower`:
+`npm` to install `bower` (some older Linux versions need `nodejs-legacy`
+instead of `nodejs`):
 
-    sudo apt-get install npm nodejs-legacy
+    sudo apt-get install npm nodejs
     sudo npm install -g bower
 
 Once you have `bower`, run the following from the toplevel of `swish` to
@@ -80,10 +81,7 @@ root directory to create the directory web/bower_components. If you have
 
     make bower-zip
 
-Last updated: Apr 8, 2017: upgraded. Notably typeahead.js is forward nor
-backward compatible and you need SWISH with commit
-042d93a66409ef6460052c46394e4f83dcab3d90 (April 7, 2017) together with
-this zip file.
+Last updated: Feb 18, 2018, 2017: upgraded to current dependencies.
 
 ### Get the latest SWI-Prolog
 
@@ -95,7 +93,8 @@ you            need            the             [nightly            build
 system    from    the     current      git     development    repository
 [swipl-devel.git](https://github.com/SWI-Prolog/swipl-devel).
 
-Oct 18, 2017: SWI-Prolog 7.7.0 works fine.
+Feb 18, 2018: SWI-Prolog  7.7.9  works  fine;   7.7.10  fixes  a  bug in
+operator handling for CSV downloads.
 
 ### Other dependencies
 
