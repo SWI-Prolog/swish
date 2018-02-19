@@ -107,6 +107,15 @@ var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
 		    }
 		  }
 		}));
+
+		if ( why == "logout_by_http" )
+		  modal.alert("Failed to logout from HTTP login.  Logout from HTTP "+
+			      "is known not to work for Chrome.  For some browsers "+
+			      "there is a plugin to logout.  Otherwise stopping your "+
+			      "browser completely (all pages) and restarting is the "+
+			      "only way to logout.  HTTP logout does work for FireFox "+
+			      "and IE.");
+
 	      } else
 	      { delete config.swish.user;
 		elem.removeClass("logout").addClass("login");
