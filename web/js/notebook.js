@@ -1247,6 +1247,9 @@ var cellTypes = {
       { role: "query",
 	sourceID: function() {
 	  return cell.nbCell('programs').prologEditor('getSourceID');
+	},
+	prologQuery: function(q) {
+	  cell.nbCell('run');
 	}
       });
 

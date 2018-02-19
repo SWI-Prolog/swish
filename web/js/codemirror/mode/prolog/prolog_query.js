@@ -12,14 +12,7 @@
 "use strict";
 
   CodeMirror.commands.prologFireQuery = function(cm) {
-    var endl  = cm.lineCount();
-    var endc  = cm.getLine(endl-1).length;
-    var token = cm.getTokenAt({line:endl, ch:endc}, true);
-
-    if ( token.type == "fullstop" )
-      return cm.prologFireQuery(cm.getValue());
-
-    return CodeMirror.Pass;
+    return cm.prologFireQuery(cm.getValue());
   }
 
   CodeMirror.defineOption("prologQuery", null, function(cm, func, prev) {
@@ -27,8 +20,7 @@
       cm.removeKeyMap("prologQuery");
     if ( typeof(func) == "function" ) {
       var map = { name:         "prologQuery",
-		  "Enter":      "prologFireQuery",
-		  "Ctrl-Enter": "newlineAndIndent"
+		  "Ctrl-Enter": "prologFireQuery"
 		};
       cm.addKeyMap(map);
       cm.prologFireQuery = func;
