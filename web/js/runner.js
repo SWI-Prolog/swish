@@ -1231,46 +1231,54 @@ define([ "jquery", "config", "preferences",
   function handleCreate() {
     var elem = this.pengine.options.runner;
     var data = elem.data(pluginName);
-    var options = $.extend({}, data.screen);
-    var bps;
-    var resvar = config.swish.residuals_var || "Residuals";
-    var hashvar = config.swish.permahash_var;
+    if ( data == undefined ) {
+      this.pengine.destroy();			/* element already gone */
+    } else
+    { var options = $.extend({}, data.screen);
+      var bps;
+      var resvar = config.swish.residuals_var || "Residuals";
+      var hashvar = config.swish.permahash_var;
 
-    if ( hashvar )
-      hashvar = ", "+hashvar;
-    else
-      hashvar = "";
+      if ( hashvar )
+	hashvar = ", "+hashvar;
+      else
+	hashvar = "";
 
-    registerSources(this.pengine);
+      registerSources(this.pengine);
 
-    if ( (bps = breakpoints(elem)) )
-      options.breakpoints = Pengine.stringify(bps);
-    if ( data.chunk )
-      options.chunk = data.chunk;
+      if ( (bps = breakpoints(elem)) )
+	options.breakpoints = Pengine.stringify(bps);
+      if ( data.chunk )
+	options.chunk = data.chunk;
 
-    this.pengine.ask("'$swish wrapper'((\n" +
-		     termNoFullStop(data.query.query) +
-		     "\n), ["+resvar+hashvar+"])", options);
-    elem.prologRunner('setState', "running");
+      this.pengine.ask("'$swish wrapper'((\n" +
+		       termNoFullStop(data.query.query) +
+		       "\n), ["+resvar+hashvar+"])", options);
+      elem.prologRunner('setState', "running");
+    }
   }
 
   function handleSuccess() {
     var elem = this.pengine.options.runner;
 
-    for(var i=0; i<this.data.length; i++) {
-      var answer = this.data[i];
-      if ( this.projection )
-	answer.projection = this.projection;
+    if ( elem.data(pluginName) == undefined )
+    { this.pengine.destroy();			/* element already gone */
+    } else {
+      for(var i=0; i<this.data.length; i++) {
+	var answer = this.data[i];
+	if ( this.projection )
+	  answer.projection = this.projection;
 
-      elem.prologRunner('renderAnswer', answer);
+	elem.prologRunner('renderAnswer', answer);
+      }
+      if ( this.time > 0.1 )	/* more than 0.1 sec. CPU (TBD: preference) */
+	addAnswer(elem, $.el.div(
+	  {class:"cputime"},
+	  $.el.span(this.time.toFixed(3),
+		    " seconds cpu time")));
+
+      elem.prologRunner('setState', this.more ? "wait-next" : "true");
     }
-    if ( this.time > 0.1 )	/* more than 0.1 sec. CPU (TBD: preference) */
-      addAnswer(elem, $.el.div(
-	{class:"cputime"},
-	$.el.span(this.time.toFixed(3),
-		  " seconds cpu time")));
-
-    elem.prologRunner('setState', this.more ? "wait-next" : "true");
   }
 
   function handleFailure() {
