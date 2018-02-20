@@ -56,6 +56,7 @@ login.
 :- use_module(library(semweb/turtle)).
 
 :- use_module(library(semweb/rdf_sandbox)).
+:- use_module(library(broadcast)).
 
 
 		 /*******************************
@@ -83,5 +84,6 @@ attach_rdf_data(Spec) :-
     !,
     rdf_attach_db(Dir, []).
 
-% Comment if you do not want persistent storage
-:- initialization attach_rdf_data(data('RDF')).
+% Comment if you do not want persistent storage.  Use post_server_start
+% to load the RDF data after making the server available.
+:- listen(http(pre_server_start), attach_rdf_data(data('RDF'))).
