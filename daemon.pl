@@ -47,11 +47,7 @@ Run
 :- use_module(library(option)).
 :- use_module(library(main)).
 
-:- if((current_prolog_flag(version,V),V>=70508)).
 :- initialization(swish_daemon, main).
-:- else.
-:- initialization(swish_daemon).
-:- endif.
 
 swish_daemon :-
 	current_prolog_flag(argv, Argv),
