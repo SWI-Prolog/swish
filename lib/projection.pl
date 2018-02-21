@@ -58,20 +58,42 @@ set.
 %   Specify the result variables. Using projection/1   at the start of a
 %   query specifies which variables are part of  the result set, in what
 %   order they are displayed and, optionally,   whether the results must
-%   be ordered on one or  more   variables.  Ordering is specified using
-%   `+Var` (ascending) or `-Var` (descending).  If ordering is specified
-%   for multiple variables, the result set  is ordered starting with the
-%   left-most variable for which ordering is defined.
+%   be ordered on one or  more  variables   or  the  solutions should be
+%   distinct.  Each element of Spec is one of the following:
+%
+%     - Var
+%     Include Var in the result.  Var must appear in the remainder of
+%     the body.
+%     - Var:Annotation
+%     As Var, respecting Annotation. Valid annotations are below.
+%     Annotations may be abbreviated, e.g. `asc`, `desc`
+%
+%       - ascending
+%       Order solutions in ascending order.
+%       - descending
+%       Order solutions is descending order
+%       - distinct
+%       Remove duplicates wrt. this argument.
+%       - AnnA+AnnB
+%       Multiple annotations
+%
+%     - +Var
+%     Equivalent to `Var:ascending`
+%     - -Var
+%     Equivalent to `Var:descending`
+%
+%   If ordering is specified for multiple   variables, the result set is
+%   ordered starting with the left-most variable   for which ordering is
+%   defined.
 
 projection(_).
 
-swish:goal_expansion((Projection,Body), Ordered) :-
+swish:goal_expansion((Projection,Body), Aggregate) :-
     nonvar(Projection),
     Projection = projection(Spec),
     must_be(list, Spec),
-    phrase(order(Spec, Vars), Order),
-    Order \== [],
-    Ordered = order_by(Order, Body),
+    aggregation(Spec, Vars, Body, Aggregate),
+    !,
     ignore(set_projection(Vars)).
 swish:goal_expansion(projection(Vars), true) :-
     set_projection(Vars).
@@ -106,16 +128,70 @@ select_binding(Bindings, Var, Name=Var) :-
     Var == X,
     !.
 
-order([], []) -->
-    [].
-order([H|T], [V|VT]) -->
-    order1(H, V),
-    order(T, VT).
+%!  aggregation(+Projection:list, -Vars, +Goal0, -Goal) is semidet.
+%
+%   Determine the final projection variables as well as ordering and
+%   distinct wrapper from the projection argument.
 
-order1(V, V)  --> {var(V)}, !.
-order1(+V, V) --> !, [asc(V)].
-order1(-V, V) --> !, [desc(V)].
-order1(V, V)  --> [].
+aggregation(Projection, Vars, Goal0, Goal) :-
+    modifiers(Projection, Vars, Unique, Order),
+    munique(Unique, Goal0, Goal1),
+    morder(Order, Goal1, Goal).
+
+munique([], Goal, Goal) :-
+    !.
+munique(Vars, Goal0, distinct(Term, Goal0)) :-
+    Term =.. [v|Vars].
+
+morder([], Goal, Goal) :-
+    !.
+morder(Vars, Goal0, order_by(Vars, Goal0)).
+
+modifiers(Projection, Vars, Unique, Order) :-
+    phrase(annotations(Projection, Vars), Annot),
+    Annot \== [],
+    partition(unique_anot, Annot, Unique, Order).
+
+unique_anot(distinct(_)).
+
+annotations([], []) -->
+    [].
+annotations([H|T], [V|VT]) -->
+    annotations1(H, V),
+    annotations(T, VT).
+
+annotations1(V, V)  --> {var(V)}, !.
+annotations1(+V, V) --> !, [asc(V)].
+annotations1(-V, V) --> !, [desc(V)].
+annotations1(V:Ann, V) --> !, var_annotations(Ann, V).
+annotations1(V, V)  --> [].
+
+var_annotations(Var, _) --> {var(Var), instantiation_error(Var)}.
+var_annotations(A+B, V) --> !, var_annotations(A,V), var_annotations(B,V).
+var_annotations(Anot, V) -->
+    { var_annotation(Anot, Can),
+      Term =.. [Can,V]
+    },
+    [ Term ].
+
+var_annotation(Anot, Cann) :-
+    var_anot1(Anot, Cann),
+    !,
+    (   var_anot1(Anot, Cann2),
+        Cann \== Cann2
+    ->  domain_error(projection_annotation, Anot)
+    ;   true
+    ).
+var_annotation(Anot, _Cann) :-
+    domain_error(projection_annotation, Anot).
+
+var_anot1(Anot, Cann) :-
+    var_annot(Long, Cann),
+    sub_atom(Long, 0, _, _, Anot).
+
+var_annot(ascending,  asc).
+var_annot(descending, desc).
+var_annot(distinct,   distinct).
 
 :- multifile sandbox:safe_primitive/1.
 
