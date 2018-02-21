@@ -1065,9 +1065,8 @@ notify_event(updated(File, Commit)) :-
 notify_event(deleted(File, Commit)) :-
     atom_concat('gitty:', File, DocID),
     update_last_modified(Commit, DocID).
-notify_event(created(_File, Commit)) :-
-    storage_meta_data(Commit.get(previous), Meta),
-    atom_concat('gitty:', Meta.name, DocID),
+notify_event(created(File, Commit)) :-
+    atom_concat('gitty:', File, DocID),
     update_last_modified(Commit, DocID).
 
 
