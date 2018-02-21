@@ -50,6 +50,9 @@ set.
 	for efficiency reasons.
 */
 
+:- multifile
+    reserved_var/1.                             % +VarName
+
 %!  projection(+Spec:list)
 %
 %   Specify the result variables. Using projection/1   at the start of a
@@ -76,10 +79,27 @@ swish:goal_expansion(projection(Vars), true) :-
 set_projection(Vars) :-
     nb_current('$variable_names', Bindings),
     debug(projection, 'Got ~p; Asking ~p', [Bindings, Vars]),
-    memberchk('_residuals'=Var, Bindings),
-    maplist(select_binding(Bindings), Vars, NewBindings),
-    debug(projection, 'Filtered ~p', [NewBindings]),
-    b_setval('$variable_names', ['_residuals'=Var|NewBindings]).
+    preverse_vars(Bindings, NewVars, SelectedBindings),
+    maplist(select_binding(Bindings), Vars, SelectedBindings),
+    debug(projection, 'Filtered ~p', [NewVars]),
+    b_setval('$variable_names', NewVars).
+
+%!  preverse_vars(+Bindings, -ReservedBindings, ?Tail) is det.
+%
+%   Preserve some of the _pseudo   bindings_ that communicate additional
+%   information from the Pengine. May be   extended by adding clauses to
+%   reserved_var/1.
+
+preverse_vars([], L, L).
+preverse_vars([Name=Var|T0], [Name=Var|T], L) :-
+    reserved_var(Name),
+    !,
+    preverse_vars(T0, T, L).
+preverse_vars([_|T0], T, L) :-
+    preverse_vars(T0, T, L).
+
+reserved_var('_residuals').
+reserved_var('_swish__permahash').
 
 select_binding(Bindings, Var, Name=Var) :-
     member(Name=X, Bindings),

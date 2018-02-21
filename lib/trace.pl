@@ -222,7 +222,9 @@ strip_stack(Error, Error).
 	->  true
 	;   Bindings = []
 	),
+	debug(projection, 'Pre-context-pre ~p, extra=~p', [Bindings, Extra]),
 	maplist(call_pre_context(Goal, Bindings), Extra),
+	debug(projection, 'Pre-context-post ~p, extra=~p', [Bindings, Extra]),
 	catch(swish_call(Goal), E, throw(E)),
 	deterministic(Det),
 	(   tracing,
