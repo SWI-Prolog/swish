@@ -281,6 +281,30 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
     },
 
     /**
+     * @return {Array} An arrayt of strings representing the
+     * current history.
+     */
+    getHistory: function() {
+      var ul   = this.find("ul.history");
+      var h = [];
+
+      ul.children().each(function() {
+	h.push($(this).find("a").text());
+      });
+
+      return h;
+    },
+
+    restoreHistory: function(h) {
+      var ul   = this.find("ul.history");
+
+      ul.html("");
+      for(var i=0; i<h.length; i++) {
+	ul.append($.el.li($.el.a(h[i])));
+      }
+    },
+
+    /**
      * Set the current query and focus the editor.
      * @param {String} query the new value of the query
      */
@@ -311,6 +335,18 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
      */
     getQuery: function() {
       return this.find(".query").prologEditor('getSource', "query");
+    },
+
+    getState: function() {
+      return {
+        query:   this[pluginName]('getQuery'),
+        history: this[pluginName]('getHistory')
+      };
+    },
+
+    setState: function(state) {
+      this.restoreHistory(state.history||[]);
+      this.setQuery(state.query||"");
     },
 
     /**
