@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2017, VU University Amsterdam
+    Copyright (C): 2014-2018, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -280,13 +280,16 @@ define([ "jquery", "config", "modal", "form", "gitty",
     },
 
     /**
-     * Reload from server
+     * Reload from server.
+     * @param {String} file Name of the file to reload.  Default is to
+     * reload the current `data.file`.
      */
-    reload: function() {
+    reload: function(file) {
       var elem = this;
       var data = elem.data(pluginName);
+          file = file||data.file;
       var url  = config.http.locations.web_storage +
-		 encodeURI(data.file);
+		 encodeURI(file);
 
       $.ajax({ url: url,
 	       type: "GET",
@@ -298,7 +301,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 		 elem.storage('setSource', reply);
 		 $("#chat").trigger('send',
 				    { type:'reloaded',
-				      file:data.file,
+				      file:file,
 				      commit:reply.meta.commit
 				    });
 	       },
@@ -552,6 +555,61 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	     });
 
       return this;
+    },
+
+    /**
+     * Save the current store-related object to the browser
+     * local store.
+     * @param {Bool} [always] If `true`, always save
+     */
+    saveLocal: function(always) {
+      return this.each(function() {
+	var elem = $(this);
+	var data = elem.data(pluginName);
+	var meta = elem.meta || {};
+
+	if ( !meta.name && data.file )
+	  meta.name = data.file;
+
+	var key = "$file$"+meta.name;
+
+	if ( always ||
+	     data.isClean(data.cleanGeneration) ) {
+	  var sdata = {
+	    meta:meta,
+	    data:data.getValue()
+	  };
+
+	  localStorage.setItem(key, JSON.stringify(sdata));
+	} else {
+	  localStorage.removeItem(key);
+	}
+      });
+    },
+
+    /**
+     * Restore a storage object from local (when modified) or remote
+     * version.
+     *
+     * @param {String} name is the name of the document to retrieve.
+     */
+    restoreLocal: function(name) {
+      var str = localStorage.getItem("$file$"+name);
+      var data;
+
+      try {
+	data = JSON.parse(str);
+	if ( typeof(data) != "object" )
+	  data = undefined;
+      } catch(err) {
+	data = undefined;
+      }
+
+      if ( data ) {
+	this[pluginName]('setSource', data);
+      } else {
+	this[pluginName]('reload', name);
+      }
     },
 
 		 /*******************************
