@@ -129,23 +129,5 @@ _not_ see exactly the same UI for cooperation.  What about
   - Colouring of /library/http/html_write.pl.  Broken sequences:
     - DCG exports
     - ?- [file].
-
-### Search files
-
-  - Only in new tab
-    - Show list of files using
-      - Name
-      - Modified
-      - User
-      - Tags
-      - Type
-      - Size?
-    - Filter using filter spec on the given fields + content (regex)
-      - name:
-      - user:
-      - tag:
-      - type:
-      - regex (optionally quoted)
-    - Full text search?
-      - Simple for small document stores?
-      - Elastic search for large ones?
+  - Modified state:
+    - notebook, edit query & undo --> modified stays on.
