@@ -114,13 +114,22 @@ tabbed.tabTypes.permalink = {
 	});
 	elem.on("unload", function(ev) {
 	  if ( ev.target == elem[0] ) {
-	    console.log("Save tabs");
-	    elem.find(".storage").storage('saveLocal');
+	    var state =  elem.find(".storage").storage('getState');
+	    localStorage.setItem("tabs", JSON.stringify(state));
 	  }
 	});
 	elem.on("restore", function(ev) {
 	  if ( ev.target == elem[0] ) {
-	    console.log("Restore tabs");
+	    // TBD: How to act with already open documents?
+	    try {
+	      var str = localStorage.getItem("tabs");
+	      var state = JSON.parse(str);
+
+	      if ( typeof(state) == "object" ) {
+		elem[pluginName]('setState', state);
+	      }
+	    } catch(err) {
+	    }
 	  }
 	});
       });
@@ -216,6 +225,18 @@ tabbed.tabTypes.permalink = {
       }
 
       return this.tabbed('addTab', dom, {active:true,close:true});
+    },
+
+    setState: function(state) {
+      for(var i=0; i<state.tabs.length; i++) {
+	var data = state.tabs[i];
+
+	if ( data.data ) {
+	  this[pluginName](tabFromSource, data);
+	} else {
+	  console.log("Restore from server", state);
+	}
+      }
     },
 
     /**

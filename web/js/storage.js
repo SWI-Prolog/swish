@@ -557,14 +557,15 @@ define([ "jquery", "config", "modal", "form", "gitty",
     },
 
     /**
-     * Save the current store-related object to the browser
-     * local store.
-     * @param {Bool} [always] If `true`, always save
+     * @return {Object} state of a set of storage objects, typically
+     * called from a tabbed environment to save the state of all tabs.
      */
-    saveLocal: function(always) {
-      var tabs = [];
+    getState: function(always) {
+      var state = {
+        tabs: []
+      };
 
-      this.each(function() {
+      this.each(function(always) {
 	var elem = $(this);
 	var data = elem.data(pluginName);
 	var meta = elem.meta || {};
@@ -578,26 +579,16 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	if ( elem[pluginName]('getActive') )
 	  tab.active = true;
 
-	tabs.push(tab);
-
-	var key = "$file$"+meta.name;
+	state.tabs.push(tab);
 
 	if ( always ||
-	     data.isClean(data.cleanGeneration) ) {
-	  var sdata = {
-	    meta:meta,
-	    data:data.getValue()
-	  };
-
-	  localStorage.setItem(key, JSON.stringify(sdata));
-	} else {
-	  localStorage.removeItem(key);
+	     !data.isClean(data.cleanGeneration) ) {
+	  tab.meta = meta;
+	  tab.data = data;
 	}
       });
 
-      localStorage.setItem("tabs", JSON.stringify(tabs));
-
-      return this;
+      return tabs;
     },
 
     /**
