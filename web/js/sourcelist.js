@@ -178,6 +178,9 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       var data = this.data(pluginName);
       var body;
 
+      if ( !data )				/* has gone */
+	return this;
+
       if ( results ) {
 	current_query = query;
 	data.page = { query:  query,
