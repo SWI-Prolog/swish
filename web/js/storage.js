@@ -774,7 +774,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	var data = $(this).data(pluginName);
 	var obj = {};
 
-	obj.type = data.type;
+	obj.type = data.st_type;
 	if ( data.url ) obj.url = data.url;
 	if ( data.meta ) {
 	  function copyMeta(name) {
