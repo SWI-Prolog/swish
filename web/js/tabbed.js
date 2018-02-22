@@ -452,7 +452,7 @@ tabbed.tabTypes.permalink = {
 
     /**
      * Calling obj.tabbed('anchor') finds the <a> element
-     * represeting the tab label from the node obj that appears
+     * representing the tab label from the node obj that appears
      * somewhere on the tab
      */
     anchor: function() {
