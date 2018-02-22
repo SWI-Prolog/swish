@@ -77,7 +77,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	var data = $.extend({}, defaults, options);
 
 	elem.data(pluginName, data);	/* store with element */
-	elem.addClass("storage");
+	elem.addClass("storage unloadable");
 	elem.storage('update_tab_title');
 
 	/**
@@ -133,9 +133,8 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  if ( !val )
 	    elem.storage('update_tab_title');
 	});
-
-	$(window).bind("beforeunload", function(ev) {
-	  return elem.storage('unload', "beforeunload", ev);
+	elem.on("unload", function(ev, rc) {
+	  rc.rc = elem.storage('unload', "beforeunload", ev);
 	});
 
 	elem.storage('chat', (data.meta||{}).chat||'update');

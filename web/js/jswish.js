@@ -180,6 +180,7 @@ preferences.setDefault("new-tab", true);
       setupModal();
       setupPanes();
       setupResize();
+      setupUnload();
       $("#search").search();
 
       options = options||{};
@@ -696,6 +697,20 @@ preferences.setDefault("new-tab", true);
   function setupResize() {
     $(window).resize(function() {
       $(".reactive-size").trigger('reactive-resize');
+    });
+  }
+
+  function setupUnload() {
+    $(window).bind("beforeunload", function(ev) {
+      var rc;
+
+      $(".unloadable").each(function() {
+	var r = {};
+	$(this).trigger("unload", r);
+	rc = rc||r.rc;
+      });
+
+      return rc;
     });
   }
 
