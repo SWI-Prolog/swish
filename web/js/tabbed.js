@@ -119,16 +119,18 @@ tabbed.tabTypes.permalink = {
 	  }
 	});
 	elem.on("restore", function(ev) {
+	  var state;
+
 	  if ( ev.target == elem[0] ) {
 	    // TBD: How to act with already open documents?
 	    try {
 	      var str = localStorage.getItem("tabs");
 	      var state = JSON.parse(str);
-
-	      if ( typeof(state) == "object" ) {
-		elem[pluginName]('setState', state);
-	      }
 	    } catch(err) {
+	    }
+
+	    if ( typeof(state) == "object" ) {
+	      elem[pluginName]('setState', state);
 	    }
 	  }
 	});
@@ -228,13 +230,44 @@ tabbed.tabTypes.permalink = {
     },
 
     setState: function(state) {
+      var elem = this;
+
       for(var i=0; i<state.tabs.length; i++) {
 	var data = state.tabs[i];
 
+	console.log(data);
+
 	if ( data.data ) {
 	  this[pluginName]('tabFromSource', data);
-	} else {
-	  console.log("Restore from server", data);
+	} else {				/* TBD: Centralise */
+	  var select = this.find("div.tabbed-select");
+	  var tab;
+
+	  if ( select.length > 0 )  {
+	    tab = select.first().closest(".tab-pane");
+	  } else {
+	    tab = elem.tabbed('newTab', $("<span></span>"));
+	  }
+
+	  if ( data.st_type == "gitty" ) {
+	    var url = config.http.locations.web_storage + data.file;
+	    $.ajax({ url: url,
+	             type: "GET",
+		     data: {format: "json"},
+		     success: function(reply) {
+		       reply.url = url;
+		       reply.st_type = "gitty";
+		       if ( !elem.tabbed('setSource', tab, reply) ) {
+			 elem.tabbed('removeTab', tab.attr("id"));
+		       }
+		     },
+		     error: function(jqXHR) {
+		       modal.ajaxError(jqXHR);
+		     }
+	    });
+	  } else {
+	    console.log("Cannot restore ", data);
+	  }
 	}
       }
     },

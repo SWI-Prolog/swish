@@ -574,9 +574,9 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  meta.name = data.file;
 
 	var tab = {
-	  file: meta.name,
-	  type: data.st_type,
-	  url:  data.url
+	  file:    meta.name,
+	  st_type: data.st_type,
+	  url:     data.url
 	};
 	if ( elem[pluginName]('getActive') )
 	  tab.active = true;
@@ -586,7 +586,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	if ( always ||
 	     !data.isClean(data.cleanGeneration) ) {
 	  tab.meta = meta;
-	  tab.data = data;
+	  tab.data = data.getValue();
 	}
       });
 
