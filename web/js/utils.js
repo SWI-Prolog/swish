@@ -75,6 +75,21 @@ define(["jquery"],
     flash: function(obj) {
       obj.addClass("flash");
       setTimeout(function() { obj.removeClass("flash"); }, 1500);
+    },
+
+    ago: function(time) {
+      var ago = ((new Date().getTime())/1000) - time;
+
+      if ( ago < 20  ) return "just now";
+      if ( ago < 60  ) return "less then a minute ago";
+      ago = Math.round(ago/60);
+      if ( ago < 120 ) return ago + " minutes ago";
+      ago = Math.round(ago/60);
+      if ( ago < 48 )  return ago + " hours ago";
+      ago = Math.round(ago/24);
+      if ( ago < 360 ) return ago + " days ago";
+      ago = Math.round(ago/365);
+      return ago + " years ago";
     }
   }
 
