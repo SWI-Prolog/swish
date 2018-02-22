@@ -574,7 +574,9 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  meta.name = data.file;
 
 	var tab = {
-	  name: meta.name
+	  file: meta.name,
+	  type: data.st_type,
+	  url:  data.url
 	};
 	if ( elem[pluginName]('getActive') )
 	  tab.active = true;
@@ -588,7 +590,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	}
       });
 
-      return tabs;
+      return state;
     },
 
     /**

@@ -232,9 +232,9 @@ tabbed.tabTypes.permalink = {
 	var data = state.tabs[i];
 
 	if ( data.data ) {
-	  this[pluginName](tabFromSource, data);
+	  this[pluginName]('tabFromSource', data);
 	} else {
-	  console.log("Restore from server", state);
+	  console.log("Restore from server", data);
 	}
       }
     },
