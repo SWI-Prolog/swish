@@ -75,7 +75,8 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
 	var qediv  = $.el.div({class:"query"});
 	var tabled = tableCheckbox(data);
 
-	elem.addClass("prolog-query-editor swish-event-receiver reactive-size");
+	elem.addClass("prolog-query-editor swish-event-receiver reactive-size " +
+		      "unloadable");
 
 	elem.append(qediv,
 		    $.el.div({class:"prolog-prompt"}, "?-"),
@@ -127,6 +128,26 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
 	    }
 	  }
 	  elem.queryEditor('setQuery', query);
+	});
+	elem.on("unload", function(ev, rc) {
+	  var state = elem[pluginName]('getState');
+	  if ( state )
+	    localStorage.setItem("query", JSON.stringify(state));
+	});
+	elem.on("restore", function(ev, rc) {
+	  if ( elem[pluginName]('getQuery') == "" ) {
+	    // called with explicit query
+	    // TBD: not save in this case?
+	    try {
+	      var str = localStorage.getItem("query");
+	      var state = JSON.parse(str);
+
+	      if ( typeof(state) == "object" ) {
+		elem[pluginName]('setState', state);
+	      }
+	    } catch(err) {
+	    }
+	  }
 	});
       });
     },
@@ -354,8 +375,8 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
     },
 
     setState: function(state) {
-      this.restoreHistory(state.history||[]);
-      this.setQuery(state.query||"");
+      this[pluginName]('restoreHistory', state.history||[]);
+      this[pluginName]('setQuery', state.query||"");
     },
 
     /**

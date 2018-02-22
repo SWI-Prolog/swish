@@ -239,6 +239,8 @@ preferences.setDefault("new-tab", true);
 	setInterval(function(){
 	  $(".each-minute").trigger("minute");
 	}, 60000);
+
+	$(".unloadable").trigger("restore");
       });
     },
 
