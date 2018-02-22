@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015, VU University Amsterdam
+    Copyright (c)  2018, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -97,3 +97,8 @@ root_selector(this) :- !.
 root_selector(swish) :- !.
 root_selector(Selector) :-
 	domain_error(root_selector, Selector).
+
+:- multifile
+	sandbox:safe_primitive/1.
+
+sandbox:safe_primitive(swish_jquery:jquery(_,_,_)).
