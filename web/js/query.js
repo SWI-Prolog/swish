@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2017, VU University Amsterdam
+    Copyright (C): 2014-2018, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -45,9 +45,10 @@
  */
 
 define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
+	 "utils",
 	 "laconic", "editor"
        ],
-       function($, config, preferences, CodeMirror, modal) {
+       function($, config, preferences, CodeMirror, modal, utils) {
 
 (function($) {
   var pluginName = 'queryEditor';
@@ -269,12 +270,14 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
 
       if ( query ) {
 	var li;
+	var a;
 
 	if ( (li=findInHistory()) )
 	  li.remove();
 	if ( ul.children().length >= data.maxHistoryLength )
 	  ul.children().first().remove();
-	ul.append($.el.li($.el.a(query)));
+	ul.append($.el.li(a=$.el.a(query)));
+	$(a).data('time', (new Date().getTime())/1000);
       }
 
       return this;
@@ -289,7 +292,11 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
       var h = [];
 
       ul.children().each(function() {
-	h.push($(this).find("a").text());
+	var a =	$(this).find("a");
+	h.push({
+	  query: a.text(),
+	  time:  a.data('time')
+	});
       });
 
       return h;
@@ -300,7 +307,9 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
 
       ul.html("");
       for(var i=0; i<h.length; i++) {
-	ul.append($.el.li($.el.a(h[i])));
+	var a;
+	ul.append($.el.li(a= $.el.a(h[i].query)));
+	$(a).data('time', h[i].time);
       }
     },
 
@@ -453,7 +462,14 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
   }
 
   function historyButton(options) {
-    return dropup("history", "History", options);
+    var menu = dropup("history", "History", options);
+
+    $(menu).on("mouseenter", "li", function(ev) {
+      var a = $(ev.target).closest("li").find("a");
+      a.attr("title", utils.ago(a.data('time')));
+    });
+
+    return menu;
   }
 
   function aggregateButton(options) {
