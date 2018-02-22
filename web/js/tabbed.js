@@ -96,7 +96,7 @@ tabbed.tabTypes.permalink = {
 	data.tabTypes = options.tabTypes || tabbed.tabTypes;
 	elem.data(pluginName, data);	/* store with element */
 
-	elem.addClass("tabbed");
+	elem.addClass("tabbed unloadable");
 	elem.tabbed('makeTabbed');
 	elem.on("trace-location", function(ev, prompt) {
 	  elem.tabbed('showTracePort', prompt);
@@ -110,6 +110,17 @@ tabbed.tabTypes.permalink = {
 	      a.removeClass("data-dirty");
 	    else
 	      a.addClass("data-dirty");
+	  }
+	});
+	elem.on("unload", function(ev) {
+	  if ( ev.target == elem[0] ) {
+	    console.log("Save tabs");
+	    elem.find(".storage").storage('saveLocal');
+	  }
+	});
+	elem.on("restore", function(ev) {
+	  if ( ev.target == elem[0] ) {
+	    console.log("Restore tabs");
 	  }
 	});
       });

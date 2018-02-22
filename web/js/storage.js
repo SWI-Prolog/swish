@@ -562,13 +562,23 @@ define([ "jquery", "config", "modal", "form", "gitty",
      * @param {Bool} [always] If `true`, always save
      */
     saveLocal: function(always) {
-      return this.each(function() {
+      var tabs = [];
+
+      this.each(function() {
 	var elem = $(this);
 	var data = elem.data(pluginName);
 	var meta = elem.meta || {};
 
 	if ( !meta.name && data.file )
 	  meta.name = data.file;
+
+	var tab = {
+	  name: meta.name
+	};
+	if ( elem[pluginName]('getActive') )
+	  tab.active = true;
+
+	tabs.push(tab);
 
 	var key = "$file$"+meta.name;
 
@@ -584,6 +594,10 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  localStorage.removeItem(key);
 	}
       });
+
+      localStorage.setItem("tabs", JSON.stringify(tabs));
+
+      return this;
     },
 
     /**
@@ -789,7 +803,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  copyMeta("module");
 	}
 
-	if ( $(this).closest(".tab-pane.active").length == 1 )
+	if ( $(this)[pluginName]('getActive') )
 	  obj.active = true;
 
 	if ( !options.type ||
@@ -1000,6 +1014,13 @@ define([ "jquery", "config", "modal", "form", "gitty",
       } else {
 	console.log(sel);
       }
+    },
+
+    /**
+     * @return {Boolean} `true` if storage is in an active tab
+     */
+    getActive: function() {
+      return $(this).closest(".tab-pane.active").length == 1;
     },
 
     /**
