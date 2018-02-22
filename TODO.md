@@ -124,6 +124,13 @@ _not_ see exactly the same UI for cooperation.  What about
 
   - Get Anna's new avatars
 
+### Permalinks
+
+  - Handle external storage state
+  - Add permalink as metadata
+    - To generated PDF (R integration)
+    - To CSV
+
 ### Bugs
 
   - Colouring of /library/http/html_write.pl.  Broken sequences:
