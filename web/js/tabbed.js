@@ -271,6 +271,32 @@ tabbed.tabTypes.permalink = {
 		       modal.ajaxError(jqXHR);
 		     }
 	    });
+	  } else if ( data.url ) {
+	    $.ajax({ url: options.url,
+		     type: "GET",
+		     data: {format: "json"},
+		     success: function(source) {
+		       var msg;
+
+		       if ( typeof(source) == "string" ) {
+			 msg = { data: source };
+			 msg.st_type = "external";
+		       } else if ( typeof(source) == "object" &&
+				   typeof(source.data) == "string" ) {
+			 msg = source;
+			 msg.st_type = "filesys";
+		       } else {
+			 alert("Invalid data");
+			 return;
+		       }
+		       if ( !elem.tabbed('setSource', tab, reply) ) {
+			 elem.tabbed('removeTab', tab.attr("id"));
+		       }
+		     },
+		     error: function(jqXHR) {
+		       modal.ajaxError(jqXHR);
+		     }
+	    });
 	  } else {
 	    console.log("Cannot restore ", data);
 	  }
