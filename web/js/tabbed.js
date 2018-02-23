@@ -234,20 +234,26 @@ tabbed.tabTypes.permalink = {
 
       for(var i=0; i<state.tabs.length; i++) {
 	var data = state.tabs[i];
+	var tab;
 
 	data.query = null;			/* null keeps query */
 	var existing = this.find(".storage").storage('match', data);
+	if ( existing ) {
+	  console.log("Existing tab; moving right");
+	  tab = existing.closest(".tab-pane");
+	  elem.tabbed('move_right', tab);
+	}
 
 	if ( data.data ) {
+	  console.log("Creating from data");
 	  if ( existing )			/* modified version */
-	    elem.tabbed('setSource', existing.closest(".tab-pane"), data);
+	    elem.tabbed('setSource', tab, data);
 	  else
 	    this[pluginName]('tabFromSource', data);
 	} else if ( existing ) {
-	  /* fix tab ordering */
+	  /* nothing to do? */
 	} else {				/* TBD: Centralise */
 	  var select = this.find("div.tabbed-select");
-	  var tab;
 
 	  if ( select.length > 0 )  {
 	    tab = select.first().closest(".tab-pane");
@@ -506,6 +512,22 @@ tabbed.tabTypes.permalink = {
       }
 
       $(".storage").storage('chat_status', true);
+    },
+
+    /**
+     * Move the argument tab or tab id to the right of all
+     * tabs.
+     */
+    move_right: function(tab) {
+      var id;
+      var ul = this.find(">ul");
+
+      if ( typeof(tab) == "string" )
+	id = tab;
+      else
+	id = tab.attr('id');
+
+      ul.find("a[data-id="+id+"]").closest("li").appendTo(ul);
     },
 
     /**
