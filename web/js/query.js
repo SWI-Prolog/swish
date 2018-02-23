@@ -120,14 +120,16 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
 	elem.on("program-loaded", function(ev, options) {
 	  var query = options.query;
 
-	  if ( query == undefined ) {
-	    if ( $(data.editor).data('prologEditor') ==
-		 $(options.editor).data('prologEditor') ) {
-	      var exl = data.examples();
-	      query = exl && exl[0] ? exl[0] : "";
+	  if ( query != null ) {		/* null: keep */
+	    if ( query == undefined ) {
+	      if ( $(data.editor).data('prologEditor') ==
+		   $(options.editor).data('prologEditor') ) {
+		var exl = data.examples();
+		query = exl && exl[0] ? exl[0] : "";
+	      }
 	    }
+	    elem.queryEditor('setQuery', query);
 	  }
-	  elem.queryEditor('setQuery', query);
 	});
 	elem.on("unload", function(ev, rc) {
 	  var state = elem[pluginName]('getState');
@@ -136,16 +138,17 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
 	});
 	elem.on("restore", function(ev, rc) {
 	  if ( elem[pluginName]('getQuery') == "" ) {
+	    var state;
 	    // called with explicit query
 	    // TBD: not save in this case?
 	    try {
 	      var str = localStorage.getItem("query");
-	      var state = JSON.parse(str);
-
-	      if ( typeof(state) == "object" ) {
-		elem[pluginName]('setState', state);
-	      }
+	      state = JSON.parse(str);
 	    } catch(err) {
+	    }
+
+	    if ( typeof(state) == "object" ) {
+	      elem[pluginName]('setState', state);
 	    }
 	  }
 	});

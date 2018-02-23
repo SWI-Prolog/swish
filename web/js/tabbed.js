@@ -235,10 +235,16 @@ tabbed.tabTypes.permalink = {
       for(var i=0; i<state.tabs.length; i++) {
 	var data = state.tabs[i];
 
-	console.log(data);
+	data.query = null;			/* null keeps query */
+	var existing = this.find(".storage").storage('match', data);
 
 	if ( data.data ) {
-	  this[pluginName]('tabFromSource', data);
+	  if ( existing )			/* modified version */
+	    elem.tabbed('setSource', existing.closest(".tab-pane"), data);
+	  else
+	    this[pluginName]('tabFromSource', data);
+	} else if ( existing ) {
+	  /* fix tab ordering */
 	} else {				/* TBD: Centralise */
 	  var select = this.find("div.tabbed-select");
 	  var tab;
