@@ -122,8 +122,13 @@ var MAX_RECONNECT_DELAY = 300000;
 	lead = "&";
       }
 
-      data.connection = new WebSocket(ws + "//" + url,
-				      ['v1.chat.swish.swi-prolog.org']);
+      try {
+	data.connection = new WebSocket(ws + "//" + url,
+					['v1.chat.swish.swi-prolog.org']);
+      } catch(err) {
+	elem.chat('userCount', undefined);
+	return;
+      }
 
       data.connection.onerror = function(error) {
 	elem.chat('userCount', undefined);
