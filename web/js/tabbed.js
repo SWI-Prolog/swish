@@ -259,7 +259,6 @@ tabbed.tabTypes.permalink = {
 
       var existing = this.find(".storage").storage('match', data);
       if ( existing ) {
-	console.log("Existing tab; moving right", data.file);
 	tab = existing.closest(".tab-pane");
 	elem.tabbed('move_right', tab);
       } else
@@ -276,7 +275,6 @@ tabbed.tabTypes.permalink = {
       }
 
       if ( existing && data.data ) {
-	console.log("Modified data for existing", data.file);
 	restoreData(tab, data);
       } else if ( existing ) {
 	/* nothing to do? */
