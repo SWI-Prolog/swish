@@ -209,7 +209,7 @@ tabbed.tabTypes.permalink = {
      * `tabSelect`.
      * @return {jQuery} object representing the created tab
      */
-    newTab: function(dom) {
+    newTab: function(dom, active) {
       var data = this.data(pluginName);
 
       if ( dom == undefined ) {
@@ -226,11 +226,19 @@ tabbed.tabTypes.permalink = {
 	}
       }
 
-      return this.tabbed('addTab', dom, {active:true,close:true});
+      if ( active == undefined )
+	active = true;
+
+      return this.tabbed('addTab', dom, {active:active,close:true});
     },
 
     getState: function() {
-      return this[pluginName]('get_ordered_storage').storage('getState');
+      var state = this[pluginName]('get_ordered_storage').storage('getState');
+
+      state.pathname = window.location.pathname;
+      state.time     = new Date().getTime();
+
+      return state;
     },
 
     setState: function(state) {
@@ -242,7 +250,9 @@ tabbed.tabTypes.permalink = {
 
 	console.log(data);
 
-	data.query = null;			/* null keeps query */
+	data.query = null;		/* null keeps query */
+	data.noHistory = true;		/* do not update window path */
+
 	var existing = this.find(".storage").storage('match', data);
 	if ( existing ) {
 	  console.log("Existing tab; moving right", data.file);
@@ -252,10 +262,10 @@ tabbed.tabTypes.permalink = {
 	{ tab = undefined;
 	}
 
-	function restoreData(into) {
-	  if ( data.data ) {
+	function restoreData(into, from) {
+	  if ( from.data ) {
 	    into.find(".storage").storage('setValue', {
-	      data: data.data,
+	      data: from.data,
 	      role: 'source'
 	    });
 	  }
@@ -263,7 +273,7 @@ tabbed.tabTypes.permalink = {
 
 	if ( existing && data.data ) {
 	  console.log("Modified data for existing", data.file);
-	  restoreData(tab);
+	  restoreData(tab, data);
 	} else if ( existing ) {
 	  /* nothing to do? */
 	} else {				/* TBD: Centralise */
@@ -273,7 +283,7 @@ tabbed.tabTypes.permalink = {
 	  if ( select.length > 0 )  {
 	    newtab = select.first().closest(".tab-pane");
 	  } else {
-	    newtab = elem.tabbed('newTab', $("<span></span>"));
+	    newtab = elem.tabbed('newTab', $("<span></span>"), Boolean(data.active));
 	  }
 
 	  if ( data.st_type == "gitty" ) {
@@ -284,10 +294,11 @@ tabbed.tabTypes.permalink = {
 		     success: function(reply) {
 		       reply.url = url;
 		       reply.st_type = "gitty";
+		       reply.noHistory = true;
 		       if ( !elem.tabbed('setSource', newtab, reply) ) {
 			 elem.tabbed('removeTab', tab.attr("id"));
 		       }
-		       restoreData(newtab);
+		       restoreData(newtab, data);
 		     },
 		     error: function(jqXHR) {
 		       modal.ajaxError(jqXHR);
@@ -311,10 +322,11 @@ tabbed.tabTypes.permalink = {
 			 alert("Invalid data");
 			 return;
 		       }
-		       if ( !elem.tabbed('setSource', newtab, reply) ) {
+		       msg.noHistory = true;
+		       if ( !elem.tabbed('setSource', newtab, msg) ) {
 			 elem.tabbed('removeTab', tab.attr("id"));
 		       }
-		       restoreData(newtab);
+		       restoreData(newtab, data);
 		     },
 		     error: function(jqXHR) {
 		       modal.ajaxError(jqXHR);

@@ -201,9 +201,6 @@ define([ "jquery", "config", "modal", "form", "gitty",
       data.cleanCheckpoint = src.cleanCheckpoint || "load";
       this.trigger("data-is-clean", true);
 
-      if ( !data.isClean(data.cleanGeneration) )
-	console.log("Not clean after load!?");
-
       this.storage('update_tab_title');
 
       if ( !src.url       ) src.url = config.http.locations.swish;
