@@ -114,7 +114,7 @@ tabbed.tabTypes.permalink = {
 	});
 	elem.on("unload", function(ev) {
 	  if ( ev.target == elem[0] ) {
-	    var state =  elem.find(".storage").storage('getState');
+	    var state = elem[pluginName]('getState');
 	    localStorage.setItem("tabs", JSON.stringify(state));
 	  }
 	});
@@ -229,6 +229,10 @@ tabbed.tabTypes.permalink = {
       return this.tabbed('addTab', dom, {active:true,close:true});
     },
 
+    getState: function() {
+      return this[pluginName]('get_ordered_storage').storage('getState');
+    },
+
     setState: function(state) {
       var elem = this;
 
@@ -236,17 +240,21 @@ tabbed.tabTypes.permalink = {
 	var data = state.tabs[i];
 	var tab;
 
+	console.log(data);
+
 	data.query = null;			/* null keeps query */
 	var existing = this.find(".storage").storage('match', data);
 	if ( existing ) {
 	  console.log("Existing tab; moving right", data.file);
 	  tab = existing.closest(".tab-pane");
 	  elem.tabbed('move_right', tab);
+	} else
+	{ tab = undefined;
 	}
 
-	function restoreData() {
+	function restoreData(into) {
 	  if ( data.data ) {
-	    tab.find(".storage").storage('setValue', {
+	    into.find(".storage").storage('setValue', {
 	      data: data.data,
 	      role: 'source'
 	    });
@@ -255,16 +263,17 @@ tabbed.tabTypes.permalink = {
 
 	if ( existing && data.data ) {
 	  console.log("Modified data for existing", data.file);
-	  restoreData();
+	  restoreData(tab);
 	} else if ( existing ) {
 	  /* nothing to do? */
 	} else {				/* TBD: Centralise */
 	  var select = this.find("div.tabbed-select");
+	  var newtab;
 
 	  if ( select.length > 0 )  {
-	    tab = select.first().closest(".tab-pane");
+	    newtab = select.first().closest(".tab-pane");
 	  } else {
-	    tab = elem.tabbed('newTab', $("<span></span>"));
+	    newtab = elem.tabbed('newTab', $("<span></span>"));
 	  }
 
 	  if ( data.st_type == "gitty" ) {
@@ -275,10 +284,10 @@ tabbed.tabTypes.permalink = {
 		     success: function(reply) {
 		       reply.url = url;
 		       reply.st_type = "gitty";
-		       if ( !elem.tabbed('setSource', tab, reply) ) {
+		       if ( !elem.tabbed('setSource', newtab, reply) ) {
 			 elem.tabbed('removeTab', tab.attr("id"));
 		       }
-		       restoreData();
+		       restoreData(newtab);
 		     },
 		     error: function(jqXHR) {
 		       modal.ajaxError(jqXHR);
@@ -302,10 +311,10 @@ tabbed.tabTypes.permalink = {
 			 alert("Invalid data");
 			 return;
 		       }
-		       if ( !elem.tabbed('setSource', tab, reply) ) {
+		       if ( !elem.tabbed('setSource', newtab, reply) ) {
 			 elem.tabbed('removeTab', tab.attr("id"));
 		       }
-		       restoreData();
+		       restoreData(newtab);
 		     },
 		     error: function(jqXHR) {
 		       modal.ajaxError(jqXHR);
@@ -599,6 +608,24 @@ tabbed.tabTypes.permalink = {
       return a;
     },
 
+    /**
+     * Find the storage objects in the tabbed environment in the
+     * order of the tabs.  Note that the content divs maye be ordered
+     * differently.
+     */
+    get_ordered_storage: function() {
+      var elem = this;
+      var result = [];
+
+      this.find(">ul>li").each(function() {
+	var id = $(this).find(">a").data('id');
+	elem.find(">div.tab-content>div[id="+id+"] .storage").each(function() {
+	  result.push(this);
+	});
+      });
+
+      return $(result);
+    },
 
     /**
      * This method is typically _not_ called on the tab, but on some

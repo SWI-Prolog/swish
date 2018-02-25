@@ -201,6 +201,9 @@ define([ "jquery", "config", "modal", "form", "gitty",
       data.cleanCheckpoint = src.cleanCheckpoint || "load";
       this.trigger("data-is-clean", true);
 
+      if ( !data.isClean(data.cleanGeneration) )
+	console.log("Not clean after load!?");
+
       this.storage('update_tab_title');
 
       if ( !src.url       ) src.url = config.http.locations.swish;
@@ -210,6 +213,11 @@ define([ "jquery", "config", "modal", "form", "gitty",
       $(".storage").storage('chat_status', true);
 
       return this;
+    },
+
+    is_clean: function() {
+      var data = this.data(pluginName);
+      return data.isClean(data.cleanGeneration);
     },
 
     /**
@@ -580,7 +588,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
         tabs: []
       };
 
-      this.each(function(always) {
+      this.each(function() {
 	var elem = $(this);
 	var data = elem.data(pluginName);
 	var meta = elem.meta || {};
