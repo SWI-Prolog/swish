@@ -177,10 +177,12 @@ var MAX_RECONNECT_DELAY = 300000;
     disconnect: function() {
       var data = this.data(pluginName);
 
-      this.chat('send', {type: "unload"});
-      data.connection.onclose = function(){};
-      data.connection.close();
-      data.connection = undefined;
+      if ( data.connection ) {
+	this.chat('send', {type: "unload"});
+	data.connection.onclose = function(){};
+	data.connection.close();
+	data.connection = undefined;
+      }
 
       return this;
     },
