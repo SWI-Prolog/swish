@@ -246,98 +246,107 @@ tabbed.tabTypes.permalink = {
 
       for(var i=0; i<state.tabs.length; i++) {
 	var data = state.tabs[i];
-	var tab;
+	this[pluginName]('restoreTab', data);
+      }
+    },
 
-	console.log(data);
+    restoreTab: function(data) {
+      var elem = this;
+      var tab;
 
-	data.query = null;		/* null keeps query */
-	data.noHistory = true;		/* do not update window path */
+      data.query = null;		/* null keeps query */
+      data.noHistory = true;		/* do not update window path */
 
-	var existing = this.find(".storage").storage('match', data);
-	if ( existing ) {
-	  console.log("Existing tab; moving right", data.file);
-	  tab = existing.closest(".tab-pane");
-	  elem.tabbed('move_right', tab);
-	} else
-	{ tab = undefined;
+      var existing = this.find(".storage").storage('match', data);
+      if ( existing ) {
+	console.log("Existing tab; moving right", data.file);
+	tab = existing.closest(".tab-pane");
+	elem.tabbed('move_right', tab);
+      } else
+      { tab = undefined;
+      }
+
+      function restoreData(into, from) {
+	if ( from.data ) {
+	  into.find(".storage").storage('setValue', {
+	    data: from.data,
+	    role: 'source'
+	  });
+	}
+      }
+
+      if ( existing && data.data ) {
+	console.log("Modified data for existing", data.file);
+	restoreData(tab, data);
+      } else if ( existing ) {
+	/* nothing to do? */
+      } else {				/* TBD: Centralise */
+	var select = this.find("div.tabbed-select");
+	var newtab;
+	var restoring = "<span>Restoring ..."+(data.file||data.url)+"</span>";
+
+	if ( select.length > 0 )  {
+	  newtab = select.first().closest(".tab-pane");
+	  newtab.html(restoring);
+	} else {
+	  newtab = elem.tabbed('newTab', $(restoring), Boolean(data.active));
 	}
 
-	function restoreData(into, from) {
-	  if ( from.data ) {
-	    into.find(".storage").storage('setValue', {
-	      data: from.data,
-	      role: 'source'
-	    });
-	  }
-	}
-
-	if ( existing && data.data ) {
-	  console.log("Modified data for existing", data.file);
-	  restoreData(tab, data);
-	} else if ( existing ) {
-	  /* nothing to do? */
-	} else {				/* TBD: Centralise */
-	  var select = this.find("div.tabbed-select");
-	  var newtab;
-
-	  if ( select.length > 0 )  {
-	    newtab = select.first().closest(".tab-pane");
-	  } else {
-	    newtab = elem.tabbed('newTab', $("<span></span>"), Boolean(data.active));
-	  }
-
-	  if ( data.st_type == "gitty" ) {
-	    var url = config.http.locations.web_storage + data.file;
-	    $.ajax({ url: url,
-	             type: "GET",
-		     data: {format: "json"},
-		     success: function(reply) {
-		       reply.url = url;
-		       reply.st_type = "gitty";
-		       reply.noHistory = true;
-		       if ( !elem.tabbed('setSource', newtab, reply) ) {
-			 elem.tabbed('removeTab', tab.attr("id"));
-		       }
-		       restoreData(newtab, data);
-		     },
-		     error: function(jqXHR) {
-		       modal.ajaxError(jqXHR);
+	if ( data.st_type == "gitty" ) {
+	  var url = config.http.locations.web_storage + data.file;
+	  $.ajax({ url: url,
+		   type: "GET",
+		   data: {format: "json"},
+		   success: function(reply) {
+		     reply.url = url;
+		     reply.st_type = "gitty";
+		     reply.noHistory = true;
+		     if ( !elem.tabbed('setSource', newtab, reply) ) {
+		       console.log("Failed to restore", data.file);
+		       elem.tabbed('removeTab', tab.attr("id"));
 		     }
-	    });
-	  } else if ( data.url ) {
-	    $.ajax({ url: options.url,
-		     type: "GET",
-		     data: {format: "json"},
-		     success: function(source) {
-		       var msg;
+		     restoreData(newtab, data);
+		   },
+		   error: function(jqXHR) {
+		     modal.ajaxError(jqXHR);
+		   }
+	  });
+	} else if ( data.url ) {
+	  $.ajax({ url: data.url,
+		   type: "GET",
+		   data: {format: "json"},
+		   success: function(source) {
+		     var msg;
 
-		       if ( typeof(source) == "string" ) {
-			 msg = { data: source };
-			 msg.st_type = "external";
-		       } else if ( typeof(source) == "object" &&
-				   typeof(source.data) == "string" ) {
-			 msg = source;
-			 msg.st_type = "filesys";
-		       } else {
-			 alert("Invalid data");
-			 return;
-		       }
-		       msg.noHistory = true;
-		       if ( !elem.tabbed('setSource', newtab, msg) ) {
-			 elem.tabbed('removeTab', tab.attr("id"));
-		       }
-		       restoreData(newtab, data);
-		     },
-		     error: function(jqXHR) {
-		       modal.ajaxError(jqXHR);
+		     if ( typeof(source) == "string" ) {
+		       msg = { data: source };
+		       msg.st_type = "external";
+		     } else if ( typeof(source) == "object" &&
+				 typeof(source.data) == "string" ) {
+		       msg = source;
+		       msg.st_type = "filesys";
+		     } else {
+		       alert("Invalid data");
+		       return;
 		     }
-	    });
-	  } else {
-	    console.log("Cannot restore ", data);
-	  }
+		     msg.noHistory = true;
+		     msg.url = data.url;
+		     if ( !elem.tabbed('setSource', newtab, msg) ) {
+		       console.log("Failed to restore", data.url);
+		       elem.tabbed('removeTab', newtab.attr("id"));
+		     }
+		     restoreData(newtab, data);
+		   },
+		   error: function(jqXHR) {
+		     modal.ajaxError(jqXHR);
+		   }
+	  });
+	} else {
+	  console.log("Cannot restore ", data);
 	}
       }
     },
+
 
     /**
      * Add a new tab from the provided source.  If there is a _select_
