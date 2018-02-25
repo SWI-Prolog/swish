@@ -583,6 +583,7 @@ var cellTypes = {
 	this.find(".nb-cell").nbCell('onload');
 	this.notebook('run_all', 'onload');
 	this.notebook('updatePlaceHolder');
+	this.notebook('assignCellNames', false);
       }
     },
 
@@ -593,8 +594,8 @@ var cellTypes = {
     changeGen: function() {
       var list = [];
       this.find(".nb-cell").each(function() {
-	cell = $(this);
-	list.push(cell.nbCell('changeGen'));
+	var cg = $(this).nbCell('changeGen');
+	list.push(cg);
       });
       return sha1(list.join());
     },
@@ -1651,17 +1652,17 @@ var cellTypes = {
   methods.changeGen.markdown = function() {	/* markdown */
     var text = this.data('markdownText') || cellText(this);
 
-    return sha1(text);
+    return sha1("M"+text.trim());
   };
 
   methods.changeGen.html = function() {	/* HTML */
     var text = this.data('htmlText') || cellText(this);
 
-    return sha1(text);
+    return sha1("H"+text.trim());
   };
 
   methods.changeGen.program = function() {	/* program */
-    var text = "";
+    var text = "P";
     var cell = this;
 
     function addClassAttr(name, key) {
@@ -1672,12 +1673,12 @@ var cellTypes = {
     addClassAttr("background", "B");
     addClassAttr("singleline", "S");
 
-    text += "V"+cellText(this);
+    text += "V"+cellText(this).trim();
     return sha1(text);
   };
 
   methods.changeGen.query = function() {	/* query */
-    var text = "";
+    var text = "Q";
     var cell = this;
 
     function addData(name, key) {
@@ -1697,7 +1698,7 @@ var cellTypes = {
     addData("chunk", "C");
     addData("run", "R");
     addAttr("name", "N");
-    text += "V"+cellText(this);
+    text += "V"+cellText(this).trim();
 
     return sha1(text);
   };
