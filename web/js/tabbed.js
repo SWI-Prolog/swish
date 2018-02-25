@@ -245,11 +245,15 @@ tabbed.tabTypes.permalink = {
 	}
 
 	if ( data.data ) {
-	  console.log("Creating from data", data.file);
-	  if ( existing )			/* modified version */
-	    elem.tabbed('setSource', tab, data);
-	  else
+	  if ( existing ) {
+	    console.log("Modified data for", data.file);
+	    tab.find(".storage").storage('setValue', {
+	      data: data.data,
+	      role: 'source'
+	    });
+	  } else {
 	    this[pluginName]('tabFromSource', data);
+	  }
 	} else if ( existing ) {
 	  /* nothing to do? */
 	} else {				/* TBD: Centralise */

@@ -212,6 +212,20 @@ define([ "jquery", "config", "modal", "form", "gitty",
     },
 
     /**
+     * Set the value, but do not update the clean generation, meta-
+     * data, etc.  This is used for restoring a modified state.
+     * See tabbed.setState().
+     */
+    setValue: function(value) {
+      var data = this.data(pluginName);
+
+      data.setValue(value);
+      this.trigger("data-is-clean", data.isClean(data.cleanGeneration));
+
+      return this;
+    },
+
+    /**
      * Update the label and icon shown in the tab
      */
     update_tab_title: function(action) {
