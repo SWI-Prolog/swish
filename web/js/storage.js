@@ -199,6 +199,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       data.cleanGeneration = data.changeGen();
       data.cleanData       = data.getValue();
       data.cleanCheckpoint = src.cleanCheckpoint || "load";
+      this.trigger("data-is-clean", true);
 
       this.storage('update_tab_title');
 
