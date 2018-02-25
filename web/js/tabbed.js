@@ -180,7 +180,7 @@ tabbed.tabTypes.permalink = {
 			    title: "Open a new tab"
 			  },
 			  glyphicon("plus"));
-      $(ul).append($.el.li({ role:"presentation" }, create));
+      $(ul).append($.el.li({ class: "tab-new", role:"presentation" }, create));
       $(create).on("click", function(ev) {
 	var tabbed = $(ev.target).parents(".tabbed").first();
 
@@ -239,13 +239,13 @@ tabbed.tabTypes.permalink = {
 	data.query = null;			/* null keeps query */
 	var existing = this.find(".storage").storage('match', data);
 	if ( existing ) {
-	  console.log("Existing tab; moving right");
+	  console.log("Existing tab; moving right", data.file);
 	  tab = existing.closest(".tab-pane");
 	  elem.tabbed('move_right', tab);
 	}
 
 	if ( data.data ) {
-	  console.log("Creating from data");
+	  console.log("Creating from data", data.file);
 	  if ( existing )			/* modified version */
 	    elem.tabbed('setSource', tab, data);
 	  else
@@ -527,7 +527,9 @@ tabbed.tabTypes.permalink = {
       else
 	id = tab.attr('id');
 
-      ul.find("a[data-id="+id+"]").closest("li").appendTo(ul);
+      ul.find("a[data-id="+id+"]")
+        .closest("li")
+        .insertBefore(ul.children().last());
     },
 
     /**
