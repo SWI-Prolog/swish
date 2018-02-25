@@ -244,16 +244,18 @@ tabbed.tabTypes.permalink = {
 	  elem.tabbed('move_right', tab);
 	}
 
-	if ( data.data ) {
-	  if ( existing ) {
-	    console.log("Modified data for", data.file);
+	function restoreData() {
+	  if ( data.data ) {
 	    tab.find(".storage").storage('setValue', {
 	      data: data.data,
 	      role: 'source'
 	    });
-	  } else {
-	    this[pluginName]('tabFromSource', data);
 	  }
+	}
+
+	if ( existing && data.data ) {
+	  console.log("Modified data for existing", data.file);
+	  restoreData();
 	} else if ( existing ) {
 	  /* nothing to do? */
 	} else {				/* TBD: Centralise */
@@ -276,6 +278,7 @@ tabbed.tabTypes.permalink = {
 		       if ( !elem.tabbed('setSource', tab, reply) ) {
 			 elem.tabbed('removeTab', tab.attr("id"));
 		       }
+		       restoreData();
 		     },
 		     error: function(jqXHR) {
 		       modal.ajaxError(jqXHR);
@@ -302,6 +305,7 @@ tabbed.tabTypes.permalink = {
 		       if ( !elem.tabbed('setSource', tab, reply) ) {
 			 elem.tabbed('removeTab', tab.attr("id"));
 		       }
+		       restoreData();
 		     },
 		     error: function(jqXHR) {
 		       modal.ajaxError(jqXHR);
