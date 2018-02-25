@@ -300,9 +300,9 @@ notify_event(follow(DocID, ProfileID, Options)) :-
     follow(DocID, ProfileID, Options).
 % events on gitty files
 notify_event(updated(File, Commit)) :-
-    (   storage_meta_data(Commit.get(previous), OldMeta),
-        atom_concat('gitty:', OldMeta.name, OldDocID)
-    ->  notify(DocID, forked(OldMeta, Commit))
+    (   storage_meta_data(Commit.get(previous), OldCommit),
+        atom_concat('gitty:', OldCommit.name, DocID)
+    ->  notify(DocID, forked(OldCommit, Commit))
     ;   atom_concat('gitty:', File, DocID),
         notify(DocID, updated(Commit))
     ).
@@ -388,6 +388,10 @@ chat_notice(deleted(Commit), []) -->
     html([b('Deleted'), ': ', \commit_message_summary(Commit)]).
 chat_notice(forked(_OldCommit, Commit), []) -->
     html([b('Forked'), ' into ', \file_name(Commit), ': ',
+          \commit_message_summary(Commit)
+         ]).
+chat_notice(created(Commit), []) -->
+    html([b('Created'), ' ', \file_name(Commit), ': ',
           \commit_message_summary(Commit)
          ]).
 
