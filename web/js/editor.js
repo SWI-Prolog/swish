@@ -612,6 +612,7 @@ define([ "cm/lib/codemirror",
 	var elem = $(this);
 	var data = elem.data(pluginName);
 	data.cleanGeneration = data.cm.changeGeneration();
+	data.clean_signalled = true;
       });
     },
 
