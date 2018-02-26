@@ -64,20 +64,30 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	elem.data(pluginName, data);	/* store with element */
 					/* populate search page */
 	elem[pluginName]('fill', undefined, current_query);
+	elem[pluginName]('check_cache');
 	elem[pluginName]('update', current_query);
 	elem.on("login", function() {
-	  var profile = $("#login").login('get_profile',
-					  [ "display_name", "avatar"
-					  ]);
-	  if ( !(current_profile &&
-		 current_profile.display_name == profile.display_name &&
-		 current_profile.avatar == profile.avatar) ) {
-	    query_cache = [];
-	    current_profile = profile;
+	  if ( elem[pluginName]('check_cache') )
 	    elem[pluginName]('update', current_query);
-	  }
 	});
       });
+    },
+
+    check_cache: function() {
+      var profile = $("#login").login('get_profile',
+				      [ "display_name", "avatar"
+				      ]);
+      if ( !(current_profile &&
+	     current_profile.display_name == profile.display_name &&
+	     current_profile.avatar == profile.avatar) ) {
+	query_cache = [];
+	current_profile = profile;
+	return true;
+      } else {
+	if ( !current_profile )
+	  current_profile = profile;
+	return false;
+      }
     },
 
     /**
@@ -86,11 +96,8 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
     update: function(query) {
       var elem = this;
       var reply;
-      var profile = $("#login").login('get_profile',
-				      [ "display_name", "avatar"
-				      ]);
 
-      current_profile = profile;
+      this[pluginName]('check_cache');
 
       if ( (reply = from_cache(query_cache, query)) ) {
 	$.ajax({
@@ -111,7 +118,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       } else {
 	query = query||{};
 
-	$.extend(query, profile);
+	$.extend(query, current_profile);
 	query.q = query.q||"";
 	query.offset = query.offset||0;
 	query.limit  = query.limit||10;

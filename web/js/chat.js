@@ -302,6 +302,7 @@ var MAX_RECONNECT_DELAY = 300000;
      */
 
     profile: function(e) {
+      var data = this.data(pluginName);
       var li = $("#"+e.wsid);
 
       li.children("a").html("").append(avatar(e));
@@ -317,6 +318,10 @@ var MAX_RECONNECT_DELAY = 300000;
 	  e.html = "Named <i>"+utils.htmlEncode(e.name)+"</i>";
 	  this.chat('notifyUser', e);
 	}
+      }
+
+      if ( data.wsid == e.wsid ) {	/* current user profile changed */
+	$(".sourcelist").trigger("login");
       }
     },
 
