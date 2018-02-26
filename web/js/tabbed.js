@@ -282,7 +282,9 @@ tabbed.tabTypes.permalink = {
       } else {				/* TBD: Centralise */
 	var select = this.find("div.tabbed-select");
 	var newtab;
-	var restoring = "<span>Restoring ..."+(data.file||data.url)+"</span>";
+	var restoring = '<div class="restore-tab">Restoring ' +
+	                   (data.file||data.url) + " ..." +
+			'</div>';
 
 	if ( select.length > 0 )  {
 	  newtab = select.first().closest(".tab-pane");

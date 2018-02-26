@@ -111,3 +111,9 @@ form.search-sources {
   margin: 3em auto 1em;
   width: 80%;
 }
+
+div.restore-tab {
+  text-align: center;
+  margin-top: 2em;
+  font-size: 200%;
+}
