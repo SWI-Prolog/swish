@@ -193,6 +193,7 @@ tabbed.tabTypes.permalink = {
       $(ul).on("shown.bs.tab", "a", function(ev) {
 	var newContentID  = $(ev.target).data("id");
 	$("#"+newContentID+" .swish-event-receiver").trigger("activate-tab");
+	$("#"+newContentID+" .storage").storage("activate");
       });
 
       if ( this.tabbed('navContent').children().length == 0 ) {
@@ -304,6 +305,8 @@ tabbed.tabTypes.permalink = {
 		       elem.tabbed('removeTab', tab.attr("id"));
 		     }
 		     restoreData(newtab, data);
+		     if ( newtab.hasClass("active") )
+		       newtab.find(".storage").storage("activate");
 		   },
 		   error: function(jqXHR) {
 		     modal.ajaxError(jqXHR);
@@ -334,6 +337,8 @@ tabbed.tabTypes.permalink = {
 		       elem.tabbed('removeTab', newtab.attr("id"));
 		     }
 		     restoreData(newtab, data);
+		     if ( newtab.hasClass("active") )
+		       newtab.find(".storage").storage("activate");
 		   },
 		   error: function(jqXHR) {
 		     modal.ajaxError(jqXHR);

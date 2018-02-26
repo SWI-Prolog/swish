@@ -90,8 +90,12 @@ define(["jquery"],
       if ( ago < 360 ) return ago + " days ago";
       ago = Math.round(ago/365);
       return ago + " years ago";
+    },
+
+    basename: function(path) {
+      return path ? path.split('/').pop() : null;
     }
-  }
+  } // end of methods
 
   if (typeof String.prototype.startsWith != 'function') {
     String.prototype.startsWith = function(str) {

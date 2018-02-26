@@ -204,7 +204,9 @@ define([ "jquery", "config", "modal", "form", "gitty",
       this.storage('update_tab_title');
 
       if ( !src.url       ) src.url = config.http.locations.swish;
-      if ( !src.noHistory ) history.push(src);
+      if ( !src.noHistory ) history.push({ url: src.url,
+					   reason: 'load'
+					 });
 
       this.storage('chat', src.chat||(src.meta||{}).chat||'update');
       $(".storage").storage('chat_status', true);
@@ -249,7 +251,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  if ( !file || !(type = tabbed.type(file)) )
 	    type = tabbed.tabTypes[data.typeName];
 
-	  var title = (filebase(basename(file)) ||
+	  var title = (filebase(utils.basename(file)) ||
 		       type.label);
 
 	  if ( docid && data.chats )
@@ -435,7 +437,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 		   elem.storage('update_tab_title');
 		   elem.storage('chat', (data.meta||{}).chat||'update');
 		   $(".storage").storage('chat_status', true);
-		   history.push(reply);
+		   history.push({url: reply.url, reason: "save"});
 		 }
 	       },
 	       error: function(jqXHR, textStatus, errorThrown) {
@@ -574,6 +576,19 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	     });
 
       return this;
+    },
+
+    /**
+     * Storage was activated (e.g., a tab switch)
+     */
+    activate: function() {
+      var data = this.data(pluginName);
+
+      if ( data && data.url ) {
+	history.push({url: data.url, reason: 'activate'});
+      }
+
+      return this
     },
 
     /**
@@ -886,7 +901,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       if ( data.st_type == "gitty" ) {
 	title = $().gitty('title', meta);
       } else if ( data.st_type == "filesys" ) {
-	title = "File system -- " + basename(meta.path);
+	title = "File system -- " + utils.basename(meta.path);
       } else if ( data.st_type == "external" ) {
 	title = "External -- " + data.url;
       } else {
@@ -1291,10 +1306,6 @@ define([ "jquery", "config", "modal", "form", "gitty",
 
   function filebase(file) {
     return file ? file.split('.').slice(0,-1).join(".") : null;
-  }
-
-  function basename(path) {
-    return path ? path.split('/').pop() : null;
   }
 
   function udiff(diff) {
