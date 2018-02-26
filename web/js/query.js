@@ -132,7 +132,7 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
 	  }
 	});
 	elem.on("unload", function(ev, rc) {
-	  if ( swish.option.preserve_state != false ) {
+	  if ( elem.closest(".swish").swish('preserve_state') ) {
 	    var state = elem[pluginName]('getState');
 	    if ( state )
 	      localStorage.setItem("query", JSON.stringify(state));
@@ -152,6 +152,12 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
 	    if ( typeof(state) == "object" ) {
 	      elem[pluginName]('setState', state);
 	    }
+	  }
+	});
+	elem.on("preference", function(ev, pref) {
+	  if ( pref.name == "preserve-state" &&
+	       pref.value == false ) {
+	    localStorage.removeItem("query");
 	  }
 	});
       });

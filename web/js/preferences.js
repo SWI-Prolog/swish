@@ -46,6 +46,7 @@ define(["jquery"],
        function($) {
   var hasLocalStore = (typeof(Storage) !== "undefined");
   var defaults = {};
+  var inform = {};
 
   var preferences = {
     /**
@@ -89,10 +90,16 @@ define(["jquery"],
      * Broadcast the change of a preference.
      */
     broadcast: function(name, value) {
-      $(".swish-event-receiver").trigger("preference",
-					 { name: name,
-					   value: value
-					 });
+      var sel;
+
+      if ( inform.name == undefined )
+	sel = ".swish-event-receiver";
+      else if ( inform.name == null )
+	return;
+      else
+	sel = inform.name;
+
+      $(sel).trigger("preference", { name: name, value: value });
     },
 
     /**
@@ -115,6 +122,15 @@ define(["jquery"],
      */
     setDefault: function(name, value) {
       defaults[name] = value;
+    },
+
+    /**
+     * @param {String} name describes the name of the preference
+     * @param {String} jQuery selector for elements to inform.  If
+     * `null`, nobody is informed.
+     */
+    setInform: function(name, value) {
+      inform[name] = value;
     },
 
     /**

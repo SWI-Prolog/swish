@@ -113,7 +113,8 @@ tabbed.tabTypes.permalink = {
 	  }
 	});
 	elem.on("unload", function(ev) {
-	  if ( ev.target == elem[0] && swish.preserve_state != false ) {
+	  if ( ev.target == elem[0] &&
+	       elem.closest(".swish").swish('preserve_state') ) {
 	    var state = elem[pluginName]('getState');
 	    localStorage.setItem("tabs", JSON.stringify(state));
 	  }
@@ -132,6 +133,12 @@ tabbed.tabTypes.permalink = {
 	    if ( typeof(state) == "object" ) {
 	      elem[pluginName]('setState', state);
 	    }
+	  }
+	});
+	elem.on("preference", function(ev, pref) {
+	  if ( pref.name == "preserve-state" &&
+	       pref.value == false ) {
+	    localStorage.removeItem("tabs");
 	  }
 	});
       });

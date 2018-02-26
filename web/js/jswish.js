@@ -70,6 +70,8 @@ define([ "jquery",
 preferences.setDefault("semantic-highlighting", true);
 preferences.setDefault("emacs-keybinding", false);
 preferences.setDefault("new-tab", true);
+preferences.setDefault("preserve-state", true);
+preferences.setInform("preserve-state", ".unloadable");
 
 (function($) {
   var pluginName = 'swish';
@@ -150,6 +152,11 @@ preferences.setDefault("new-tab", true);
 	},
 	"Open document in new tab": {
 	  preference: "new-tab",
+	  type: "checkbox",
+	  value: "true"
+	},
+	"Preserve state in browser": {
+	  preference: "preserve-state",
 	  type: "checkbox",
 	  value: "true"
 	}
@@ -241,9 +248,22 @@ preferences.setDefault("new-tab", true);
 	  $(".each-minute").trigger("minute");
 	}, 60000);
 
-	if ( swish.option.preserve_state != false )
+	if ( elem[pluginName]('preserve_state') )
 	  $(".unloadable").trigger("restore");
       });
+    },
+
+    /**
+     * @return {Boolean} `true` when we should save and restore
+     * the state to the browser local store.
+     */
+    preserve_state: function() {
+      if ( swish.option.preserve_state == false )
+	return false;
+      if ( preferences.getVal("preserve-state") == false )
+	return false;
+
+      return true;
     },
 
     /**
