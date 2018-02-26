@@ -231,6 +231,7 @@ preferences.setDefault("new-tab", true);
 	      file: config.swish.hangout,
 	      chat: 'large'
 	    });
+	    break;
 	  case 'chat-about-file':
 	    menuBroadcast("chat-about-file");
 	  }
