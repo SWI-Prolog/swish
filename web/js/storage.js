@@ -604,24 +604,30 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	var elem = $(this);
 	var data = elem.data(pluginName);
 	var meta = elem.meta || {};
+	var h;
 
-	if ( !meta.name && data.file )
-	  meta.name = data.file;
+					/* avoid incomplete elements */
+	if ( (data.file || data.url) && data.isClean && data.cleanGeneration ) {
+	  if ( !meta.name && data.file )
+	    meta.name = data.file;
 
-	var tab = {
-	  file:    meta.name,
-	  st_type: data.st_type,
-	  url:     data.url
-	};
-	if ( elem[pluginName]('getActive') )
-	  tab.active = true;
+	  var tab = {
+	    file:    meta.name,
+	    st_type: data.st_type,
+	    url:     data.url
+	  };
+	  if ( elem[pluginName]('getActive') )
+	    tab.active = true;
+	  if ( (h=elem[pluginName]('chatroom_size')) )
+	    tab.chatroom = h;
 
-	state.tabs.push(tab);
+	  state.tabs.push(tab);
 
-	if ( always ||
-	     !data.isClean(data.cleanGeneration) ) {
-	  tab.meta = meta;
-	  tab.data = data.getValue();
+	  if ( always ||
+	       !data.isClean(data.cleanGeneration) ) {
+	    tab.meta = meta;
+	    tab.data = data.getValue();
+	  }
 	}
       });
 
@@ -1090,8 +1096,15 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  else
 	    utils.flash(chat);
 	} else if ( action != 'update' ) {
-	  var percentage = (action == 'large' ? 80 : 20);
 	  chat = $($.el.div({class:"chatroom"}));
+	  var percentage;
+
+	  if ( typeof(action) == "number" )
+	    percentage = action;
+	  else if ( action == 'large' )
+	    percentage = 80;
+	  else
+	    percentage = 20;
 
 	  chat.chatroom({docid:docid});
 	  this.tile('split', chat, "below", percentage, 150)
@@ -1117,6 +1130,22 @@ define([ "jquery", "config", "modal", "form", "gitty",
      */
     close_chat: function() {
       this.closest(".chat-container").find(".chatroom").chatroom('close');
+    },
+
+    /**
+     * @return percentage of the chatroom, `true` when undefined or
+     * `false` if there is no chatroom.
+     */
+    chatroom_size: function() {
+      var tab = this.closest(".tab-pane");
+      var cr = tab.find(".chatroom");
+      if ( cr.length > 0 ) {
+	var h = tab.height();
+	if ( h == 0 )
+	  return 20;			/* default */
+	return Math.round(cr.height()*100/h);
+      }
+      return false;
     },
 
     /**
@@ -1183,7 +1212,8 @@ define([ "jquery", "config", "modal", "form", "gitty",
 			  });
       }
 
-      if ( data.cleanData != data.getValue() ) {
+      if ( data.cleanData && data.getValue &&
+	   data.cleanData != data.getValue() ) {
 	if ( why == "beforeunload" ) {
 	  var message = "The source editor has unsaved changes.\n"+
 	                "These will be lost if you leave the page";

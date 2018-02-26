@@ -273,9 +273,12 @@ tabbed.tabTypes.permalink = {
 	    role: 'source'
 	  });
 	}
+	if ( from.chatroom ) {
+	  into.find(".storage").storage('chat', from.chatroom);
+	}
       }
 
-      if ( existing && data.data ) {
+      if ( existing ) {
 	restoreData(tab, data);
       } else if ( existing ) {
 	/* nothing to do? */
