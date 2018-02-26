@@ -132,9 +132,11 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
 	  }
 	});
 	elem.on("unload", function(ev, rc) {
-	  var state = elem[pluginName]('getState');
-	  if ( state )
-	    localStorage.setItem("query", JSON.stringify(state));
+	  if ( swish.option.preserve_state != false ) {
+	    var state = elem[pluginName]('getState');
+	    if ( state )
+	      localStorage.setItem("query", JSON.stringify(state));
+	  }
 	});
 	elem.on("restore", function(ev, rc) {
 	  if ( elem[pluginName]('getQuery') == "" ) {

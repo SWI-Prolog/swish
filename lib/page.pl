@@ -108,6 +108,8 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 %	  Use Query as the initial query.
 %	  - show_beware(Boolean)
 %	  Control showing the _beware limited edition_ warning.
+%	  - preserve_state(Boolean)
+%	  If `true`, save state on unload and restore old state on load.
 
 swish_reply(Options, Request) :-
 	(   option(identity(_), Options)
@@ -135,11 +137,12 @@ swish_reply2(SwishOptions, Request) :-
 		 ],
 	http_parameters(Request, Params),
 	params_options(Params, Options0),
-	merge_options(Options0, SwishOptions, Options1),
-	add_show_beware(Options1, Options2),
-	source_option(Request, Options2, Options3),
-	option(format(Format), Options3),
-	swish_reply3(Format, Options3).
+	add_show_beware(Options0, Options1),
+	add_preserve_state(Options1, Options2),
+	merge_options(Options2, SwishOptions, Options3),
+	source_option(Request, Options3, Options4),
+	option(format(Format), Options4),
+	swish_reply3(Format, Options4).
 
 swish_reply3(raw, Options) :-
 	option(code(Code), Options), !,
@@ -198,6 +201,18 @@ implicit_no_show_beware(Options) :-
 	option(examples(_), Options).
 implicit_no_show_beware(Options) :-
 	option(background(_), Options).
+
+%!	add_preserve_state(+Options0, -Option) is det.
+%
+%	Add preserve_state(false) when called with code.
+
+add_preserve_state(Options0, Options) :-
+	option(preserve_state(_), Options0), !,
+	Options = Options0.
+add_preserve_state(Options0, Options) :-
+	option(code(_), Options0), !,
+	Options = [preserve_state(false)|Options0].
+add_preserve_state(Options, Options).
 
 
 %%	source_option(+Request, +Options0, -Options)
@@ -457,15 +472,26 @@ swish_config_hash(Options) -->
 %	The options are set per session.
 
 swish_options(Options) -->
-	{ option(show_beware(Show), Options),
-	  JSShow = @(Show)
-	}, !,
-	js_script({|javascript(JSShow)||
+	js_script({|javascript||
 		   window.swish = window.swish||{};
-		   window.swish.option = window.swish.options||{};
-		   window.swish.option.show_beware = JSShow;
+		   window.swish.option = window.swish.option||{};
+		  |}),
+	swish_options([show_beware, preserve_state], Options).
+
+swish_options([], _) --> [].
+swish_options([H|T], Options) -->
+	swish_option(H, Options),
+	swish_options(T, Options).
+
+swish_option(Name, Options) -->
+	{ Opt =.. [Name,Val],
+	  option(Opt, Options),
+	  JSVal = @(Val)
+	}, !,
+	js_script({|javascript(Name, JSVal)||
+		   window.swish.option[Name] = JSVal;
 		   |}).
-swish_options(_Options) -->
+swish_option(_, _) -->
 	[].
 
 %%	source(+Type, +Options)//

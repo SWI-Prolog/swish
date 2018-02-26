@@ -113,7 +113,7 @@ tabbed.tabTypes.permalink = {
 	  }
 	});
 	elem.on("unload", function(ev) {
-	  if ( ev.target == elem[0] ) {
+	  if ( ev.target == elem[0] && swish.preserve_state != false ) {
 	    var state = elem[pluginName]('getState');
 	    localStorage.setItem("tabs", JSON.stringify(state));
 	  }

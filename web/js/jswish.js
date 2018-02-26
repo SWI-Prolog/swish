@@ -240,7 +240,8 @@ preferences.setDefault("new-tab", true);
 	  $(".each-minute").trigger("minute");
 	}, 60000);
 
-	$(".unloadable").trigger("restore");
+	if ( swish.option.preserve_state != false )
+	  $(".unloadable").trigger("restore");
       });
     },
 
