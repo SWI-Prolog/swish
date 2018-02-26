@@ -131,24 +131,9 @@ _not_ see exactly the same UI for cooperation.  What about
     - To generated PDF (R integration)
     - To CSV
 
-### State preservation
-
-  - Maintain modified state
-  - Maintain order of tabs
-  - Maintain active tab
-  - Role of the URL location
-    - Restore tabs if
-      - Accessing the root
-      - Accessing the same URL
-
 ### Bugs
 
   - Colouring of /library/http/html_write.pl.  Broken sequences:
     - DCG exports
     - ?- [file].
-  - Modified state:
-    - notebook, edit query & undo --> modified stays on.
-
-### Bad request id
-
-  - TypeError: i is undefined runner.js:1351 (alice)
+    - Variable as goal.
