@@ -478,6 +478,9 @@ preferences.setInform("preserve-state", ".unloadable");
 		   $("#navbar").navbar('extendDropdown', dropdown,
 				       title, options);
 		 }
+	       },
+	       error: function(jqXHR) {
+		 modal.ajaxError(jqXHR);
 	       }
 	     });
       return this;
@@ -518,6 +521,9 @@ preferences.setInform("preserve-state", ".unloadable");
 		   $("#navbar").navbar('extendDropdown', dropdown,
 				       title, options);
 		 }
+	       },
+	       error: function(jqXHR) {
+		 modal.ajaxError(jqXHR);
 	       }
 	     });
       return this;
