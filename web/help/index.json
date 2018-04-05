@@ -1,5 +1,3 @@
-// list of help topics, represented as a JSON list
-
 [ { "file":"about.html",      "title":"About" },
   "--",
   { "file":"help.html",	      "title":"Help" },
