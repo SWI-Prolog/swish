@@ -684,6 +684,9 @@ prolog_clause:open_source(File, Stream) :-
 	user:prolog_exception_hook/4,
 	installed/1.
 
+:- volatile
+	installed/1.
+
 exception_hook(Ex, Ex, _Frame, Catcher) :-
 	Catcher \== none,
 	Catcher \== 'C',
@@ -710,7 +713,7 @@ install_exception_hook :-
 			exception_hook(Ex, Out, Frame, Catcher)), Ref),
 	assert(installed(Ref)).
 
-:- install_exception_hook.
+:- initialization install_exception_hook.
 
 
 		 /*******************************
