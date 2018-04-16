@@ -51,11 +51,7 @@ daemon.pl if to deploy SWISH as a server
 % Use plain `3050` (or any port number you like) to make the server
 % accessible from all network interfaces.
 
-:- if(current_prolog_flag(toplevel_goal, _)).
 :- initialization(run_swish, main).
-:- else.
-:- initialization run_swish.
-:- endif.
 
 run_swish :-
     set_prolog_flag(toplevel_goal, prolog), % run interactively
