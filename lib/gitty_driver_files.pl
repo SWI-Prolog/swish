@@ -616,8 +616,11 @@ repack_objects(Store, Options) :-
     ->  pack_files(Store, ExistingPacks),
         option(small_pack(MaxSize), Options, 10_000_000),
         include(small_file(MaxSize), ExistingPacks, PackFiles),
-        length(PackFiles, PackCount),
-        debug(gitty(pack), 'Found ~D small packs', [PackCount]),
+        (   debugging(gitty(pack))
+        ->  length(PackFiles, PackCount),
+            debug(gitty(pack), 'Found ~D small packs', [PackCount])
+        ;   true
+        ),
         directory_file_path(Store, pack, PackDir),
         make_directory_path(PackDir),
         pack_objects(Store, Objects, PackFiles, PackDir, _PackFile, Options)
@@ -649,9 +652,12 @@ pack_objects_sync(Store, Objects, Packs, PackDir, PackFilePath, Options) :-
     maplist(pack_info(Store), Packs, PackInfo),
     append([FileInfo|PackInfo], Info0),
     sort(1, @<, Info0, Info),           % remove possible duplicates
-    (   PackCount > 0
-    ->  length(Info, FinalObjCount),
-        debug(gitty(pack), 'Total ~D objects', [FinalObjCount])
+    (   debugging(gitty(pack))
+    ->  (   PackCount > 0
+        ->  length(Info, FinalObjCount),
+            debug(gitty(pack), 'Total ~D objects', [FinalObjCount])
+        ;   true
+        )
     ;   true
     ),
     directory_file_path(PackDir, 'pack-create', TmpPack),
@@ -772,7 +778,7 @@ check_object(In, PackFile, _Version,
     ),
     (   setup_call_cleanup(
             zopen(In, In2, [multi_part(false), close_parent(false)]),
-            catch(read_object(In2, Data, RType, RSize), E,
+            catch(read_object(In2, Data, _0RType, _0RSize), E,
                   ( print_message(error,
                                   gitty(PackFile, fsck(read_object(Object, E)))),
                     fail)),
@@ -785,8 +791,8 @@ check_object(In, PackFile, _Version,
                                                           Offset0, Offset,
                                                           Data))))
         ),
-        assertion(Type == RType),
-        assertion(Size == RSize),
+        assertion(Type == _0RType),
+        assertion(Size == _0RSize),
         gitty:check_object(Object, Data, Type, Size)
     ;   true
     ).
