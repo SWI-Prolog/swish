@@ -64,7 +64,7 @@ email_gravatar(Email, AvatarURL) :-
 	downcase_atom(Email, CanonicalEmail),
 	md5_hash(CanonicalEmail, Hash, []),
 	atom_concat('/avatar/', Hash, Path),
-	uri_data(scheme,    Components, http),
+	uri_data(scheme,    Components, https),
 	uri_data(authority, Components, 'www.gravatar.com'),
 	uri_data(path,      Components, Path),
 	uri_components(AvatarURL, Components).
@@ -72,15 +72,32 @@ email_gravatar(Email, AvatarURL) :-
 
 %%	valid_gravatar(+URL) is semidet.
 %
-%	True if URL is a real gavatar.
+%	True if URL is a real gravatar. We cache results for 300
+%	seconds.
+
+:- dynamic
+	gravatar_tested/3.			% URL, Time, Result
 
 valid_gravatar(URL) :-
+	gravatar_tested(URL, Time, Result),
+	get_time(Now),
+	(   Now - Time < 300
+	->  !,
+	    Result == true
+	;   retractall(gravatar_tested(URL,_,_))
+	).
+valid_gravatar(URL) :-
 	string_concat(URL, "?d=404", URL2),
-	catch(http_open(URL2, In, [method(head)]),
-	      error(existence_error(_,_),_),
-	      fail),
-	close(In).
-
+	(   catch(http_open(URL2, In, [method(head)]),
+		  error(_,_),
+		  fail)
+	->  close(In),
+	    Result = true
+	;   Result = false
+	),
+	get_time(Now),
+	asserta(gravatar_tested(URL, Now, Result)),
+	Result == true.
 
 %%	random_avatar(-AvatarURL) is det.
 %
