@@ -3,8 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2017, VU University Amsterdam
-			 CWI Amsterdam
+    Copyright (C): 2017-2018, VU University Amsterdam
+			      CWI Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -58,14 +58,17 @@ user:file_search_path(icons,          swish_web(icons)).
 
 %!  set_swish_path
 %
-%   Setup the swish search path.
+%   Setup the `swish` search path.
 
 set_swish_path :-
     absolute_file_name(swish('swish.pl'), _,
                        [file_errors(fail), access(read)]), !.
 set_swish_path :-
     prolog_load_context(directory, Dir),
+    !,
     asserta(user:file_search_path(swish, Dir)).
+set_swish_path :-
+    current_prolog_flag(saved_program, true).
 
 %!  attach_local_packs
 %
