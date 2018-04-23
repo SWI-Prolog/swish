@@ -973,15 +973,18 @@ css_style(Style, Style).
 %	True if RGB is the color for the named X11 color.
 
 x11_color(Name, R, G, B) :-
-	(   x11_color_cache(_,_,_,_)
+	(   x11_colors_done
 	->  true
-	;   load_x11_colours
+	;   with_mutex(swish_highlight, load_x11_colours)
 	),
 	x11_color_cache(Name, R, G, B).
 
 :- dynamic
-	x11_color_cache/4.
+	x11_color_cache/4,
+	x11_colors_done/0.
 
+load_x11_colours :-
+	x11_colors_done, !.
 load_x11_colours :-
 	source_file(load_x11_colours, File),
 	file_directory_name(File, Dir),
@@ -991,7 +994,8 @@ load_x11_colours :-
 	    ( lazy_list(lazy_read_lines(In, [as(string)]), List),
 	      maplist(assert_colour, List)
 	    ),
-	    close(In)).
+	    close(In)),
+	asserta(x11_colors_done).
 
 assert_colour(String) :-
 	split_string(String, "\s\t\r", "\s\t\r", [RS,GS,BS|NameParts]),
@@ -1001,6 +1005,9 @@ assert_colour(String) :-
 	atomic_list_concat(NameParts, '_', Name0),
 	downcase_atom(Name0, Name),
 	assertz(x11_color_cache(Name, R, G, B)).
+
+:- catch(initialization(load_x11_colours, prepare_state), E,
+	 print_message(warning, E)).
 
 %%	css(?Context, ?Selector, -Style) is nondet.
 %
