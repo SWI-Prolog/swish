@@ -1006,8 +1006,7 @@ assert_colour(String) :-
 	downcase_atom(Name0, Name),
 	assertz(x11_color_cache(Name, R, G, B)).
 
-:- catch(initialization(load_x11_colours, prepare_state), E,
-	 print_message(warning, E)).
+:- catch(initialization(load_x11_colours, prepare_state), _, true).
 
 %%	css(?Context, ?Selector, -Style) is nondet.
 %
