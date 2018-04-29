@@ -14,7 +14,7 @@ the address below. We try to keep this server continuously online. You
 can use these servers for playing, courses or sharing and discussing
 ideas.
 
-  - http://swish.swi-prolog.org/ (plain Prolog and R)
+  - https://swish.swi-prolog.org/ (plain Prolog and R)
   - http://cplint.ml.unife.it/ (probabilistic and machine learning
     extensions)
 
@@ -56,7 +56,7 @@ configure those that need to be configured.
 
 #### Using bower
 
-Install [bower](http://bower.io) for your  platform.   On  Ubuntu,  this
+Install [bower](https://bower.io) for your  platform.   On  Ubuntu,  this
 implies getting `node` and `npm` by installing two packages and next use
 `npm` to install `bower` (some older Linux versions need `nodejs-legacy`
 instead of `nodejs`):
@@ -100,9 +100,9 @@ operator handling for CSV downloads.
 
 Rendering Prolog terms [as
 graphs](https://swish.swi-prolog.org/example/render_graphviz.swinb)
-requires [Graphviz](http://www.graphviz.org/). The avatar system
+requires [Graphviz](https://www.graphviz.org/). The avatar system
 requires the `convert` utility from
-[ImageMagic](http://www.imagemagick.org). These are available as
+[ImageMagic](https://www.imagemagick.org). These are available as
 packages for virtually any Linux system, e.g., on Debian based systems
 do
 
@@ -209,7 +209,7 @@ https://github.com/triska/letswicrypt.
 Most of the application is realised  using client-side JavaScript, which
 can be found  in  the  directory   `web/js`.  The  JavaScript  files use
 [RequireJS](http://requirejs.org/)   for   dependency     tracking   and
-[jQuery](http://jquery.com/) for structuring the   JavaScript  as jQuery
+[jQuery](https://jquery.com/) for structuring the   JavaScript  as jQuery
 plugins. The accompanying CSS is in   `web/css`.  More details about the
 organization of the JavaScript is in `web/js/README.md`
 
