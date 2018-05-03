@@ -189,7 +189,7 @@ swish_config:config(chat,		true).
 :- use_module(swish:library(pengines_io)).
 :- use_module(swish:library(solution_sequences)).
 :- use_module(swish:library(aggregate)).
-:- if(exists_source(library(tabling))).
+:- if((\+current_predicate((table)/1),exists_source(library(tabling)))).
 :- use_module(swish:library(tabling)).
 :- endif.
 

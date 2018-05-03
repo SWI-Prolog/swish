@@ -592,19 +592,33 @@ meta_tag_set(_, []).
 
 :- if(true).
 
+% Note that cleanup on possible errors is   rather hard. The created tmp
+% stream must be closed and the file must  be deleted. We also close the
+% file before running diff (necessary  on   Windows  to  avoid a sharing
+% violation). Therefore reclaim_tmp_file/2 first uses   close/2 to close
+% if not already done and then deletes the file.
+
 udiff_string(Data1, Data2, UDIFF) :-
 	setup_call_cleanup(
-	    save_string(Data1, File1),
-	    setup_call_cleanup(
-		save_string(Data2, File2),
-		process_diff(File1, File2, UDIFF),
-		delete_file(File2)),
-	    delete_file(File1)).
+	    tmp_file_stream(utf8, File1, Tmp1),
+	    ( save_string(Data1, Tmp1),
+	      setup_call_cleanup(
+		  tmp_file_stream(utf8, File2, Tmp2),
+		  ( save_string(Data2, Tmp2),
+		    process_diff(File1, File2, UDIFF)
+		  ),
+		  reclaim_tmp_file(File2, Tmp2))
+	    ),
+	    reclaim_tmp_file(File1, Tmp1)).
 
-save_string(String, File) :-
-	tmp_file_stream(utf8, File, TmpOut),
-	format(TmpOut, '~s', [String]),
-	close(TmpOut).
+save_string(String, Stream) :-
+	call_cleanup(
+	    format(Stream, '~s', [String]),
+	    close(Stream)).
+
+reclaim_tmp_file(File, Stream) :-
+	close(Stream, [force(true)]),
+	delete_file(File).
 
 process_diff(File1, File2, String) :-
 	setup_call_cleanup(
