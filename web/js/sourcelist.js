@@ -255,10 +255,16 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	  var ext   = match.name.split(".").pop();
 	  var base  = match.name.slice(0, -(ext.length+1));
 
+	  var tdtags = $.el.td({class:"tags"});
+	  var tags = match.tags||[];
+	  tags.forEach(function(tag) {
+	    $(tdtags).append($.el.span({class:"tag"}, tag));
+	  });
+
 	  body.append($.el.tr({"data-name":match.name},
 			      $.el.td(form.widgets.typeIcon(ext)),
 			      $.el.td(base),
-			      $.el.td((match.tags||[]).join(" ")),
+			      tdtags,
 			      $.el.td(match.author),
 			      $.el.td(humanize(match.time))));
 	}

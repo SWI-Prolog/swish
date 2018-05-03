@@ -48,3 +48,10 @@ span.no-search-results-warning {
   background: #fee;
   color: #b44;
 }
+
+td.tags span.tag {
+  padding: 0px 2px;
+  border-radius: 3px;
+  margin-right: 5px;
+  background: #d7fbff;
+}
