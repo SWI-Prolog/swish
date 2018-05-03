@@ -154,6 +154,7 @@ swish_config:config(notebook,		_{eval_script: true,
 					  fullscreen: false
 					 }).
 swish_config:config(chat,		true).
+swish_config:config(default_query,	'user:"me"').
 
 %%	swish_config:source_alias(Alias, Options) is nondet.
 %
