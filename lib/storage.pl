@@ -637,6 +637,10 @@ storage_fsck :-
 %	`files` driver. For database drivers  this   is  supposed  to be
 %	handled by the database.
 
+:- multifile
+	gitty_driver_files:repack_objects/2,
+	gitty_driver_files:unpack_packs/1.
+
 storage_repack :-
 	storage_repack([]).
 storage_repack(Options) :-
@@ -645,6 +649,12 @@ storage_repack(Options) :-
 	->  gitty_driver_files:repack_objects(Dir, Options)
 	;   print_message(informational, gitty(norepack(driver)))
 	).
+
+%!	storage_unpack
+%
+%	Unpack all packed objects of the  store. Currently only supports
+%	the `files` driver. For database drivers  this is supposed to be
+%	handled by the database.
 
 storage_unpack :-
 	open_gittystore(Dir),

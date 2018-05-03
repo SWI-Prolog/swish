@@ -109,6 +109,9 @@ to rounding the small objects to disk allocation units.
     attached_packs/1,
     attached_pack/2.
 
+:- multifile
+    gitty:check_object/4.
+
 % enable/disable syncing remote servers running on  the same file store.
 % This facility requires shared access to files and thus doesn't work on
 % Windows.
