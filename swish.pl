@@ -3,7 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2017, VU University Amsterdam
+    Copyright (c)  2014-2018, VU University Amsterdam
+			      CWI, Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -69,6 +70,10 @@
 		 *         LOCAL CONFIG		*
 		 *******************************/
 
+% create the application first, so we can modify it inside the
+% configuration files.
+:- pengine_application(swish).
+
 %!	load_config
 %
 %	Load files from config-enabled if  present. Currently loads from
@@ -102,18 +107,16 @@ load_config.
 %	All solutions of this predicate are  available in the JavaScript
 %	object config.swish.config. Config must be an  atom that is also
 %	a valid JavaScript identifier. Value  must   be  a value that is
-%	valid for json_write_dict/2. Most configurations  are also saved
-%	in the application preferences. These   are  marked [P]. Defined
-%	config parameters:
+%	valid for json_write_dict/2.  Defined config parameters:
 %
 %	  - show_beware
-%	  [P] If `true`, show the *Beware* modal dialog on startup
+%	  If `true`, show the *Beware* modal dialog on startup
 %	  - tabled_results
-%	  [P] If `true`, check the _table results_ checkbox by default.
+%	  If `true`, check the _table results_ checkbox by default.
 %	  - application
 %	  Name of the Pengine application.
 %	  - csv_formats
-%	  [P] CSV output formats offered. For example, ClioPatria
+%	  CSV output formats offered. For example, ClioPatria
 %	  defines this as [rdf,prolog]. The first element is default.
 %	  - community_examples
 %	  Allow marking saved programs as example.  If marked, the
@@ -137,24 +140,34 @@ load_config.
 %	    Whether or not to start in fullscreen mode by default
 %	  - chat
 %	  Activate the chat interface
+%	  - default_query
+%	  Initial query for the source search in an empty tab
+%
+%	These config options are commonly  overruled   using  one of the
+%	configuration files. See `config-available` and `config-enabled`
+%	directories.
+%
+%	The  defaults  below   are   for    small   installations.   See
+%	`config-available/dim_large.pl` for a default   config for large
+%	communities.
 
 % Allow other code to overrule the defaults from this file.
 term_expansion(swish_config:config(Config, _Value), []) :-
 	clause(swish_config:config(Config, _), _).
 
-swish_config:config(show_beware,        true).
+swish_config:config(show_beware,        false).
 swish_config:config(tabled_results,     false).
 swish_config:config(application,        swish).
 swish_config:config(csv_formats,        [prolog]).
-swish_config:config(community_examples, false).
+swish_config:config(community_examples, true).
 swish_config:config(public_access,      false).
 swish_config:config(include_alias,	example).
-swish_config:config(ping,		10).
+swish_config:config(ping,		2).
 swish_config:config(notebook,		_{eval_script: true,
 					  fullscreen: false
 					 }).
 swish_config:config(chat,		true).
-swish_config:config(default_query,	'user:"me"').
+swish_config:config(default_query,	'').
 
 %%	swish_config:source_alias(Alias, Options) is nondet.
 %
@@ -179,7 +192,6 @@ swish_config:config(default_query,	'user:"me"').
 :- multifile
 	pengines:prepare_module/3.
 
-:- pengine_application(swish).
 :- use_module(swish:lib/render).
 :- use_module(swish:lib/trace).
 :- use_module(swish:lib/projection).
