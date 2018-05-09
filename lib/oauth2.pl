@@ -238,7 +238,7 @@ oauth2_reply(Request, Options) :-
 %	@arg UserInfo is a dict containing information about the user.
 
 call_login(Request, ServerID, TokenInfo) :-
-	login(Request, ServerID, TokenInfo).
+	login(Request, ServerID, TokenInfo), !.
 call_login(_Request, ServerID, TokenInfo) :-
 	oauth2_user_info(ServerID, TokenInfo, UserInfo),
 	format('Content-type: text/plain~n~n'),
