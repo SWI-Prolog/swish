@@ -152,7 +152,7 @@ extend_options([_|T0], Options, T) :-
 %	See whether the client associated with  a session is flooding us
 %	and if so, return a resource error.
 
-check_flooding(_0Session) :-
+check_flooding(Session) :-
 	get_time(Now),
 	(   http_session_retract(websocket(Score, Last))
 	->  Passed is Now-Last,
@@ -161,11 +161,13 @@ check_flooding(_0Session) :-
 	    Passed = 0
 	),
 	debug(chat(flooding), 'Flooding score: ~2f (session ~p)',
-	      [NewScore, _0Session]),
+	      [NewScore, Session]),
 	http_session_assert(websocket(NewScore, Now)),
 	(   NewScore > 50
 	->  throw(http_reply(resource_error(
-				 websocket(reconnect(Passed, NewScore)))))
+				 error(permission_error(reconnect, websocket,
+							Session),
+				       websocket(reconnect(Passed, NewScore))))))
 	;   true
 	).
 
@@ -1316,8 +1318,8 @@ broadcast_bell(_Options) -->
 		 *******************************/
 
 :- multifile
-	prolog:message//1.
+	prolog:message_context//1.
 
-prolog:message(websocket(reconnect(Passed, Score))) -->
+prolog:message_context(websocket(reconnect(Passed, Score))) -->
 	[ 'WebSocket: too frequent reconnect requests (~1f sec; score = ~1f)'-
 	  [Passed, Score] ].
