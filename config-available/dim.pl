@@ -41,4 +41,4 @@ swish_config:config(default_query,	'').
 
 :- set_setting_default(swish:slave_limit,        10).
 :- set_setting_default(swish:thread_pool_size,   100).
-:- set_setting_default(swish:thread_pool_stacks, [/*stack(1 000 000 000)*/]).
+:- set_setting_default(swish:thread_pool_stacks, [/*stack_limit(1 000 000 000)*/]).
