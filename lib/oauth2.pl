@@ -187,6 +187,7 @@ oauth2_redirect_uri(ServerID, URI) :-
 	server_attr(ServerID, client_id,	      ClientID),
 	server_attr(ServerID, scope,		      Scope),
 
+	claims_attrs(ServerID, ClaimAttrs),
 	anti_forgery_state(AntiForgery),
 	get_time(Now),
 	asserta(forgery_state(AntiForgery, ServerID, RedirectURI, Now)),
@@ -197,8 +198,15 @@ oauth2_redirect_uri(ServerID, URI) :-
 		     redirect_uri(RedirectURI),
 		     scope(Scope),
 		     state(AntiForgery)
+		   | ClaimAttrs
 		   ], URI).
 
+
+claims_attrs(ServerID, [claims=JSONString]) :-
+	server_attr(ServerID, claims, Dict), !,
+	with_output_to(string(JSONString),
+		       json_write_dict(current_output, Dict)).
+claims_attrs(_, []).
 
 %!	oauth2_reply(+Request, +Options)
 %
@@ -238,7 +246,8 @@ oauth2_reply(Request, Options) :-
 %	@arg UserInfo is a dict containing information about the user.
 
 call_login(Request, ServerID, TokenInfo) :-
-	login(Request, ServerID, TokenInfo), !.
+	login(Request, ServerID, TokenInfo),
+	!.
 call_login(_Request, ServerID, TokenInfo) :-
 	oauth2_user_info(ServerID, TokenInfo, UserInfo),
 	format('Content-type: text/plain~n~n'),
@@ -256,8 +265,9 @@ call_login(_Request, ServerID, TokenInfo) :-
 oauth2_validate_access_token(ServerID, AuthCode, Info) :-
 	server_attr(ServerID, url,		  ServerURI),
 	server_attr(ServerID, tokeninfo_endpoint, Path),
+	claims_attrs(ServerID, ClaimAttrs),
 
-	uri_extend(ServerURI, Path, [], URI),
+	uri_extend(ServerURI, Path, ClaimAttrs, URI),
 	http_options(ServerID, Options),
 
 	setup_call_cleanup(
@@ -287,9 +297,11 @@ oauth2_user_info(ServerID, TokenInfo, UserInfo) :-
 user_info(ServerID, AccessToken, Info) :-
 	server_attr(ServerID, url,	     ServerURI),
 	server_attr(ServerID, userinfo_endpoint, Path),
+	claims_attrs(ServerID, ClaimAttrs),
 
-	uri_extend(ServerURI, Path, [], URI),
+	uri_extend(ServerURI, Path, ClaimAttrs, URI),
 	http_options(ServerID, Options),
+	debug(oauth, 'Request user info using ~q', [URI]),
 
 	setup_call_cleanup(
 	    http_open(URI, In,
@@ -312,6 +324,7 @@ oauth2_token_details(ServerID, AuthCode, Dict) :-
 	server_attr(ServerID, redirect_uri,   RedirectURI),
 	server_attr(ServerID, client_id,      ClientID),
 	server_attr(ServerID, client_secret,  ClientSecret),
+	server_attr(ServerID, scope,	      Scope),
 
 	uri_extend(ServerURI, Path, [], URI),
 	http_options(ServerID, Options),
@@ -320,7 +333,7 @@ oauth2_token_details(ServerID, AuthCode, Dict) :-
 	    http_open(URI, In,
 		      [ authorization(basic(ClientID, ClientSecret)),
 			post(form([ grant_type(authorization_code),
-				    scope(profile),
+				    scope(Scope),
 				    code(AuthCode),
 				    redirect_uri(RedirectURI),
 				    client_id(ClientID),
@@ -375,6 +388,8 @@ server_attr(ServerID, Attr, Value) :-
 	->  Value = Value0
 	;   default_attribute(Attr, ServerID, Value0)
 	->  Value = Value0
+	;   optional_attr(Attr)
+	->  fail
 	;   existence_error(oauth2_server_attribute, Attr)
 	).
 
@@ -397,6 +412,13 @@ default_attribute(url, _, _) :- !,
 default_attribute(Attribute, ServerID, URI) :-
 	oauth2_discover(ServerID, Dict),
 	URI = Dict.get(Attribute).
+
+%!	optional_attr(+Attr) is semidet.
+%
+%	True when Attr is optional, i.e., it is ok to fail.
+
+optional_attr(claims).
+
 
 %!	http_options(+ServerID, -Options:list) is det.
 %
