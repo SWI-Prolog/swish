@@ -749,6 +749,11 @@ avatar_property(_Avatar, Source, avatar_source, Source).
 %	HTTP handler for Noble  Avatar   images.  Using  create_avatar/2
 %	re-creates avatars from the file name,  so we can safely discard
 %	the avatar file store.
+%
+%	Not really. A new user gets a new   avatar  and this is based on
+%	whether or not the file exists. Probably we should maintain a db
+%	of handed out avatars and their last-use   time stamp. How to do
+%	that? Current swish stats: 400K avatars, 3.2Gb data.
 
 reply_avatar(Request) :-
 	option(path_info(Local), Request),
