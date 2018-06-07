@@ -300,11 +300,11 @@ notify_event(follow(DocID, ProfileID, Options)) :-
     follow(DocID, ProfileID, Options).
 % events on gitty files
 notify_event(updated(File, Commit)) :-
-    (   storage_meta_data(Commit.get(previous), OldCommit),
-        atom_concat('gitty:', OldCommit.name, DocID)
-    ->  notify(DocID, forked(OldCommit, Commit))
+    storage_meta_data(Commit.get(previous), OldCommit),
+    (   atom_concat('gitty:', OldCommit.name, DocID)
+    ->  notify(DocID, updated(Commit))
     ;   atom_concat('gitty:', File, DocID),
-        notify(DocID, updated(Commit))
+        notify(DocID, forked(OldCommit, Commit))
     ).
 notify_event(deleted(File, Commit)) :-
     atom_concat('gitty:', File, DocID),
