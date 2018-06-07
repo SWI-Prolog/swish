@@ -247,12 +247,21 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  var data = elem.data(pluginName);
 	  var file = data.file||data.url;
 	  var type;
+	  var title;
 
 	  if ( !file || !(type = tabbed.type(file)) )
 	    type = tabbed.tabTypes[data.typeName];
 
-	  var title = (filebase(utils.basename(file)) ||
-		       type.label);
+	  if ( file ) {
+	    title = filebase(utils.basename(file));
+	    if ( data.meta &&
+		 data.meta.symbolic != "HEAD" &&
+	         data.meta.commit ) {
+	      title += "@" + data.meta.commit.substring(0,7);
+	    }
+	  } else {
+	    title = type.label;
+	  }
 
 	  if ( docid && data.chats )
 	    data.chats.docid = docid;
