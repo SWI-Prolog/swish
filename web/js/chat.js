@@ -45,7 +45,7 @@
 define([ "jquery", "config", "preferences", "form", "modal", "utils" ],
        function($, config, preferences, form, modal, utils) {
 
-var MIN_RECONNECT_DELAY =   1000;
+var MIN_RECONNECT_DELAY =  10000;
 var MAX_RECONNECT_DELAY = 300000;
 
 (function($) {
