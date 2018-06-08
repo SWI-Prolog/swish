@@ -43,12 +43,24 @@
 
 :- setting(http:max_workers, integer, 100,
            "Maximum number of workers to create").
+:- setting(http:worker_idle_limit, number, 10,
+           "Terminate a dynamic worker when idle for this time").
+:- setting(http:max_load, number, 10,
+           "Maximum load average caused by HTTP workers").
 
 /** <module> Dynamically schedule HTTP workers.
 
 This module defines  hooks  into  the   HTTP  framework  to  dynamically
 schedule worker threads. Dynamic scheduling relieves   us from finding a
 good value for the size of the HTTP worker pool.
+
+The decision to add a worker follows these rules:
+
+  - If the load average caused by the worker threads exceeds
+    http:max_load, no worker is added.
+  - Wait for some time, depending on how close we are to the
+    http:max_workers limit.
+    - If the worker is still needed, add it.
 */
 
 %!  http:schedule_workers(+Dict)
@@ -87,7 +99,11 @@ http_scheduler :-
                     }).
 
 http_scheduler(State) :-
-    thread_get_message(Task),
+    (   thread_self(Me),
+        thread_get_message(Me, Task, [timeout(10)])
+    ->  true
+    ;   Task = update_load_avg
+    ),
     (   catch(reschedule(Task, State, State1),
               Error,
               ( print_message(warning, Error),
@@ -99,24 +115,69 @@ http_scheduler(State) :-
 
 %!  reschedule(+Message, +State0, -State) is semidet.
 
-reschedule(no_workers(Reported, Dict), State, State) :-
-    aggregate_all(count, http_current_worker(Dict.port, _), Workers),
-    setting(http:max_workers, MaxWorkers),
-    Wait = 0.001*(MaxWorkers/(MaxWorkers-Workers)),
-    get_time(Now),
-    Sleep is Wait + Reported-Now,
-    debug(http(scheduler), 'Waiting: ~w; active: ~w; sleep: ~3f',
-          [Dict.waiting, Workers, Sleep]),
-    sleep(Sleep),
-    accept_queue(Dict, Queue),
-    message_queue_property(Queue, size(Newsize)),
-    (   Newsize == 0
-    ->  debug(http(scheduler), 'Drained', [])
-    ;   debug(http(scheduler), 'Size is ~w: adding worker', [Newsize]),
-        http_add_worker(Dict.port,
-                        [ max_idle_time(10)
-                        ])
+reschedule(no_workers(Reported, Dict), State0, State) :-
+    update_load_avg(Dict, State0, State, Load),
+    setting(http:max_load, MaxLoad),
+    (   Load > MaxLoad
+    ->  debug(http(scheduler), 'Load ~1f > ~1f; not adding workers',
+              [ Load, MaxLoad ])
+    ;   aggregate_all(count, http_current_worker(Dict.port, _), Workers),
+        setting(http:max_workers, MaxWorkers),
+        Wait = 0.001*(MaxWorkers/(MaxWorkers-Workers)),
+        get_time(Now),
+        Sleep is Wait + Reported-Now,
+        debug(http(scheduler), 'Waiting: ~w; active: ~w; sleep: ~3f; load: ~1f',
+              [Dict.waiting, Workers, Sleep, Load]),
+        sleep(Sleep),
+        accept_queue(Dict, Queue),
+        message_queue_property(Queue, size(Newsize)),
+        (   Newsize == 0
+        ->  debug(http(scheduler), 'Drained', [])
+        ;   debug(http(scheduler), 'Size is ~w: adding worker', [Newsize]),
+            setting(http:worker_idle_limit, MaxIdle),
+            http_add_worker(Dict.port,
+                            [ max_idle_time(MaxIdle)
+                            ])
+        )
     ).
+reschedule(update_load_avg, State0, State) :-
+    update_load_avg(_{}, State0, State, _).
+
+update_load_avg(_Dict, State, State, Load) :-
+    _{stamp:Last, load:Load} :< State.get(load),
+    get_time(Now),
+    Now - Last < 10.
+update_load_avg(Dict, State0, State, Load) :-
+    server_port(Dict, State0, State1, Port),
+    !,
+    aggregate_all(sum(CPU), worker_cpu(Port, CPU), CPU1),
+    get_time(Now),
+    (   LoadDict = State1.get(load),
+        _{stamp:Last, cpu:LastCPU} :< LoadDict
+    ->  Load0 is (CPU1-LastCPU)/(Now-Last),
+        smooth_load(LoadDict, Load0, Load),
+        State = State1.put(load, _{stamp:Now, cpu:CPU1, load:Load})
+    ;   State = State1.put(load, _{stamp:Now, cpu:CPU1}),
+        Load = 0
+    ).
+update_load_avg(_, _, _, 0).
+
+worker_cpu(Port, CPU) :-
+    http_current_worker(Port, Thread),
+    catch(thread_statistics(Thread, cputime, CPU), _, fail).
+
+server_port(_Dict, State, State, Port) :-
+    Port = State.get(port),
+    !.
+server_port(Dict, State0, State, Port) :-
+    Port = Dict.get(port),
+    State = State0.put(port, Port).
+
+smooth_load(LoadDict, Load0, Load) :-
+    OldLoad = LoadDict.get(load),
+    !,
+    Load is (5*OldLoad+Load0)/6.
+smooth_load(_, Load, Load).
 
 %!  accept_queue(+Dict, -Queue)
 %
