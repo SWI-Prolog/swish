@@ -389,9 +389,18 @@ do_gc_visitors :-
 
 reclaim_visitor(WSID) :-
 	debug(chat(gc), 'Reclaiming idle ~p', [WSID]),
-	retractall(visitor_session(WSID, _Session, _Token)),
+	reclaim_visitor_session(WSID),
 	retractall(visitor_status(WSID, _Status)),
 	unsubscribe(WSID, _).
+
+reclaim_visitor_session(WSID) :-
+	forall(retract(visitor_session(WSID, Session, _Token)),
+		       http_session_retractall(websocket(_, _), Session)).
+
+:- if(\+current_predicate(http_session_retractall/2)).
+http_session_retractall(Data, Session) :-
+	retractall(http_session:session_data(Session, Data)).
+:- endif.
 
 
 %%	create_session_user(+Session, -User, -UserData, +Options)
