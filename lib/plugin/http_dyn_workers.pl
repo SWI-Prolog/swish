@@ -123,7 +123,7 @@ reschedule(no_workers(Reported, Dict), State0, State) :-
               [ Load, MaxLoad ])
     ;   aggregate_all(count, http_current_worker(Dict.port, _), Workers),
         setting(http:max_workers, MaxWorkers),
-        Wait is 0.001*(MaxWorkers/min(1, MaxWorkers-Workers)),
+        Wait is 0.001*(MaxWorkers/max(1, MaxWorkers-Workers)),
         get_time(Now),
         Sleep is Wait + Reported-Now,
         debug(http(scheduler), 'Waiting: ~w; active: ~w; sleep: ~3f; load: ~1f',
