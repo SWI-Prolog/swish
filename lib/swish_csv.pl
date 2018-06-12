@@ -113,6 +113,7 @@ success(Answers, VarTerm, Options) :-
 	       csv_write_stream(current_output, Page, [])).
 
 projection_row(-) :- !.
+projection_row(row) :- !.
 projection_row(VarTerm) :-
 	csv_write_stream(current_output, [VarTerm], []).
 
