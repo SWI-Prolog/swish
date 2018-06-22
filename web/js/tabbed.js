@@ -123,7 +123,6 @@ tabbed.tabTypes.permalink = {
 	  var state;
 
 	  if ( ev.target == elem[0] ) {
-	    // TBD: How to act with already open documents?
 	    try {
 	      var str = localStorage.getItem("tabs");
 	      var state = JSON.parse(str);
@@ -251,14 +250,15 @@ tabbed.tabTypes.permalink = {
 
     setState: function(state) {
       var elem = this;
+      var fromURL = this.find(".storage").length > 0;
 
       for(var i=0; i<state.tabs.length; i++) {
 	var data = state.tabs[i];
-	this[pluginName]('restoreTab', data);
+	this[pluginName]('restoreTab', data, fromURL);
       }
     },
 
-    restoreTab: function(data) {
+    restoreTab: function(data, fromURL) {
       var elem = this;
       var tab;
 
@@ -318,7 +318,7 @@ tabbed.tabTypes.permalink = {
 		       elem.tabbed('removeTab', tab.attr("id"));
 		     }
 		     restoreData(newtab, data);
-		     if ( newtab.hasClass("active") )
+		     if ( !fromURL && newtab.hasClass("active") )
 		       newtab.find(".storage").storage("activate");
 		   },
 		   error: function(jqXHR) {
@@ -350,7 +350,7 @@ tabbed.tabTypes.permalink = {
 		       elem.tabbed('removeTab', newtab.attr("id"));
 		     }
 		     restoreData(newtab, data);
-		     if ( newtab.hasClass("active") )
+		     if ( !fromURL && newtab.hasClass("active") )
 		       newtab.find(".storage").storage("activate");
 		   },
 		   error: function(jqXHR) {
