@@ -308,9 +308,11 @@ define([ "cm/lib/codemirror",
 	      data.traceMark = null;
 	    }
 	  });
-	  elem.on('addExample', function(ev, query) {
-	    elem.prologEditor('addExample', query);
-	  });
+	  if ( options.save ) {		/* not for notebook cells */
+	    elem.on('addExample', function(ev, query) {
+	      elem.prologEditor('addExample', query);
+	    });
+	  }
 	  data.cm.on("gutterClick", function(cm, n) {
 	    var info = cm.lineInfo(n);
 
