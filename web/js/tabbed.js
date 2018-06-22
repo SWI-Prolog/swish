@@ -301,7 +301,8 @@ tabbed.tabTypes.permalink = {
 	  newtab = select.first().closest(".tab-pane");
 	  newtab.html(restoring);
 	} else {
-	  newtab = elem.tabbed('newTab', $(restoring), Boolean(data.active));
+	  var active = (!fromURL && Boolean(data.active));
+	  newtab = elem.tabbed('newTab', $(restoring), active);
 	}
 
 	if ( data.st_type == "gitty" ) {
@@ -510,7 +511,7 @@ tabbed.tabTypes.permalink = {
     addTab: function(content, options) {
       var ul  = this.tabbed('navTabs');
       var id  = genId();
-      var tab =	wrapInTab(content, id, options.close);
+      var tab =	wrapInTab(content, id, options.active);
 
       this.tabbed('navContent').append(tab);
 
