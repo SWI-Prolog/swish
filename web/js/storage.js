@@ -493,8 +493,12 @@ define([ "jquery", "config", "modal", "form", "gitty",
       { modify = ["any", "login", "owner"];
       }
 
-      canmodify = ( profile.identity == meta.identity ||
-		    (profile.identity && !(meta.identity||meta.user)) );
+      if ( profile.identity ) {
+	canmodify = (profile.identity == meta.identity ||
+		     !(meta.identity||meta.user));
+      } else {
+	canmodify = false;
+      }
 
       options = options||{};
 
