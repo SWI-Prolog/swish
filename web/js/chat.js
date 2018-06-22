@@ -97,8 +97,8 @@ var MAX_RECONNECT_DELAY = 300000;
       var lead = "?";
       var ws = window.location.protocol.replace("http", "ws");
 
-      if ( data.connection && data.connection.readyState == 1 )
-	return this;			/* already connected */
+      if ( data.connection && data.connection.readyState != 3 )
+	return this;			/* already connecting, open or closing */
 
       function add_pref_param(name, pname) {
 	var value = preferences.getVal(pname);
