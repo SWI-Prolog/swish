@@ -601,7 +601,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	history.push({url: data.url, reason: 'activate'});
       }
 
-      return this
+      return this;
     },
 
     /**
