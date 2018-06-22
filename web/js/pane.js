@@ -161,6 +161,12 @@ define([ "jquery", "splitter" ],
 			      flipdir(dir) +
 			      '></div>')
                         .parent();
+      var hidden;
+
+      if ( !parent.is(":visible") ) {
+	hidden = parent.closest(".tab-pane");
+	hidden.addClass("active");
+      }
 
       if ( pos == undefined )
 	pos = 50;
@@ -170,8 +176,8 @@ define([ "jquery", "splitter" ],
 	pos = 90;
 
       if ( minheight && dir == "horizontal" ) {
-	sumh = this.height();
-	left = sumh*pos/100;
+	var sumh = this.height();
+	var left = sumh*pos/100;
 	if ( left < minheight && minheight < sumh*0.9 ) {
 	  pos = (minheight*100/sumh);
 	}
@@ -196,6 +202,8 @@ define([ "jquery", "splitter" ],
 		   });
       parent.tile('resize_save');
       panes.trigger("pane.resize");
+      if ( hidden )
+	hidden.removeClass("active");
 
       return parent;
     },
