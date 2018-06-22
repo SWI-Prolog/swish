@@ -1156,11 +1156,13 @@ define([ "cm/lib/codemirror",
 	query = query.split("\n").join("\n   ");
 	cm.setSelection({line:end[0].line-1, ch:0});
 	cm.replaceSelection("?- "+query+"\n");
-      } else
-      { cm.setSelection({line:cm.lastLine(), ch:0});
-	cm.replaceSelection("/** <examples>\n" +
-			    "?- "+query+"\n" +
-			    "*/\n");
+      } else				/* add to the end of the file */
+      { var lineno = cm.lastLine();
+	var line   = cm.getLine(lineno);
+
+	cm.replaceRange("\n\n/** <examples>\n" +
+		        "?- "+query+"\n" +
+			"*/\n", {line:lineno, ch:line.length});
       }
 
       return this;
