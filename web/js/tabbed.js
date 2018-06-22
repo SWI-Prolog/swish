@@ -267,6 +267,7 @@ tabbed.tabTypes.permalink = {
 
       var existing = this.find(".storage").storage('match', data);
       if ( existing ) {
+	existing.data('storage').url = data.url;
 	tab = existing.closest(".tab-pane");
 	elem.tabbed('move_right', tab);
       } else
