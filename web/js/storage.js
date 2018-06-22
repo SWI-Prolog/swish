@@ -1151,7 +1151,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
      */
     chatroom_size: function() {
       var tab = this.closest(".tab-pane");
-      var cr = tab.find(".chatroom");
+      var cr = tab.find(".chatroom").closest(".pane-wrapper");
       if ( cr.length > 0 ) {
 	var h = tab.height();
 	if ( h == 0 )
