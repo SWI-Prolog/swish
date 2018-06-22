@@ -418,11 +418,15 @@ tabbed.tabTypes.permalink = {
       { var name = (src.meta && src.meta.name) ? src.meta.name : src.url;
 	var tabType = tabbed.type(name);
 	var content = $.el.div();
+	var options = {};
+
+	if ( src.noHistory )
+	  options.noHistory = true;
 
 	tab.html("");
 	tab.tabbed('title', tabType.label, tabType.dataType);
 	tab.append(content);
-	tabType.create(content);
+	tabType.create(content, options);
 	$(content).storage('setSource', src);
 	return true;
       }

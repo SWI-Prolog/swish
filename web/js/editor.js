@@ -572,7 +572,7 @@ define([ "cm/lib/codemirror",
 	  }
 	}
 
-	if ( data.role == "source" ) {
+	if ( data.role == "source" && !source.noHistory ) {
 	  $(".swish-event-receiver").trigger("program-loaded",
 					     { editor: this,
 					       query: source.query
@@ -586,8 +586,10 @@ define([ "cm/lib/codemirror",
      * Advertise this editor as the current editor.  This is the
      * one used by the default query editor.
      */
-    makeCurrent: function() {
-      $(".swish-event-receiver").trigger("current-program", this);
+    makeCurrent: function(options) {
+      if ( !options || !options.noHistory ) {
+	$(".swish-event-receiver").trigger("current-program", this);
+      }
       return this;
     },
 
@@ -1494,7 +1496,7 @@ define([ "cm/lib/codemirror",
     create: function(dom, options) {
       $(dom).addClass("prolog-editor")
             .prologEditor($.extend({save:true}, options))
-	    .prologEditor('makeCurrent');
+	    .prologEditor('makeCurrent', options);
     }
   };
 
