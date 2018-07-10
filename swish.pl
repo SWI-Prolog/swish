@@ -56,6 +56,7 @@
 :- use_module(lib/chat, []).
 :- use_module(lib/template_hint, []).
 :- use_module(lib/plugin/http_dyn_workers, []).
+:- use_module(lib/web).
 
 
 		 /*******************************
