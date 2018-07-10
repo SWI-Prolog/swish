@@ -45,6 +45,8 @@
 define(["jquery"],
        function($) {
 
+  var styles_loaded = [];
+
   var utils = {
     /**
      * @param   {String} text is the text to be encoded
@@ -56,6 +58,21 @@ define(["jquery"],
                      .appendChild(document.createTextNode(text))
 		     .parentNode
 		     .innerHTML;
+    },
+
+    /**
+     * @param {String} url is the style sheet to load
+     */
+    loadStyle(url) {
+      if ( styles_loaded.indexOf(url) == -1 ) {
+	var styles = document.createElement('link');
+	styles.rel = 'stylesheet';
+	styles.type = 'text/css';
+	styles.media = 'screen';
+	styles.href = url;
+	document.getElementsByTagName('head')[0].appendChild(styles);
+	styles_loaded.push(url);
+      }
     },
 
     /**

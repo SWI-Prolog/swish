@@ -51,4 +51,5 @@ Serve files from /x that may   be placed in `config-available/web/x` and
 
 http:location(x, swish(x), []).
 
-:- http_handler(x(.), serve_files_in_directory(x), [prefix]).
+:- http_handler(x(.), serve_files_in_directory(x),
+                [id(x), prefix]).

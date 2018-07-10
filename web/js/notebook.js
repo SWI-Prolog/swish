@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2015-2017, VU University Amsterdam
+    Copyright (C): 2015-2018, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -46,10 +46,11 @@
  */
 
 define([ "jquery", "config", "tabbed", "form",
-	 "preferences", "modal", "prolog", "links",
-	 "laconic", "runner", "storage", "sha1"
+	 "preferences", "modal", "prolog", "links", "utils",
+	 "laconic", "runner", "storage", "sha1",
        ],
-       function($, config, tabbed, form, preferences, modal, prolog, links) {
+       function($, config, tabbed, form, preferences, modal, prolog, links,
+	        utils) {
 
 var cellTypes = {
   "program":  { label:"Program",  prefix:"p"   },
@@ -1919,5 +1920,9 @@ Notebook.prototype.submit = function(formsel, options) {
 
 Notebook.prototype.$ = function(selector) {
   return this.cell().find(selector);
+}
+
+Notebook.prototype.loadStyle = function(url) {
+  return utils.loadStyle(url);
 }
 });
