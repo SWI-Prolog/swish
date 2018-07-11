@@ -1,0 +1,194 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# Using plugins to extend HTML cells
+
+This demo illustrates the use of HTML cells with widgets that are not natively availble in SWISH.  There are two options to load external JavaScript and CSS:
+
+  1. Use `notebook.loadCSS(URL)` and the _RequireJS_ `require(dependencies, function)`.
+     Note that loading additional CSS may have global effect on the application.
+  2. Pre-load the plugin using a Prolog config file.  An example is provided in the
+     SWISH distribution in `config-available/plugin_slider.pl`, which preloads the Bootstrap
+     slider.
+
+We use the _slider_ plugin in the HTML cells below.   The three demos show the same
+chart, but illustrate the aspects below.  You may __double click__ on any of the HTML cells below to view the __source__.
+
+  1. Explicitly load the CSS and JavaScript
+  2. Rely on pre-loaded plugin
+  3. Hide the Prolog query.
+
+--
+</div>
+
+<div class="nb-cell html" name="htm1">
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <label>Color tempterature chart -- explicitly loaded extensions</label>
+  </div>
+  <div class="panel-body">
+  <p>Create a chart showing the relation between the color temperature and the RGB
+     value.
+  </p>
+    <div class="form-group row" style="margin-bottom:0px">
+      <label class="col-sm-3">Temperature range</label> 
+      <div class="col-sm-9">
+        <b style="margin-right:2ex">1000</b> 
+        <input class="span2" value="" data-slider-min="1000" data-slider-max="40000" data-slider-step="100" data-slider-value="[1000,40000]" id="range" type="text">
+        <b style="margin-left:2ex">40000</b>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  notebook.loadCSS("/plugin/bootstrap-slider/dist/css/bootstrap-slider.min.css");
+  require(["/plugin/bootstrap-slider/dist/bootstrap-slider.min.js"], function() {
+    notebook.$("#range").slider();
+    notebook.bindQuery(function(q) {
+      var range = notebook.$("#range").slider('getValue');
+      q.run({ Min: range[0], Max: range[1] });
+    });
+  });
+</script>
+</div>
+
+<div class="nb-cell query" name="q2">
+projection([Chart]),
+color_temp_chart(Min, Max, 500, Chart)
+</div>
+
+<div class="nb-cell html" name="htm2">
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <label>Color tempterature chart -- preloaded extensions</label>
+  </div>
+  <div class="panel-body">
+  <p>Create a chart showing the relation between the color temperature and the RGB
+     value.
+  </p>
+    <div class="form-group row" style="margin-bottom:0px">
+      <label class="col-sm-3">Temperature range</label> 
+      <div class="col-sm-9">
+        <b style="margin-right:2ex">1000</b> 
+        <input class="span2" value="" data-slider-min="1000" data-slider-max="40000" data-slider-step="100" data-slider-value="[1000,40000]" id="range" type="text">
+        <b style="margin-left:2ex">40000</b>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  notebook.$("#range").slider();
+  notebook.bindQuery(function(q) {
+    var range = notebook.$("#range").slider('getValue');
+    q.run({ Min: range[0], Max: range[1] });
+  });
+</script>
+</div>
+
+<div class="nb-cell query" name="q1">
+projection([Chart]),
+color_temp_chart(Min, Max, 500, Chart)
+</div>
+
+<div class="nb-cell html" name="htm3">
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <label>Color tempterature chart -- hidden Prolog query</label>
+  </div>
+  <div class="panel-body">
+  <p>Create a chart showing the relation between the color temperature and the RGB
+     value.
+  </p>
+    <div class="form-group row">
+      <label class="col-sm-3">Temperature range</label> 
+      <div class="col-sm-9">
+        <b style="margin-right:2ex">1000</b> 
+        <input class="span2" value="" data-slider-min="1000" data-slider-max="40000" data-slider-step="100" data-slider-value="[1000,40000]" id="range" type="text">
+        <b style="margin-left:2ex">40000</b>
+      </div>
+    </div>
+    <div class="form-group row" style="margin-bottom:0px">
+      <button type="button" class="btn btn-primary">Show colortemp chart</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  notebook.$("#range").slider();
+  notebook.hideQuery("hidden", true);
+  notebook.$(".btn-primary").on("click", function(ev) {
+    var range = notebook.$("#range").slider('getValue');
+    notebook.run("hidden", { Min: range[0], Max: range[1] });
+  });
+</script>
+</div>
+
+<div class="nb-cell query" name="hidden">
+projection([Chart]),
+color_temp_chart(Min, Max, 500, Chart)
+</div>
+
+<div class="nb-cell markdown" name="md4">
+## The helper programs
+
+The first cell creates the charts.  The one below provides the actual implementation of
+the conversion routine.
+</div>
+
+<div class="nb-cell program" data-background="true" data-singleline="true" name="p2">
+:- use_rendering(c3).
+color_temp_chart(Min, Max, Steps, Chart) :-
+    Step is (Max-Min)/Steps,
+    Start is round(Min/Step),
+    End is round(Max/Step),
+    findall(_{temp:Temp, red:R, green:G, blue:B},
+            ( between(Start, End, T0),
+                Temp is T0*Step,
+                color_temp_rgb(Temp, R, G, B)
+            ), Data),
+    Chart = c3{data:_{x:temp,
+                      colors:_{red:red, green:green, blue:blue}, 
+                      type:spline,
+                      rows:Data},
+               point:_{show:false},
+               axis:_{x:_{tick: _{values: [1000, 6600, 10000, 20000, 40000]}}}}.
+</div>
+
+<div class="nb-cell program" data-background="true" data-singleline="true" name="p1">
+%!  color_temp_rgb(+Temp, -R, -G, -B)
+%
+%   @see http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/
+
+color_temp_rgb(Temp, R, G, B) :-
+    T is Temp/100,
+    ctemp_red(T, R),
+    ctemp_green(T, G),
+    ctemp_blue(T, B).
+
+ctemp_red(T, R) :-
+    T =&lt; 66, !, R = 255.
+ctemp_red(T, R) :-
+    R is max(0, min(255, 329.698727446 * ((T-60) ^ -0.1332047592))).
+
+ctemp_green(T, G) :-
+    T =&lt; 66,
+    !,
+    G is max(0, min(255, 99.4708025861 * log(T) - 161.1195681661)).
+ctemp_green(T, G) :-
+    G is max(0, min(255, 288.1221695283 * (T-60) ^ -0.0755148492)).
+
+ctemp_blue(T, B) :-
+    T &gt;= 66,
+    !,
+    B = 255.
+ctemp_blue(T, B) :-
+    T =&lt; 19,
+    !,
+    B = 0.
+ctemp_blue(T, B) :-
+    B is max(0, min(255, 138.5177312231 * log(T-10) - 305.0447927307)).
+</div>
+
+</div>
