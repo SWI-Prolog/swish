@@ -33,23 +33,45 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-:- module(swish_web, []).
-:- use_module(library(http/http_dispatch)).
-:- use_module(library(http/http_server_files)).
-:- use_module(library(http/http_path), []).
+/**
+ * @fileOverview
+ *
+ * RequireJS module to load additional web plugins. Such plugins notably
+ * may deal with extending HTML cells in notebooks.
+ */
 
-/** <module> Serve /plugin
+define([ "jquery", "config", "utils" ],
+       function($, config, utils) {
 
-Serve files from /plugin that may  be placed in `config-available/web/x`
-and `config-enabled/web/plugin`.
-*/
+function to_array(x) {
+  if ( x !== undefined ) {
+    return $.isArray(x) ? x : [x];
+  } else {
+    return [];
+  }
+}
 
-:- multifile
-    http:location/3.                % Alias, Expansion, Options
-:- dynamic
-    http:location/3.                % Alias, Expansion, Options
+function load_plugin(plugin) {
+  to_array(plugin.css).forEach(utils.loadCSS);
 
-http:location(plugin, swish(plugin), []).
+  return to_array(plugin.js);
+}
 
-:- http_handler(plugin(.), serve_files_in_directory(plugin),
-                [id(plugin), prefix]).
+var plugin = {
+  /**
+   * @return array of required JavaScript dependencies
+   */
+  load: function() {
+    var jsdeps = [];
+    if ( $.isArray(config.plugins) ) {
+      for(var i=0; i<config.plugins.length; i++) {
+	$.merge(jsdeps, load_plugin(config.plugins[i]));
+      }
+    }
+
+    return jsdeps;
+  }
+};
+
+return plugin;
+});

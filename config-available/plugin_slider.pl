@@ -33,23 +33,37 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-:- module(swish_web, []).
-:- use_module(library(http/http_dispatch)).
-:- use_module(library(http/http_server_files)).
-:- use_module(library(http/http_path), []).
+:- module(swish_config_plugin_slider, []).
 
-/** <module> Serve /plugin
+/** <module> Provide Bootstrap sliders as a plugin
 
-Serve files from /plugin that may  be placed in `config-available/web/x`
-and `config-enabled/web/plugin`.
+This module illustrates loading plugins into  SWISH. Plugins may be used
+to modify parts of the SWISH behaviour or  skin as well as for providing
+additional JavaScript and styles to be used in rendering plugins or HTML
+cells inside notebooks.
+
+Currently, a plugin is a dict that may provide the following fields:
+
+  - name:Name
+  Name of the plugin.  Currently ignored.
+  - js:JavaScript
+  Either a single JavaScript URL or a list of JavaScript URLS.  Each
+  URL can be a term that is handed to http_absolute_location/3.  Notably
+  the `plugin` _alias_ allows loading files from `web/plugin` in
+  `config-enabled` or `config-available`.  The JavaScript files are
+  loaded after loading SWISH and before instantiating the SWISH
+  element using RequireJS.
+  - css:Styles
+  Uses the same URL conventions as for `js`.  Each style is loaded by
+  adding a `link` element to the document `head`.  These styles are
+  added logically _after_ the built-in styles.
 */
 
 :- multifile
-    http:location/3.                % Alias, Expansion, Options
-:- dynamic
-    http:location/3.                % Alias, Expansion, Options
+    swish_config:web_plugin/1.
 
-http:location(plugin, swish(plugin), []).
-
-:- http_handler(plugin(.), serve_files_in_directory(plugin),
-                [id(plugin), prefix]).
+swish_config:web_plugin(
+    json{name: slider,
+         js:   plugin('bootstrap-slider/dist/bootstrap-slider.min.js'),
+         css:  plugin('bootstrap-slider/dist/css/bootstrap-slider.min.css')
+        }).

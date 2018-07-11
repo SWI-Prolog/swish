@@ -1918,11 +1918,48 @@ Notebook.prototype.submit = function(formsel, options) {
   });
 };
 
+Notebook.prototype.bindQuery = function(cell, func) {
+  var q = this.cell(cell);
+
+  if ( q.length > 0 ) {
+    q.find(".action-run").off("click").on("click", function(ev) {
+      func.call(ev);
+      ev.preventDefault();
+      return false;
+    });
+  } else {
+    alert("No query named '"+cell+"'");
+  }
+};
+
+/**
+ * Hide the query and buttons of a named query cell
+ * @param {String} cell is the name of the query cell to hide
+ * @param {Boolean} [on] If `true` (default), hide the cell.
+ */
+Notebook.prototype.hideQuery = function(cell, on) {
+  var q = this.cell(cell);
+  if ( on == undefined )
+    on = true;
+
+  if ( q.length > 0 ) {
+    if ( on == true ) {
+      q.find(".nb-cell-buttons").hide();
+      q.find(".query").hide();
+    } else {
+      q.find(".nb-cell-buttons").show();
+      q.find(".query").show();
+    }
+  } else {
+    alert("No query named '"+cell+"'");
+  }
+}
+
 Notebook.prototype.$ = function(selector) {
   return this.cell().find(selector);
 }
 
-Notebook.prototype.loadStyle = function(url) {
-  return utils.loadStyle(url);
+Notebook.prototype.loadCSS = function(url) {
+  return utils.loadCSS(url);
 }
 });

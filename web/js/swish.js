@@ -102,10 +102,13 @@ require.config({
  * API, while the second fetches the pengines and starts the
  * application.
  */
-require(["jquery", "config", "jswish"],
-	function($, config, swish) {
-  require([config.http.locations.pengines+"/pengines.js"],
-	  function() {
+require(["jquery", "config", "jswish", "plugin"],
+	function($, config, swish, plugin) {
+  var deps = plugin.load();
+
+  deps.push(config.http.locations.pengines+"/pengines.js");
+
+  require(deps, function() {
     $(function() {
       $("body").swish(config.swish||{});
     });

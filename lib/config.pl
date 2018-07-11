@@ -3,7 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2016, VU University Amsterdam
+    Copyright (c)  2014-2018, VU University Amsterdam
+			      CWI, Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -38,12 +39,15 @@
 	    swish_config_hash/2		% -HASH, +Options
 	  ]).
 :- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_path)).
 :- use_module(library(http/http_json)).
 :- use_module(library(option)).
+:- use_module(library(apply)).
 
 :- multifile
 	config/2,			% ?Key, ?Value
 	config/3,			% ?Key, ?Value, +Options
+	web_plugin/1,			% ?Dict
 	source_alias/2,			% ?Alias, ?Options
 	authenticate/2,			% +Request, -User
         login_item/2,                   % -Server, -HTML_DOM
@@ -78,10 +82,12 @@ swish_config_hash(Hash, Options) :-
 
 json_config(json{ http: json{ locations:JSON
 			    },
-		  swish: SWISHConfig
+		  swish: SWISHConfig,
+		  plugins : Plugins
 		}, Options) :-
 	http_locations(JSON),
-	swish_config_dict(SWISHConfig, Options).
+	swish_config_dict(SWISHConfig, Options),
+	web_plugins(Plugins, Options).
 
 http_locations(JSON) :-
 	findall(ID-Path,
@@ -138,6 +144,31 @@ warn_duplicate_config([KV|T0], [KV|T]) :- !,
 collect_same(K, [K-V|T0], [V|VT], T) :- !,
 	collect_same(K, T0, VT, T).
 collect_same(_, List, [], List).
+
+%!	web_plugins(-Plugins, +Options) is det.
+%
+%	Obtain a list of JSON dicts for additional web plugins.
+
+web_plugins(Plugins, _Options) :-
+	findall(Plugin, web_plugin_ex(Plugin), Plugins).
+
+web_plugin_ex(Plugin) :-
+	web_plugin(Plugin0),
+	dict_pairs(Plugin0, Tag, Pairs0),
+	maplist(expand_paths, Pairs0, Pairs),
+	dict_pairs(Plugin, Tag, Pairs).
+
+:- multifile http:location/3.
+:- dynamic   http:location/3.
+
+expand_paths(Name-Spec, Name-Path) :-
+	compound(Spec),
+	compound_name_arity(Spec, Alias, 1),
+	http:location(Alias, _, _),
+	!,
+	http_absolute_location(Spec, Path, []).
+expand_paths(Pair, Pair).
+
 
 %%	config(-Key, -Value) is nondet.
 %%	swish_config(-Key, -Value) is nondet.
