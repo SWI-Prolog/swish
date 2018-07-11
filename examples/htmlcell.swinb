@@ -1,6 +1,6 @@
 <div class="notebook">
 
-<div class="nb-cell html">
+<div class="nb-cell html" name="htm1">
 <h2>Using HTML cells in SWISH notebooks</h2>
 
 <p>
@@ -17,12 +17,24 @@
   properties:
 </p>
 
+<style>
+  dl.htmlcell-doc dt { text-align: left; }
+  dt.htmlcell-doc-title { color: blue; margin-top: 5px;}
+</style>
 <div class="list-group">
-  <dl class="dl-horizontal">
-    <dt>.cell()</dt><dd>Returns a jQuery object pointing to the HTML cell
+  <dl class="dl-horizontal htmlcell-doc">
+    <dt class="htmlcell-doc-title">Finding objects</dt><dd>
+    </dd><dt>.cell([name])</dt><dd>Returns a jQuery object pointing to the named
+    or current HTML cell.
     </dd><dt>.notebook()</dt><dd>Returns a jQuery object of the entire notebook
     </dd><dt>.$(selector)</dt><dd>Returns a jQuery object holding all DOM elements
     matching <var>selector</var> in the current HTML cell.
+    </dd><dt class="htmlcell-doc-title">Running queries</dt><dd>
+    </dd><dt>.bindQuery([query,] f)</dt><dd>Bind the play button of the query named <var>query</var> to run the
+    function <var>f</var>.  If <var>query</var> is omitted, bind to the first query below this cell.
+    The function is called with a single argument that provides a method
+    <code>run(bindings)</code>, where <var>bindings</var> is an object where the keys are the names
+    of Prolog variables and the values are the values for these variables.
     </dd><dt>.run(query, parameters)</dt><dd>Run the named query cell.  <var>Parameters</var> is an object
     binding Prolog variables in the query to specified values.
     </dd><dt>.swish(options)</dt><dd>Wrapper around <code>new Pengine()</code> that fetches the sources
@@ -32,6 +44,11 @@
     jQuery selector), calls <code>options.predicate</code> with a single argument that is a dict that
     contains the fields of the form.  On success, <code>options.onsuccess</code> is called.  If an
     error occurs, this is displayed.
+    </dd><dt class="htmlcell-doc-title">Miscelleneous</dt><dd>
+    </dd><dt>.hideQuery(q[, on])</dt><dd>Hide the query editor and buttons for the query named <var>q</var> if
+    <var>on</var> is <code>true</code> (default).
+    </dd><dt>.loadCSS(url)</dt><dd>Load a CSS style sheet from <code>url</code> if this was not
+    already loaded.
   </dd></dl>
 </div>
 
@@ -47,7 +64,9 @@
   dynamically from the example sentences defined in the Prolog program at the
   end of the page.
 </p>
+</div>
 
+<div class="nb-cell html" name="htm2">
 <div class="panel panel-default">
   <div class="panel-body">
     <div class="form-group">
@@ -60,9 +79,6 @@
           </ul>
         </div>
         <input class="form-control">
-        <div class="input-group-btn">
-          <button type="button" class="btn btn-primary">Parse</button>
-        </div>
       </div>
     </div>
   </div>
@@ -95,13 +111,12 @@
     notebook.$("input").val($(this).text());
   });
 
-  // If the "Parse" button is clicked, run the query named "parse"
+  // If the play button of the "parse" query is clicked, run the query,
   // binding Sentence to the input string.  The function
-  // notebook.run() takes the name of a query and an object
-  // holding bindings.  This is translated to run the query
-  // Sentence = (String), (parse(Sentence, Tree)).
-  notebook.$(".btn-primary").on("click", function() {
-    notebook.run("parse", {Sentence: notebook.$("input").val()});
+  // notebook.bindQuery() takes the name of a query and a
+  // function that collects the arguments and calls the query.
+  notebook.bindQuery("parse", function(q) {
+    q.run({Sentence: notebook.$("input").val()});
   });
 </script>
 </div>
@@ -110,7 +125,7 @@
 parse(Sentence, Tree).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md1">
 ### The programs
 
 Below are three program fragments.  All three are declared as _background_ programs, so they are available to all queries posted from this notebook.  They specify
@@ -122,7 +137,7 @@ Below are three program fragments.  All three are declared as _background_ progr
 You can change the grammar as well as the example sentences and see the immediate effect.
 </div>
 
-<div class="nb-cell program" data-background="true">
+<div class="nb-cell program" data-background="true" name="p1">
 % A simple English DCG grammar
 % ============================
 
@@ -153,13 +168,13 @@ v(v(saw), _) --&gt; [saw].
 p(p(with)) --&gt; [with].
 </div>
 
-<div class="nb-cell program" data-background="true" data-singleline="true">
+<div class="nb-cell program" data-background="true" data-singleline="true" name="p2">
 example("john sees a man").
 example("a man sees john").
 example("john sees a man with a telescope").
 </div>
 
-<div class="nb-cell program" data-background="true" data-singleline="true">
+<div class="nb-cell program" data-background="true" data-singleline="true" name="p3">
 :- use_rendering(svgtree, [list(false)]).
 
 parse(Sentence, Tree) :-
