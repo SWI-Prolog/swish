@@ -1,6 +1,6 @@
 <div class="notebook">
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md1">
 # Display SWISH server statistics
 
 This page examines the performance and health of the SWISH server.  Most of the statistics are gathered by `lib/swish_debug`, which is by default loaded into http://swish.swi-prolog.org but must be explicitly loaded into your own SWISH server.  Part of the statistics are based on reading the Linux =|/proc|= file system and thus only function on Linux.
@@ -8,18 +8,18 @@ This page examines the performance and health of the SWISH server.  Most of the 
 The first step is easy, showing the overall statistics of the server.
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q3">
 statistics.
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md2">
 ## Historical performance statistics
 
 The charts below render historical performance characteristics of the server.  Please open the
 program below for a description of chart/3.
 </div>
 
-<div class="nb-cell program" data-singleline="true">
+<div class="nb-cell program" data-singleline="true" name="p1">
 :- use_rendering(c3).
 
 %%	chart(+Period, +Keys, -Chart) is det.
@@ -44,7 +44,8 @@ program below for a description of chart/3.
 %	    high if user applications use the dynamic database.
 %	  - `rss_mb`, `stack_mb`, `heap_mb` are the above divided by 1024^2.
 
-chart(Period, Keys, Chart) :-
+chart(PeriodS, Keys, Chart) :-
+    atom_string(Period, PeriodS),
     swish_stats(Period, Dicts0),
     maplist(add_heap_mb, Dicts0, Dicts1),
     maplist(rss_mb, Dicts1, Dicts2),
@@ -99,38 +100,110 @@ fix_date(Stat0, Stat) :-
     put_dict(time, Stat0, Time, Stat).
 </div>
 
-<div class="nb-cell markdown">
-### Number of Pengines and CPU load over the past hour
-
-The number of Pegines denotes the number of actively executing queries.  These queries may be sleeping while waiting for input, a debugger command or the user asking for more answers. Note that the number of Pengines is sampled and short-lived Pengines does not appear in this chart.
+<div class="nb-cell html" name="htm1">
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <label>Number of Pengines and CPU load over the past period</label>
+  </div>
+  <p>The number of Pegines denotes the number of actively executing queries.
+     These queries may be sleeping while waiting for input, a debugger command
+     or the user asking for more answers. Note that the number of Pengines is
+     sampled and short-lived Pengines does not appear in this chart.
+  </p><div class="panel-body">
+    <div class="form-group row" style="margin-bottom:0px">
+      <label class="col-sm-2">Period:</label>
+      <div class="col-sm-10">
+        <label class="radio-inline"><input name="period1" value="week" type="radio">Week</label>
+        <label class="radio-inline"><input name="period1" value="day" type="radio">Day</label>
+        <label class="radio-inline"><input name="period1" value="hour" checked="" type="radio">Hour</label>
+        <label class="radio-inline"><input name="period1" value="minute" type="radio">Minute</label>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="nb-cell query">
-chart(hour, [pengines,d_cpu], Chart).
+<script>
+  notebook.bindQuery(function(q) {
+    q.run({ Period: notebook.$('input[type=radio]:checked').val() });
+  });
+</script>
 </div>
 
-<div class="nb-cell markdown">
-### Number of threads and visitors
-
-Threads are used as HTTP workers, pengines and some adminstrative tasks.  Visitors is the number of open websockets, which reflects the number of browser windows watching this page.
+<div class="nb-cell query" name="cpu">
+projection([Chart]),
+chart(Period, [pengines,d_cpu], Chart).
 </div>
 
-<div class="nb-cell query">
-chart(hour, [pengines,threads,visitors], Chart).
+<div class="nb-cell html" name="htm2">
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <label>Number of threads and visitors</label>
+  </div>
+  <p>Threads are used as HTTP workers, pengines and some adminstrative tasks.
+     Visitors is the number of open websockets, which reflects the number of browser
+     windows watching this page.
+  </p><div class="panel-body">
+    <div class="form-group row" style="margin-bottom:0px">
+      <label class="col-sm-2">Period:</label>
+      <div class="col-sm-10">
+        <label class="radio-inline"><input name="period2" value="week" type="radio">Week</label>
+        <label class="radio-inline"><input name="period2" value="day" type="radio">Day</label>
+        <label class="radio-inline"><input name="period2" value="hour" checked="" type="radio">Hour</label>
+        <label class="radio-inline"><input name="period2" value="minute" type="radio">Minute</label>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="nb-cell markdown">
-### Memory usage over the past hour
-
-*rss* is the total (_resident_) memory usage as reported by Linux.  *stack* is the memory occupied by all Prolog stacks.
-*heap* is an approximation of the memory used for the Prolog program space, computed as _rss_ - _stack_ - _free_.  This is incorrect for two reasons.  It ignores the C-stacks and the not-yet-committed memory of the Prolog stacks is not part of *rss*.  *free* is memory that is freed but not yet reused as reported by GNU =|malinfo()|= as `fordblks`.
+<script>
+  notebook.bindQuery(function(q) {
+    q.run({ Period: notebook.$('input[type=radio]:checked').val() });
+  });
+</script>
 </div>
 
-<div class="nb-cell query">
-chart(hour, [rss_mb,heap_mb,stack_mb,free_mb], Chart).
+<div class="nb-cell query" name="visitors">
+projection([Chart]),
+chart(Period, [pengines,threads,visitors], Chart).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell html" name="htm3">
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <label>Memory usage over the past hour</label>
+  </div>
+  <p><b>rss</b> is the total (resident) memory usage as reported by Linux. <b>stack</b> is the memory
+    occupied by all Prolog stacks. <b>heap</b> is an approximation of the memory used for the
+     Prolog program space, computed as <i>rss - stack - free<i>. This is incorrect for two reasons.
+     It ignores the C-stacks and the not-yet-committed memory of the Prolog stacks
+     is not part of rss. free is memory that is freed but not yet reused as reported
+    by GNU <a href="https://www.gnu.org/software/libc/manual/html_node/Statistics-of-Malloc.html">malinfo()</a> as <code>fordblks</code>.
+  </i></i></p><div class="panel-body"><i><i>
+    <div class="form-group row" style="margin-bottom:0px">
+      <label class="col-sm-2">Period:</label>
+      <div class="col-sm-10">
+        <label class="radio-inline"><input name="period3" value="week" type="radio">Week</label>
+        <label class="radio-inline"><input name="period3" value="day" type="radio">Day</label>
+        <label class="radio-inline"><input name="period3" value="hour" checked="" type="radio">Hour</label>
+        <label class="radio-inline"><input name="period3" value="minute" type="radio">Minute</label>
+      </div>
+    </div>
+  </i></i></div><i><i>
+</i></i></div><i><i>
+
+<script>
+  notebook.bindQuery(function(q) {
+    q.run({ Period: notebook.$('input[type=radio]:checked').val() });
+  });
+</script></i></i>
+</div>
+
+<div class="nb-cell query" name="q6">
+projection([Chart]),
+chart(Period, [rss_mb,heap_mb,stack_mb,free_mb], Chart).
+</div>
+
+<div class="nb-cell markdown" name="md6">
 ## Health statistics
 
 The statistics below assesses the number of *Pengines* (actively executing queries from users) and the *highlight states*, the number of server-side mirrors we have from client's source code used to compute the semantically enriched tokens.   If such states are not explicitly invalidated by the client, they are removed after having not been accessed for one hour.  The *stale modules* count refers to temporary modules that are not associated to a Pengine, nor to a highlight state and probably indicate a leak.
@@ -138,7 +211,7 @@ The statistics below assesses the number of *Pengines* (actively executing queri
 The two queries below extract information about stale modules and threads that have died.  These are used to help debugging related leaks.
 </div>
 
-<div class="nb-cell program" data-singleline="true">
+<div class="nb-cell program" data-singleline="true" name="p2">
 :- use_rendering(table).
 
 stats([stale_modules-Stale|Pairs]) :-
@@ -148,7 +221,7 @@ stats([stale_modules-Stale|Pairs]) :-
             Pairs).
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q7">
 stats(Stats).
 </div>
 
