@@ -1923,9 +1923,18 @@ Notebook.prototype.submit = function(formsel, options) {
   * function is passed an object with a method `run(bindings)`, where
   * `bindings` is an object holding `VarName: Value` keys.
   */
-Notebook.prototype.bindQuery = function(cell, func) {
+Notebook.prototype.bindQuery = function(a1, a2) {
   var that = this;
-  var q = this.cell(cell);
+  var q;
+  var func;
+
+  if ( typeof(a1) == "function" && a2 == undefined ) {
+    q = this.cell().nextAll(".query").first();
+    func = a1;
+  } else {
+    q = this.cell(a1);
+    func = a2;
+  }
 
   if ( q.length > 0 ) {
     q.find(".action-run").off("click").on("click", function(ev) {
