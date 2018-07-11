@@ -1918,12 +1918,24 @@ Notebook.prototype.submit = function(formsel, options) {
   });
 };
 
+/**
+  * Bind the query default button to this HTML cell.  The callback
+  * function is passed an object with a method `run(bindings)`, where
+  * `bindings` is an object holding `VarName: Value` keys.
+  */
 Notebook.prototype.bindQuery = function(cell, func) {
+  var that = this;
   var q = this.cell(cell);
 
   if ( q.length > 0 ) {
     q.find(".action-run").off("click").on("click", function(ev) {
-      func.call(ev);
+      var query = {
+        run: function(bindings) {
+	  q.nbCell('run', {bindings:bindings});
+	}
+      };
+
+      func.call(that, query);
       ev.preventDefault();
       return false;
     });
