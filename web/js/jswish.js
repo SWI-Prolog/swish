@@ -620,6 +620,9 @@ preferences.setInform("preserve-state", ".unloadable");
       var content = this.find(".container.tile-top");
 
       if ( !content.hasClass("fullscreen") ) {
+	if ( config.swish.notebook.show_navbar == false )
+	  this[pluginName]('showNavbar', false);
+
 	var data = this.data("fullscreen");
 	if ( !data ) {
 	  data = {};
@@ -651,6 +654,8 @@ preferences.setInform("preserve-state", ".unloadable");
 	var node = $(content.children()[1]);
 	var main = data.fullscreen_main;
 
+	this[pluginName]('showNavbar', true);
+
 	content.removeClass("fullscreen");
 	$(data.fullscreen_main).removeClass("fullscreen hamburger");
 	$(data.fullscreen_origin).append(node);
@@ -677,6 +682,19 @@ preferences.setInform("preserve-state", ".unloadable");
 	var st = content.find(".storage");
 	if ( st.length != 0 )
 	  return st;
+      }
+    },
+
+    /**
+     * Control visibility of the navbar
+     * @param {Boolean} show controls whether or not the navbar
+     * is visible.
+     */
+    showNavbar: function(show) {
+      if ( show ) {
+	$("nav.navbar").attr("style", "display:block !important")
+      } else {
+	$("nav.navbar").attr("style", "display:none !important")
       }
     },
 

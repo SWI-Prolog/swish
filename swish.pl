@@ -165,8 +165,9 @@ swish_config:config(community_examples, true).
 swish_config:config(public_access,      false).
 swish_config:config(include_alias,	example).
 swish_config:config(ping,		2).
-swish_config:config(notebook,		_{eval_script: true,
-					  fullscreen: false
+swish_config:config(notebook,		_{ eval_script: true,
+					   fullscreen: false,
+					   show_navbar: true
 					 }).
 swish_config:config(chat,		true).
 swish_config:config(default_query,	'').
