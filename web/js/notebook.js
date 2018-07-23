@@ -1447,12 +1447,16 @@ var cellTypes = {
     htmlText = (htmlText||cellText(this)).trim();
 
     function makeEditable(ev) {
-      var cell = $(ev.target).closest(".nb-cell");
-      var text = cell.data('htmlText');
-      cell.removeData('htmlText');
-      methods.type.html.call(cell, {value:text});
-      cell.off("dblclick", makeEditable);
-      cell.off("click", links.followLink);
+      if ( !( $(ev.target).is("input") || /* allow double click inside these */
+	      $(ev.target).is("textarea")
+	    ) ) {
+	var cell = $(ev.target).closest(".nb-cell");
+	var text = cell.data('htmlText');
+	cell.removeData('htmlText');
+	methods.type.html.call(cell, {value:text});
+	cell.off("dblclick", makeEditable);
+	cell.off("click", links.followLink);
+      }
     }
 
     function runScripts() {
