@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2017, VU University Amsterdam
+    Copyright (C): 2014-2018, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -213,14 +213,14 @@ preferences.setInform("preserve-state", ".unloadable");
 	    runner:   data.runner,
 	    editor:   editor[0]
 	  });
+	elem.data(pluginName, data);	/* store with element */
+	data.restoring = true;
 
 	$(".notebook").notebook();
 
 	if ( options.show_beware &&
 	     !(swish.option && swish.option.show_beware == false) )
 	  menuBroadcast("help", {file:"beware.html", notagain:"beware"});
-
-	elem.data(pluginName, data);	/* store with element */
 
 	if ( window.location.href.indexOf("&togetherjs=") > 0 )
 	  elem.swish('collaborate');
@@ -249,7 +249,11 @@ preferences.setInform("preserve-state", ".unloadable");
 	}, 60000);
 
 	if ( elem[pluginName]('preserve_state') )
-	  $(".unloadable").trigger("restore");
+	{ $(".unloadable").trigger("restore");
+	}
+
+	delete data.restoring;
+	elem[pluginName]('runDelayedRestore');
       });
     },
 
@@ -279,6 +283,31 @@ preferences.setInform("preserve-state", ".unloadable");
 
       return true;
     },
+
+    afterRestore: function(f) {
+      var data = this.data("swish");
+
+      if ( data.after_restore )
+	data.after_restore.push(f);
+      else
+	data.after_restore = [f];
+
+      return this;
+    },
+
+    runDelayedRestore: function() {
+      var swish = this;
+      var data = this.data("swish");
+
+      if ( data.after_restore ) {
+	var f;
+	while( (f = data.after_restore.pop()) )
+	  f.call(swish);
+      }
+
+      return this;
+    },
+
 
     /**
      * Trigger a global event in SWISH.  Currently defined events are:
@@ -613,14 +642,26 @@ preferences.setInform("preserve-state", ".unloadable");
      * Make DOM element fullscreen
      * @param {jQuery} node is the element to turn into fullscreen.
      * Currently this only works for a notebook.
-     * @patam {jQuery} main is the node getting the `fullscreen
+     * @param {jQuery} main is the node getting the `fullscreen
      * hamburger` class.
+     * @param {Boolean} [hide_navbar] if `true`, also hide
+     * the navigation bar.
      */
-    fullscreen: function(node, main) {
+    fullscreen: function(node, main, hide_navbar) {
+      var swish = this;
       var content = this.find(".container.tile-top");
+      var swishdata = this.data("swish");
+
+      if ( swishdata.restoring ) {
+	this[pluginName]('afterRestore', function() {
+	  swish.swish('fullscreen', node, main, hide_navbar);
+	});
+	return this;
+      }
 
       if ( !content.hasClass("fullscreen") ) {
-	if ( config.swish.notebook.show_navbar == false )
+	if ( hide_navbar == true ||
+	     config.swish.notebook.show_navbar == false )
 	  this[pluginName]('showNavbar', false);
 
 	var data = this.data("fullscreen");

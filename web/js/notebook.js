@@ -97,7 +97,11 @@ var cellTypes = {
 		"Move cell up":    function() { this.notebook('up'); },
 		"Move cell down":  function() { this.notebook('down'); },
 		"Insert cell":     function() { this.notebook('insertBelow'); },
-		"--":		   "Notebook actions",
+		"--":		   "Overall options",
+		"Clear all":       function() { this.notebook('clear_all'); },
+		"Play":            function() { this.notebook('run_all'); },
+		"Settings":        function() { this.notebook('settings'); },
+		"---":		   "Notebook actions",
 		"Exit fullscreen": function() { this.notebook('fullscreen',false)}
 	      }
 	    });
@@ -119,6 +123,7 @@ var cellTypes = {
 	    sep(),
 	    glyphButton("erase", "clear_all", "Clear all query output", "warning"),
 	    glyphButton("play", "run_all", "Run all queries", "primary"),
+	    glyphButton("wrench", "settings", "Settings", "default"),
 	    glyphButton("fullscreen", "fullscreen", "Full screen", "default")
 	    ));
 	elem.append(notebookMenu());
@@ -315,20 +320,85 @@ var cellTypes = {
       return this;
     },
 
+    getSettings: function() {
+      var settings = { open_fullscreen:	this.hasClass('open-fullscreen'),
+		       hide_navbar:     this.hasClass('hide-navbar')
+		     };
+
+      return settings;
+    },
+
+    settings: function() {
+      var that = this;
+      var current = this[pluginName]('getSettings');
+
+      function notebookSettingsBody() {
+	this.append($.el.form(
+          { class:"form-horizontal"
+	  },
+	  form.fields.checkboxes(
+		[ { name: "open_fullscreen",
+		    label: "open in fullscreen mode",
+		    value: current.open_fullscreen,
+		    title: "Open in fullscreen mode"
+		  }
+		], {col:3, label:"Initial view"}),
+	  form.fields.checkboxes(
+		[ { name: "hide_navbar",
+		    label: "hide navigation bar",
+		    value: current.hide_navbar,
+		    title: "Hide navigation bar"
+		  }
+		], {col:3, label:"Full screen options"}),
+	  form.fields.buttons(
+	  { label: "Apply",
+	    offset: 3,
+	    action: function(ev, values) {
+	      function update(field, cls) {
+		if ( values[field] != current[field] ) {
+		  if ( values[field] )
+		    that.addClass(cls);
+		  else
+		    that.removeClass(cls);
+		}
+	      }
+
+	      update("hide_navbar",     "hide-navbar");
+	      update("open_fullscreen", "open-fullscreen");
+
+	      that.notebook('checkModified');
+	    }
+	  })));
+      }
+
+      form.showDialog({ title: "Set options for notebook",
+                        body: notebookSettingsBody
+                      });
+    },
+
     run: function(cell) {
       cell = cell||currentCell(this);
       if ( cell )
 	cell.nbCell("run");
     },
 
-    fullscreen: function(val) {
+    /**
+     * Set the notebook in fullscreen mode.
+     * @arg {Boolean} [val] if `true` or the notebook has the class
+     * `fullscreen`, go to fullscreen mode.
+     * @arg {Boolean} [hide_navbar] if `val = true` and this parameter
+     * is true, also hide the SWISH navigation bar.
+     */
+    fullscreen: function(val, hide_navbar) {
       if ( val == undefined )		/* default: toggle */
 	val = !this.hasClass("fullscreen");
+      if ( hide_navbar == undefined )
+	hide_navbar = this.hasClass("hide-navbar");
 
       if ( val ) {
 	var chat_container = this.closest(".chat-container");
 	var node = chat_container.length == 1 ? chat_container : this;
-	$("body.swish").swish('fullscreen', node, this);
+	$("body.swish").swish('fullscreen', node, this, hide_navbar);
       } else {
 	$("body.swish").swish('exitFullscreen');
       }
@@ -566,15 +636,27 @@ var cellTypes = {
 	var notebook = this;
 	var content  = this.find(".nb-content");
 	var dom = $.el.div();
+	var isnew = content.children(".nb-cell").length == 0;
 
 	content.html("");
 	dom.innerHTML = val;		/* do not execute scripts */
+	var outer_div = $(dom).find("div.notebook");
 
-	if ( options.fullscreen == undefined )
-	  options.fullscreen = $(dom).find("div.notebook").hasClass("fullscreen");
-	if ( options.fullscreen ) {
+	this.removeClass("fullscreen hide-navbar");
+	if ( outer_div.hasClass("open-fullscreen") ) {
+	  options.fullscreen = true;
+	  this.addClass("open-fullscreen");
+	} else if ( outer_div.hasClass("fullscreen") ) {
+	  options.fullscreen = true;
 	  this.removeClass("fullscreen");
-	  this.notebook('fullscreen', true);
+	}
+	if ( outer_div.hasClass("hide-navbar") )
+	{ options.hide_navbar = true;
+	  this.addClass("hide-navbar");
+	}
+
+	if ( isnew && options.fullscreen ) {
+	  this.notebook('fullscreen', true, options.hide_navbar);
 	}
 
 	$(dom).find(".nb-cell").each(function() {
@@ -596,7 +678,7 @@ var cellTypes = {
     getClasses: function() {
       var found = this.attr("class").split(" ");
       var classes = [];
-      var allowed = ["fullscreen", "navbar-hidden"];
+      var allowed = ["open-fullscreen", "hide-navbar"];
 
       for(var i=0; i<found.length; i++) {
 	if ( allowed.indexOf(found[i]) >= 0 )
