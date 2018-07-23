@@ -661,7 +661,8 @@ preferences.setInform("preserve-state", ".unloadable");
 
       if ( !content.hasClass("fullscreen") ) {
 	if ( hide_navbar == true ||
-	     config.swish.notebook.show_navbar == false )
+	     ( config.swish.fullscreen &&
+	       config.swish.fullscreen.hide_navbar == true ) )
 	  this[pluginName]('showNavbar', false);
 
 	var data = this.data("fullscreen");

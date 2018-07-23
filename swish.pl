@@ -140,6 +140,10 @@ load_config.
 %	    Whether or not to evaluate JavaScript in cells
 %	    - fullscreen
 %	    Whether or not to start in fullscreen mode by default
+%	  - fullscreen
+%	  Dict holding options for fullscreen mode:
+%	    - hide_navbar: hide the navigation bar when in fullscreen
+%	      mode.
 %	  - chat
 %	  Activate the chat interface
 %	  - default_query
@@ -166,8 +170,9 @@ swish_config:config(public_access,      false).
 swish_config:config(include_alias,	example).
 swish_config:config(ping,		2).
 swish_config:config(notebook,		_{ eval_script: true,
-					   fullscreen: false,
-					   show_navbar: true
+					   fullscreen: false
+					 }).
+swish_config:config(fullscreen,		_{ hide_navbar: true
 					 }).
 swish_config:config(chat,		true).
 swish_config:config(default_query,	'').
