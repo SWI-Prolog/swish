@@ -550,7 +550,9 @@ var cellTypes = {
       options = options||{};
 
       if ( val == undefined ) {
-	var dom = $.el.div({class:"notebook"});
+	var classes = this[pluginName]('getClasses');
+	classes.unshift("notebook");
+	var dom = $.el.div({class: classes.join(" ")});
 
 	this.notebook('assignCellNames', false);
 	this.find(".nb-cell").each(function() {
@@ -589,11 +591,27 @@ var cellTypes = {
     },
 
     /**
+     * @return {Array} of class names that are preserved.
+     */
+    getClasses: function() {
+      var found = this.attr("class").split(" ");
+      var classes = [];
+      var allowed = ["fullscreen", "navbar-hidden"];
+
+      for(var i=0; i<found.length; i++) {
+	if ( allowed.indexOf(found[i]) >= 0 )
+	  classes.push(found[i]);
+      }
+
+      return classes.sort();
+    },
+
+    /**
      * Compute a state fingerprint for the entire notebook
      * @return {String} SHA1 fingerprint
      */
     changeGen: function() {
-      var list = [];
+      var list = this[pluginName]('getClasses');
       this.find(".nb-cell").each(function() {
 	var cg = $(this).nbCell('changeGen');
 	list.push(cg);
