@@ -939,35 +939,38 @@ var cellTypes = {
      * (de)activate the current cell.
      */
     active: function(val) {
-      var data = this.data(pluginName);
+      return this.each(function() {
+	var elem = $(this);
+	var data = elem.data(pluginName);
 
-      if ( val ) {
-	this.addClass("active");
-	switch( data.type ) {
-	  case "program":
-	    this.find(".editor").prologEditor('makeCurrent');
-	    break;
-	  case "query":
-	    var ed = this.prevAll(".program").first().find(".editor");
-	    if ( ed.length == 1 )
-	      ed.prologEditor('makeCurrent');
-	    this.closest(".notebook")
-                .find(".nb-cell.program")
-                .not(this.nbCell("program_cells"))
-                .addClass("not-for-query");
-	    break;
+	if ( val ) {
+	  elem.addClass("active");
+	  switch( data.type ) {
+	    case "program":
+	      elem.find(".editor").prologEditor('makeCurrent');
+	      break;
+	    case "query":
+	      var ed = elem.prevAll(".program").first().find(".editor");
+	      if ( ed.length == 1 )
+		ed.prologEditor('makeCurrent');
+	      elem.closest(".notebook")
+		  .find(".nb-cell.program")
+		  .not(elem.nbCell("program_cells"))
+		  .addClass("not-for-query");
+	      break;
+	  }
+	} else if ( elem.length > 0 ) {
+	  elem.removeClass("active");
+	  switch( data.type ) {
+	    case "markdown":
+	    case "html":
+	      if ( elem.hasClass("runnable") ) {
+		elem.nbCell('run');
+	      }
+	      break;
+	  }
 	}
-      } else if ( this.length > 0 ) {
-	this.removeClass("active");
-	switch( data.type ) {
-	  case "markdown":
-	  case "html":
-	    if ( this.hasClass("runnable") ) {
-	      this.nbCell('run');
-	    }
-	    break;
-	}
-      }
+      });
     },
 
     ensure_in_view: function(where) {
