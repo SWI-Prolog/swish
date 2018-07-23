@@ -145,11 +145,12 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
 	    // TBD: not save in this case?
 	    try {
 	      var str = localStorage.getItem("query");
-	      state = JSON.parse(str);
+	      if ( str )
+		state = JSON.parse(str);
 	    } catch(err) {
 	    }
 
-	    if ( typeof(state) == "object" ) {
+	    if ( state && typeof(state) == "object" ) {
 	      elem[pluginName]('setState', state);
 	    }
 	  }

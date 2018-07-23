@@ -125,11 +125,12 @@ tabbed.tabTypes.permalink = {
 	  if ( ev.target == elem[0] ) {
 	    try {
 	      var str = localStorage.getItem("tabs");
-	      var state = JSON.parse(str);
+	      if ( str )
+		state = JSON.parse(str);
 	    } catch(err) {
 	    }
 
-	    if ( typeof(state) == "object" ) {
+	    if ( state && typeof(state) == "object" ) {
 	      elem[pluginName]('setState', state);
 	    }
 	  }
