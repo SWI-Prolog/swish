@@ -16,3 +16,6 @@
 [submodule "pack/pcache"]
 	path = pack/pcache
 	url = https://github.com/JanWielemaker/pcache.git
+[submodule "pack/chat80"]
+	path = pack/chat80
+	url = https://github.com/JanWielemaker/smtp.git

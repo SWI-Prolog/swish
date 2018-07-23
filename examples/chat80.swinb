@@ -1,0 +1,103 @@
+<div class="notebook hide-navbar open-fullscreen">
+
+<div class="nb-cell markdown" name="md1">
+# CHAT80 demo of fullscreen mode
+
+This demo illustrates that SWISH can be used to realise fully functional HTML5 web applications without showing any SWISH specific elements.  The main applicaion consists of the HTML cell below that provides the entry form, a __hidden__ query that executes the command and shows the result and a __hidden__ program that ties the CHAT80 program to the query.
+
+To examine this page, either download it or double click the HTML cell outside the input field, edit the two call near the bottom that hide the query and program and click outside the HTML cell to see the other page elements.
+</div>
+
+<div class="nb-cell html" name="htm1">
+<div class="panel panel-default">
+  <div class="panel-body">
+    <div class="form-group">
+      <label>Question?</label>
+      <div class="input-group">
+        <div class="input-group-btn">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Example
+            <span class="caret"></span></button>
+          <ul class="dropdown-menu">
+          </ul>
+        </div>
+        <input class="form-control">
+        <div class="input-group-btn">
+          <button type="button" class="btn btn-primary">Find</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Load examples from the predicate examples/1.  notebook.swish() is a wrapper
+  // around new Pengine() that fetches the sources using the same algorithm as
+  // a query cell and set the `application` to `swish`.
+  // notebook.$() is a shorthand for notebook.cell().find(), evaluating to a
+  // jQuery object that matches the objects from the current cell.
+  function loadExamples() {
+    var seen = 0;
+    notebook.$(".dropdown-menu").html("");
+    notebook.swish({ ask: "example(Ex)",
+                     ondata: function(data) {
+                     notebook.$(".dropdown-menu").append('<li><a>'+data.Ex+'</li>');
+                     if ( seen++ == 0 )
+                       notebook.$("input").val(data.Ex);
+                    }
+                   });
+  }
+  // Load the examples on page load as well as if the user clicks the
+  // dropdown menu, so changes are reflected.
+  loadExamples();
+  notebook.$(".dropdown-toggle").on("click", loadExamples);
+
+  // Pass selected examples to the input field.
+  notebook.$(".dropdown-menu").on("click", "li", function(ev) {
+    notebook.$("input").val($(this).text());
+  });
+  // Make the find button run the query
+  notebook.$(".btn-primary").on("click", function() {
+    notebook.run("chat80-find", { Question: notebook.$("input").val() });
+  });
+  
+  // Hide the usual query field
+  notebook.hideQuery("chat80-find", true);
+  // If the play button of the "parse" query is clicked, run the query,
+  // binding Sentence to the input string.  The function
+  // notebook.bindQuery() takes the name of a query and a
+  // function that collects the arguments and calls the query.
+  notebook.bindQuery(function(q) {
+    q.run({Question: notebook.$("input").val()});
+  });
+  
+  //hide the programs
+  notebook.notebook().find(".nb-cell.program").hide();
+</script>
+</div>
+
+<div class="nb-cell query" data-chunk="10" data-tabled="true" name="chat80-find">
+projection([Answer]), answer(Question, Answer).
+</div>
+
+<div class="nb-cell program" data-background="true" name="p1">
+:- use_module(library(chat80)).
+
+example(Text) :-
+    chat_example(_Id, Tokens, _Answer),
+    maplist(token_num, Tokens, Plain),
+    atomics_to_string(Plain, " ", Text).
+
+token_num(X, X) :- atom(X), !.
+token_num(nb(X), X) :- number(X), !.
+
+answer(Question, Answer) :-
+    tokenize_atom(Question, Plain),
+    maplist(token_num, Tokens, Plain),
+    (   chat_process(Tokens, Answers)
+    -&gt;  member(Answer, Answers)
+    ;   format('Sorry, I do not understand this question~n'),
+        fail
+    ).
+</div>
+
+</div>
