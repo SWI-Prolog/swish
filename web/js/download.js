@@ -42,8 +42,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "laconic" ],
-       function() {
+define([ "jquery", "config", "laconic" ],
+       function($, config) {
 
 (function($) {
   var pluginName = 'downloader';
@@ -61,14 +61,10 @@ define([ "jquery", "laconic" ],
     _init: function(options) {
       return this.each(function() {
 	var elem = $(this);
-	var data = $.extend({
-	  name:"swish-download",
-	  ext:"dat"
-	}, options);
 
-	var type = data.content_type;
-	var name = data.filename || "swish-download.dat";
-	var chs  = data.charset  || "charset=UTF-8";
+	var uuid = options.uuid;
+	var type = options.content_type || "application/octet-stream";
+	var name = options.filename || "swish-download.dat";
 
 	function aSupportsDownload() {
 	  return $("<a>")[0].download != undefined;
@@ -77,8 +73,10 @@ define([ "jquery", "laconic" ],
 	if ( !aSupportsDownload() || !type )
 	  type = "application/octet-stream";
 
-	var href      = "data:"+type+";"+chs+",";
-        href += (chs == "base64" ? data.data : encodeURIComponent(data.data));
+	var href      = config.http.locations.download + "/" +
+			encodeURIComponent(name) +
+ 	                "?content_type=" + encodeURIComponent(type) +
+			"&uuid=" + uuid;
 
 	elem.attr("download", name);
 	elem.attr("href", href);
