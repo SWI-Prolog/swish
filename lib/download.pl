@@ -94,7 +94,7 @@ download_button(Data, Options) :-
 		 filename:FileName
 		}).
 
-add_charset(utf8, Enc0, Enc) :-
+add_charset(utf8, Enc0, Enc) :- !,
 	atom_concat(Enc0, '; charset=UTF-8', Enc).
 add_charset(_, Enc, Enc).
 
