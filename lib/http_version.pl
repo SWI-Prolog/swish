@@ -52,6 +52,7 @@ file is not loaded by default for security reasons.
 */
 
 :- http_handler(swish(versions),  versions,  [id(versions)]).
+:- http_handler(swish(changes),   changes,   [id(changes)]).
 :- http_handler(swish(changelog), changelog, [id(changelog)]).
 
 versions(_Request) :-
@@ -72,6 +73,69 @@ module_version_data(Module, Name, Value) :-
     git_module_property(Module, Term),
     Term =.. [Name,Value].
 
+%!  changes(+Request)
+%
+%   Get quick statistics on changes since a   commit  to inform the user
+%   about new functionality. If no commit is  passed we reply no changes
+%   and the last commit we have seen.
+
+:- dynamic  change_cache/3.
+:- volatile change_cache/3.
+
+:- multifile
+    user:message_hook/3.
+
+user:message_hook(make(done(_)), _, _) :-
+    retractall(change_cache(_,_,_)),
+    fail.
+
+changes(Request) :-
+    http_parameters(Request,
+                    [ commit(Commit, [optional(true)]),
+                      show(Show, [oneof([tagged, all]), default(tagged)])
+                    ]),
+    changes(Commit, Show, Changes),
+    reply_json_dict(Changes).
+
+changes(Commit, Show, Changes) :-
+    change_cache(Commit, Show, Changes),
+    !.
+changes(Commit, Show, Changes) :-
+    git_module_property(swish, directory(Dir)),
+    (   nonvar(Commit)
+    ->  atom_concat(Commit, '..', Revisions),
+        Options = [ revisions(Revisions) ]
+    ;   Options = [ limit(1) ]
+    ),
+    git_shortlog(Dir, ShortLog0, Options),
+    (   Show == tagged
+    ->  include(is_tagged_change, ShortLog0, ShortLog)
+    ;   ShortLog = ShortLog0
+    ),
+    (   ShortLog = [LastEntry|_]
+    ->  (   nonvar(Commit)
+        ->  length(ShortLog, Count)
+        ;   Count = 0
+        ),
+        git_log_data(commit_hash,         LastEntry, LastCommit),
+        git_log_data(committer_date_unix, LastEntry, LastModified),
+        Changes = json{commit:  LastCommit,
+                       date:    LastModified,
+                       changes: Count
+                      }
+    ;   Changes = json{ changes: 0
+                      }
+    ),
+    asserta(change_cache(Commit, Show, Changes)).
+
+is_tagged_change(Change) :-
+    git_log_data(subject, Change, Message0),
+    sub_string(Message0, Pre, _, _, ":"),
+    Pre > 0,
+    !,
+    sub_string(Message0, 0, Pre, _, Tag),
+    string_upper(Tag, Tag).
+
 %!  changelog(+Request)
 %
 %   Sends the changelog since a  given  version,   as  well  as the last
@@ -79,7 +143,7 @@ module_version_data(Module, Name, Value) :-
 
 changelog(Request) :-
     http_parameters(Request,
-                    [ since(Since, [optional(true)]),
+                    [ commit(Since, [optional(true)]),
                       last(Count, [default(10)]),
                       show(Show, [oneof([tagged, all]), default(tagged)])
                     ]),

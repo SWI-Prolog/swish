@@ -255,6 +255,7 @@ preferences.setInform("preserve-state", ".unloadable");
 
 	delete data.restoring;
 	elem[pluginName]('runDelayedRestore');
+	$().version('checkForUpdates');
       });
     },
 
@@ -756,15 +757,13 @@ preferences.setInform("preserve-state", ".unloadable");
     },
 
     /**
-     * Show version details
+     * Show showUpdates
      */
-    versionInfo: function() {
+    showUpdates: function(options) {
       modal.show({
-        title: "Version details",
+        title: options.title || "Recent SWISH updates",
 	body: function() {
-	  var e;
-	  this.append(e = $.el.div());
-	  $(e).version();
+	  this.version(options);
 	}
       });
     }

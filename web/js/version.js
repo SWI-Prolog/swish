@@ -42,8 +42,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "laconic" ],
-       function($, config) {
+define([ "jquery", "config", "utils", "laconic" ],
+       function($, config, utils) {
 
 (function($) {
   var pluginName = 'version';
@@ -51,17 +51,23 @@ define([ "jquery", "config", "laconic" ],
   /** @lends $.fn.version */
   var methods = {
     _init: function(options) {
+      options = options||{};
+
       return this.each(function() {
 	var elem = $(this);
 	var data = {};			/* private data */
 
-	elem.append($.el.div({class:"version"},
-			     $.el.div({class:"v-swish"}),
-			     $.el.div({class:"v-changelog"},
-				      $.el.table()),
-			     $.el.div({class:"v-prolog"})));
+	if ( config.http.locations.versions ) {
+	  elem.append($.el.div({class:"version"},
+			       $.el.div({class:"v-swish"}),
+			       $.el.div({class:"v-changelog"},
+					$.el.table()),
+			       $.el.div({class:"v-prolog"})));
 
-	elem[pluginName]('update');
+	  elem[pluginName]('update');
+	  if ( options.commit )
+	    elem[pluginName]('changelog', options);
+	}
 
 	elem.data(pluginName, data);	/* store with element */
       });
@@ -71,29 +77,48 @@ define([ "jquery", "config", "laconic" ],
      * Update the SWISH and Prolog versions.
      */
     update: function() {
-      elem = this;
-      $.get(config.http.locations.versions,
-	    function(data) {
-	      var a;
-	      elem.find(".v-swish")
-		  .append($.el.span($.el.a({class:"v-product",
-					    href:"https://swish.swi-prolog.org"},
-					   "SWISH"),
-				    " version ",
-				    a = $.el.a({href:"#"}, data.swish.version)));
-	      elem.find(".v-prolog")
-		  .append($.el.span("Running on ",
-				    $.el.a({class:"v-product",
-				            href:"http://www.swi-prolog.org/"},
-					   data.prolog.brand),
-				    " version " +
-				    data.prolog.version));
-	      $(a).on("click", function(ev) {
-		elem[pluginName]('versionDetails');
-		ev.preventDefault();
-		return false;
+      if ( config.http.locations.versions ) {
+	elem = this;
+
+	$.get(config.http.locations.versions,
+	      function(data) {
+		if ( !data.swish || !data.prolog ) {
+		  console.log(data);
+		  return;
+		}
+
+		var swishversion;
+
+		if ( elem.hasClass("v-compact") )
+		  swishversion = $.el.a({title: "View recent changes"},
+					data.swish.version);
+		else
+		  swishversion = $.el.span(data.swish.version);
+
+		elem.find(".v-swish")
+		    .append($.el.span($.el.a({class:"v-product",
+					      href:"https://swish.swi-prolog.org"},
+					     "SWISH"),
+				      " version ",
+				      swishversion));
+		elem.find(".v-prolog")
+		    .append($.el.span("Running on ",
+				      $.el.a({class:"v-product",
+					      href:"http://www.swi-prolog.org/"},
+					     data.prolog.brand),
+				      " version " +
+				      data.prolog.version));
+		if ( elem.hasClass("v-compact") ) {
+		  $(swishversion).on("click", function(ev) {
+		    if ( elem.hasClass("v-compact") ) {
+		      elem[pluginName]('versionDetails');
+		      ev.preventDefault();
+		      return false;
+		    }
+		  });
+		}
 	      });
-	    });
+      }
     },
 
     versionDetails: function() {
@@ -115,10 +140,19 @@ define([ "jquery", "config", "laconic" ],
      */
     changelog: function(options) {
       var that = this;
+      options = options||{};
+      var params = {};
+
+      params.show = options.show || "all";
+      if ( options.commit ) {
+	params.commit = options.commit;
+      } else {
+	params.last = options.last || 20;
+      }
 
       this.find(".v-changelog > table").html("");
       $.get(config.http.locations.changelog,
-	    {last:20, show:"all"},
+	    params,
 	    function(data) {
 
 	      for(var i=0; i<data.changelog.length; i++) {
@@ -140,6 +174,53 @@ define([ "jquery", "config", "laconic" ],
 			  $.el.td({class:"v-date"}, ch.committer_date_relative)),
 		  $.el.tr({class:"v-change-body "+cls},
 			  desc));
+    },
+
+    /**
+     * Check whether the server was updated since the last time we
+     * viewed the changes.
+     */
+    checkForUpdates: function() {
+      if ( !config.http.locations.versions )
+	return;
+
+      var str = localStorage.getItem("last-version");
+
+      function saveCheckpoint(data) {
+	var last = { commit:data.commit, date: data.date };
+	localStorage.setItem("last-version", JSON.stringify(last));
+      }
+
+      if ( str && (last = JSON.parse(str)) && last.commit ) {
+	var title = "SWISH updates since " + utils.ago(last.date||0);
+
+	$.get(config.http.locations.changes,
+	      {commit:last.commit},
+	      function(data) {
+		if ( data.changes ) {
+		  $("#swish-updates")
+		    .css("display", "inline-block")
+		    .attr("title", "SWISH has received " +
+				   data.changes + " updates\n" +
+			           "Click for details")
+		    .on("click", function(ev) {
+		      $(ev.target).closest(".swish")
+			          .swish('showUpdates',
+					 { title:  title,
+					   commit: last.commit,
+					   show:   "tagged"
+					 });
+		      saveCheckpoint(data);
+		      $("#swish-updates").hide();
+		    });
+		}
+	      });
+      } else {
+	$.get(config.http.locations.changes,
+	      function(data) {
+		saveCheckpoint(data);
+	      });
+      }
     }
   }; // methods
 

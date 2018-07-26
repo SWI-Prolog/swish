@@ -36,3 +36,13 @@ a.v-product {
 
 .v-changelog-tag { font-weight: bold; float: left; padding-right: 1ex}
 .v-changelog-tag::after { content: ":"; }
+
+#swish-updates {
+  display: none;
+  width: 54px;
+  height: 54px;
+  background-position: center;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-image: url("../icons/new.png");
+}
