@@ -483,15 +483,33 @@ define([ "jquery", "laconic" ],
       if ( !aSupportsDownload() )
 	type = "application/octet-stream";
 
-      var href	= "data:"+type+";charset=UTF-8,"
-		+ encodeURIComponent(data);
+      console.log(type);
 
-      var a = $.el.a({ href:href,
-		       download:"swish-rendered."+ext
-		     });
-      this.append(a);
-      a.click();
-      $(a).remove();
+      var blob = new Blob([data], {type:type});
+      var href = URL.createObjectURL(blob);
+      var filename = "swish-rendered."+ext;
+      var a, input, btn;
+
+      var span = $.el.div({class:"download"},
+			  btn = $.el.button({ type:"button", class:"close" }),
+			  a = $.el.a({ href:href,
+			               target:"_blank",
+				       download:filename
+				     },
+				     "Right click me to download as "),
+			  $.el.br(),
+			  input = $.el.input({value:filename}));
+      this.append(span);
+      $(btn)
+	.html("&times;")
+	.on("click", function(ev) {
+	  $(span).remove();
+	});
+      $(input).on("change keyup paste", function(ev) {
+	$(a).attr("download", $(input).val());
+	ev.preventDefault();
+	return false;
+      });
 
       return this;
     },

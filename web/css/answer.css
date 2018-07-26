@@ -126,3 +126,23 @@ but that is rather expensive.
 div.R.svg svg
 { overflow: visible;
 }
+
+/* Download */
+
+div.download {
+  padding: 5px;
+  border: 1px solid #000;
+  border-radius: 5px;
+  background: #fff;
+  box-shadow: 5px 5px 5px #888;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  z-index: 1000;
+}
+
+div.download button.close {
+  position: relative;
+  top: -3px;
+  font-size: 150%;
+}

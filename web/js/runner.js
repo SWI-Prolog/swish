@@ -368,7 +368,9 @@ define([ "jquery", "config", "preferences",
 	elem.prologRunner('populateActionMenu');
 	elem.keydown(function(ev) {
 	  if ( elem.prologRunner('getState') != "wait-input" &&
+	       !$(ev.target).is("input") &&
 	       !ev.ctrlKey && !ev.altKey ) {
+
 	    if ( keyBindings[ev.which] ) {
 	      ev.preventDefault();
 	      elem.prologRunner(keyBindings[ev.which]);
