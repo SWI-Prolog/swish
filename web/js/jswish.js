@@ -62,6 +62,7 @@ define([ "jquery",
 	 "laconic",
 	 "login",
 	 "chatroom",
+	 "version",
 	 "d3",
 	 "c3",
 	 "svg-pan-zoom"
@@ -752,6 +753,20 @@ preferences.setInform("preserve-state", ".unloadable");
 		TogetherJS(elem);
 	      });
       return this;
+    },
+
+    /**
+     * Show version details
+     */
+    versionInfo: function() {
+      modal.show({
+        title: "Version details",
+	body: function() {
+	  var e;
+	  this.append(e = $.el.div());
+	  $(e).version();
+	}
+      });
     }
   }; // methods
 

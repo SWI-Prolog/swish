@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2016, VU University Amsterdam
+    Copyright (C): 2014-2018, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -42,7 +42,7 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "preferences", "links", "form",
+define([ "jquery", "config", "preferences", "links", "form", "version",
 	 "laconic", "bootstrap" ],
        function($, config, preferences, links, form) {
 
@@ -223,7 +223,11 @@ define([ "jquery", "config", "preferences", "links", "form",
       $(title).html(options.title);
       $(modalel).modal({show: true})
 		.on("click", "a", links.followLink)
-	        .on("shown.bs.modal", initTagsManagers)
+	        .on("shown.bs.modal", function() {
+		   initTagsManagers();
+		   // FIXME: should find a more structured way?
+		   $(this).find(".swish-versions").version();
+		 })
 	        .on("hidden.bs.modal", function() {
 		  if ( options.onclose )
 		    options.onclose();

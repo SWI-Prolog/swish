@@ -1,0 +1,141 @@
+/*  Part of SWISH
+
+    Author:        Jan Wielemaker
+    E-mail:        J.Wielemaker@cs.vu.nl
+    WWW:           http://www.swi-prolog.org
+    Copyright (C): 2018, VU University Amsterdam
+			 CWI Amsterdam
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+
+    2. Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in
+       the documentation and/or other materials provided with the
+       distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
+*/
+
+:- module(swish_version_service, []).
+:- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_json)).
+:- use_module(library(http/http_parameters)).
+:- use_module(library(http/html_write)).
+:- use_module(library(git)).
+:- use_module(library(apply)).
+
+:- use_module(library(version)).
+:- use_module(library(markdown)).
+
+/** <module> Serve version details over HTTP
+
+This module serves SWISH and Prolog version   details over HTTP. This is
+file is normally loaded though the   config file `version_info.pl`. This
+file is not loaded by default for security reasons.
+*/
+
+:- http_handler(swish(versions),  versions,  [id(versions)]).
+:- http_handler(swish(changelog), changelog, [id(changelog)]).
+
+versions(_Request) :-
+    prolog_version_atom(SWIVersion),
+    module_version_data(swish, SWISHVersion),
+    reply_json_dict(json{ prolog:
+                          json{ brand:  "SWI-Prolog",
+                                version: SWIVersion
+                              },
+                          swish:SWISHVersion
+                        }).
+
+module_version_data(Module, Dict) :-
+    findall(Name-Value, module_version_data(Module, Name, Value), Pairs),
+    dict_pairs(Dict, json, Pairs).
+
+module_version_data(Module, Name, Value) :-
+    git_module_property(Module, Term),
+    Term =.. [Name,Value].
+
+%!  changelog(+Request)
+%
+%   Sends the changelog since a  given  version,   as  well  as the last
+%   commit and its timestamp.
+
+changelog(Request) :-
+    http_parameters(Request,
+                    [ since(Since, [optional(true)]),
+                      last(Count, [default(10)]),
+                      show(Show, [oneof([tagged, all]), default(tagged)])
+                    ]),
+    git_module_property(swish, directory(Dir)),
+    (   nonvar(Since)
+    ->  atom_concat(Since, '..', Revisions),
+        Options = [ revisions(Revisions) ]
+    ;   Options = [ limit(Count) ]
+    ),
+    git_shortlog(Dir, ShortLog, Options),
+    (   ShortLog = [LastEntry|_]
+    ->  git_log_data(commit_hash,         LastEntry, LastCommit),
+        git_log_data(committer_date_unix, LastEntry, LastModified),
+        convlist(changelog(Show), ShortLog, ChangeLog),
+        reply_json_dict(json{ commit:    LastCommit,
+                              date:	 LastModified,
+                              changelog: ChangeLog
+                            })
+    ;   reply_json_dict(json{ message: "No changes"
+                            })
+    ).
+
+changelog(Show, Entry,
+          json{commit:Commit,
+               author: Author,
+               committer_date_relative: When,
+               message: Message}) :-
+    git_log_data(subject, Entry, Message0),
+    format_commit_message(Show, Message0, Message),
+    git_log_data(commit_hash, Entry, Commit),
+    git_log_data(author_name, Entry, Author),
+    git_log_data(committer_date_relative, Entry, When).
+
+
+format_commit_message(tagged, Message0, Message) :-
+    sub_string(Message0, Pre, _, Post, ":"),
+    Pre > 0,
+    !,
+    sub_string(Message0, 0, Pre, _, Tag),
+    string_upper(Tag, Tag),
+    sub_string(Message0, _, Post, 0, Msg),
+    string_codes(Msg, Codes),
+    wiki_file_codes_to_dom(Codes, '/', DOM),
+    phrase(swish_markdown:html(div(class('v-changelog-entry'),
+                                   [ span(class('v-changelog-tag'), Tag)
+                                   | DOM
+                                   ])),
+           Tokens),
+    with_output_to(string(Message), print_html(Tokens)).
+format_commit_message(all, Message0, Message) :-
+    format_commit_message(tagged, Message0, Message),
+    !.
+format_commit_message(all, Message0, Message) :-
+    string_codes(Message0, Codes),
+    wiki_file_codes_to_dom(Codes, '/', DOM),
+    phrase(swish_markdown:html(div(class('v-changelog-entry'),
+                                   DOM)),
+           Tokens),
+    with_output_to(string(Message), print_html(Tokens)).

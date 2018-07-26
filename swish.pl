@@ -57,6 +57,22 @@
 :- use_module(lib/template_hint, []).
 :- use_module(lib/plugin/http_dyn_workers, []).
 :- use_module(lib/web).
+:- use_module(lib/version).
+
+
+		 /*******************************
+		 *	      VERSION		*
+		 *******************************/
+
+setup_versions :-
+	prolog_load_context(directory, Dir),
+	register_git_module(swish,
+			    [ directory(Dir),
+			      home_url('https://github.com/SWI-Prolog/swish')
+			    ]),
+	check_prolog_version(070717).
+
+:- initialization setup_versions.
 
 
 		 /*******************************

@@ -32,7 +32,9 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-:- module(swish_markdown, []).
+:- module(swish_markdown,
+	  [ wiki_file_codes_to_dom/3		% +Code, +Files, -DOM
+	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_client)).

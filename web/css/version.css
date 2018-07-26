@@ -1,0 +1,38 @@
+.swish-versions.v-compact {
+  font-style: italic;
+  margin-top: 2ex;
+  text-align: center;
+}
+
+.swish-versions.v-compact div.version > div {
+  display: inline;
+}
+
+.swish-versions.v-compact div.v-prolog::before {
+  content: ", ";
+}
+
+a.v-product {
+  font-weight: bold;
+}
+
+.swish-versions.v-compact .v-changelog { display: none !important; }
+
+.v-changelog {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  overflow-y: auto;
+  max-height: 50ex;
+  margin-bottom: 5px;
+  margin-top: 5px;
+}
+
+.v-author, .v-date { font-style: italic; color: #999; }
+.v-commit { font-style: fixed; color: #aaa; }
+.v-change-header { background: #eee; }
+.v-change-body { position: relative; }
+
+.v-changelog-tag { font-weight: bold; float: left; padding-right: 1ex}
+.v-changelog-tag::after { content: ":"; }
