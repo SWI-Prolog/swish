@@ -18,8 +18,8 @@
 </p>
 
 <style>
-  dl.htmlcell-doc dt { text-align: left; }
-  dt.htmlcell-doc-title { color: blue; margin-top: 5px;}
+  dl.htmlcell-doc dt { text-align: left; margin-top: 1ex;}
+  dl.htmlcell-doc dt.htmlcell-doc-title { color: blue; margin-top: 2ex;}
 </style>
 <div class="list-group">
   <dl class="dl-horizontal htmlcell-doc">
@@ -38,7 +38,12 @@
     </dd><dt>.run(query, parameters)</dt><dd>Run the named query cell.  <var>Parameters</var> is an object
     binding Prolog variables in the query to specified values.
     </dd><dt>.swish(options)</dt><dd>Wrapper around <code>new Pengine()</code> that fetches the sources
-    using the same algorithm as a query cell and sets the <code>application</code> to <code>swish</code>.
+    using the same algorithm as a query cell and provides the defaults below:
+    <ul>
+      <li>Set <code>application</code> to <code>swish</code>.</li>
+      <li>Set <code>chunk</code> to <code>5</code>.  This should be set to <code>1</code> for code
+        that acts on <b>both</b> <code>onprompt</code> and <code>onsuccess.</code></li>
+    </ul>
     </dd><dt>.submit(form, options)</dt><dd>Submit a (Bootstrap) form to a predicate.  This provides a
     wrapper around <code>.swish</code> that collects the content of the indicated <code>form</code> (a
     jQuery selector), calls <code>options.predicate</code> with a single argument that is a dict that
