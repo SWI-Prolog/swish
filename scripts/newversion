@@ -1,0 +1,64 @@
+#!/bin/bash
+# Automate the release process.
+# Author: Jan wielemaker
+#
+# Usage: first update VERSION, then run this script.
+
+function confirm ()
+{ while true; do
+    echo -n "$1 "
+    read answer
+    case "$answer" in
+          y*)   return 0
+                ;;
+          n*)   return 1
+                ;;
+          *)
+                echo "Please answer yes or no"
+                ;;
+    esac
+  done
+}
+
+version=`cat VERSION`
+versiondate=`date +"%B %Y"`
+
+vpat='\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)\(-\([a-z0-9]*\)\)\{0,1\}'
+
+major=$(echo $version | sed "s/$vpat/\1/")
+minor=$(echo $version | sed "s/$vpat/\2/")
+patch=$(echo $version | sed "s/$vpat/\3/")
+ vtag=$(echo $version | sed "s/$vpat/\5/")
+
+# echo "major=$major minor=$minor patch=$patch tag=$vtag"
+# exit 0
+
+numversion=$(($major * 10000 + $minor * 100 + $patch))
+
+vlong=${major}.${minor}.${patch}
+if [ ! -z "$vtag" ]; then
+  vlong="$vlong-$vtag"
+fi
+
+if [ ! -z "$(git diff --stat)" ]; then
+  if confirm "Commit final changes? "; then
+    git commit -a -m "Preparing version ${vlong}"
+  fi
+fi
+
+gittag="V${vlong}"
+
+if confirm "Tag the GIT repository with $gittag? "; then
+  git tag -s -f -m "Release tag for ${vlong}" $gittag
+fi
+
+
+if confirm "Tag all packages with $gittag? "; then
+    tmp=/tmp/msg$$
+    echo "Release tag for ${vlong}" > $tmp
+
+    git submodule foreach git tag -s -f -F $tmp  $gittag
+
+    rm -f $tmp
+fi
+
