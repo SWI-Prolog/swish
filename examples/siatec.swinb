@@ -1,6 +1,6 @@
 <div class="notebook">
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md1">
 # Implementation of SIATEC pattern discovery
 
 By Samer Abdallah
@@ -9,12 +9,11 @@ David Meredith's algorithm is described in [1]. This is a Prolog implementation.
 
 First, the groundwork - vec_point_point/4 is a tabled predicate that, for each point database (unary predicate) DB, contains every pair of points in the database and the vector between them. Only distinct pairs are stored, with the second being strictly later in the standard order of terms. Note that add/3 is defined using constraints, so that it can also be used to subtract as well, but only for integer values. We're also going to use SWISHs C3 term rendering to plot point sets so we'll set that up too.
 
-[1] David Meredith, Kjell Lemstr Ìom, and Geraint A Wiggins. Algorithms for discovering repeated patterns in multidimensional representations of polyphonic music. Journal of New Music Research, 31(4):321â345, 2002. http://www.tandfonline.com/doi/abs/10.1076/jnmr.31.4.321.14162
+[1] David Meredith, Kjell Lemstr ÃÂÃÂom, and Geraint A Wiggins. Algorithms for discovering repeated patterns in multidimensional representations of polyphonic music. Journal of New Music Research, 31(4):321ÃÂ¢ÃÂÃÂ345, 2002. http://www.tandfonline.com/doi/abs/10.1076/jnmr.31.4.321.14162
 </div>
 
-<div class="nb-cell program" data-background="true">
+<div class="nb-cell program" data-background="true" name="p1">
 :- use_module(library(clpfd)).
-:- use_module(library(tabling)).
 
 :- table vec_point_point/4.
 vec_point_point(DB,V,P1,P2) :- 
@@ -27,28 +26,28 @@ add(DX,X1,X2) :- X2 #= X1 + DX.
 member_of(Xs,X) :- member(X,Xs). % for literal database predicate.
 </div>
 
-<div class="nb-cell query" data-tabled="true">
+<div class="nb-cell query" data-tabled="true" name="q1">
 vec_point_point(member_of([[1,1],[2,1],[2,2]]), V, P1, P2).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md2">
 Next, mtp/3 computes the maximal translatable patterns (MTPs) for a point set. It's simply the set of start points for each distinct vector in vec_point_point/4.
 </div>
 
-<div class="nb-cell program" data-background="true">
+<div class="nb-cell program" data-background="true" name="p2">
 %% mtp(+DB:pred(-point), -V:vector, -Ps:list(point)) is nondet.
 mtp(DB,V,Points) :- setof(P1, P2^vec_point_point(DB,V,P1,P2), Points).
 </div>
 
-<div class="nb-cell query" data-tabled="true">
+<div class="nb-cell query" data-tabled="true" name="q2">
 mtp(member_of([[1,1],[2,1],[2,2],[3,2]]), Vec, Points).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md3">
 Finally, siatec/2 computes the translational equivalence class for each distinct shape of MTP. The shape of an MTP, computed using pattern_shape/2, is represented as the list of vectors from the first point to each of the others, and relies on the fact that mtp/3 returns point lists in the standard order. Since vec_point_point/4 is asymmetric and only contains vectors in the right half-plane, we have to use it in both directions to get all the translationally equivalent patterns for each MTP.
 </div>
 
-<div class="nb-cell program" data-background="true">
+<div class="nb-cell program" data-background="true" name="p3">
 %% siatec(-TECs:list(list(point))) is nondet.
 siatec(DB,Sets) :- 
    distinct(H, (mtp(DB,_,P), pattern_shape(P,H))),
@@ -59,15 +58,15 @@ vec_diff(P1,P2,DR) :- maplist(add,DR,P1,P2).
 trans(DB,S0,S1) :- maplist(vec_point_point(DB,_), S0, S1).
 </div>
 
-<div class="nb-cell query" data-tabled="true">
+<div class="nb-cell query" data-tabled="true" name="q3">
 siatec(member_of([[1,1],[2,1],[2,2],[3,2],[1,3],[2,3]]), Patterns).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md4">
 Now we can test siatec/2 for larger point-sets by using a random point set predicate that relies on a tabled Bernoulli generator to implement random world semantics. Note that the sample query analyses a new point set each time it is run only because the table for bernoulli/2 is implicitly abolished when submitting the query to the Prolog server. We'll also add some plotting code.
 </div>
 
-<div class="nb-cell program" data-background="true">
+<div class="nb-cell program" data-background="true" name="p4">
 random_point(W,H,P,[X,Y]) :-
    between(1,W,X),
    between(1,H,Y),
@@ -106,20 +105,20 @@ concat_lists(Lists, List) :- foldl(append,Lists,[],List).
 vec2d(X,Y,[X,Y]).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md5">
 Let's apply siatec/2 to some random point sets, doing a separate plot of each TEC, with points grouped into individual patterns. (This query should already have produced the first 10 solutions on loading the page.)
 </div>
 
-<div class="nb-cell query" data-chunk="10">
+<div class="nb-cell query" data-chunk="10" name="q4">
 siatec(random_point(10,5,0.2), TEC),
 patterns_plot(line,TEC, Plot).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md6">
 Now we're going to look at the time complexity of this implementation as a function of the number of points in the point set. Meredith states that the overall complexity of his implementation is O(kN^3), where N is the number of points and k is the dimensionality of the points (2 in our case). We'll write a predicate to test the algorithm on a random point cloud in a space of a given size and density, returning the number of points in the cloud and the time (or cputime or inferences) need to compute all the TECs.
 </div>
 
-<div class="nb-cell program" data-background="true">
+<div class="nb-cell program" data-background="true" name="p5">
 time_op(Stat, Op, Prob, H, W, NPoints, Time) :- 
     abolish_all_tables,
     findall(P, random_point(W,H,Prob,P), Points),
@@ -135,11 +134,12 @@ time_state(S,A) :- statistics(S,A).
 log(X,Y) :- Y is log(X).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md7">
 Finally, we run the tests on random point clounds of fixed density and height, but a range of widths, plotting the results logarithmically on both axes, along with a guide line showing the slope of the expected cubic performance. This takes a while to run.
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q5">
+projection([Plot]),
 numlist(1,8,_I),
 maplist([X,Y]&gt;&gt;(Y is 5*X), _I, _Widths),
 maplist(time_op(cputime, all_siatec, 0.25, 12), _Widths, NPs, Times),
@@ -153,11 +153,12 @@ Plot = c3{data:_{types:_{time:scatter, cubic:line},
                  y:_{label:"log cputime"}}}.
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md8">
 Looks pretty cubic to me! The cubic runtime is supposed to be the result of the last step of SIATEC, which is to find all the translations of a given shape. Let's check that the complexity of mtp/3 is the expected O(k N^2 log N). We'll plot the run time to find all the MTPs divided by the N^2 log N, where N is the number of points.
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q6">
+projection([Plot]),
 numlist(2,50,_I),
 maplist([X,Y]&gt;&gt;(Y is 2*X), _I, _Widths),
 maplist(time_op(cputime, all_mtp, 0.25, 12), _Widths, NPs, Times),
@@ -167,19 +168,20 @@ scatter_plot('random_point({4..100},12,0.25)',
              Plot).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md9">
 Well shiver-me-timbers, it looks like we're doing better than N^2 log(N). If you delete the factor of log(N) in the mapping from Times to _Ys, you'll see the complexity is more like just N^2. How can this be? I don't know. Perhaps I will look into it another day.
 
 For a final test, let's look at how the number of MTPs goes up in relation to the number of points.
 </div>
 
-<div class="nb-cell program" data-background="true">
+<div class="nb-cell program" data-background="true" name="p6">
 width_npoints_nmtps(W, NPoints, NMTPs) :-
     aggregate_all(count, random_point(W,12,0.25,_), NPoints),
     aggregate_all(count, mtp(random_point(W,12,0.25), _, _), NMTPs).
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q7">
+projection([Plot]),
 numlist(1,30,_I),
 maplist([X,Y]&gt;&gt;(Y is 3*X), _I, _Widths),
 maplist(width_npoints_nmtps, _Widths, NPs, NMTPs),
@@ -189,7 +191,7 @@ scatter_plot('random_point({3..90},12,0.25)',
               Plot).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md10">
 Ok, so it looks vaguely linear, so we can conclude that the part of SIATEC which involves finding all the translationally equivalent patterns of a given MTP is approximately quadratic in the number of points.
 
 ### A note on performance
