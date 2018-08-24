@@ -108,7 +108,11 @@ var MAX_RECONNECT_DELAY = 300000;
 	if ( value ) {
 	  if ( pname == "anon-avatar" ) {
 	    /* hack to deal with possibly rebased server */
-	    value = config.http.locations.avatar+value.split("/").pop();
+	    if ( value.indexOf("#") == -1 ) {
+	      value = config.http.locations.avatar+value.split("/").pop();
+	    } else {
+	      value = config.http.locations.swish+"icons/"+value.split("/").pop();
+	    }
 	  }
 
 	  url += lead + name + "=" + encodeURIComponent(value);
