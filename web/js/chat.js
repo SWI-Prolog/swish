@@ -737,6 +737,37 @@ var MAX_RECONNECT_DELAY = 300000;
     return li;
   }
 
+  /**
+   * @return {Number} time since 1/1/1970 in milliseconds
+   */
+  function getTime() {
+    var d = new Date();
+    return d.getTime();
+  }
+
+  /**
+   * <Class description>
+   *
+   * @class chat
+   * @tutorial jquery-doc
+   * @memberOf $.fn
+   * @param {String|Object} [method] Either a method name or the jQuery
+   * plugin initialization object.
+   * @param [...] Zero or more arguments passed to the jQuery `method`
+   */
+
+  $.fn.chat = function(method) {
+    if ( methods[method] ) {
+      return methods[method]
+	.apply(this, Array.prototype.slice.call(arguments, 1));
+    } else if ( typeof method === 'object' || !method ) {
+      return methods._init.apply(this, arguments);
+    } else {
+      $.error('Method ' + method + ' does not exist on jQuery.' + pluginName);
+    }
+  };
+}(jQuery));
+
   var svg_images = {};
 
   function avatar(options) {
@@ -777,34 +808,7 @@ var MAX_RECONNECT_DELAY = 300000;
     return $.el.div({class:"avatar-container"}, img);
   }
 
-  /**
-   * @return {Number} time since 1/1/1970 in milliseconds
-   */
-  function getTime() {
-    var d = new Date();
-    return d.getTime();
-  }
-
-  /**
-   * <Class description>
-   *
-   * @class chat
-   * @tutorial jquery-doc
-   * @memberOf $.fn
-   * @param {String|Object} [method] Either a method name or the jQuery
-   * plugin initialization object.
-   * @param [...] Zero or more arguments passed to the jQuery `method`
-   */
-
-  $.fn.chat = function(method) {
-    if ( methods[method] ) {
-      return methods[method]
-	.apply(this, Array.prototype.slice.call(arguments, 1));
-    } else if ( typeof method === 'object' || !method ) {
-      return methods._init.apply(this, arguments);
-    } else {
-      $.error('Method ' + method + ' does not exist on jQuery.' + pluginName);
-    }
+  return {
+    avatar: avatar
   };
-}(jQuery));
 });

@@ -43,10 +43,10 @@
  */
 
 define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
-	 "modal", "links",
+	 "modal", "links", "chat",
 	 "laconic"
        ],
-       function($, form, CodeMirror, utils, config, modal, links) {
+       function($, form, CodeMirror, utils, config, modal, links, chat) {
 
 (function($) {
   var pluginName = 'chatroom';
@@ -316,7 +316,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       elem = $($.el.div({class:"chat-message"+(msg.is_self ? " self" : ""),
 			 'data-userid':muser.wsid}));
       if ( !msg.is_self && muser.avatar ) {
-	elem.append($.el.img({ class:"avatar", src:muser.avatar }));
+	elem.append(chat.avatar(muser));
       }
       elem.append($.el.span({class:"chat-sender"},
 			    msg.is_self ? "Me" : muser.name));

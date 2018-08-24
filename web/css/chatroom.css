@@ -97,13 +97,12 @@ div.chatroom div.chat-message.self
   margin-left: 10%;
 }
 
-div.chat-message img.avatar
+div.chat-message div.avatar-container
 { position: absolute;
   margin-top: 0px;
   top: 0px;
   right: 0px;
   border-radius: 5px;
-  width: 24px;
 }
 
 span.chat-sender
