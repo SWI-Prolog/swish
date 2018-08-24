@@ -386,7 +386,8 @@ convert_field(Field, Field).
 server_attr(ServerID, Attr, Value) :-
 	(   server_attribute(ServerID, Attr, Value0)
 	->  Value = Value0
-	;   default_attribute(Attr, ServerID, Value0)
+	;   debug(oauth, 'No endpoint for ~q; trying defaults', [Attr]),
+	    default_attribute(Attr, ServerID, Value0)
 	->  Value = Value0
 	;   optional_attr(Attr)
 	->  fail
@@ -473,10 +474,20 @@ discover_data(ServerID, Expires, Dict) :-
 	http_options(ServerID, Options),
 
 	http_open(DiscoverURL, In,
-                  [ header(expires, Expires)
+                  [ header(expires, Expires),
+		    status_code(Status)
 		  | Options
 		  ]),
-	json_read_dict(In, Dict),
+	(   Status == 200
+	->  json_read_dict(In, Dict)
+	;   debug(oauth, 'Got status ~p from discovery endpoint; ignoring',
+		  [Status]),
+	    Dict = _{},
+	    setup_call_cleanup(
+		open_null_stream(Out),
+		copy_stream_data(In, Out),
+		close(Out))
+	),
 	close(In).
 
 discovered_data(URL, Data) :-
@@ -489,6 +500,7 @@ discovered_data(URL, Data) :-
 	).
 
 cache_data(URL, Expires, Data) :-
+	atomic(Expires),
 	parse_time(Expires, _Format, Stamp), !,
 	asserta(discovered_data(URL, Stamp, Data)).
 cache_data(_, _, _).
