@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2016-2017, VU University Amsterdam
+    Copyright (C): 2016-2018, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -94,6 +94,7 @@ browsers which in turn may have multiple SWISH windows opened.
 :- multifile swish_config:config/2.
 
 swish_config:config(hangout, 'Hangout.swinb').
+swish_config:config(avatars, svg).		% or 'noble'
 
 
 		 /*******************************
@@ -779,9 +780,16 @@ reply_avatar(Request) :-
 noble_avatar_url(HREF, Options) :-
 	option(avatar(HREF), Options), !.
 noble_avatar_url(HREF, _Options) :-
+	swish_config:config(avatars, noble),
+	!,
 	noble_avatar(_Gender, Path, true),
 	file_base_name(Path, File),
 	http_absolute_location(swish(avatar/File), HREF, []).
+noble_avatar_url(HREF, _Options) :-
+	A is random(0x1FFFFF+1),
+	http_absolute_location(icons('avatar.svg'), HREF0, []),
+	format(atom(HREF), '~w#~d', [HREF0, A]).
+
 
 
 		 /*******************************

@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2016-2017, VU University Amsterdam
+    Copyright (C): 2016-2018, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -42,7 +42,9 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "preferences", "form", "modal", "utils" ],
+define([ "jquery", "config", "preferences", "form", "modal", "utils",
+	 "svgavatar"
+       ],
        function($, config, preferences, form, modal, utils) {
 
 var MIN_RECONNECT_DELAY =  10000;
@@ -731,13 +733,44 @@ var MAX_RECONNECT_DELAY = 300000;
     return li;
   }
 
+  var svg_images = {};
+
   function avatar(options) {
+    var img;
+
     if ( options.avatar ) {
-      return $.el.img({ class:"avatar", src:options.avatar
-		      });
+      var m = /(.*\.svg)#(\d+)$/.exec(options.avatar);
+
+      if ( m && m[2] ) {
+	var id  = parseInt(m[2], 10);
+	var url = m[1];
+
+	img = $.el.span({class:"avatar svg"});
+	if ( svg_images[url] ) {
+	  $(img).svg_images[url];
+	  $(img).svgavatar('setAVappearanceByUserID', id);
+	} else {
+	  $.ajax({ url: options.avatar,
+		   type: "GET",
+		   dataType: "text",
+		   success: function(reply) {
+		     $(img).html(reply);
+		     svg_images[url] = reply;
+		     $(img).svgavatar('setAVappearanceByUserID', id);
+		   },
+		   error: function(jqXHR) {
+		     modal.ajaxError(jqXHR);
+		   }
+		 });
+	}
+      } else {
+	img = $.el.img({class:"avatar", src:options.avatar });
+      }
     } else {
-      return $.el.span({class:"avatar glyphicon glyphicon-user"})
+      img = $.el.span({class:"avatar glyphicon glyphicon-user"})
     }
+
+    return $.el.div({class:"avatar-container"}, img);
   }
 
   /**
