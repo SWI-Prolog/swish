@@ -28,7 +28,7 @@ a predicate to access composition titles and their publication date.
                sparql("SELECT DISTINCT  ?item ?itemLabel ?catalog_code ?publication_data
                        WHERE
                        { ?item wdt:P86 wd:Q254 ;
-                         wdt:P528 ?catolog_code ;
+                         wdt:P528 ?catalog_code ;
                          wdt:P577 ?publication_data .
                          SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\" }
                        }",
