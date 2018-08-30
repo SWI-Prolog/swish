@@ -298,8 +298,10 @@ load_plain_commit(Store, Hash, Meta) :-
 
 %%	gitty_history(+Store, +NameOrHash, -History, +Options) is det.
 %
-%	History is a list of dicts representating the history of Name in
-%	Store.  Options:
+%	History is a dict holding a key   `history` with a list of dicts
+%	representating the history of Name in   Store. The toplevel dict
+%	also contains `skipped`, indicating the  number of skipped items
+%	from the HEAD. Options:
 %
 %	  - depth(+Depth)
 %	  Number of entries in the history.  If not present, defaults
@@ -309,17 +311,23 @@ load_plain_commit(Store, Hash, Meta) :-
 %	  history includes the entry with HASH an (depth+1)//2 entries
 %	  after the requested HASH.
 
-gitty_history(Store, Name, History, Options) :-
+gitty_history(Store, Name, json{history:History,skipped:Skipped}, Options) :-
 	history_hash_start(Store, Name, Hash0),
 	option(depth(Depth), Options, 5),
 	(   option(includes(Hash), Options)
-	->  read_history_to_hash(Store, Hash0, Hash, History0),
+	->  read_history_to_hash(Store, Hash0, Hash, History00),
 	    length(History0, Before),
 	    After is max(Depth-Before, (Depth+1)//2),
 	    read_history_depth(Store, Hash, After, History1),
-	    append(History0, History1, History2),
-	    list_prefix(Depth, History2, History)
-	;   read_history_depth(Store, Hash0, Depth, History)
+	    length(History1, AfterLen),
+	    BeforeLen is Depth - AfterLen,
+	    list_prefix(BeforeLen, History00, History0),
+	    length(History00, Len00),
+	    length(History0, Len0),
+	    Skipped is Len00-Len0,
+	    append(History0, History1, History)
+	;   read_history_depth(Store, Hash0, Depth, History),
+	    Skipped is 0
 	).
 
 history_hash_start(Store, Name, Hash) :-
