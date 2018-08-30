@@ -212,7 +212,6 @@ format_commit_message(all, Message0, Message) :-
 
 :- if(\+catch(check_predicate_option(git:git_shortlog/3, 3, revisionsx(a)),
               error(_,_), fail)).
-:- writeln(redefining).
 :- abolish(git:git_shortlog/3).
 git:(
 git_shortlog(Dir, ShortLog, Options) :-
