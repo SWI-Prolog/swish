@@ -194,10 +194,11 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
 	options = options||{};
 	if ( !options.depth )
-	  options.depth = 8;
+	  options.depth = 100;
 
 	tab.html("");
-	tab.append($.el.table(
+	tab.append($.el.div({class:"gitty-history-table"},
+			    $.el.table(
 	  { class:"table table-striped table-condensed gitty-history",
 	    'data-click-to-select':true,
 	    'data-single-select':true
@@ -206,7 +207,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 		  $.el.th("Date"),
 		  $.el.th("User"),
 		  $.el.th("Changed")),
-	  $.el.tbody()));
+	  $.el.tbody())));
 
 	playButton = form.widgets.glyphIconButton(
            "play",
