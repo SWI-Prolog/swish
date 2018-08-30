@@ -203,3 +203,35 @@ format_commit_message(all, Message0, Message) :-
                                    DOM)),
            Tokens),
     with_output_to(string(Message), print_html(Tokens)).
+
+		 /*******************************
+		 *          COMPATIBILITY	*
+		 *******************************/
+
+% support SWI-Prolog < 7.7.19
+
+:- if(\+catch(check_predicate_option(git:git_shortlog/3, 3, revisionsx(a)),
+              error(_,_), fail)).
+:- writeln(redefining).
+:- abolish(git:git_shortlog/3).
+git:(
+git_shortlog(Dir, ShortLog, Options) :-
+    (   option(revisions(Range), Options)
+    ->  RangeSpec = [Range]
+    ;   option(limit(Limit), Options, 10),
+        RangeSpec = ['-n', Limit]
+    ),
+    (   option(git_path(Path), Options)
+    ->  Extra = ['--', Path]
+    ;   option(path(Path), Options)
+    ->  relative_file_name(Path, Dir, RelPath),
+        Extra = ['--', RelPath]
+    ;   Extra = []
+    ),
+    git_format_string(git_log, Fields, Format),
+    append([[log, Format], RangeSpec, Extra], GitArgv),
+    git_process_output(GitArgv,
+                       read_git_formatted(git_log, Fields, ShortLog),
+                       [directory(Dir)])).
+:- endif.
+
