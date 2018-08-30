@@ -316,7 +316,7 @@ gitty_history(Store, Name, json{history:History,skipped:Skipped}, Options) :-
 	option(depth(Depth), Options, 5),
 	(   option(includes(Hash), Options)
 	->  read_history_to_hash(Store, Hash0, Hash, History00),
-	    length(History0, Before),
+	    length(History00, Before),
 	    After is max(Depth-Before, (Depth+1)//2),
 	    read_history_depth(Store, Hash, After, History1),
 	    length(History1, AfterLen),
