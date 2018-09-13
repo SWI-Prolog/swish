@@ -789,6 +789,8 @@ style(neck(Neck),     neck, [ text(Text) ]) :-
 style(head(Class, Head), Type, [ text, arity(Arity) ]) :-
 	goal_arity(Head, Arity),
 	head_type(Class, Type).
+style(goal_term(_Class, Goal), var, []) :-
+	var(Goal), !.
 style(goal_term(Class, {_}), brace_term_open-brace_term_close,
       [ name({}), arity(1) | More ]) :-
 	goal_type(Class, _Type, More).
