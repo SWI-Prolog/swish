@@ -87,3 +87,9 @@ attach_rdf_data(Spec) :-
 % Comment if you do not want persistent storage.  Use post_server_start
 % to load the RDF data after making the server available.
 :- listen(http(pre_server_start), attach_rdf_data(data('RDF'))).
+
+		 /*******************************
+		 *            RENDERING		*
+		 *******************************/
+
+:- use_module(swish(lib/render/rdf),	  []).
