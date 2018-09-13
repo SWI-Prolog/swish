@@ -58,8 +58,7 @@ Examples are:
 */
 
 :- multifile
-    swish_config:approve/2,
-    swish_config:deny/2.
+    swish_config:approve/3.
 
 %!  authorized(+Action, +Options) is det.
 %
@@ -131,6 +130,10 @@ ws_authorized(chat(post(_,_)), WSUser) :-
     deny/2.
 
 authorize(Action, Id) :-
+    swish_config:approve(Action, Id, Approve),
+    !,
+    Approve == true.
+authorize(Action, Id) :-
     approve(Action, Id), !,
     \+ deny(Action, Id).
 
@@ -152,8 +155,13 @@ approve(run(any, _), Auth) :-
     user_property(Auth, login(local)).
 approve(chat(open), _).
 
-%!  deny(+Auth, +Id)
+%!  deny(+Action, +Id)
 
+%!  swish_config:approve(+Action, +Identity, -Approve) is semidet.
+%
+%   This hook is called by approve/2 and deny/2 before the default
+%   rules.  If this hook succeeds it must unify Approve with `true`
+%   or `false`.  Action is approved if Approve is `true`.
 
 
 
