@@ -47,6 +47,7 @@
 :- use_module(library(http/http_host)).
 :- use_module(library(http/http_wrapper)).
 :- use_module(library(http/http_header)).
+:- use_module(library(http/html_write)).
 :- use_module(library(http/json)).
 :- use_module(library(base64)).
 :- use_module(library(utf8)).
