@@ -78,7 +78,8 @@ Using this module requires the user to define two _hooks_:
 
 :- multifile
 	server_attribute/3,		% +ServerID, +Attribute, -Value
-	login/3.			% +Request, +ServerID, +TokenInfo
+	login/3,			% +Request, +ServerID, +TokenInfo
+	login_failed/2.			% +Request, +Message
 
 :- multifile http:location/3.
 :- dynamic   http:location/3.
@@ -218,14 +219,23 @@ claims_attrs(_, []).
 oauth2_reply(Request, Options) :-
 	option(server(ServerID), Options),
 	http_parameters(Request,
-			[ code(AuthCode, [string]),
-			  state(State, [])
+			[ code(AuthCode, [string, optional(true)]),
+			  state(State, [optional(true)]),
+			  error_description(Error, [optional(true)])
 			]),
-	debug(oauth, 'Code: ~p', [AuthCode]),
-	validate_forgery_state(State, _ServerID, _Redirect),
-	debug(oauth, 'State: OK', []),
-	oauth2_token_details(ServerID, AuthCode, TokenInfo),
-	call_login(Request, ServerID, TokenInfo).
+	(   nonvar(AuthCode),
+	    nonvar(State)
+	->  debug(oauth, 'Code: ~p', [AuthCode]),
+	    validate_forgery_state(State, _ServerID, _Redirect),
+	    debug(oauth, 'State: OK', []),
+	    oauth2_token_details(ServerID, AuthCode, TokenInfo),
+	    call_login(Request, ServerID, TokenInfo)
+	;   nonvar(Error)
+	->  call_login_failed(Request, Error)
+	;   var(AuthCode)
+	->  existence_error(http_parameter, code)
+	;   existence_error(http_parameter, state)
+	).
 
 %!	login(+Request, +ServerID, +TokenInfo) is semidet.
 %
@@ -256,6 +266,16 @@ call_login(_Request, ServerID, TokenInfo) :-
 	print_term(TokenInfo, [output(current_output)]),
 	format('~nUser info: ~n'),
 	print_term(UserInfo, [output(current_output)]).
+
+call_login_failed(_Request, Error) :-
+	login_failed(_Request, Error),
+	!.
+call_login_failed(_Request, Error) :-
+	reply_html_page(
+	    title('Login failed'),
+	    h1('Login failed'),
+	    p(['ERROR: ', Error])).
+
 
 %!	oauth2_validate_access_token(+ServerID, +AccessToken, -Info:dict)
 %
