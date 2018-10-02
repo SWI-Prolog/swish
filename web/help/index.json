@@ -10,5 +10,7 @@
   "--",
   { "file":"beware.html",     "title":"Limitations" },
   { "file":"caveats.html",    "title":"Caveats" },
-  { "file":"background.html", "title":"Background" }
+  { "file":"background.html", "title":"Background" },
+  "--",
+  { "file":"privacy.html",    "title":"Privacy statement" }
 ]
