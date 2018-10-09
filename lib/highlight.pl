@@ -1142,6 +1142,7 @@ predicate_info(PI, Info) :-
 %	probably must include the file into the equation.
 
 					% ISO predicates
+:- if(current_predicate(predicate/5)).
 predicate_info(Module:Name/Arity, Key, Value) :-
 	functor(Head, Name, Arity),
 	predicate_property(system:Head, iso), !,
@@ -1154,5 +1155,6 @@ predicate_info(Module:Name/Arity, Key, Value) :-
 	).
 predicate_info(_Module:Name/Arity, summary, Summary) :-
 	catch(once(predicate(Name, Arity, Summary, _, _)), _, fail), !.
+:- endif.
 predicate_info(PI, summary, Summary) :-	% PlDoc
 	once(prolog:predicate_summary(PI, Summary)).
