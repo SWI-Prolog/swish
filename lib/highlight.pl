@@ -3,7 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2017, VU University Amsterdam
+    Copyright (c)  2014-2018, VU University Amsterdam
+			      CWI, Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,7 +34,8 @@
 */
 
 :- module(swish_highlight,
-	  [ current_highlight_state/2
+	  [ current_highlight_state/2,		% +UUID, -State
+	    man_predicate_summary/2		% +PI, -Summary
 	  ]).
 :- use_module(library(debug)).
 :- use_module(library(settings)).
@@ -49,7 +51,9 @@
 :- use_module(library(memfile)).
 :- use_module(library(prolog_colour)).
 :- use_module(library(lazy_lists)).
-:- if(exists_source(library(helpidx))).
+:- if(exists_source(library(pldoc/man_index))).
+:- use_module(library(pldoc/man_index)).
+:- elif(exists_source(library(helpidx))).
 :- use_module(library(helpidx), [predicate/5]).
 :- endif.
 
@@ -1142,19 +1146,31 @@ predicate_info(PI, Info) :-
 %	probably must include the file into the equation.
 
 					% ISO predicates
-:- if(current_predicate(predicate/5)).
 predicate_info(Module:Name/Arity, Key, Value) :-
 	functor(Head, Name, Arity),
 	predicate_property(system:Head, iso), !,
 	ignore(Module = system),
-	(   catch(once(predicate(Name, Arity, Summary, _, _)), _, fail),
+	(   man_predicate_summary(Name/Arity, Summary),
 	    Key = summary,
 	    Value = Summary
 	;   Key = iso,
 	    Value = true
 	).
-predicate_info(_Module:Name/Arity, summary, Summary) :-
-	catch(once(predicate(Name, Arity, Summary, _, _)), _, fail), !.
+predicate_info(PI, summary, Summary) :-
+	(   PI = _Module:Name/Arity,
+	    man_predicate_summary(Name/Arity, Summary)
+	->  true
+	;   prolog:predicate_summary(PI, Summary)
+	->  true
+	).
+
+:- if(current_predicate(man_object_property/2)).
+man_predicate_summary(PI, Summary) :-
+    man_object_property(PI, summary(Summary)).
+:- elif(current_predicate(predicate/5)).
+man_predicate_summary(Name/Arity, Summary) :-
+    predicate(Name, Arity, Summary, _, _).
+:- else.
+man_predicate_summary(_, _) :-
+    fail.
 :- endif.
-predicate_info(PI, summary, Summary) :-	% PlDoc
-	once(prolog:predicate_summary(PI, Summary)).

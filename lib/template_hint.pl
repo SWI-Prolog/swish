@@ -3,7 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2016, VU University Amsterdam
+    Copyright (c)  2014-2018, VU University Amsterdam
+			      CWI, Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -54,11 +55,9 @@
 :- use_module(library(option)).
 :- use_module(library(filesex)).
 :- use_module(library(error)).
-:- if(exists_source(library(helpidx))).
-:- use_module(library(helpidx), [predicate/5]).
-:- endif.
 
 :- use_module(render).
+:- use_module(highlight).
 
 /** <module> Generate template hints for CondeMirror
 
@@ -265,21 +264,13 @@ man_predicate_info(PI, Name-Value) :-
 	    Name-Value = name-PString
 	;   Name-Value = arity-Arity
 	;   Name-Value = (mode)-ModeLine
-	;   predicate_summary(PName/Arity, Summary),
+	;   once(man_predicate_summary(PName/Arity, Summary)),
 	    Name-Value = summary-Summary
 	;   predicate_property(system:PHead, iso),
 	    Name-Value = iso-true
 	;   predicate_property(system:PHead, built_in),
 	    Name-Value = type-built_in
 	).
-
-:- if(current_predicate(predicate/5)).
-predicate_summary(Name/Arity, Summary) :-
-	once(catch(predicate(Name, Arity, Summary, _, _), _, fail)).
-:- else.
-predicate_summary(_, _) :-
-	fail.
-:- endif.
 
 %%	pldoc_predicate_info(+PI, -ModeLine) is semidet.
 
