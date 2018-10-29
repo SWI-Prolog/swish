@@ -268,8 +268,8 @@ call_login(_Request, ServerID, TokenInfo) :-
 	format('~nUser info: ~n'),
 	print_term(UserInfo, [output(current_output)]).
 
-call_login_failed(_Request, Error) :-
-	login_failed(_Request, Error),
+call_login_failed(Request, Error) :-
+	login_failed(Request, Error),
 	!.
 call_login_failed(_Request, Error) :-
 	reply_html_page(
