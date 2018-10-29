@@ -112,21 +112,28 @@ changes(Commit, Show, Changes) :-
     ->  include(is_tagged_change, ShortLog0, ShortLog)
     ;   ShortLog = ShortLog0
     ),
-    (   ShortLog = [LastEntry|_]
+    (   last_change(ShortLog, LastCommit, LastModified)
     ->  (   nonvar(Commit)
         ->  length(ShortLog, Count)
         ;   Count = 0
         ),
-        git_log_data(commit_hash,         LastEntry, LastCommit),
-        git_log_data(committer_date_unix, LastEntry, LastModified),
         Changes = json{commit:  LastCommit,
                        date:    LastModified,
                        changes: Count
+                      }
+    ;   last_change(ShortLog0, LastCommit, LastModified)
+    ->  Changes = json{commit:  LastCommit,
+                       date:    LastModified,
+                       changes: 0
                       }
     ;   Changes = json{ changes: 0
                       }
     ),
     asserta(change_cache(Commit, Show, Changes)).
+
+last_change([LastEntry|_], LastCommit, LastModified) :-
+    git_log_data(commit_hash,         LastEntry, LastCommit),
+    git_log_data(committer_date_unix, LastEntry, LastModified).
 
 is_tagged_change(Change) :-
     git_log_data(subject, Change, Message0),
