@@ -105,7 +105,7 @@ changes(Commit, Show, Changes) :-
     (   nonvar(Commit)
     ->  atom_concat(Commit, '..', Revisions),
         Options = [ revisions(Revisions) ]
-    ;   Options = [ limit(1) ]
+    ;   Options = []
     ),
     git_shortlog(Dir, ShortLog0, Options),
     (   Show == tagged
