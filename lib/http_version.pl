@@ -41,8 +41,8 @@
 :- use_module(library(git)).
 :- use_module(library(apply)).
 
-:- use_module(library(version)).
-:- use_module(library(markdown)).
+:- use_module(version).
+:- use_module(markdown).
 
 /** <module> Serve version details over HTTP
 
