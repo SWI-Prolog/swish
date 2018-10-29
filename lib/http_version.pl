@@ -112,19 +112,14 @@ changes(Commit, Show, Changes) :-
     ->  include(is_tagged_change, ShortLog0, ShortLog)
     ;   ShortLog = ShortLog0
     ),
-    (   last_change(ShortLog, LastCommit, LastModified)
+    (   last_change(ShortLog0, LastCommit, LastModified)
     ->  (   nonvar(Commit)
         ->  length(ShortLog, Count)
         ;   Count = 0
         ),
-        Changes = json{commit:  LastCommit,
-                       date:    LastModified,
-                       changes: Count
-                      }
-    ;   last_change(ShortLog0, LastCommit, LastModified)
-    ->  Changes = json{commit:  LastCommit,
-                       date:    LastModified,
-                       changes: 0
+        Changes = json{ commit:  LastCommit,
+                        date:    LastModified,
+                        changes: Count
                       }
     ;   Changes = json{ changes: 0
                       }
