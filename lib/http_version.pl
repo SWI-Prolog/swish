@@ -206,8 +206,8 @@ format_commit_message(all, Message0, Message) :-
 format_commit_message(all, Message0, Message) :-
     string_codes(Message0, Codes),
     wiki_file_codes_to_dom(Codes, '/', DOM),
-    phrase(swish_markdown:html(div(class('v-changelog-entry'),
-                                   DOM)),
+    phrase(wiki_html(div(class('v-changelog-entry'),
+                         DOM)),
            Tokens),
     with_output_to(string(Message), print_html(Tokens)).
 
