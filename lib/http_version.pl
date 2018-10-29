@@ -194,10 +194,10 @@ format_commit_message(tagged, Message0, Message) :-
     sub_string(Message0, _, Post, 0, Msg),
     string_codes(Msg, Codes),
     wiki_file_codes_to_dom(Codes, '/', DOM),
-    phrase(swish_markdown:html(div(class('v-changelog-entry'),
-                                   [ span(class('v-changelog-tag'), Tag)
-                                   | DOM
-                                   ])),
+    phrase(wiki_html(div(class('v-changelog-entry'),
+                         [ span(class('v-changelog-tag'), Tag)
+                         | DOM
+                         ])),
            Tokens),
     with_output_to(string(Message), print_html(Tokens)).
 format_commit_message(all, Message0, Message) :-

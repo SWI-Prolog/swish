@@ -33,7 +33,8 @@
 */
 
 :- module(swish_markdown,
-	  [ wiki_file_codes_to_dom/3		% +Code, +Files, -DOM
+	  [ wiki_file_codes_to_dom/3,		% +Code, +Files, -DOM
+	    wiki_html//1			% :HTML
 	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
@@ -49,6 +50,10 @@
 
 :- use_module(storage).
 :- use_module(config).
+
+:- html_meta
+	wiki_html(html,?,?).
+
 
 /** <module> SWISH Notebook markdown support
 
@@ -101,6 +106,11 @@ wiki_file_codes_to_dom(String, File, DOM) :-
 		 /*******************************
 		 *	     HOOK WIKI		*
 		 *******************************/
+
+
+wiki_html(HTML) -->
+	html(HTML).
+
 
 :- multifile
 	prolog:doc_autolink_extension/2.
