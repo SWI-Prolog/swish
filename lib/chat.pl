@@ -286,7 +286,6 @@ wsid_visitor(WSID, Visitor) :-
 	session_user(Session, Visitor),
 	visitor_session(WSID, Session).
 
-
 %!	existing_visitor(+WSID, +Session, +Token, -TmpUser, -UserData) is semidet.
 %
 %	True if we are dealing with  an   existing  visitor for which we
@@ -985,8 +984,11 @@ dict_file_name(Dict, File) :-
 %
 %	  - Demands the user to be logged on
 %	  - Limits the size of the message and its payloads
+%
+%	@tbd Call authorized/2 with all proper identity information.
 
 forbidden(Message, DocID, Why) :-
+	\+ swish_config:config(chat_spam_protection, false),
 	\+ ws_authorized(chat(post(Message, DocID)), Message.user), !,
 	Why = "Due to frequent spamming we were forced to limit \c
 	       posting chat messages to users who are logged in.".
@@ -1000,6 +1002,7 @@ forbidden(Message, _DocID, Why) :-
 	member(Payload, Payloads),
 	large_payload(Payload, Why), !.
 forbidden(Message, _DocID, Why) :-
+	\+ swish_config:config(chat_spam_protection, false),
 	eval_content(Message.get(text), _WC, Score),
 	user_score(Message, Score, Cummulative, _Count),
 	Score*2 + Cummulative < 0,

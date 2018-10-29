@@ -162,6 +162,8 @@ load_config.
 %	      mode.
 %	  - chat
 %	  Activate the chat interface
+%	  - chat_spam_protection
+%	  Perform protection against spamming on chat messages.
 %	  - default_query
 %	  Initial query for the source search in an empty tab
 %
@@ -191,6 +193,7 @@ swish_config:config(notebook,		_{ eval_script: true,
 swish_config:config(fullscreen,		_{ hide_navbar: true
 					 }).
 swish_config:config(chat,		true).
+swish_config:config(chat_spam_protection, true).
 swish_config:config(default_query,	'').
 
 %%	swish_config:source_alias(Alias, Options) is nondet.

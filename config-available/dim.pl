@@ -25,15 +25,18 @@ file `dim_large.pl` is a starting point for large installations.
 %	  Ping pengine status every N seconds.
 %	  - chat
 %	  Activate the chat interface
+%	  - chat_spam_protection
+%	  Enforce protection against spamming with chat messages
 %	  - default_query
 %	  Initial query for the source search in an empty tab
 
-swish_config:config(show_beware,        false).
-swish_config:config(tabled_results,     false).
-swish_config:config(community_examples, true).
-swish_config:config(ping,		2).
-swish_config:config(chat,		true).
-swish_config:config(default_query,	'').
+swish_config:config(show_beware,          false).
+swish_config:config(tabled_results,       false).
+swish_config:config(community_examples,   true).
+swish_config:config(ping,                 2).
+swish_config:config(chat,                 true).
+swish_config:config(default_query,        '').
+swish_config:config(chat_spam_protection, false).
 
 % swish:slave_limit controls the max number of pengines per client
 % swish:thread_pool_size controls the max number of concurrent pengines
