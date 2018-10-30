@@ -91,7 +91,7 @@ user:message_hook(make(done(_)), _, _) :-
 
 changes(Request) :-
     http_parameters(Request,
-                    [ commit(Commit, [optional(true)]),
+                    [ commit(Commit, [default(last)]),
                       show(Show, [oneof([tagged, all]), default(tagged)])
                     ]),
     changes(Commit, Show, Changes),
@@ -101,36 +101,42 @@ changes(Commit, Show, Changes) :-
     change_cache(Commit, Show, Changes),
     !.
 changes(Commit, Show, Changes) :-
-    git_module_property(swish, directory(Dir)),
-    (   nonvar(Commit)
-    ->  atom_concat(Commit, '..', Revisions),
-        Options = [ revisions(Revisions) ]
-    ;   Options = [ limit(1) ]
-    ),
-    git_shortlog(Dir, ShortLog0, Options),
-    (   Show == tagged
-    ->  include(is_tagged_change, ShortLog0, ShortLog)
-    ;   ShortLog = ShortLog0
-    ),
-    (   last_change(ShortLog0, LastCommit, LastModified)
-    ->  (   nonvar(Commit)
-        ->  length(ShortLog, Count)
-        ;   Count = 0
-        ),
-        Changes = json{ commit:  LastCommit,
-                        date:    LastModified,
-                        changes: Count
-                      }
-    ;   Changes = json{ changes: 0
-                      }
-    ),
+    changes_nc(Commit, Show, Changes),
     asserta(change_cache(Commit, Show, Changes)).
+
+changes_nc(Commit, Show, Changes) :-
+    Commit \== last,
+    git_module_property(swish, directory(Dir)),
+    atom_concat(Commit, '..', Revisions),
+    git_shortlog(Dir, ShortLog, [ revisions(Revisions) ]),
+    last_change(ShortLog, LastCommit, LastModified),
+    !,
+    include(filter_change(Show), ShortLog, ShowLog),
+    length(ShowLog, Count),
+    Changes = json{ commit:  LastCommit,
+                    date:    LastModified,
+                    changes: Count
+                  }.
+changes_nc(_, _Show, Changes) :-
+    git_module_property(swish, directory(Dir)),
+    git_shortlog(Dir, ShortLog, [limit(1)]),
+    last_change(ShortLog, LastCommit, LastModified),
+    !,
+    Changes = json{ commit:  LastCommit,
+                    date:    LastModified,
+                    changes: 0
+                  }.
+changes_nc(_Commit, _Show, Changes) :-
+    Changes = json{ changes: 0
+                  }.
+
 
 last_change([LastEntry|_], LastCommit, LastModified) :-
     git_log_data(commit_hash,         LastEntry, LastCommit),
     git_log_data(committer_date_unix, LastEntry, LastModified).
 
-is_tagged_change(Change) :-
+filter_change(all, _Change).
+filter_change(tagged, Change) :-
     git_log_data(subject, Change, Message0),
     sub_string(Message0, Pre, _, _, ":"),
     Pre > 0,
