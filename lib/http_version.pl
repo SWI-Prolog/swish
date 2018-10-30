@@ -124,6 +124,10 @@ changes(Commit, Show, Changes) :-
     ;   Changes = json{ changes: 0
                       }
     ),
+    (	var(Commit)
+    ->  Commit=last
+    ;	true
+    ),
     asserta(change_cache(Commit, Show, Changes)).
 
 last_change([LastEntry|_], LastCommit, LastModified) :-
