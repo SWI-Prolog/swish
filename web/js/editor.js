@@ -287,11 +287,17 @@ define([ "cm/lib/codemirror",
 	  elem.prologEditor('setupStorage', storage);
 	}
 
+	// Refresh all editors when opening a tab as they are often
+	// not shown correctly when created in the background or after
+	// the window was resized while these editors were hidden.
+	elem.on("activate-tab", function(ev) {
+	  data.cm.refresh();
+	});
+
 	if ( options.mode == "prolog" && data.role == "source" ) {
 	  elem.on("activate-tab", function(ev) {
 	    if ( options.autoCurrent )
 	      elem.prologEditor('makeCurrent');
-	    data.cm.refresh();		/* needed if a tab has been opened */
 	  });
 
 	  elem.on("source-error", function(ev, error) {
