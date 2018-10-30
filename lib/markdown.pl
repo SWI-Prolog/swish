@@ -108,8 +108,8 @@ wiki_file_codes_to_dom(String, File, DOM) :-
 		 *******************************/
 
 
-wiki_html(HTML) -->
-	html(HTML).
+wiki_html(_:HTML) -->
+	html(swish_markdown:HTML).
 
 
 :- multifile
