@@ -445,6 +445,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 		     };
 		   elem.storage('update_tab_title');
 		   elem.storage('chat', (data.meta||{}).chat||'update');
+		   elem.storage('load_messages', data.messages||[]);
 		   $(".storage").storage('chat_status', true);
 		   history.push({url: reply.url, reason: "save"});
 		 }
@@ -1186,6 +1187,37 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  elem.storage('update_tab_title', 'chats++');
 	}
       });
+    },
+
+    /**
+     * Handle (error) messages when reloading a plugin registered using
+     * `:- use_gitty_file(File)`.
+     *
+     * @param {Array.Object} messages
+     */
+
+    load_messages: function(messages) {
+      var warnings = 0;
+      var errors = 0;
+
+      for(var i=0; i<messages.length; i++) {
+	var msg = messages[i];
+
+	if ( msg.kind == "warning" ) {
+	  warnings++;
+	} else if ( msg.kind == "error" ) {
+	  errors++;
+	} else
+	  continue;
+
+	// TBD: Show in editor
+      }
+
+      if ( errors || warnings ) {
+	// TBD: Show modal window with summary
+      }
+
+      return this;
     },
 
     /**

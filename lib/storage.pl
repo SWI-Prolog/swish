@@ -4,6 +4,7 @@
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
     Copyright (c)  2014-2018, VU University Amsterdam
+			      CWI, Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -45,7 +46,10 @@
 	    storage_unpack/0,
 
 	    storage_store_term/2,		% +Term, -Hash
-	    storage_load_term/2			% +Hash, -Term
+	    storage_load_term/2,		% +Hash, -Term
+
+	    use_gitty_file/1,			% +File
+	    use_gitty_file/2			% +File, +Options
 	  ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
@@ -62,6 +66,7 @@
 :- use_module(library(solution_sequences)).
 :- use_module(library(dcg/basics)).
 :- use_module(library(pcre)).
+:- use_module(library(pengines_io)).
 
 :- use_module(page).
 :- use_module(gitty).
@@ -70,6 +75,10 @@
 :- use_module(search).
 :- use_module(authenticate).
 :- use_module(pep).
+
+:- meta_predicate
+	use_gitty_file(:),
+	use_gitty_file(:, +).
 
 /** <module> Store files on behalve of web clients
 
@@ -236,11 +245,14 @@ storage(put, Request, Options) :-
 	      true),
 	(   var(Error)
 	->  debug(storage, 'Updated: ~p', [Commit]),
-	    broadcast(swish(updated(File, Commit))),
+	    collect_messages_as_json(
+		broadcast(swish(updated(File, Commit))),
+		Messages),
 	    follow(Commit, Dict),
 	    reply_json_dict(json{ url:URL,
 				  file:File,
-				  meta:Commit.put(symbolic, "HEAD")
+				  meta:Commit.put(symbolic, "HEAD"),
+				  messages:Messages
 				})
 	;   update_error(Error, Dir, Data, File, URL)
 	).
@@ -617,6 +629,133 @@ storage_load_term(Hash, Term) :-
 	gitty_load(Dir, Hash, Data, term),
 	term_string(Term, Data).
 
+
+		 /*******************************
+		 * LOAD GITTY FILES PERMANENTLY *
+		 *******************************/
+
+%!  use_gitty_file(+File) is det.
+%!  use_gitty_file(+File, +Options) is det.
+%
+%   Load  a  file  from  the  Gitty    store.   Options  are  passed  to
+%   load_files/2. Additional options are:
+%
+%     - watch(+Boolean)
+%       If `true` (default), reload the file if the user saves it.
+
+use_gitty_file(File) :-
+    use_gitty_file(File, []).
+
+use_gitty_file(M:Spec, Options) :-
+    ensure_extension(Spec, pl, File),
+    setup_watch(M:File, Options),
+    storage_file(File, Data, Meta),
+    atom_concat('gitty://', File, URL),
+    setup_call_cleanup(
+        open_string(Data, In),
+        load_files(M:URL,
+                   [ stream(In),
+                     modified(Meta.time),
+                     if(changed)
+                   | Options
+                   ]),
+        close(In)).
+
+ensure_extension(File, Ext, File) :-
+    file_name_extension(_, Ext, File),
+    !.
+ensure_extension(Base, Ext, File) :-
+    file_name_extension(Base, Ext, File).
+
+
+:- dynamic
+    watching/3.                                 % File, Module, Options
+
+setup_watch(M:File, Options) :-
+    option(watch(true), Options, true),
+    !,
+    (   watching(File, M, Options)
+    ->  true
+    ;   retractall(watching(File, M, _)),
+        assertz(watching(File, M, Options))
+    ).
+setup_watch(M:File, _Options) :-
+    retractall(watching(File, M, _)).
+
+
+		 /*******************************
+		 *      AUTOMATIC RELOAD	*
+		 *******************************/
+
+:- initialization
+    listen(swish(updated(File, Commit)),
+           run_watchdog(File, Commit)).
+
+run_watchdog(File, _Commit) :-
+    debug(gitty(reload), 'File ~p was saved', [File]),
+    forall(watching(File, Module, Options),
+           use_gitty(Module:File, Options)).
+
+
+		 /*******************************
+		 *	      MESSAGES		*
+		 *******************************/
+
+%!	collect_messages_as_json(+Goal, -Messages)
+%
+%	Run Goal, collecting messages as  produced by print_message/2 in
+%	Messages as JSON terms.
+
+:- meta_predicate
+	collect_messages_as_json(0, -).
+
+:- thread_local
+	messages/1.
+
+collect_messages_as_json(Goal, Messages) :-
+	retractall(messages(_)),
+	setup_call_cleanup(
+	    asserta((user:thread_message_hook(Term,Kind,Lines) :-
+		        collect_message(Term,Kind,Lines)),
+		    Ref),
+	    Goal,
+	    erase(Ref)),
+	findall(Msg, retract(messages(Msg)), Messages).
+
+collect_message(Term, Kind, Lines) :-
+	message_to_json(Term, Kind, Lines, JSON),
+	assertz(messages(JSON)).
+
+message_to_json(Term, Kind, Lines, JSON) :-
+	atom_concat('msg-', Kind, Class),
+	message_lines_to_html(Lines, [Class], HTML),
+	JSON0 = json{type: message,
+		     kind: Kind,
+		     html: HTML},
+	(   source_location(File, Line)
+	->  JSON1 = JSON0.put(_{file:File, line:Line})
+	;   JSON1 = JSON0
+	),
+	(   message_details(Term, JSON1, JSON)
+	->  true
+	;   JSON = JSON1
+	).
+
+message_details(error(syntax_error(_What),
+                      file(File,Line,Offset,_CharPos)),
+                JSON0, JSON) :-
+    JSON = JSON0.put(_{file:File, line:Line, line_offset:Offset}).
+
+
+% Added in SWI-Prolog 7.7.21
+:- if(\+ current_predicate(message_lines_to_html/3)).
+:- use_module(library(http/html_write)).
+
+message_lines_to_html(Lines, Classes, HTMlString) :-
+	message_to_string(Lines, String),
+	phrase(html(pre(class(['prolog-message'|Classes]), String)), Tokens),
+	with_output_to(string(HTMlString), print_html(Tokens)).
+:- endif.
 
 		 /*******************************
 		 *	    MAINTENANCE		*
