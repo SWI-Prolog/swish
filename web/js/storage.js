@@ -445,6 +445,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 		     };
 		   elem.storage('update_tab_title');
 		   elem.storage('chat', (data.meta||{}).chat||'update');
+		   elem.storage('load_messages', reply.messages||[]);
 		   $(".storage").storage('chat_status', true);
 		   history.push({url: reply.url, reason: "save"});
 		 }
@@ -1186,6 +1187,59 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  elem.storage('update_tab_title', 'chats++');
 	}
       });
+    },
+
+    /**
+     * Handle (error) messages when reloading a plugin registered using
+     * `:- use_gitty_file(File)`.
+     *
+     * @param {Array.Object} messages
+     */
+
+    load_messages: function(messages) {
+      var warnings = 0;
+      var errors = 0;
+      var html = "";
+      var done;
+
+      for(var i=0; i<messages.length; i++) {
+	var msg = messages[i];
+
+	if ( msg.kind == "warning" ) {
+	  warnings++;
+	} else if ( msg.kind == "error" ) {
+	  errors++;
+	} else if ( msg.code == done )
+	{ done = msg.data[0];
+	  continue;
+	} else
+	  continue;
+
+	if ( msg.html )
+	  html += msg.html;
+	else
+	  html += $($.el.div($.el.pre({class:"msg-"+msg.kind},
+				      msg.data[0]))).html();
+
+	this.prologEditor('highlightError', msg);
+      }
+
+      if ( errors || warnings ) {
+	var explain;
+
+	explain = $($.el.div(
+		    $.el.p("The following messages where generated while "+
+			   "compiling the file.  These messages are inserted "+
+			   "in the editor."))).html();
+
+	modal.alert(explain + html);
+      } else if ( done ) {
+	modal.feedback({ html: done,
+			 owner: this
+		       });
+      }
+
+      return this;
     },
 
     /**
