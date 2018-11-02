@@ -729,7 +729,6 @@ collect_message(Term, Kind, Lines) :-
 
 message_to_json(Term, Kind, Lines, JSON) :-
 	message_to_string(Term, String),
-	pp(Term),
 	JSON0 = json{type: message,
 		     kind: Kind,
 		     data: [String]},
