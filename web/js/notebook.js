@@ -1414,11 +1414,20 @@ var cellTypes = {
 
 
     function setHTML(data) {
+
       cell.html(data);
       cell.removeClass("runnable");
       cell.data('markdownText', markdownText);
       cell.on("dblclick", makeEditable);
       cell.on("click", "a", links.followLink);
+
+      // call post rendering hooks
+      var nbdata = cell.closest(".notebook").data('notebook');
+      if ( nbdata && nbdata.markdown_post_renderer ) {
+	for(var i=0; i<nbdata.markdown_post_renderer.length; i++) {
+	  nbdata.markdown_post_renderer[i].call(cell);
+	}
+      }
     }
 
     if ( markdownText.trim() != "" )
@@ -2090,4 +2099,21 @@ Notebook.prototype.$ = function(selector) {
 Notebook.prototype.loadCSS = function(url) {
   return utils.loadCSS(url);
 }
+
+/**
+ * Add a hook that is called after a markdown cell is filled with
+ * rendered HTML
+ */
+
+Notebook.prototype.markdown_post_renderer = function(f) {
+  var data = this.notebook().data('notebook');
+
+  if ( data ) {
+    if ( data.markdown_post_renderer != undefined )
+      data.markdown_post_renderer.push(f);
+    else
+      data.markdown_post_renderer = [f];
+  }
+}
+
 });
