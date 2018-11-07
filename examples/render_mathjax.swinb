@@ -1,0 +1,69 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md2">
+# Render mathematical formulas
+
+This notebook explains using [Mathjax](https://docs.mathjax.org) in SWISH for rendering formulas in markdown text as well as rendering query answers as formulas.
+
+First of all there is the `mathjax` renderer that renders terms of the form math(String) as mathematical formulas.  Future versions are likely to also render Prolog terms as formulas.  The example below illustrates this renderer.
+</div>
+
+<div class="nb-cell program" name="p1">
+:- use_rendering(mathjax).
+</div>
+
+<div class="nb-cell query" name="q1">
+A = math("a^2 + b^2 = c^2").
+</div>
+
+<div class="nb-cell markdown" name="md1">
+## Using Mathjax in markdown
+
+To use Mathjax in markdown we must provide a _post rendering hook_ for markdown cell.  This hook
+is defined by the code fragment below that must appear in an HTML cell on the notebook.  The fragment loads Mathjax from the CDN network and registers a hook that queues a MathJax request on the cell.
+On this page this cell is the last cell marked _Load Mathjax_.  The text can be omitted to make
+the cell invisible, but that also stops the user from opening the cell.
+
+```
+&lt;script&gt;
+  (function() {
+    var nb = notebook;
+    require(["https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js"+
+             "?config=TeX-MML-AM_CHTML"], function() {
+      nb.markdown_post_renderer(function() {
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub,this[0]]);
+      });
+    });
+  })();
+&lt;/script&gt;
+```
+
+The Pythagorean theorem is \(a^2 + b^2 = c^2\).
+
+## Status
+
+This extension is rather experimental.  Some issues:
+
+  - Mathjax may conflict with markdown.  The Mathjax site suggests some work-arounds but these are not yet implemented.
+  - The configuration of Mathjax seems to be global and thus applies to the entire site.
+  - Rendering from a string is not ideal.  Eventually we should do such from a Prolog term.
+</div>
+
+<div class="nb-cell html" name="htm1">
+<hr>
+<p style="color:#aaa">This HTML cell loads Mathjax</p>
+
+<script>
+  (function() {
+    var nb = notebook;
+    require(["https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js"+
+             "?config=TeX-MML-AM_CHTML"], function() {
+      nb.markdown_post_renderer(function() {
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub,this[0]]);
+      });
+    });
+  })();
+</script>
+</div>
+
+</div>

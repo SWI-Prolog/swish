@@ -1,6 +1,6 @@
 <div class="notebook">
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md1">
 # Result rendering
 
 SWISH allows for _rendering_ a Prolog answer in a domain specific way.  This
@@ -8,28 +8,29 @@ can be compared to the Prolog _hook_ portray/1, although it currently only appli
 for example:
 </div>
 
-<div class="nb-cell program">
+<div class="nb-cell program" name="p1">
 :- use_rendering(table).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md2">
 The [table renderer](example/render_table.swinb) recognises a table and renders it as an HTML table.  Press the _play_ button to run the simple example below.
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q1">
 X = [ [ 'Amsterdam', 'The Netherlands' ],
       [ 'London', 'United Kingdom' ],
       [ 'Paris', 'France' ]
     ].
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md3">
 ## Provided renderers
 
 The following rendering plugins are currently supported.  Please visit the linked notebook for more documentation and examples exploiting these renderers.
 
   - General purpose renderers
     - [table](example/render_table.swinb) renders tables
+    - [mathjax](example/render_mathjax.swinb) render mathematical formulas
     - [svgtree](example/render_svgtree.swinb) renders Prolog terms as trees
     - [graphviz](example/render_graphviz.swinb) render graphs using
       [Graphviz](http://www.graphviz.org/).
@@ -43,7 +44,7 @@ The following rendering plugins are currently supported.  Please visit the linke
     - [sudoku](example/render_sudoku.swinb) renders sudoku puzzles.
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md4">
 ## Adding a new render plugin
 
 The rendering infrastructure is specialized using a series of _plugins_ provided as Prolog libraries in the directory =lib/render= of the SWISH sources.  A render plugin is a _module_ that performs these steps:
