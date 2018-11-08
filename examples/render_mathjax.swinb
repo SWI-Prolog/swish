@@ -19,9 +19,10 @@ A = math("a^2 + b^2 = c^2").
 <div class="nb-cell markdown" name="md1">
 ## Using Mathjax in markdown
 
-To use Mathjax in markdown we must provide a _post rendering hook_ for markdown cell.  This hook
-is defined by the code fragment below that must appear in an HTML cell on the notebook.  The fragment loads Mathjax from the CDN network and registers a hook that queues a MathJax request on the cell.
-On this page this cell is the last cell marked _Load Mathjax_.  The text can be omitted to make
+To use Mathjax in markdown we must provide a _post rendering hook_ for markdown cells.  This hook
+is defined by the code fragment below which must appear in an HTML cell somewhere on the notebook.  The fragment loads Mathjax from the CDN network and registers a hook that queues a MathJax request on a markdown cell _after_ the markdown renderer has done the conversion of markdown to HTML.
+
+On this example page the HTML cell holding the code below is the last cell marked _This HTML cell loads Mathjax_.  The text can be omitted to make
 the cell invisible, but that also stops the user from opening the cell.
 
 ```
@@ -38,7 +39,14 @@ the cell invisible, but that also stops the user from opening the cell.
 &lt;/script&gt;
 ```
 
-The Pythagorean theorem is \(a^2 + b^2 = c^2\).
+### examples
+
+  - The Pythagorean theorem is \(a^2 + b^2 = c^2\).
+
+  - A more chalanging example from [here](https://www.tuhh.de/MathJax/test/sample-tex.html):
+
+    When \(a \ne 0\), there are two solutions to \(ax^2 + bx + c = 0\) and they are
+    $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
 
 ## Status
 
