@@ -3,7 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015-2016, VU University Amsterdam
+    Copyright (c)  2015-2018, VU University Amsterdam
+			      CWI, Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -91,21 +92,39 @@ current_user(default).
 %	Start the SWISH server and open the main page in your browser.
 
 swish :-
-	swish(localhost:_Port).
+	reuse_port(Port),
+	swish(Port).
 
 swish(Port) :-
 	http_server_property(Port, goal(swish_ide:http_dispatch)), !,
+	save_port(Port),
 	open_browser(Port).
-swish(_:Port) :-
+swish(Host:Port) :-
 	integer(Port),
 	http_server_property(Port, goal(swish_ide:http_dispatch)), !,
+	save_port(Host:Port),
 	open_browser(Port).
 swish(Port) :-
 	http_server(http_dispatch,
 		    [ port(Port),
 		      workers(16)
 		    ]),
+	save_port(Port),
 	open_browser(Port).
+
+reuse_port(Port) :-
+	exists_file('data/settings.pl'),
+	read_file_to_terms('data/settings.pl', Terms, []),
+	memberchk(port(Port), Terms),
+	print_message(informational, swish(reuse_port(Port))),
+	!.
+reuse_port(localhost:_).
+
+save_port(Port) :-
+	setup_call_cleanup(
+	    open('data/settings.pl', write, Out),
+	    format(Out, '~q.~n', [port(Port)]),
+	    close(Out)).
 
 open_browser(Address) :-
 	host_port(Address, Host, Port),
@@ -118,3 +137,7 @@ host_port(Host:Port, Host, Port) :- !.
 host_port(Port, localhost, Port).
 
 
+:- multifile prolog:message//1.
+
+prolog:message(swish(reuse_port(Port))) -->
+	[ 'Trying to reuse old address ~p'-[Port] ].
