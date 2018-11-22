@@ -53,4 +53,4 @@ highlighting interaction.
 :- http_schedule_logrotate(weekly(sun, 05:05),
                            [ keep_logs(26)
                            ]).
-:- listen(http(pre_server_start), create_log_dir).
+:- listen(http_log_open(LogFile), create_log_dir(LogFile)).

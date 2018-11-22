@@ -33,7 +33,8 @@
 */
 
 :- module(swish_logging,
-	  [ create_log_dir/0
+	  [ create_log_dir/0,
+	    create_log_dir/1
 	  ]).
 :- use_module(library(http/http_log)).
 :- use_module(library(broadcast)).
@@ -99,12 +100,16 @@ gc_text_hash :-
 	;   true
 	).
 
-%!	create_log_dir
+%!	create_log_dir is det.
+%!	create_log_dir(FileSpec) is det.
 %
 %	Create the directory for holding the log files
 
 create_log_dir :-
 	setting(http:logfile, Term),
+	create_log_dir(Term).
+
+create_log_dir(Term) :-
 	directory_spec(Term, DirSpec),
 	(   absolute_file_name(DirSpec, _,
 			       [ file_type(directory),
