@@ -141,6 +141,8 @@ rdf_link(Value^^Type, Options) --> !,
 		  [ '"', span(class('rdf-lexical'), String), '"^^',
 		    \rdf_link(Type, Options)
 		  ])).
+rdf_link(literal(Literal), Options) --> !,
+	rdf_literal_link(Literal, Options).
 rdf_link(IRI, Options) -->
 	{ rdf_global_id(Prefix:Local, IRI),
 	  !,
@@ -158,6 +160,16 @@ rdf_link(IRI, Options) -->
 	       [ span(class('rdf-iri'), IRI)
 	       ])).
 
+
+rdf_literal_link(type(Type,Value), Options) --> !,
+	rdf_link(Value^^Type, Options).
+rdf_literal_link(lang(Lang,Value), Options) --> !,
+	rdf_link(Value@Lang, Options).
+rdf_literal_link(Plain, Options) -->
+	{ atom(Plain), !,
+	  rdf_equal(String, xsd:string)
+	},
+	rdf_link(Plain^^String, Options).
 
 a_options(IRI, Extra, Options) :-
 	(   broadcast_request(rdf_label(IRI, Label))
