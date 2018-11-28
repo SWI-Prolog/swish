@@ -63,7 +63,7 @@ define(["jquery"],
     /**
      * @param {String} url is the style sheet to load
      */
-    loadCSS(url) {
+     loadCSS: function(url) {
       if ( styles_loaded.indexOf(url) == -1 ) {
 	var styles = document.createElement('link');
 	styles.rel = 'stylesheet';
