@@ -241,6 +241,11 @@ div.notebook-menu {
 { float: right;
 }
 
+.nb-cell.markdown table.arglist td
+{ vertical-align: top;
+  padding-right: 1em;
+}
+
 a.btn-image
 { padding: 1px 2px;
 }
