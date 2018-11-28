@@ -506,6 +506,17 @@ define([ "jquery", "config", "preferences", "cm/lib/codemirror", "modal",
       a.attr("title", utils.ago(a.data('time')));
     });
 
+    // FIXME: Make history menu scroll to the end.  There
+    // must be a cleaner way to do so.
+    $(menu).mouseup(function(ev) {
+      setTimeout(function() {
+	var ul = $(menu).find("ul.history");
+	var h  = ul.prop("scrollHeight");
+	console.log(h);
+	ul.animate({scrollTop: h});
+      }, 100);
+    });
+
     return menu;
   }
 
