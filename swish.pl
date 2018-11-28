@@ -36,6 +36,7 @@
 :- module(swish_app,
 	  [
 	  ]).
+:- use_module(library(pldoc), []).
 :- use_module(library(pengines)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(option)).
