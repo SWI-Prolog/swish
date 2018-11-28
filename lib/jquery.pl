@@ -33,7 +33,8 @@
 */
 
 :- module(swish_jquery,
-	  [ jquery/3			% +Selector, +Request, -Reply
+	  [ jquery/2,			% +Selector, +Request
+	    jquery/3			% +Selector, +Request, -Reply
 	  ]).
 :- use_module(library(error)).
 :- use_module(library(pengines)).
@@ -46,7 +47,8 @@ introduced while adding functionality to request the contents of tabs in
 the SWISH interface.
 */
 
-%%	jquery(+Selector, +Function, -Reply) is det.
+%!	jquery(+Selector, +Function) is det.
+%!	jquery(+Selector, +Function, -Reply) is det.
 %
 %	Run a jQuery query in the  SWISH interface. Selector defines the
 %	receiver  of  the  jQuery  method,  Function  is  the  JavaScript
@@ -57,10 +59,19 @@ the SWISH interface.
 %
 %	  - If the selector is a string, it is simply interpreted as
 %	    =|$(Selector)|=.
-%	  - If the selector is this(SubSelector), it perform a jQuery
-%	    `find` using `SubSelector` on the Prolog runner.  Using
-%	  - If the selector is swish(SubSelector), as above, but
-%	    starting at the SWISH plugin instance
+%	  - If the selector is a compound, the _functor_ defines the
+%	    start point. If a (single) argument provided it is handed to
+%	    the jQuery `find` method.  Defines starting points are:
+%	    - this
+%	      The current SWISH _runner_ object, jQuery class
+%	      `prologRunner`.
+%	    - cell
+%	      The current notebook (query) cell.  jQuery class
+%	      `nbCell`.
+%	    - notebook
+%	      The current notebook.  jQuery class `notebook`
+%	    - swish
+%	      The SWISH instance.  jQuery class `swish`.
 %
 %	@arg Function is a compound term  representing a JavaScript call.
 %	The functor name is used as   method and the remaining arguments
@@ -69,6 +80,8 @@ the SWISH interface.
 %	@arg Reply is the JavaScript reply, converted to Prolog by
 %	the Pengine.stringify() method.
 
+jquery(Selector, Function) :-
+	jquery(Selector, Function, _).
 jquery(Selector, Function, Reply) :-
 	map_selector(Selector, Selector1),
 	compound_name_arguments(Function, Method, Args),
@@ -94,6 +107,8 @@ map_selector(Selector, json{root:Name, sub:SubSelector}) :-
 	).
 
 root_selector(this) :- !.
+root_selector(cell) :- !.
+root_selector(notebook) :- !.
 root_selector(swish) :- !.
 root_selector(Selector) :-
 	domain_error(root_selector, Selector).
