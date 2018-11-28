@@ -2,11 +2,36 @@
 
 div.tabbed {
   height: 100%;
+  display: flex;
+  flex-flow: column;
+  -ms-flex-flow: column;
 }
 
 div.tab-content	{
-  height: calc(100% - 40px);
+  flex: 1;
+  -ms-flex: 1;
 }
+
+/* Make CodeMirror scrollable inside a flex environment.
+   See https://discuss.codemirror.net/t/size-inside-flexbox/1359/4
+*/
+
+.codeArea {
+  flex:1 1 auto;
+  margin-top: 0;
+  height: 100%;
+  position: relative;
+}
+
+.tab-pane, .tab-pane > div > .CodeMirror {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+}
+
 
 div.tab-pane {
   position: relative;
