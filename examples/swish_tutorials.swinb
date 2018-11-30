@@ -5,12 +5,12 @@
 
 This notebook provides an overview of tutorials about using SWISH.
 
-  - [Rendering answers graphically](example/rendering.swinb)
+  - [Rendering answers graphically](example/rendering.swinb) (graphs, charts, mathjax, etc.)
   - Using HTML cells in notebooks
     - [The basics](example/htmlcell.swinb)
     - [Including user widgets (slider)](example/slider.swinb)
     - [Hiding all SWISH elements](example/chat80.swinb)
-  - [Accessing external data](example/data_source.swinb)
+  - [Accessing external data](example/data_source.swinb) (CSV, SPARQL, etc.)
   - [Access the SWISH interface from Prolog](example/jquery.swinb)
 </div>
 
