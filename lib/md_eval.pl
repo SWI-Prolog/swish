@@ -34,15 +34,17 @@
 */
 
 :- module(md_eval,
-          [
+          [ html/1                              % +Spec
           ]).
 
 :- use_module(library(modules)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(debug)).
+:- use_module(library(occurs)).
 :- use_module(library(settings)).
 :- use_module(library(pldoc/doc_wiki)).
+:- use_module(library(http/html_write)).
 
 /** <module> Provide evaluable markdown
 
@@ -158,6 +160,31 @@ collect_messages(Ref, Messages) :-
     erase(Ref),
     findall(Msg, retract(saved_message(Msg)), Messages).
 
+
+		 /*******************************
+		 *         OTHER OUTPUTS	*
+		 *******************************/
+
+%!  html(+Spec) is det.
+%
+%   Include HTML into the output.
+
+html(Spec) :-
+    phrase(html(html(Spec)), Tokens),
+    with_output_to(
+        string(HTML),
+        print_html(current_output, Tokens)),
+    format('~w', [HTML]).
+
+:- multifile sandbox:safe_primitive/1.
+
+sandbox:safe_primitive(md_eval:html(Spec)) :-
+    \+ sub_term(\(_), Spec).
+
+
+		 /*******************************
+		 *           ACTIVATE		*
+		 *******************************/
 
 :- multifile
     swish_markdown:dom_expansion/2.
