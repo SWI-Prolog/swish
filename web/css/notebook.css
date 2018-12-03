@@ -270,3 +270,12 @@ span.menu-space
   display: inline-block;
 }
 
+/* ```{eval} cells */
+
+pre.eval.error
+{ colour: red;
+}
+
+pre.eval.error
+{ colour: orange;
+}

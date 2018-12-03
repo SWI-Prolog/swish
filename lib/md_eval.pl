@@ -34,7 +34,9 @@
 */
 
 :- module(md_eval,
-          [ html/1                              % +Spec
+          [ html/1,                     % +Spec
+            safe_html/1,                % +Spec
+            safe_html//1                % +Spec
           ]).
 
 :- use_module(library(modules)).
@@ -43,8 +45,12 @@
 :- use_module(library(debug)).
 :- use_module(library(occurs)).
 :- use_module(library(settings)).
+:- use_module(library(error)).
 :- use_module(library(pldoc/doc_wiki)).
 :- use_module(library(http/html_write)).
+:- use_module(library(dcg/basics)).
+:- use_module(library(sandbox)).
+
 
 /** <module> Provide evaluable markdown
 
@@ -123,7 +129,39 @@ do_eval(Module, I, Code, [div(class(output), DOM)], _Options) :-
                          sandboxed(true)
                        ]),
             close(In))),
+    eval_to_dom(Codes, DOM).
+
+eval_to_dom(Codes, DOM) :-
+    phrase(is_html, Codes),
+    E = error(_,_),
+    catch(setup_call_cleanup(
+              open_string(Codes, In),
+              load_html(In, DOM, []),
+              close(In)),
+          E, fail),
+    !.
+eval_to_dom(Codes, DOM) :-
     wiki_codes_to_dom(Codes, [], DOM).
+
+is_html -->
+    blanks, "<", tag(Tag),
+    string(_),
+    "</", tag(Tag), ">", blanks.
+
+tag([H|T]) -->
+    alpha(H),
+    alphas(T).
+
+alpha(H) -->
+    [H],
+    { between(0'a, 0'z, H) }.
+
+alphas([H|T]) -->
+    alpha(H),
+    !,
+    alphas(T).
+alphas([]) -->
+    [].
 
 contains_eval(DOM) :-
     sub_term(Pre, DOM),
@@ -151,7 +189,7 @@ save_message(_Term, Kind, Lines) :-
     with_output_to(
         string(Msg),
         print_message_lines(current_output, Prefix, Lines)),
-    assertz(saved_message(div(class(Kind), Msg))).
+    assertz(saved_message(pre(class([eval,Kind]), Msg))).
 
 kind_prefix(error,   '% ERROR: ').
 kind_prefix(warning, '% Warning: ').
@@ -169,17 +207,55 @@ collect_messages(Ref, Messages) :-
 %
 %   Include HTML into the output.
 
+:- html_meta
+    html(html),
+    safe_html(html),
+    safe_html(html,?,?).
+
 html(Spec) :-
-    phrase(html(html(Spec)), Tokens),
+    phrase(html(div(Spec)), Tokens),
     with_output_to(
         string(HTML),
         print_html(current_output, Tokens)),
     format('~w', [HTML]).
 
+safe_html(Spec) :-
+    is_safe_html(Spec),
+    !,
+    html(Spec).
+
+safe_html(Spec) -->
+    { is_safe_html(Spec) },
+    !,
+    html(Spec).
+
+is_safe_html(M:Spec) :-
+    prolog_load_context(module, M),
+    must_be(ground, Spec),
+    forall(sub_term(\(Eval), Spec),
+           safe_eval(Eval, M)).
+
+safe_eval(Goal, M) :-
+    dcg_extend(Goal, DcgGoal),
+    safe_goal(M:DcgGoal).
+
+dcg_extend(Goal, DcgGoal) :-
+    must_be(callable, Goal),
+    Goal \= (_:_),
+    Goal =.. List,
+    append(List, [_,_], ExList),
+    DcgGoal =.. ExList.
+
+swish:goal_expansion(html(Spec), safe_html(Spec)).
+swish:goal_expansion(html(Spec, L,T), safe_html(Spec, L, T)).
+
 :- multifile sandbox:safe_primitive/1.
 
+sandbox:safe_meta_predicate(md_eval:safe_html/1).
+sandbox:safe_meta_predicate(md_eval:safe_html/3).
 sandbox:safe_primitive(md_eval:html(Spec)) :-
     \+ sub_term(\(_), Spec).
+sandbox:safe_meta_predicate(md_eval:is_safe_html/1).
 
 
 		 /*******************************
