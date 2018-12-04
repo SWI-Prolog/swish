@@ -1,0 +1,39 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# Evaluable code in notebook markdown cells
+
+SWISH allows to mix markdown with Prolog sections using the _code fence_ construct with the code type `eval`.  This is feature is primarily intended to create __dynamic pages__.  We intend to use this to make sure the tutorials match the configuration of the currently running SWISH instance.  Here is a simple example:
+
+```
+    ```eval
+    :- format("Hello world!").
+    ```
+```
+
+While rendering the markdown such sections are loaded in a _temporary module_ and executed inside a _sandbox_, much like code is generally executed inside SWISH.  The execution time is limited by the Prolog _setting_ (see setting/2) `md_eval:time_limit`.  Multiple evaluable sections inside a single markdown cell are executed in the same Prolog environment.  The environment is discarded after completing the markdown rendering for the cell (__not__ the notebook).
+_Eval_ sections can contain
+
+  - Predicates
+  - ``:- include(Program).`` directives
+  - Directives that produce output
+  
+The last category should print to the `current_output` stream.  By default the output is interpreted as _markdown_.  If the output starts with an HTML tag and ends with a matching tag the markdown processor processes the output as HTML.  The output is __always__ rendered inside a `div` element of the class `eval`.
+</div>
+
+<div class="nb-cell markdown" name="md3">
+## Example: list the loaded plugins
+
+This cell lists the plugins that are loaded in the current SWISH instance, i.e. the files that are loaded from the configured `config-enabled` directories.  To see the definition, please __double click__ in this cell.   Note that you cannot get access to the details of the plugin because its configuration may contain secrets.
+
+```eval
+:- forall(swish_has_plugin(Plugin),
+          format('  - ~w~n', [Plugin])).
+```
+</div>
+
+<div class="nb-cell markdown" name="md2">
+## 
+</div>
+
+</div>

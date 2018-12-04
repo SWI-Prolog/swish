@@ -54,6 +54,7 @@
 :- use_module(lib/profiles).
 :- use_module(lib/highlight).
 :- use_module(lib/markdown).
+:- use_module(lib/md_eval).
 :- use_module(lib/chat, []).
 :- use_module(lib/template_hint, []).
 :- use_module(lib/plugin/http_dyn_workers, []).

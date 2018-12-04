@@ -36,7 +36,9 @@
 :- module(md_eval,
           [ html/1,                     % +Spec
             safe_html/1,                % +Spec
-            safe_html//1                % +Spec
+            safe_html//1,               % +Spec
+
+            swish_has_plugin/1          % ?Plugin
           ]).
 :- use_module(library(modules)).
 :- use_module(library(apply)).
@@ -52,7 +54,7 @@
 :- use_module(library(sandbox)).
 :- use_module(library(time)).
 
-:- setting(md_eval_time_limit, number, 10,
+:- setting(time_limit, number, 10,
            "Timit limit for evaluating a ```{eval} cell").
 
 /** <module> Provide evaluable markdown
@@ -265,6 +267,43 @@ sandbox:safe_meta_predicate(md_eval:is_safe_html/1).
 
 
 		 /*******************************
+		 *           CONDITIONS		*
+		 *******************************/
+
+%!  swish_has_plugin(?Name) is nondet.
+%
+%   True when Name is the name of a loaded plugin.  This predicate is
+%   intended for dynamic markdown pages.
+
+swish_has_plugin(Name) :-
+    var(Name), !,
+    distinct(Dir,
+             absolute_file_name(
+                 config_enabled(.),
+                 Dir,
+                 [ solutions(all),
+                   file_type(directory)
+                 ])),
+    directory_files(Dir, Files),
+    member(File, Files),
+    directory_file_path(Dir, File, Source),
+    source_file(Source),
+    file_name_extension(Name, _, File).
+swish_has_plugin(Name) :-
+    must_be(atom, Name),
+    absolute_file_name(
+        config_enabled(Name),
+        File,
+        [ solutions(all),
+          file_type(prolog)
+        ]),
+    source_file(File),
+    !.
+
+sandbox:safe_primitive(md_eval:swish_has_plugin(_)).
+
+
+		 /*******************************
 		 *           ACTIVATE		*
 		 *******************************/
 
@@ -272,6 +311,6 @@ sandbox:safe_meta_predicate(md_eval:is_safe_html/1).
     swish_markdown:dom_expansion/2.
 
 swish_markdown:dom_expansion(DOM0, DOM) :-
-    setting(md_eval_time_limit, Limit),
+    setting(time_limit, Limit),
     Limit > 0,
     eval_dom(DOM0, DOM, [time_limit(Limit)]).
