@@ -54,7 +54,6 @@
 :- use_module(lib/profiles).
 :- use_module(lib/highlight).
 :- use_module(lib/markdown).
-:- use_module(lib/md_eval).
 :- use_module(lib/chat, []).
 :- use_module(lib/template_hint, []).
 :- use_module(lib/plugin/http_dyn_workers, []).
@@ -227,6 +226,7 @@ swish_config:config(default_query,	'').
 :- use_module(swish:lib/attvar).
 :- use_module(swish:lib/jquery).
 :- use_module(swish:lib/dashboard).
+:- use_module(swish:lib/md_eval).
 :- use_module(swish:lib/swish_debug).
 :- use_module(swish:library(pengines_io)).
 :- use_module(swish:library(solution_sequences)).

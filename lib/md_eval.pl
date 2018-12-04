@@ -38,7 +38,7 @@
             safe_html/1,                % +Spec
             safe_html//1,               % +Spec
 
-            swish_has_plugin/1          % ?Plugin
+            swish_provides/1            % ?Term
           ]).
 :- use_module(library(modules)).
 :- use_module(library(apply)).
@@ -53,6 +53,8 @@
 :- use_module(library(dcg/basics)).
 :- use_module(library(sandbox)).
 :- use_module(library(time)).
+
+:- use_module(config).
 
 :- setting(time_limit, number, 10,
            "Timit limit for evaluating a ```{eval} cell").
@@ -270,7 +272,24 @@ sandbox:safe_meta_predicate(md_eval:is_safe_html/1).
 		 *           CONDITIONS		*
 		 *******************************/
 
-%!  swish_has_plugin(?Name) is nondet.
+%!  swish_provides(?Term) is nondet.
+%
+%   True when Term describes a  provided   feature  of the current SWISH
+%   instances.  Provided Term values are:
+%
+%     - plugin(Name)
+%       True when Name is the name of a loaded plugin
+%
+%   In addition, plugins may provide additional terms by adding facts to
+%   swish_config:config(provides, Term).
+
+swish_provides(plugin(Plugin)) :-
+    swish_has_plugin(Plugin).
+swish_provides(Term) :-
+    swish_config(provides, Term).
+
+
+%!  swish_has_plugin(+Name) is nondet.
 %
 %   True when Name is the name of a loaded plugin.  This predicate is
 %   intended for dynamic markdown pages.
@@ -300,7 +319,7 @@ swish_has_plugin(Name) :-
     source_file(File),
     !.
 
-sandbox:safe_primitive(md_eval:swish_has_plugin(_)).
+sandbox:safe_primitive(md_eval:swish_provides(_)).
 
 
 		 /*******************************
