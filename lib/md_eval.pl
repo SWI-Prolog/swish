@@ -38,11 +38,11 @@
             safe_html/1,                % +Spec
             safe_html//1                % +Spec
           ]).
-
 :- use_module(library(modules)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(debug)).
+:- use_module(library(option)).
 :- use_module(library(occurs)).
 :- use_module(library(settings)).
 :- use_module(library(error)).
@@ -50,7 +50,10 @@
 :- use_module(library(http/html_write)).
 :- use_module(library(dcg/basics)).
 :- use_module(library(sandbox)).
+:- use_module(library(time)).
 
+:- setting(md_eval_time_limit, number, 10,
+           "Timit limit for evaluating a ```{eval} cell").
 
 /** <module> Provide evaluable markdown
 
@@ -109,8 +112,11 @@ md_eval(_, _, DOM, DOM, I, I) :-
     call_collect_messages(0, -).
 
 eval(Module, I, Code, div(class(eval), Evaluated), Options) :-
+    option(time_limit(Limit), Options, 10),
     catch(( call_collect_messages(
-                do_eval(Module, I, Code, Evaluated0, Options),
+                call_with_time_limit(
+                    Limit,
+                    do_eval(Module, I, Code, Evaluated0, Options)),
                 Messages),
             append(Evaluated0, Messages, Evaluated)
           ),
@@ -266,4 +272,6 @@ sandbox:safe_meta_predicate(md_eval:is_safe_html/1).
     swish_markdown:dom_expansion/2.
 
 swish_markdown:dom_expansion(DOM0, DOM) :-
-    eval_dom(DOM0, DOM, []).
+    setting(md_eval_time_limit, Limit),
+    Limit > 0,
+    eval_dom(DOM0, DOM, [time_limit(Limit)]).

@@ -74,6 +74,7 @@ div.notebook-menu {
 .nb-cell.markdown:not(.runnable)
 { background-color: transparent;
   border: 0px;
+  min-height: 2ex;
 }
 
 .nb-cell.html:not(.runnable)
@@ -273,9 +274,9 @@ span.menu-space
 /* ```{eval} cells */
 
 pre.eval.error
-{ colour: red;
+{ color: red;
 }
 
-pre.eval.error
-{ colour: orange;
+pre.eval.warning
+{ color: orange;
 }

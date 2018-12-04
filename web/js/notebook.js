@@ -47,10 +47,10 @@
 
 define([ "jquery", "config", "tabbed", "form",
 	 "preferences", "modal", "prolog", "links", "utils",
-	 "laconic", "runner", "storage", "sha1",
+	 "cm/lib/codemirror", "editor", "laconic", "runner", "storage", "sha1",
        ],
        function($, config, tabbed, form, preferences, modal, prolog, links,
-	        utils) {
+	        utils, CodeMirror) {
 
 var cellTypes = {
   "program":  { label:"Program",  prefix:"p"   },
@@ -58,6 +58,9 @@ var cellTypes = {
   "markdown": { label:"Markdown", prefix:"md"  },
   "html":     { label:"HTML",     prefix:"htm" }
 };
+
+/* Support ```eval using Prolog mode */
+CodeMirror.modes.eval = CodeMirror.modes.prolog;
 
 (function($) {
   var pluginName = 'notebook';
@@ -1256,6 +1259,7 @@ var cellTypes = {
 
     options = options||{};
     options.mode = "markdown";
+    options.fencedCodeBlockHighlighting = true;
 
     function setAttr(name) {
       if ( options[name] != undefined ) {
