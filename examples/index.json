@@ -1,6 +1,42 @@
-[ { "file":"examples.swinb",	     "title":"Example programs" },
-  { "file":"prolog_tutorials.swinb", "title":"Prolog tutorials" },
-  { "file":"swish_tutorials.swinb",  "title":"SWISH tutorials" },
-  "--",
-  { "file":"stats.swinb",	     "title":"Usage statistics" }
-]
+{ "comment":
+
+  "This file populates the example menu of SWISH.  The 'menu' list
+   defines the groups inside the menu and their order.  Each group is
+   separated with a divider.  The 'files' section describes the example
+   files and their properties.  Only files that are assigned a group
+   appear in the menu.
+  ",
+
+  "menu":
+  [ { "group": "examples",  "rank":  10000 },
+    { "group": "tutorials", "rank":  20000 },
+    { "group": "admin",     "rank": 100000 }
+  ],
+
+  "files":
+  [ { "file":"examples.swinb",
+      "title":"Example programs",
+      "group":"examples"
+    },
+    { "file":"prolog_tutorials.swinb",
+      "title":"Prolog tutorials",
+      "group":"tutorials"
+    },
+    { "file":"swish_tutorials.swinb",
+      "title":"SWISH tutorials",
+      "group":"tutorials"
+    },
+    { "file":"stats.swinb",
+      "title":"Usage statistics",
+      "group":"admin"
+    },
+
+    "Files that do not appear in the menu",
+
+    { "file":"Rdataframe.swinb",
+      "title":"Exchanging R data frames",
+      "group":"R",
+      "requires":"plugin(r_serve)"
+    }
+  ]
+}

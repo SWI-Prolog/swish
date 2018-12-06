@@ -27,13 +27,9 @@ The last category should print to the `current_output` stream.  By default the o
 This cell lists the plugins that are loaded in the current SWISH instance, i.e. the files that are loaded from the configured `config-enabled` directories.  To see the definition, please __double click__ in this cell.   Note that you cannot get access to the details of the plugin because its configuration may contain secrets.
 
 ```eval
-:- forall(swish_has_plugin(Plugin),
+:- forall(swish_provides(plugin(Plugin)),
           format('  - ~w~n', [Plugin])).
 ```
-</div>
-
-<div class="nb-cell markdown" name="md2">
-## 
 </div>
 
 </div>
