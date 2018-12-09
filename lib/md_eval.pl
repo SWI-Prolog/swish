@@ -56,6 +56,9 @@
 
 :- use_module(config).
 
+:- multifile
+    provides/1.                                 % ?Term
+
 :- setting(time_limit, number, 10,
            "Timit limit for evaluating a ```{eval} cell").
 
@@ -286,7 +289,7 @@ sandbox:safe_meta_predicate(md_eval:is_safe_html/1).
 swish_provides(plugin(Plugin)) :-
     swish_has_plugin(Plugin).
 swish_provides(Term) :-
-    swish_config(provides, Term).
+    provides(Term).
 
 
 %!  swish_has_plugin(+Name) is nondet.

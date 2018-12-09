@@ -47,6 +47,7 @@
 :- endif.
 
 :- use_module(storage).
+:- use_module(md_eval).
 
 /** <module> Serve example files
 
@@ -266,27 +267,44 @@ file_name_to_title(Base, Base).
 :- endif.
 
 
-%!	swish_config:config(+Key, ?Term) is nondet.
+%!	md_eval:provides(?Term) is nondet.
 %
 %	Make examples available through swish_provides/1. Can be used in
 %	dynamic cells as, e.g.,:
 %
 %	  ```
-%	  :- if(swish_provides(example('chat80.pl'))).
+%	  :- if(swish_provides(example('chat80.pl',_,_))).
 %	  ...
 %	  :- endif.
 %	  ```
 
-swish_config:config(provides, example(Name, Example)) :-
-	var(Name),
+:- multifile
+	md_eval:provides/1.
+
+md_eval:provides(example(Name, Group, Example)) :-
 	examples(Examples, []),
-	member(Example, Examples),
-	Name = Example.get(file).
-swish_config:config(provides, example(Name, Example)) :-
-	examples(Examples, []),
-	member(Example, Examples),
-	Name = Example.get(file),
-	!.
+	(   var(Name)
+	->  member(Example0, Examples),
+	    atom_string(Name, Example0.get(file))
+	;   member(Example0, Examples),
+	    atom_string(Name, Example0.get(file))
+	->  true
+	),
+	atom_string(Group,  Example0.get(group)),
+	active_example(Example0, Example).
+
+active_example(Example0, Example) :-
+	term_string(Cond, Example0.get(requires)),
+	\+ swish_provides(Cond),
+	(   cond_reason(Cond, Fmt, Args)
+	->  format(string(Reason), Fmt, Args)
+	;   format(string(Reason), 'missing requirement: ~q', [Cond])
+	),
+	Example = Example0.put(blocked, Reason).
+active_example(Example, Example).
+
+cond_reason(plugin(Name), 'missing plugin: ~w', [Name]).
+
 
 
 		 /*******************************

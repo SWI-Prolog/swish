@@ -32,6 +32,39 @@
     },
 
     "Files that do not appear in the menu",
+    "# Tutorials",
+
+    { "file":"rendering.swinb",
+      "title":"Rendering answers __graphically__ (graphs, charts, mathjax, etc.)",
+      "group":"tutorial"
+    },
+    { "file":"data_source.swinb",
+      "title":"Accessing __external data__ (CSV, SPARQL, etc.)",
+      "group":"tutorial"
+    },
+    { "file":"Rserve.swinb",
+      "title":"Embedding __R__ (graphs, statistics and machine learning)",
+      "group":"tutorial",
+      "requires":"plugin(r_serve)"
+    },
+    { "file":"htmlcell.swinb",
+      "title":"Adding __HTML cells__ to notebooks",
+      "group":"tutorial"
+    },
+    { "file":"slider.swinb",
+      "title":"Adding __widgets__ to notebook HTML cells",
+      "group":"tutorial"
+    },
+    { "file":"chat80.swinb",
+      "title":"CHAT80: demo __hiding__ all SWISH UI elements",
+      "group":"tutorial"
+    },
+    { "file":"jquery.swinb",
+      "title":"Control and access the SWISH interface from Prolog",
+      "group":"tutorial"
+    },
+
+    "## R tutorials",
 
     { "file":"Rdataframe.swinb",
       "title":"Exchanging R data frames",
