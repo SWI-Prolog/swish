@@ -178,10 +178,14 @@ alphas([]) -->
 
 contains_eval(DOM) :-
     sub_term(Pre, DOM),
+    nonvar(Pre),
     pre(Pre, eval, _),
     !.
 
 pre(pre(Attrs, Text), Ext, Text) :-
+    atomic(Text),
+    is_list(Attrs),
+    ground(Attrs),
     memberchk(ext(Ext), Attrs).
 
 :- thread_local
