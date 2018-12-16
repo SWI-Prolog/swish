@@ -34,11 +34,7 @@
 */
 
 :- module(md_eval,
-          [ html/1,                     % +Spec
-            safe_html/1,                % +Spec
-            safe_html//1,               % +Spec
-
-            swish_provides/1            % ?Term
+          [ swish_provides/1            % ?Term
           ]).
 :- use_module(library(modules)).
 :- use_module(library(apply)).
@@ -49,9 +45,7 @@
 :- use_module(library(settings)).
 :- use_module(library(error)).
 :- use_module(library(pldoc/doc_wiki)).
-:- use_module(library(http/html_write)).
 :- use_module(library(dcg/basics)).
-:- use_module(library(sandbox)).
 :- use_module(library(time)).
 
 :- use_module(config).
@@ -214,65 +208,6 @@ kind_prefix(warning, '% Warning: ').
 collect_messages(Ref, Messages) :-
     erase(Ref),
     findall(Msg, retract(saved_message(Msg)), Messages).
-
-
-		 /*******************************
-		 *         OTHER OUTPUTS	*
-		 *******************************/
-
-%!  html(+Spec) is det.
-%
-%   Include HTML into the output.
-
-:- html_meta
-    html(html),
-    safe_html(html),
-    safe_html(html,?,?).
-
-html(Spec) :-
-    phrase(html(div(Spec)), Tokens),
-    with_output_to(
-        string(HTML),
-        print_html(current_output, Tokens)),
-    format('~w', [HTML]).
-
-safe_html(Spec) :-
-    is_safe_html(Spec),
-    !,
-    html(Spec).
-
-safe_html(Spec) -->
-    { is_safe_html(Spec) },
-    !,
-    html(Spec).
-
-is_safe_html(M:Spec) :-
-    prolog_load_context(module, M),
-    must_be(ground, Spec),
-    forall(sub_term(\(Eval), Spec),
-           safe_eval(Eval, M)).
-
-safe_eval(Goal, M) :-
-    dcg_extend(Goal, DcgGoal),
-    safe_goal(M:DcgGoal).
-
-dcg_extend(Goal, DcgGoal) :-
-    must_be(callable, Goal),
-    Goal \= (_:_),
-    Goal =.. List,
-    append(List, [_,_], ExList),
-    DcgGoal =.. ExList.
-
-swish:goal_expansion(html(Spec), safe_html(Spec)).
-swish:goal_expansion(html(Spec, L,T), safe_html(Spec, L, T)).
-
-:- multifile sandbox:safe_primitive/1.
-
-sandbox:safe_meta_predicate(md_eval:safe_html/1).
-sandbox:safe_meta_predicate(md_eval:safe_html/3).
-sandbox:safe_primitive(md_eval:html(Spec)) :-
-    \+ sub_term(\(_), Spec).
-sandbox:safe_meta_predicate(md_eval:is_safe_html/1).
 
 
 		 /*******************************
