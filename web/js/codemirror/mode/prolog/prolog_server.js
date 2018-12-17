@@ -326,6 +326,7 @@ classification of tokens.
 		     "no_option_name": "atom",
 		     "flag_name": "atom",
 		     "no_flag_name": "atom",
+		     "format_string": "text",
 
 		     "file_no_depends": "atom",
 		     "file": "atom",
@@ -498,6 +499,10 @@ classification of tokens.
 	    state.curToken++;
 	    return token.type;
 	  } else if ( type == "number" && token.type == "meta" ) {
+	    state.curToken++;	/* 0-9 as meta_predicate arguments */
+	    return token.type;
+	  } else if ( serverSync[token.type] == "text" &&
+		      (type == "atom" || type == "qatom" || type == "string") ) {
 	    state.curToken++;	/* 0-9 as meta_predicate arguments */
 	    return token.type;
 	  } else if ( type == "neg-number" &&

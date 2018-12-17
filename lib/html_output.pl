@@ -185,7 +185,7 @@ make_safe_raw(Format-Args, _, Format-Args) :-
 make_safe_raw(Atomic, _, Atomic) :-
     atomic(Atomic),
     !.
-make_safe_raw(\Goal, M, Goal) :-
+make_safe_raw(\Goal, M, \Goal) :-
     !,
     must_be(callable, Goal),
     dcg_extend(Goal, DcgGoal),

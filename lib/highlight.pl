@@ -816,6 +816,7 @@ style(string,		 string,			   []).
 style(codes,		 codes,				   []).
 style(chars,		 chars,				   []).
 style(atom,		 atom,				   []).
+style(format_string,	 format_string,			   []).
 style(meta(_Spec),	 meta,				   []).
 style(op_type(_Type),	 op_type,			   [text]).
 style(functor,		 functor,			   [text]).

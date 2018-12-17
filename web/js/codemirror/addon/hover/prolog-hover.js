@@ -105,6 +105,11 @@ var tokenHelp = {
   "instantiation_error": "No variable allowed here",
 
   "string_terminal": "Terminal (DCG)",
+  "format_string":   "Format string",
+  "html":	     "HTML element",
+  "html_attribute":  "HTML element attribute",
+  "html_call":       "Call HTML rule",
+  "html_raw":        "Include raw HTML",
 
   "head":       null,
   "control":    null,
