@@ -861,6 +861,7 @@ style(html(_Element),	 html,				   []).
 style(entity(_Element),	 entity,			   []).
 style(html_attribute(_), html_attribute,		   []).
 style(sgml_attr_function,sgml_attr_function,		   []).
+style(html_call,	 html_call,			   [text]).  % \Rule
 style(http_location_for_id(_), http_location_for_id,       []).
 style(http_no_location_for_id(_), http_no_location_for_id, []).
 					% XPCE support
