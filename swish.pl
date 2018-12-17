@@ -248,6 +248,9 @@ pengines:prepare_module(Module, swish, _Options) :-
 
 :- use_module(library(clpfd), []).
 :- use_module(library(clpb), []).
+:- if(exists_source(library(dcg/high_order))).
+:- use_module(library(dcg/high_order), []).
+:- endif.
 :- use_module(lib/swish_chr, []).
 
 % load rendering modules

@@ -5,6 +5,7 @@
 
 This notebook provides an overview of tutorials about using SWISH.
 
+  - [Writing __HTML__](example/html_output.swinb)
   - [Rendering answers *graphically*](example/rendering.swinb) (graphs, charts, mathjax, etc.)
   - [Using __R__ in SWISH](example/Rserve.swinb) (statistics, charts, machine learning)
   - [Accessing external *data*](example/data_source.swinb) (CSV, SPARQL, etc.)

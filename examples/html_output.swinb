@@ -1,0 +1,105 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# HTML output from queries
+
+In addition to output generated using write/1, format/2, print_message/2, etc., SWISH allows for HTML output.  This is arranged using a wrapper around library(http/html_write) that is used for generating HTML output from the web server framework.  Generating HTML is presented to the user using the predicate html/1.  A general tutorial for producing HTML using this approach has been written by Anne Ogborn and can be found [here](http://www.pathwayslms.com/swipltuts/html/index.html#_html_1_and_termerized_html)
+
+The html/1 predicate can also be used from [evaluable code in markdown cells](example/md_eval.swinb)
+
+The argument to html/1 is one of
+
+  - __An atom or string__ is processed as text.  Note that HTML special
+    characters are escaped by the library.
+  - __A list__ is processed element-by-element.
+  - __A term Element(Content)__ creates ``&lt;Element&gt;Content&lt;/Element&gt;``
+  - __A term Element(Attributes, Content)__ creates an element as above
+    with _attributes_.  `Attributes` takes one of shapes below, where
+    Value is _atomic_ or a term `A+B` that results in the concatenation
+    of `A` and `B`.
+    - __A term Name(Value)__
+    - __A term Name=Value__
+    - __A list__ of attribute terms.
+  - __A term \Rule__ calls the DCG `Rule` to produce more HTML.  `Rule`
+    typically calls (indirectly) html//1.
+  - __A term \List__ inserts the elements of `List` unchecked into the
+    HTML output.  __THIS IS DISCOURAGED AS IT MAY CREATE INVALID HTML__.
+    
+This notebook gives some examples.  We start with the common _hello world_ example.
+</div>
+
+<div class="nb-cell query" data-tabled="true" name="q1">
+html(['Hello ', b(world), !]).
+</div>
+
+<div class="nb-cell markdown" name="md2">
+## Calling rules
+
+The example below introduces both element attributes and the ability to call _rules_ from html/1.  In this case our rule is ``dice//1``.  The ability to call rules allows for creating __reusable__ fragments.
+</div>
+
+<div class="nb-cell program" name="p1">
+throw_dice :-
+    html(['The dice is ', \dice]).
+
+dice --&gt;
+    { A is random(6)+1 },
+    html(span(style('font-size:200%;font-weight:bold'), A)).
+</div>
+
+<div class="nb-cell query" data-tabled="true" name="q2">
+throw_dice.
+</div>
+
+<div class="nb-cell markdown" name="md3">
+## Using high order DCG
+
+The HTML is constructed using _non-terminals_, also known as _DCG rules_, written as `Head --&gt; Body`.  The library(dcg/high_order) provides some high order primitives that allows you to abstract from loops much the same way as the _maplist_ family (see maplist/3).  In the examples below we use the foreach//2 constructs that creates a sequence from all solutions of the first argument.  We start with a trivial example.
+</div>
+
+<div class="nb-cell program" data-background="true" name="p2">
+:- use_module(library(dcg/high_order)).
+</div>
+
+<div class="nb-cell query" data-tabled="true" name="q3">
+html(\foreach(between(1,10,_),
+              html(div('All work and no play makes Jack a dull boy')))).
+</div>
+
+<div class="nb-cell markdown" name="md4">
+The next example shows this construct in a more advanced setting.  It illustrates that you can create stylished output in a single call.  In practice is it probably better style to write a predicate to generate a single row, similar to the `dice` example above.
+</div>
+
+<div class="nb-cell query" data-tabled="true" name="q4">
+projection([]),
+From = 7,
+html(table([ class([table, 'table-striped']), 
+             style('width:auto; margin-left:2em')
+           ],
+           [ tr(th(colspan(2), ['Table for ', From])),
+             \foreach((between(1,10,I), V is From*I),
+                      html(tr([ th(style('text-align:right;'), I),
+                                td(style('text-align:right;'), V)
+                              ])))
+           ])).
+</div>
+
+<div class="nb-cell markdown" name="md5">
+## Inserting literal HTML
+
+The _quasi quotation_ mechanism of SWI-Prolog allows for inserting literal HTML strings and interpolating values.  Note that the interpolated Prolog value must appear as the entire content or attribute value of the HTML input.
+
+Below is an example. 
+</div>
+
+<div class="nb-cell query" data-tabled="true" name="q5">
+projection([]),
+To = world,
+html({|html(To)||
+      &lt;div&gt;
+      Hello &lt;b&gt;To&lt;/b&gt;
+      &lt;/div&gt;
+      |}).
+</div>
+
+</div>

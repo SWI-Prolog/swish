@@ -36,6 +36,7 @@
 :- module(swish_html_output,
           [ html/1,                             % +Spec
             html//1,                            % +Spec, //
+            html/4,                             % {|html||quasi quotation|}
             safe_raw_html/1                     % +RawTerm
           ]).
 :- use_module(library(http/html_write), except([html//1])).
@@ -105,6 +106,12 @@ make_safe_html([H0|T0], M, [H|T]) :-
     !,
     make_safe_html(H0, M, H),
     make_safe_html(T0, M, T).
+make_safe_html(element(Name, Attrs0, Content0), M,
+               element(Name, Attrs, Content)) :-
+    !,
+    must_be(atom, Name),
+    safe_attrs(Attrs0, M, Attrs),
+    make_safe_html(Content0, M, Content).
 make_safe_html(Format-Args, _M, Format-Args) :-
     !,
     safe_goal(format(Format, Args)).
@@ -132,7 +139,10 @@ make_safe_html(Elem0, M, Elem) :-
     ),
     Elem =.. [Name, Safe].
 make_safe_html(Text, _, Text) :-
-    atomic(Text).
+    atomic(Text),
+    !.
+make_safe_html(Term, _, _) :-
+    domain_error(html_term, Term).
 
 safe_attrs([], _, []) :-
     !.
