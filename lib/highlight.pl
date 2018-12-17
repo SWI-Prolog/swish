@@ -1158,11 +1158,19 @@ predicate_info(Module:Name/Arity, Key, Value) :-
 	    Value = true
 	).
 predicate_info(PI, summary, Summary) :-
-	(   PI = _Module:Name/Arity,
-	    man_predicate_summary(Name/Arity, Summary)
+	PI = Module:Name/Arity,
+
+	(   man_predicate_summary(Name/Arity, Summary)
+	->  true
+	;   Arity >= 2,
+	    DCGArity is Arity - 2,
+	    man_predicate_summary(Name//DCGArity, Summary)
 	->  true
 	;   prolog:predicate_summary(PI, Summary)
 	->  true
+	;   Arity >= 2,
+	    DCGArity is Arity - 2,
+	    prolog:predicate_summary(Module:Name/DCGArity, Summary)
 	).
 
 :- if(current_predicate(man_object_property/2)).
