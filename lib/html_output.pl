@@ -44,28 +44,38 @@
 :- use_module(library(error)).
 
 /** <module> SWISH HTML Output
+
+This module provides the predicate html/1 that allows for inserting HTML
+into the SWISH output window as well  as for evaluable cells in markdown
+cells of notebooks.
 */
-
-
-%!  html(+Spec) is det.
-%
-%   Include HTML into the output.
 
 :- html_meta
     html(html),
     html(html,?,?).
+
+%!  html(+Spec) is det.
+%
+%   Insert HTML into the output.  Spec is a term for html//1.  For
+%   example:
+%
+%       ?- html(b(['Hello ', i(style('color:blue'), world)])).
 
 html(Spec) :-
     pengine_self(_),
     !,
     make_safe_html(Spec, SafeSpec),
     pengines_io:send_html(SafeSpec).
-html(M:Spec) :-
-    phrase(html(M:div(Spec)), Tokens),
+html(Spec) :-
+    phrase(html(Spec), Tokens),
     with_output_to(
         string(HTML),
         print_html(current_output, Tokens)),
     format('~w', [HTML]).
+
+%!  html(Spec)//
+%
+%   Sandbox respecting version of html_write:html//1.
 
 html(Spec) -->
     { make_safe_html(Spec, SafeSpec) },
