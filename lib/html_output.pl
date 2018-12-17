@@ -35,7 +35,8 @@
 
 :- module(swish_html_output,
           [ html/1,                             % +Spec
-            html//1                             % +Spec, //
+            html//1,                            % +Spec, //
+            safe_raw_html/1                     % +RawTerm
           ]).
 :- use_module(library(http/html_write), except([html//1])).
 :- use_module(library(pengines)).
@@ -107,6 +108,10 @@ make_safe_html([H0|T0], M, [H|T]) :-
 make_safe_html(Format-Args, _M, Format-Args) :-
     !,
     safe_goal(format(Format, Args)).
+make_safe_html(\Raw0, M, \Raw) :-
+    is_list(Raw0),
+    !,
+    make_safe_raw(Raw0, M, Raw).
 make_safe_html(\Goal, M, \Goal) :-
     !,
     must_be(callable, Goal),
@@ -161,6 +166,44 @@ safe_attr_value(M, A0+B0, A+B) :-
 safe_attr_value(_, V, V) :-
     atomic(V).
 
+%!  make_safe_raw(+Raw0, +Module, -Raw)
+%
+%   Make processing List from html(\List) safe.
+
+make_safe_raw(Raw0, _M, \safe_raw_html(Raw0)) :-
+    var(Raw0),
+    !.
+make_safe_raw([], _, []) :-
+    !.
+make_safe_raw([H0|T0], M, [H|T]) :-
+    !,
+    make_safe_raw(H0, M, H),
+    make_safe_raw(T0, M, T).
+make_safe_raw(Format-Args, _, Format-Args) :-
+    !,
+    safe_goal(format(Format, Args)).
+make_safe_raw(Atomic, _, Atomic) :-
+    atomic(Atomic),
+    !.
+make_safe_raw(\Goal, M, Goal) :-
+    !,
+    must_be(callable, Goal),
+    dcg_extend(Goal, DcgGoal),
+    safe_goal(M:DcgGoal).
+make_safe_raw(Term, _, _) :-
+    domain_error(html_raw, Term).
+
+%!  safe_raw_html(+Raw0)
+%
+%   Helper for variables in html(\List).
+
+safe_raw_html(Raw0) :-
+    (   pengine_self(M)
+    ->  true
+    ;   prolog_load_context(module, M)
+    ),
+    make_safe_raw(Raw0, M, Raw),
+    html(\[Raw]).
 
 dcg_extend(Goal, DcgGoal) :-
     must_be(callable, Goal),
@@ -173,3 +216,4 @@ dcg_extend(Goal, DcgGoal) :-
 
 sandbox:safe_meta_predicate(swish_html_output:html/1).
 sandbox:safe_meta_predicate(swish_html_output:html/3).
+sandbox:safe_meta_predicate(swish_html_output:safe_raw_html/1).
