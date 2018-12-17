@@ -52,40 +52,41 @@
 %   Include HTML into the output.
 
 :- html_meta
-    html(html).
+    html(html),
+    html(html,?,?).
 
 html(Spec) :-
-    make_safe_html(Spec, SafeSpec),
-    output_html(SafeSpec).
-
-html(Spec) -->
-    { make_safe_html(Spec, SafeSpec) },
-    html_write:html(SafeSpec).
-
-output_html(SafeSpec) :-
     pengine_self(_),
     !,
+    make_safe_html(Spec, SafeSpec),
     pengines_io:send_html(SafeSpec).
-output_html(Spec) :-
-    phrase(html(div(Spec)), Tokens),
+html(M:Spec) :-
+    phrase(html(M:div(Spec)), Tokens),
     with_output_to(
         string(HTML),
         print_html(current_output, Tokens)),
     format('~w', [HTML]).
 
+html(Spec) -->
+    { make_safe_html(Spec, SafeSpec) },
+    html_write:html(SafeSpec).
+
 make_safe_html(HTML0, HTML) :-
-    (   prolog_load_context(module, M)
+    (   pengine_self(M)
     ->  true
-    ;   pengine_self(M)
+    ;   prolog_load_context(module, M)
     ),
     make_safe_html(HTML0, M, HTML).
 
-make_safe_html(Var, M, swish_html_output:html(M:Var)) :-
+make_safe_html(Var, M, M:html(Var)) :-
     var(Var),
     !.
 make_safe_html(Module:HTML0, M, Module:HTML) :-
     !,
-    Module == M,
+    (   Module == M
+    ->  true
+    ;   permission_error(cross_module_call, M, Module:HTML)
+    ),
     make_safe_html(HTML0, M, HTML).
 make_safe_html([], _, []) :-
     !.
