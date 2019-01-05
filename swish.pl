@@ -56,7 +56,11 @@
 :- use_module(lib/markdown).
 :- use_module(lib/chat, []).
 :- use_module(lib/template_hint, []).
+:- if(exists_source(library(http/http_dyn_workers))).
+:- use_module(library(http/http_dyn_workers)).
+:- else.
 :- use_module(lib/plugin/http_dyn_workers, []).
+:- endif.
 :- use_module(lib/web).
 :- use_module(lib/version).
 
