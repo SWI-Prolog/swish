@@ -3,7 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015-2017, VU University Amsterdam
+    Copyright (c)  2015-2018, VU University Amsterdam
+			      CWI, Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -35,10 +36,11 @@
 :- module(swish_debug,
 	  [ pengine_stale_module/1,	% -Module
 	    pengine_stale_module/2,	% -Module, -State
+	    stale_pengine/1,		% -Pengine
 	    swish_statistics/1,		% -Statistics
 	    start_swish_stat_collector/0,
 	    swish_stats/2,		% ?Period, ?Dicts
-	    swish_died_thread/2		% ?Thread, ?State
+	    swish_died_thread/2	% ?Thread, ?State
 	  ]).
 :- use_module(library(pengines)).
 :- use_module(library(broadcast)).
@@ -50,8 +52,19 @@
 :- use_module(highlight).
 :- if(exists_source(library(mallocinfo))).
 :- use_module(library(mallocinfo)).
+:- export(malloc_info/1).
 :- endif.
 
+%!	stale_pengine(-Pengine) is nondet.
+%
+%	True if Pengine is a Pengine who's thread died.
+
+stale_pengine(Pengine) :-
+	pengine_property(Pengine, thread(Thread)),
+	\+ catch(thread_property(Thread, status(running)), _, fail).
+
+
+%%	pengine_stale_module(-M) is nondet.
 %%	pengine_stale_module(-M, -State) is nondet.
 %
 %	True if M seems to  be  a   pengine  module  with  no associated
@@ -421,6 +434,10 @@ status_message(Status, Status).
 
 sandbox:safe_primitive(swish_debug:pengine_stale_module(_)).
 sandbox:safe_primitive(swish_debug:pengine_stale_module(_,_)).
+sandbox:safe_primitive(swish_debug:stale_pengine(_)).
 sandbox:safe_primitive(swish_debug:swish_statistics(_)).
 sandbox:safe_primitive(swish_debug:swish_stats(_, _)).
 sandbox:safe_primitive(swish_debug:swish_died_thread(_, _)).
+:- if(current_predicate(malloc_info:malloc_info/1)).
+sandbox:safe_primitive(malloc_info:malloc_info(_)).
+:- endif.
