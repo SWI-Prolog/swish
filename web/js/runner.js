@@ -1362,7 +1362,7 @@ define([ "jquery", "config", "preferences",
       }
 
       return false;
-    } else if ( econtext.location.file ) {
+    } else if ( econtext && econtext.location.file ) {
       ctx.closest("body.swish")
 	 .swish('playFile', econtext.location);
     } else {
