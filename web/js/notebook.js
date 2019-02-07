@@ -151,6 +151,54 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	  return false;
 	});
 
+	$(content).on("mouseenter mouseleave", ".nb-menu-sense", function(ev) {
+	  var mdiv = $(ev.target).closest(".nb-menu");
+
+	  if ( ev.type == "mouseenter" ) {
+	    var select = cell_type_select_div();
+
+	    mdiv.find(".nb-menu-line").css("background-color", "#333");
+
+	    function removeSelector() {
+	      select.remove();
+	      mdiv.find(".nb-menu-line").css("background-color", "#fff");
+	      data.menu_state = "idle";
+	    }
+
+	    select.hide();
+	    mdiv.append(select);
+	    data.menu_state = "waiting";
+	    setTimeout(function() {
+	      if ( mdiv.find(":hover").length > 0 ) {
+		data.menu_state = "showing";
+		select.on("mouseleave", removeSelector);
+		select.fadeIn(400);
+	      } else {
+		removeSelector();
+	      }
+	    }, 500);
+	  } else {
+	    if ( data.menu_state != "showing" )
+	      mdiv.find(".nb-menu-line").css("background-color", "#fff");
+	  }
+	});
+
+	$(content).on("click", ".nb-menu .btn", function(ev) {
+	  ev.preventDefault();
+	  var type = $(ev.target).data('type');
+	  var mdiv = $(ev.target).closest(".nb-menu");
+	  var nb   = mdiv.closest(".notebook");
+	  var cell = $.el.div({class:"nb-cell"});
+
+	  mdiv.after(cell);
+	  $(cell).nbCell({type: type});
+	  mdiv.find(".nb-type-select").remove();
+	  nb.notebook('organize');
+	  nb.notebook('active', $(cell), true);
+
+	  return false;
+	});
+
 	elem.focusin(function(ev) {
 	  var cell = $(ev.target).closest(".nb-cell");
 	  if ( cell.length > 0 ) {
@@ -246,7 +294,8 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
     delete: function(cell) {
       cell = cell||currentCell(this);
       if ( cell ) {
-	this.notebook('active', cell.next()||cell.prev());
+	this.notebook('active',
+		      cell.nbCell('next')||cell.nbCell('prev'));
 	cell.nbCell('close');
 	this.notebook('updatePlaceHolder');
       }
@@ -292,7 +341,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
     up: function(cell) {
       cell = cell||currentCell(this);
       if ( cell ) {
-	cell.insertBefore(cell.prev());
+	cell.insertBefore(cell.nbCell('prev'));
 	this.notebook('checkModified');
       }
       return this;
@@ -301,7 +350,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
     down: function(cell) {
       cell = cell||currentCell(this);
       if ( cell ) {
-	cell.insertAfter(cell.next());
+	cell.insertAfter(cell. nbCell('next'));
 	this.notebook('checkModified');
       }
       return this;
@@ -443,6 +492,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	var clean = store.cleanGeneration == nb.notebook('changeGen');
 
 	nb.notebook('markClean', clean);
+	nb.notebook('organize');
       });
     },
 
@@ -490,8 +540,14 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	    removeNotForQuery(this);
 	    current.nbCell('active', false);
 	    cell.nbCell('active', true);
-	    if ( focus )
-	      cell.focus();
+	    if ( focus ) {
+	      var editors = cell.find(".prolog-editor");
+
+	      if ( editors.length > 0 )
+		editors.prologEditor('focus');
+	      else
+		cell.focus();
+	    }
 	  }
 	} else
 	{ removeNotForQuery(this);
@@ -560,6 +616,39 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
       this.notebook('checkModified');
 
       return this;
+    },
+
+    /**
+     * Organize the notebook.  This maintains the section hierarchy
+     * and places a hover menu to insert a new cell
+     */
+    organize: function() {
+      var notebook = this;
+      var content  = this.find(".nb-content");
+      var cells    = content.children(".nb-cell");
+
+      function notebook_menu() {
+	return $.el.div({class:"nb-menu"},
+			$.el.div({class:"nb-menu-sense"},
+				 $.el.div({class:"nb-menu-line"})));
+      }
+
+      // ensure there is a menu before and after each cell
+      cells.each(function() {
+	var cell = $(this);
+
+	if ( !cell.prev().hasClass("nb-menu") )
+	  cell.before(notebook_menu());
+	if ( !cell.next().hasClass("nb-menu") )
+	  cell.after(notebook_menu());
+      });
+
+      // remove duplicate menus
+      content.children(".nb-menu").each(function() {
+	var menu = $(this);
+	if ( menu.next().hasClass("nb-menu") )
+	  menu.remove();
+      });
     },
 
 		 /*******************************
@@ -672,6 +761,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	this.notebook('run_all', 'onload');
 	this.notebook('updatePlaceHolder');
 	this.notebook('assignCellNames', false);
+	this.notebook('organize');
       }
     },
 
@@ -723,7 +813,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 		 *******************************/
 
     updatePlaceHolder: function() {
-      if ( this.find(".nb-content").children().length == 0 )
+      if ( this.find(".nb-content").find(".nb-cell").length == 0 )
 	this.notebook('placeHolder');
       else
 	this.find(".nb-placeholder").remove();
@@ -887,10 +977,10 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
   var methods = {
     /**
      * Create a new notebook cell
-     * @param {jQuery} [dom] initialise the new cell from the saved
-     * DOM
+     * @param {options} [jQuery|Object] initialise the new cell from the saved
+     * DOM or Object.
      */
-    _init: function(dom) {
+    _init: function(options) {
       return this.each(function() {
 	var elem = $(this);
 	var data = {};			/* private data */
@@ -900,8 +990,10 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	elem.attr("tabIndex", -1);
 	elem.attr("id", "nbc"+id++);
 
-	if ( dom instanceof jQuery ) {
-	  elem.nbCell('restoreDOM', dom);
+	if ( options instanceof jQuery ) {
+	  elem.nbCell('restoreDOM', options);
+	} else if ( options && options.type ) {
+	  elem.nbCell('type', options.type);
 	} else {
 	  var close = glyphButton("remove-circle", "close", "Close",
 				  "default", "xs");
@@ -911,21 +1003,10 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	    elem.nbCell('close');
 	  });
 
-	  elem.append($.el.div({class:"nb-type-select"},
-			       $.el.label("Create a "),
-			       g=$.el.div({class:"btn-group",role:"group"}),
-			       $.el.label("cell here.")));
+	  var select = cell_type_select_div();
+	  elem.append(select);
 
-	  for(var k in cellTypes) {
-	    if ( cellTypes.hasOwnProperty(k) )
-	      $(g).append($.el.button({ type:"button",
-					class:"btn btn-default",
-					"data-type":k
-				      },
-				      cellTypes[k].label));
-	  }
-
-	  $(g).on("click", ".btn", function(ev) {
+	  select.find(".btn-group").on("click", ".btn", function(ev) {
 	    elem.nbCell('type', $(ev.target).data('type'));
 	  });
 
@@ -953,7 +1034,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	      elem.find(".editor").prologEditor('makeCurrent');
 	      break;
 	    case "query":
-	      var ed = elem.prevAll(".program").first().find(".editor");
+	      var ed = elem.nbCell('prev', ".program").find(".editor");
 	      if ( ed.length == 1 )
 		ed.prologEditor('makeCurrent');
 	      elem.closest(".notebook")
@@ -974,6 +1055,22 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	  }
 	}
       });
+    },
+
+    /**
+     * Get the next/previous program cell.  Will eventually walk the
+     * hierarchy if we add sections to the notebook.
+     * @param String [selector] Add additional selection
+     */
+
+    next: function(sel) {
+      var next = this.nextAll(".nb-cell"+(sel||"")).first();
+      return next.length ? next : null;
+    },
+
+    prev: function(sel) {
+      var prev = this.prevAll(".nb-cell"+(sel||"")).first();
+      return prev.length ? prev : null;
     },
 
     ensure_in_view: function(where) {
@@ -1199,7 +1296,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	if ( !this.hasClass("background") )
 	  programs = programs.add(this);
       } else {
-	programs = programs.add(this.prevAll(".program").first());
+	programs = programs.add(this.nbCell('prev', ".program"));
       }
       return programs;
     },
@@ -1963,6 +2060,27 @@ function sep() {
   return $.el.span({class:"menu-space"}, " ");
 }
 
+
+function cell_type_select_div() {
+  var g;
+  var div = $.el.div({class:"nb-type-select"},
+		     $.el.label("Create a "),
+		     g=$.el.div({class:"btn-group",role:"group"}),
+		     $.el.label("cell here"));
+
+  for(var k in cellTypes) {
+    if ( cellTypes.hasOwnProperty(k) )
+      $(g).append($.el.button({ type:"button",
+				class:"btn btn-default",
+				"data-type":k
+			      },
+			      cellTypes[k].label));
+  }
+
+  return $(div);
+}
+
+
 		 /*******************************
 		 *	 NOTEBOOK ClASS		*
 		 *******************************/
@@ -2049,7 +2167,7 @@ Notebook.prototype.bindQuery = function(a1, a2) {
   var func;
 
   if ( typeof(a1) == "function" && a2 == undefined ) {
-    q = this.cell().nextAll(".query").first();
+    q = this.cell().nbCell('next', ".query");
     func = a1;
   } else {
     q = this.cell(a1);

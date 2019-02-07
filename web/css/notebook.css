@@ -206,10 +206,6 @@ div.notebook-menu {
 { margin-left: 44px;		/* CodeMirror gutter width */
 }
 
-.nb-cell.program, .nb-cell.query
-{ margin-bottom: 1em;
-}
-
 .nb-cell.not-for-query
 { opacity: 0.5;
 }
@@ -279,4 +275,41 @@ pre.eval.error
 
 pre.eval.warning
 { color: orange;
+}
+
+/* menu between cells */
+
+div.nb-menu
+{ position: relative;
+  width: 100%;
+}
+
+div.nb-menu-sense
+{ margin-left: 20%;
+  margin-right: 20%;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  cursor: cell;
+}
+
+div.nb-menu-line
+{ height: 1px;
+}
+
+div.nb-menu div.nb-type-select
+{ position: absolute;
+  top: -6px;
+  width: 100%;
+  text-align: center;
+  padding: 0px;
+  z-index: 1000;
+}
+
+div.nb-menu .btn
+{ padding: 3px 5px;
+}
+
+div.nb-menu label
+{ background-color: #fff;
+  padding: 0px 3px;
 }

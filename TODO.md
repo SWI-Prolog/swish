@@ -89,16 +89,18 @@ _not_ see exactly the same UI for cooperation.  What about
   - Staging
     Control-S (whatever) saves data to `staging area'.
     - In addition to HEAD, introduce STAGE (gitty solution)?
-    - Save to browser store?
-      - Retrieve on reload?
-      - Make sure running includes the browser version.
-        - Send list of modified tabs
 
 ## Notebooks
 
   - Save notebook/program as new profile?
-  - Collapsible sections?
-  - Move sections (or select multiple)
+  - Organize in sections
+    - Group by ## in markdown sections using super-divs.
+      - Allow for collapsing a group.
+    - Insert dynamic menu around cells.
+  - Section actions
+    - Collapse (keeps title)
+    - Collapse all
+    - Move (drag and drop)
   - Delete query from menu?  Better: undo for delete.
 
 ## SWISH as Prolog frontend for local usage
@@ -119,10 +121,6 @@ _not_ see exactly the same UI for cooperation.  What about
   - Mark files as pengine_src, loaded, not_loaded
     - Only send pengine_src with pengines.
     - Detect pengine_src based on alias?
-
-### Chat
-
-  - Get Anna's new avatars
 
 ### Permalinks
 
