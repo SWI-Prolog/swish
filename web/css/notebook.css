@@ -77,6 +77,10 @@ div.notebook-menu {
   min-height: 2ex;
 }
 
+.nb-empty-markdown
+{ opacity: 0.5;
+}
+
 .nb-cell.html:not(.runnable)
 { background-color: transparent;
   border: 0px;
@@ -214,6 +218,12 @@ div.notebook-menu {
 { margin-top: 2em;
 }
 
+.nb-help
+{ margin-top: 2em;
+  text-align: center;
+}
+
+
 /* Notebook markdown */
 
 .nb-cell.markdown pre.code    { width: 90%; margin: auto; margin-bottom: 1em;}
@@ -299,7 +309,7 @@ div.nb-menu div.nb-type-select
   width: 100%;
   text-align: center;
   padding: 0px;
-  z-index: 1000;
+  z-index: 100;
 }
 
 div.nb-menu .btn

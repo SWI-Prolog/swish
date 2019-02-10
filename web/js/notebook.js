@@ -176,7 +176,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	      } else {
 		removeSelector();
 	      }
-	    }, 500);
+	    }, 250);
 	  } else {
 	    if ( data.menu_state != "showing" )
 	      mdiv.find(".nb-menu-line").css("background-color", "#fff");
@@ -190,12 +190,13 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	  var nb   = mdiv.closest(".notebook");
 	  var cell = $.el.div({class:"nb-cell"});
 
-	  if ( mdiv.parent().hasClass("nb-placeholder") )
-	    mdiv.unwrap();
-
-	  mdiv.after(cell);
+	  if ( mdiv.parent().hasClass("nb-placeholder") ) {
+	    nb.find(".nb-content").empty().append(cell);
+	  } else {
+	    mdiv.find(".nb-type-select").remove();
+	    mdiv.after(cell);
+	  }
 	  $(cell).nbCell({type: type});
-	  mdiv.find(".nb-type-select").remove();
 	  nb.notebook('organize');
 	  nb.notebook('active', $(cell), true);
 
@@ -820,9 +821,18 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
       var menu	      = notebook_menu();
       var select      = cell_type_select_div();
       var placeholder = $.el.div({class:"nb-placeholder"});
+      var a;
 
       $(menu).append(select);
-      placeholder.append(menu);
+      placeholder.append(
+	menu,
+	$.el.div({class:"nb-help"},
+		 "New here?  See the notebook ",
+		 a=$.el.a("help page"),
+		 "."));
+      $(a).on("click", function() {
+	$(".swish-event-receiver").trigger("help", {file:"notebook.html"});
+      });
       this.find(".nb-content").append(placeholder);
 
       return this;
@@ -1031,9 +1041,9 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	      elem.find(".editor").prologEditor('makeCurrent');
 	      break;
 	    case "query":
-	      var ed = elem.nbCell('prev', ".program").find(".editor");
-	      if ( ed.length == 1 )
-		ed.prologEditor('makeCurrent');
+	      var prevprog = elem.nbCell('prev', ".program");
+	      if ( prevprog )
+		prevprog.find(".editor").prologEditor('makeCurrent');
 	      elem.closest(".notebook")
 		  .find(".nb-cell.program")
 		  .not(elem.nbCell("program_cells"))
@@ -1536,7 +1546,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	       success: setHTML
 	     });
     } else
-    { setHTML("<div class='nb-placeholder'>"+
+    { setHTML("<div class='nb-empty-markdown'>"+
 	      "Empty markdown cell.  Double click to edit"+
 	      "</div>");
     }
