@@ -190,6 +190,9 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	  var nb   = mdiv.closest(".notebook");
 	  var cell = $.el.div({class:"nb-cell"});
 
+	  if ( mdiv.parent().hasClass("nb-placeholder") )
+	    mdiv.unwrap();
+
 	  mdiv.after(cell);
 	  $(cell).nbCell({type: type});
 	  mdiv.find(".nb-type-select").remove();
@@ -627,12 +630,6 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
       var content  = this.find(".nb-content");
       var cells    = content.children(".nb-cell");
 
-      function notebook_menu() {
-	return $.el.div({class:"nb-menu"},
-			$.el.div({class:"nb-menu-sense"},
-				 $.el.div({class:"nb-menu-line"})));
-      }
-
       // ensure there is a menu before and after each cell
       cells.each(function() {
 	var cell = $(this);
@@ -820,15 +817,15 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
     },
 
     placeHolder: function() {
+      var menu	      = notebook_menu();
+      var select      = cell_type_select_div();
       var placeholder = $.el.div({class:"nb-placeholder"});
 
-      $.ajax({ url: config.http.locations.help + "/notebook.html",
-	       dataType: "html",
-	       success: function(data) {
-		 $(placeholder).html(data);
-	       }
-             });
+      $(menu).append(select);
+      placeholder.append(menu);
       this.find(".nb-content").append(placeholder);
+
+      return this;
     },
 
     /**
@@ -2060,6 +2057,11 @@ function sep() {
   return $.el.span({class:"menu-space"}, " ");
 }
 
+function notebook_menu() {
+  return $.el.div({class:"nb-menu"},
+		  $.el.div({class:"nb-menu-sense"},
+			   $.el.div({class:"nb-menu-line"})));
+}
 
 function cell_type_select_div() {
   var g;
