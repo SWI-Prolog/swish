@@ -600,6 +600,16 @@ define([ "cm/lib/codemirror",
     },
 
     /**
+     * Grab the focus
+     */
+    focus: function() {
+      var data = this.data(pluginName);
+      if ( data )
+	data.cm.focus();
+      return this;
+    },
+
+    /**
      * Called if the editor changes from clean to dirty or visa versa.
      * This triggers `data-is-clean`, which is trapped by the tab to
      * indicate the changed state of the editor.
