@@ -134,6 +134,8 @@ warn_duplicate_config([K-V1,K-V2|T0], [K-V1|T]) :- !,
 	collect_same(K, T0, VL, T1),
 	(   warned_duplicate(K)
 	->  true
+	;   sort([V1,V2|VL], [_])
+	->  true
 	;   print_message(warning, swish(duplicate_config(K, [V1,V2|VL]))),
 	    assertz(warned_duplicate(K))
 	),
