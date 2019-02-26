@@ -204,6 +204,14 @@ and    simplifies    running    as     an      HTTPS     server.     See
 https://github.com/triska/letswicrypt.
 
 
+## Running SWISH as additional local IDE
+
+You can run SWISH alongside your   normal  Prolog development tools. The
+cleanest way to do so is by using  `myswish.pl` and install this in your
+local Prolog library. See `myswish.pl` for details   on how to swet this
+up.
+
+
 ## Design
 
 Most of the application is realised  using client-side JavaScript, which
