@@ -54,20 +54,21 @@ configure those that need to be configured.
 
 ### Get JavaScript requirements
 
-#### Using bower
+#### Using Yarn
 
-Install [bower](https://bower.io) for your  platform.   On  Ubuntu,  this
+Install [Yarn](https://yarnpkg.com) for your platform.  On  Ubuntu,  this
 implies getting `node` and `npm` by installing two packages and next use
-`npm` to install `bower` (some older Linux versions need `nodejs-legacy`
+`npm` to install `yarn` (some older Linux versions need `nodejs-legacy`
 instead of `nodejs`):
 
-    sudo apt-get install npm nodejs
-    sudo npm install -g bower
 
-Once you have `bower`, run the following from the toplevel of `swish` to
+    sudo apt install npm nodejs
+    sudo npm i yarn -g
+
+Once you have `yarn`, run the following from the toplevel of `swish` to
 get the dependencies:
 
-    bower install
+    yarn
     make src
 
 #### Download as zip
