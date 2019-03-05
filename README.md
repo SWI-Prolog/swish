@@ -42,7 +42,7 @@ details.
 
 ### Get submodules
 
-`cd` to your swish root directory and
+`cd` to your swish root directory and run
 
     git submodule update --init
 
@@ -56,11 +56,10 @@ configure those that need to be configured.
 
 #### Using Yarn
 
-Install [Yarn](https://yarnpkg.com) for your platform.  On  Ubuntu,  this
+Install [Yarn](https://yarnpkg.com) for your platform.   On Ubuntu, this
 implies getting `node` and `npm` by installing two packages and next use
-`npm` to install `yarn` (some older Linux versions need `nodejs-legacy`
+`npm` to install `yarn` (some older  Linux versions need `nodejs-legacy`
 instead of `nodejs`):
-
 
     sudo apt install npm nodejs
     sudo npm i yarn -g
