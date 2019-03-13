@@ -185,8 +185,12 @@ read_messages(File, Messages, Options) :-
 read_messages_from_stream(In, Messages, Options) :-
     option(max(Max), Options, 25),
     integer(Max),
-    seek(In, 0, eof, _Pos),
-    backskip_lines(In, Max),
+    setup_call_cleanup(
+        set_stream(In, encoding(octet)),
+        (   seek(In, 0, eof, _Pos),
+            backskip_lines(In, Max)
+        ),
+        set_stream(In, encoding(utf8))),
     !,
     read_terms(In, Messages).
 read_messages_from_stream(In, Messages, _Options) :-
