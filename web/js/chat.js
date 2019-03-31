@@ -782,16 +782,16 @@ var MAX_RECONNECT_DELAY = 300000;
 
 	img = $.el.span({class:"avatar svg"});
 	if ( svg_images[url] ) {
-	  $(img).svg_images[url];
-	  $(img).svgavatar('setAVappearanceByUserID', id);
+	  $(img).html(svg_images[url])
+	        .svgavatar('setAVappearanceByUserID', id);
 	} else {
 	  $.ajax({ url: options.avatar,
 		   type: "GET",
 		   dataType: "text",
 		   success: function(reply) {
-		     $(img).html(reply);
 		     svg_images[url] = reply;
-		     $(img).svgavatar('setAVappearanceByUserID', id);
+		     $(img).html(reply)
+		           .svgavatar('setAVappearanceByUserID', id);
 		   },
 		   error: function(jqXHR) {
 		     modal.ajaxError(jqXHR);
