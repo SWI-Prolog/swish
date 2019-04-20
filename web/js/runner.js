@@ -1087,7 +1087,7 @@ define([ "jquery", "config", "preferences",
 
        for(i=0; i<stacks.length; i++) {
 	 var s = stacks[i];
-	 var limit = stats.stacks[s].limit;
+	 var limit = stats.stacks[s].limit || stats.stacks.total.limit;
 	 var usage = stats.stacks[s].usage;
 
 	 var u = Math.log10((usage/limit)*10000);
