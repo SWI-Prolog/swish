@@ -53,8 +53,6 @@
 :- use_module(library(lazy_lists)).
 :- if(exists_source(library(pldoc/man_index))).
 :- use_module(library(pldoc/man_index)).
-:- elif(exists_source(library(helpidx))).
-:- use_module(library(helpidx), [predicate/5]).
 :- endif.
 
 http:location(codemirror, swish(cm), []).
@@ -1178,9 +1176,6 @@ predicate_info(PI, summary, Summary) :-
 :- if(current_predicate(man_object_property/2)).
 man_predicate_summary(PI, Summary) :-
     man_object_property(PI, summary(Summary)).
-:- elif(current_predicate(predicate/5)).
-man_predicate_summary(Name/Arity, Summary) :-
-    predicate(Name, Arity, Summary, _, _).
 :- else.
 man_predicate_summary(_, _) :-
     fail.
