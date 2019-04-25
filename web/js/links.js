@@ -101,7 +101,8 @@ define(["jquery", "config", "modal"],
       var cell  = nb.find('.nb-cell[name="'+qname+'"]');
 
       if ( cell ) {
-	var vars = $().prologEditor('variables', cell.nbCell('text'), true);
+	var vars = $().prologEditor('variables', cell.nbCell('text'),
+				    { anon: true });
 	var bindings = "";
 	var options  = {};
 	var novars   = [];

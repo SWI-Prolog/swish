@@ -108,12 +108,11 @@ define([ "jquery", "config", "form", "preferences",
 			   attr("ask", query),
 			   attr("src_text", source),
 			   attr("template", format+"("+options.projection+")"));
-	console.log(formel);
 	$("body").append(formel);
 	formel.submit();
 	$(formel).remove();
       } else {
-	var vars = $().prologEditor('variables', query);
+	var vars = $().prologEditor('variables', query, {projection: true});
 	var disposition = options.disposition;
 	if ( disposition.indexOf(".") < 0 )
 	  disposition += ".csv";
