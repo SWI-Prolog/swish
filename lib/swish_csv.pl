@@ -39,6 +39,7 @@
 :- use_module(library(apply)).
 :- use_module(library(pprint)).
 :- use_module(library(option)).
+:- use_module(library(http/http_cors)).
 
 /** <module> Support CSV output from a Pengines server
 
@@ -105,6 +106,7 @@ success(Answers, _VarTerm, Options) :-
 success(Answers, VarTerm, Options) :-
 	option(disposition(Disposition), Options, 'swish-result.csv'),
 	maplist(csv_answer, Answers, Rows),
+	cors_enable,
 	format('Content-encoding: chunked~n'),
 	format('Content-disposition: attachment; filename="~w"~n', [Disposition]),
 	format('Content-type: text/csv~n~n'),
