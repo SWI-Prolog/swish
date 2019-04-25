@@ -1,8 +1,8 @@
 # Copyright: VU University of Amsterdam, CWI Amsterdam
 # License:   Simplified BSD license
 
-BOWER_ARCHIVE=swish-bower-components.zip
-BOWER_URL=http://www.swi-prolog.org/download/swish/${BOWER_ARCHIVE}
+YARN_ARCHIVE=swish-js-components.zip
+YARN_URL=http://www.swi-prolog.org/download/swish/${YARN_ARCHIVE}
 SWIPL=swipl
 
 # Packs to download and configure.  Run `git submodule` to see the
@@ -12,16 +12,16 @@ PACKS=profile rserve_client smtp pcache
 all:
 	@echo "Targets"
 	@echo
-	@echo "    bower-zip -- Download zip with bower dependencies"
-	@echo "    bower     -- Install dependencies using bower"
-	@echo "    src       -- Prepare bower dependencies for execution"
+	@echo "    yarn-zip  -- Download zip with dependencies"
+	@echo "    yarn	     -- Install dependencies using yarn"
+	@echo "    src       -- Prepare JavaScript dependencies for execution"
 	@echo "    min       -- Create minimized CSS and JavaScript"
 	@echo "    clean     -- Clean minimized CSS and JavaScript"
 	@echo "    packs     -- Download and configure packs"
 	@echo
 
-bower::
-	bower install
+yarn::
+	yarn
 	@$(MAKE) src
 
 src::
@@ -42,26 +42,26 @@ clean::
 	@$(MAKE) -C web/css clean
 	@$(MAKE) -C web/js clean
 
-# Install dependencies from downloaded zip holding bower components
+# Install dependencies from downloaded zip holding JavaScript components
 
-bower-zip: .bower-senitel
-.bower-senitel: $(BOWER_ARCHIVE)
-	unzip -q -u $(BOWER_ARCHIVE)
+yarn-zip: .yarn-senitel
+.yarn-senitel: $(YARN_ARCHIVE)
+	unzip -q -u $(YARN_ARCHIVE)
 	touch $@
 
-$(BOWER_ARCHIVE)::
-	@if [ -e $(BOWER_ARCHIVE) ]; then \
-	  curl -o $(BOWER_ARCHIVE) -z $(BOWER_ARCHIVE) $(BOWER_URL) ; \
+$(YARN_ARCHIVE)::
+	@if [ -e $(YARN_ARCHIVE) ]; then \
+	  curl -o $(YARN_ARCHIVE) -z $(YARN_ARCHIVE) $(YARN_URL) ; \
 	else \
-	  curl -o $(BOWER_ARCHIVE) $(BOWER_URL) ;\
+	  curl -o $(YARN_ARCHIVE) $(YARN_URL) ;\
 	fi
 
 # Create the above
 
 upload::
-	rm -f $(BOWER_ARCHIVE)
-	zip -r $(BOWER_ARCHIVE) web/bower_components
-	rsync $(BOWER_ARCHIVE) ops:/home/swipl/web/download/swish/$(BOWER_ARCHIVE)
+	rm -f $(YARN_ARCHIVE)
+	zip -r $(YARN_ARCHIVE) web/bower_components
+	rsync $(YARN_ARCHIVE) ops:/home/swipl/web/download/swish/$(YARN_ARCHIVE)
 
 
 ################
