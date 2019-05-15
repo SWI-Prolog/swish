@@ -79,6 +79,26 @@ a.download span.glyphicon
 
 
 		 /*******************************
+		 *	       WFS		*
+		 *******************************/
+
+div.wfs-residual-program
+{ margin-left: 10%;
+  margin-right: 10%;
+}
+
+div.wfs-title
+{ font-style: italic;
+  font-size: 80%;
+  color: #060;
+}
+
+pre.wfs-residual-program
+{ padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+		 /*******************************
 		 *	GENERAL RENDERERS	*
 		 *******************************/
 

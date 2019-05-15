@@ -3,7 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015-2017, VU University Amsterdam
+    Copyright (c)  2015-2019, VU University Amsterdam
+			      CWI, Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -49,6 +50,9 @@
 :- use_module(library(prolog_breakpoints)).
 :- use_module(library(http/term_html)).
 :- use_module(library(http/html_write)).
+:- if(exists_source(library(wfs))).
+:- use_module(library(wfs)).
+:- endif.
 
 :- use_module(storage).
 :- use_module(config).
@@ -225,7 +229,7 @@ strip_stack(Error, Error).
 	debug(projection, 'Pre-context-pre ~p, extra=~p', [Bindings, Extra]),
 	maplist(call_pre_context(Goal, Bindings), Extra),
 	debug(projection, 'Pre-context-post ~p, extra=~p', [Bindings, Extra]),
-	catch(swish_call(Goal), E, throw(E)),
+	call_delays(catch(swish_call(Goal), E, throw(E)), Delays),
 	deterministic(Det),
 	(   tracing,
 	    Det == false
@@ -237,7 +241,19 @@ strip_stack(Error, Error).
 	    )
 	;   notrace
 	),
-	maplist(call_post_context(Goal, Bindings), Extra).
+	maplist(call_post_context(Goal, Bindings, Delays), Extra).
+
+:- if(\+current_predicate(call_delays/2)).
+:- meta_predicate
+	call_delays(0, :),
+	delays_residual_program(:, :).
+
+call_delays(Goal, []) :-
+	call(Goal).
+
+delays_residual_program(_, []).
+:- endif.
+
 
 swish_call(Goal) :-
 	Goal,
@@ -258,7 +274,8 @@ no_lco.
 
 :- multifile
 	pre_context/3,
-	post_context/3.
+	post_context/3,
+	post_context/4.
 
 call_pre_context(Goal, Bindings, Var) :-
 	binding(Bindings, Var, Name),
@@ -266,14 +283,20 @@ call_pre_context(Goal, Bindings, Var) :-
 call_pre_context(_, _, _).
 
 
-call_post_context(Goal, Bindings, Var) :-
+call_post_context(Goal, Bindings, Delays, Var) :-
 	binding(Bindings, Var, Name),
-	post_context(Name, Goal, Var), !.
-call_post_context(_, _, _).
+	post_context(Name, Goal, Delays, Var), !.
+call_post_context(_, _, _, _).
 
-post_context(Name, M:_Goal, '$residuals'(Residuals)) :-
-	swish_config(residuals_var, Name),
+post_context(Name, Goal, _Delays, Extra) :-
+	post_context(Name, Goal, Extra), !.
+post_context(Name, M:_Goal, _, '$residuals'(Residuals)) :-
+	swish_config(residuals_var, Name), !,
 	residuals(M, Residuals).
+post_context(Name, M:_Goal, Delays, '$wfs_residual_program'(Delays, Program)) :-
+	swish_config(wfs_residual_program_var, Name), !,
+	delays_residual_program(Delays, M:Program).
+
 
 binding([Name=Var|_], V, Name) :-
 	Var == V, !.

@@ -117,7 +117,9 @@ define([ "jquery", "laconic" ],
   };
 
   function answerHasOutput(answer) {
-    return answer.variables.length > 0 || answer.residuals;
+    return ( answer.variables.length > 0 ||
+	     answer.residuals ||
+	     answer.wfs_residual_program );
   }
 
   function renderSubstitutions(substs, html) {
@@ -134,6 +136,19 @@ define([ "jquery", "laconic" ],
   function renderAnswer(answer) {
     var html = [];
     var bindings = answer.variables;
+    var wfshelp = "http://www.swi-prolog.org/pldoc/man?section=tabling";
+
+    console.log(answer);
+    if ( answer.wfs_residual_program )
+    { html.push("<div class=\"wfs-residual-program\">",
+		"<div class=\"wfs-title\">",
+		"WFS residual program (",
+		"<a href=\"", wfshelp, "\">", "help", "</a>",
+		")</div>",
+                answer.wfs_residual_program,
+		"</div>");
+    }
+
     for (var i = 0; i < bindings.length; i++) {
       var vars = bindings[i].variables;
       for (var v = 0; v < vars.length - 1; v++) {
@@ -206,13 +221,16 @@ define([ "jquery", "laconic" ],
     }
 
     var residuals;
-    if ((residuals = answer.residuals)) {
+    if ((residuals = answer.residuals) || answer.wfs_residual_program) {
       ensureResidualColumn();
       html.push("<td>");
       for (var i = 0; i < residuals.length; i++) {
 	html.push(residuals[i]);
-	if (i < residuals.length - 1)
+	if (i < residuals.length - 1 || answer.wfs_residual_program)
 	  html.push(",<br/>");
+      }
+      if ( answer.wfs_residual_program )
+      { htmp.push("<span class=\"wfs-unknown\">unknown</span>");
       }
       html.push("</td>");
     }

@@ -1242,13 +1242,18 @@ define([ "jquery", "config", "preferences",
     } else
     { var options = $.extend({}, data.screen);
       var bps;
-      var resvar = config.swish.residuals_var || "Residuals";
-      var hashvar = config.swish.permahash_var;
+      var resvar    = config.swish.residuals_var || "Residuals";
+      var hashvar   = config.swish.permahash_var;
+      var wfsresvar = config.swish.wfs_residual_program_var;
 
       if ( hashvar )
 	hashvar = ", "+hashvar;
       else
 	hashvar = "";
+      if ( wfsresvar )
+	wfsresvar = ", "+wfsresvar;
+      else
+	wfsresvar = "";
 
       registerSources(this.pengine);
 
@@ -1259,7 +1264,7 @@ define([ "jquery", "config", "preferences",
 
       this.pengine.ask("'$swish wrapper'((\n" +
 		       termNoFullStop(data.query.query) +
-		       "\n), ["+resvar+hashvar+"])", options);
+		       "\n), ["+resvar+hashvar+wfsresvar+"])", options);
       elem.prologRunner('setState', "running");
     }
   }
@@ -1483,7 +1488,10 @@ define([ "jquery", "config", "preferences",
    */
 
   function answerHasOutput(answer) {
-    return answer.variables.length > 0 || answer.residuals;
+    return ( answer.variables.length > 0 ||
+	     answer.residuals ||
+	     answer.wfs_residual_program
+	   );
   }
 
   function termNoFullStop(s) {
