@@ -221,16 +221,13 @@ define([ "jquery", "laconic" ],
     }
 
     var residuals;
-    if ((residuals = answer.residuals) || answer.wfs_residual_program) {
+    if ((residuals = answer.residuals)) {
       ensureResidualColumn();
       html.push("<td>");
       for (var i = 0; i < residuals.length; i++) {
 	html.push(residuals[i]);
-	if (i < residuals.length - 1 || answer.wfs_residual_program)
+	if (i < residuals.length - 1)
 	  html.push(",<br/>");
-      }
-      if ( answer.wfs_residual_program )
-      { htmp.push("<span class=\"wfs-unknown\">unknown</span>");
       }
       html.push("</td>");
     }
