@@ -248,10 +248,10 @@ strip_stack(Error, Error).
 	call_delays(0, :),
 	delays_residual_program(:, :).
 
-call_delays(Goal, []) :-
+call_delays(Goal, _:true) :-
 	call(Goal).
 
-delays_residual_program(_, []).
+delays_residual_program(_, _:[]).
 :- endif.
 
 
