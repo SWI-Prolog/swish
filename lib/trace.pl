@@ -221,6 +221,17 @@ strip_stack(Error, Error).
 
 :- meta_predicate swish_call(0).
 
+:- if(\+current_predicate(call_delays/2)).
+:- meta_predicate
+	call_delays(0, :),
+	delays_residual_program(:, :).
+
+call_delays(Goal, _:true) :-
+	call(Goal).
+
+delays_residual_program(_, _:[]).
+:- endif.
+
 '$swish wrapper'(Goal, Extra) :-
 	(   nb_current('$variable_names', Bindings)
 	->  true
@@ -242,18 +253,6 @@ strip_stack(Error, Error).
 	;   notrace
 	),
 	maplist(call_post_context(Goal, Bindings, Delays), Extra).
-
-:- if(\+current_predicate(call_delays/2)).
-:- meta_predicate
-	call_delays(0, :),
-	delays_residual_program(:, :).
-
-call_delays(Goal, _:true) :-
-	call(Goal).
-
-delays_residual_program(_, _:[]).
-:- endif.
-
 
 swish_call(Goal) :-
 	Goal,

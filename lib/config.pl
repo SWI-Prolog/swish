@@ -187,7 +187,9 @@ swish_config(Key, Value, _) :-
 	config(Key, Value).
 
 config(residuals_var, '_residuals').
+:- if(exists_source(library(wfs))).
 config(wfs_residual_program_var, '_wfs_residual_program').
+:- endif.
 
 
 		 /*******************************
