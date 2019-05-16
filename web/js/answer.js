@@ -136,7 +136,7 @@ define([ "jquery", "laconic" ],
   function renderAnswer(answer) {
     var html = [];
     var bindings = answer.variables;
-    var wfshelp = "http://www.swi-prolog.org/pldoc/man?section=tabling";
+    var wfshelp = "http://www.swi-prolog.org/pldoc/man?section=WFS";
 
     console.log(answer);
     if ( answer.wfs_residual_program )
