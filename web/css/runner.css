@@ -156,6 +156,7 @@ span.runner-state.stopped,
 span.runner-state.false      { background-image: url("../icons/dead.png");    }
 span.runner-state.error,
 span.runner-state.aborted    { background-image: url("../icons/error.png");   }
+span.runner-state.detached   { background-image: url("../icons/detached.png");}
 
 div.controller.running    > span.running    { display:inline; }
 div.controller.running    > span.sparklines { display:inline; }
@@ -280,3 +281,5 @@ div.controller.running > span.sparklines { margin-left: 0.5em; }
   -moz-box-sizing: content-box;
   box-sizing: content-box;
 }
+
+table.task-list.refreshing { background: #ccc; }
