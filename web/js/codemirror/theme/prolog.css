@@ -24,6 +24,7 @@
 .cm-s-prolog span.cm-anon	       {color: #800;} /* _ */
 .cm-s-prolog span.cm-singleton	       {color: #800; font-weight: bold;} /* Singleton */
 .cm-s-prolog span.cm-identifier	       {font-weight: bold;}
+.cm-s-prolog span.cm-keyword	       {font-weight: bold;}
 .cm-s-prolog span.cm-module	       {color: #549;}
 .cm-s-prolog span.cm-constraint        {color: #008b8b;} /*dark-cyan*/
 .cm-s-prolog span.cm-head_exported     {color: blue; font-weight: bold;}
@@ -78,6 +79,10 @@
 .cm-s-prolog span.cm-http_location_for_id      {font-weight: bold;}
 .cm-s-prolog span.cm-http_no_location_for_id   {color: red; font-weight: bold;}
 .cm-s-prolog span.cm-format_string             {color: #909; font-style: italic;}
+
+/* tabling */
+.cm-s-prolog span.cm-table_mode        {font-weight: bold;}
+.cm-s-prolog span.cm-table_option      {font-weight: bold;}
 
 /* Other elements */
 .cm-jumped {background: yellow;}

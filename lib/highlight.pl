@@ -832,6 +832,7 @@ style(predicate_indicator, atom,			   [text]).
 style(arity,		 int,				   []).
 style(int,		 int,				   []).
 style(float,		 float,				   []).
+style(keyword(_),	 keyword,			   [text]).
 style(qq(open),		 qq_open,			   []).
 style(qq(sep),		 qq_sep,			   []).
 style(qq(close),	 qq_close,			   []).
@@ -872,6 +873,10 @@ style(class(library(File),_Name), xpce_class_lib,	   [text, file(File)]).
 style(class(user(File),_Name),	  xpce_class_user,	   [text, file(File)]).
 style(class(user,_Name),	  xpce_class_user,	   [text]).
 style(class(undefined,_Name),	  xpce_class_undef,	   [text]).
+
+style(table_mode(_Mode), table_mode,			   [text]).
+style(table_option(_Mode), table_option,		   [text]).
+
 
 neck_text(clause,       (:-)).
 neck_text(grammar_rule, (-->)).
