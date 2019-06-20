@@ -3,12 +3,12 @@
 <div class="nb-cell markdown">
 # Using tabling (SLG resolution)
 
-This notebook illustrates SWI-Prolog tabling, implementing the examples from the 
+This notebook illustrates SWI-Prolog tabling, implementing the examples from the
 [manual page](http://www.swi-prolog.org/pldoc/man?section=tabling).  Please consult this page for additional background information.
 
 ## Computing Fibonacci numbers
 
-The nth-Fibonacci number is the sum of the two preceeding ones, where the Fibonacci number of 0 and 1 are both 1.
+The nth-Fibonacci number is the sum of the two preceding ones, where the Fibonacci number of 0 and 1 are both 1.
 
 ### First, the simple way
 
