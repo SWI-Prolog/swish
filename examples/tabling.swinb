@@ -67,7 +67,6 @@ Tabling also avoids non-termination of the computation due to _left recursion_, 
 </div>
 
 <div class="nb-cell program">
-:- use_module(library(tabling)).
 :- table connection/2.
 
 connection(X, Y) :-
