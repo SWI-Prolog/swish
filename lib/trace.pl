@@ -240,7 +240,7 @@ delays_residual_program(_, _:[]).
 	debug(projection, 'Pre-context-pre ~p, extra=~p', [Bindings, Extra]),
 	maplist(call_pre_context(Goal, Bindings), Extra),
 	debug(projection, 'Pre-context-post ~p, extra=~p', [Bindings, Extra]),
-	call_delays(catch(swish_call(Goal), E, throw(E)), Delays),
+	call_delays(catch_with_backtrace(swish_call(Goal), E, throw(E)), Delays),
 	deterministic(Det),
 	(   tracing,
 	    Det == false
