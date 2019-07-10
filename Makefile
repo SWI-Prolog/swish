@@ -2,7 +2,7 @@
 # License:   Simplified BSD license
 
 YARN_ARCHIVE=swish-js-components.zip
-YARN_URL=http://www.swi-prolog.org/download/swish/${YARN_ARCHIVE}
+YARN_URL=https://www.swi-prolog.org/download/swish/${YARN_ARCHIVE}
 SWIPL=swipl
 
 # Packs to download and configure.  Run `git submodule` to see the
