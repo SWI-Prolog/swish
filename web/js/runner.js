@@ -727,6 +727,7 @@ define([ "jquery", "config", "preferences", "utils",
      */
     error: function(options) {
       var msg;
+      var ishtml = false;
 
       if ( typeof(options) == 'object' ) {
 	if ( options.code == "died" ) {
@@ -749,12 +750,32 @@ define([ "jquery", "config", "preferences", "utils",
 	    msg = "Cannot run query due to a syntax error (check query window)";
 	  }
 	}
-	if ( !msg )
-	  msg = options.message;
-      } else
+	if ( !msg ) {
+	  if ( options.html ) {
+	    msg = options.html;
+	    ishtml = true;
+	  } else {
+	    msg = options.message;
+	  }
+	}
+      } else {
 	msg = options;
+	options = {};
+      }
 
-      addAnswer(this, $.el.pre({class:"prolog-message msg-error"}, msg));
+      if ( ishtml ) {
+	var el = $.el.pre({class:"prolog-message msg-error"}, "");
+	$(el).append(msg);
+	addAnswer(this, el);
+	if ( options.econtext ) {
+	  $(el).addClass("error-context")
+	       .on("click", gotoError)
+	       .data("error_context", options.econtext);
+	}
+      } else {
+	addAnswer(this, $.el.pre({class:"prolog-message msg-error"}, msg));
+      }
+
       return this;
     },
 
@@ -1507,10 +1528,11 @@ define([ "jquery", "config", "preferences", "utils",
    * source locations
    */
   function clickableLocations(msg, editor) {
-    var pattern = /pengine:\/\/[-0-9a-f]{36}\/src:(\d+)/;
+    var pattern1 = /pengine:\/\/[-0-9a-f]{36}\/src:(\d+)/;
+    var patterng = /pengine:\/\/[-0-9a-f]{36}\/src:(\d+)/g;
 
-    return msg.replace(pattern, function(matched) {
-      var line = matched.match(pattern)[1];
+    return msg.replace(patterng, function(matched) {
+      var line = matched.match(pattern1)[1];
       return "<a class='goto-error' title='Goto location'>" +
                "<span class='glyphicon glyphicon-hand-right'></span> "+
 	       "<b>line <span class='line'>"+line+"</span></b></a>";
@@ -1622,8 +1644,14 @@ define([ "jquery", "config", "preferences", "utils",
 		     "queries by using |Next|, |Stop| or by\n"+
 		     "closing some queries.";
     } else if ( typeof(this.data) == 'string' ) {
-      this.message = this.data
-			 .replace(new RegExp("'"+this.pengine.id+"':", 'g'), "");
+      var data = elem.data(pluginName);
+      var econtext = {editor: data.query.editor};
+
+      var msg = utils.htmlEncode(this.data);
+      msg = clickableLocations(msg, econtext.editor);
+      msg = msg.replace(new RegExp("'"+this.pengine.id+"':", 'g'), "");
+      this.html = msg;
+      this.econtext = econtext;
     } else {
       this.message = "Unknown error";
     }
