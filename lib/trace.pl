@@ -240,7 +240,8 @@ delays_residual_program(_, _:[]).
 	debug(projection, 'Pre-context-pre ~p, extra=~p', [Bindings, Extra]),
 	maplist(call_pre_context(Goal, Bindings), Extra),
 	debug(projection, 'Pre-context-post ~p, extra=~p', [Bindings, Extra]),
-	call_delays(catch_with_backtrace(swish_call(Goal), E, throw(E)), Delays),
+	call_delays(catch_with_backtrace(swish_call(Goal),
+					 E, throw_backtrace(E)), Delays),
 	deterministic(Det),
 	(   tracing,
 	    Det == false
@@ -253,6 +254,24 @@ delays_residual_program(_, _:[]).
 	;   notrace
 	),
 	maplist(call_post_context(Goal, Bindings, Delays), Extra).
+
+throw_backtrace(error(Formal, context(prolog_stack(Stack0), Msg))) :-
+	append(Stack1, [Guard|_], Stack0),
+	is_guard(Guard),
+	!,
+	last(Stack1, Frame),
+	arg(1, Frame, Level),
+	maplist(re_level(Level), Stack1, Stack),
+	throw(error(Formal, context(prolog_stack(Stack), Msg))).
+throw_backtrace(E) :-
+	throw(E).
+
+re_level(Sub,
+	 frame(Level0, Clause, Goal),
+	 frame(Level, Clause, Goal)) :-
+	Level is 1 + Level0 - Sub.
+
+is_guard(frame(_Level, _Clause, swish_trace:swish_call(_))).
 
 swish_call(Goal) :-
 	Goal,
