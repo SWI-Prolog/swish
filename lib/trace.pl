@@ -37,6 +37,7 @@
 	  [ '$swish wrapper'/2		% :Goal, ?ContextVars
 	  ]).
 :- use_module(library(debug)).
+:- use_module(library(prolog_stack)).
 :- use_module(library(settings)).
 :- use_module(library(pengines)).
 :- use_module(library(apply)).
