@@ -1015,6 +1015,9 @@ visible(Meta, Auth, _Constraints) :-
 owns(Auth, Meta, user(me)) :-
 	storage_meta_property(Meta, identity(Id)), !,
 	user_property(Auth, identity(Id)).
+owns(_Auth, Meta, _) :-				% demand strong ownership for
+	\+ Meta.get(public) == true, !,		% non-public files.
+	fail.
 owns(Auth, Meta, user(avatar)) :-
 	storage_meta_property(Meta, avatar(Id)),
 	user_property(Auth, avatar(Id)), !.
