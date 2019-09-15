@@ -271,10 +271,12 @@ gitty_scan(Store) :-
 
 gitty_scan_sync(Store) :-
 	store(Store, _), !.
+:- if(remote_sync(true)).
 gitty_scan_sync(Store) :-
 	remote_sync(true), !,
         gitty_attach_packs(Store),
 	restore_heads_from_remote(Store).
+:- endif.
 gitty_scan_sync(Store) :-
         gitty_attach_packs(Store),
 	read_heads_from_objects(Store).
@@ -391,12 +393,14 @@ gitty_update_head(Store, Name, OldCommit, NewCommit) :-
 	with_mutex(gitty,
 		   gitty_update_head_sync(Store, Name, OldCommit, NewCommit)).
 
+:- if(remote_sync(true)).
 gitty_update_head_sync(Store, Name, OldCommit, NewCommit) :-
 	remote_sync(true), !,
 	setup_call_cleanup(
 	    heads_output_stream(Store, HeadsOut),
 	    gitty_update_head_sync(Store, Name, OldCommit, NewCommit, HeadsOut),
 	    close(HeadsOut)).
+:- endif.
 gitty_update_head_sync(Store, Name, OldCommit, NewCommit) :-
 	gitty_update_head_sync2(Store, Name, OldCommit, NewCommit).
 
@@ -425,8 +429,10 @@ gitty_update_head_sync2(Store, Name, OldCommit, NewCommit) :-
 :- dynamic
 	last_remote_sync/2.
 
+:- if(remote_sync(false)).
 remote_updates(_) :-
 	remote_sync(false), !.
+:- endif.
 remote_updates(Store) :-
 	remote_up_to_data(Store), !.
 remote_updates(Store) :-

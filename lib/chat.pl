@@ -1232,8 +1232,8 @@ event_message(opened(File)) -->
 	html([ 'Opened ', \file(File) ]).
 event_message(download(File)) -->
 	html([ 'Opened ', \file(File) ]).
-event_message(download(Store, FileOrHash, _Format)) -->
-	{ event_file(download(Store, FileOrHash), File)
+event_message(download(Store, FileOrHash, Format)) -->
+	{ event_file(download(Store, FileOrHash, Format), File)
 	},
 	html([ 'Opened ', \file(File) ]).
 
