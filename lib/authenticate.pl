@@ -90,11 +90,11 @@ http_auth(_Request, auth{}).
 
 profile_auth(Request, Auth) :-
     swish_config:user_profile(Request, Profile),
-    Auth = auth{identity_provider: _,
-                external_identity: _,
-                profile_id:_},
-    Auth :< Profile,
-    !.
+    Pattern = _{ identity_provider: _,
+                 external_identity: _,
+                 profile_id:_},
+    Pattern :< Profile,
+    Auth = auth{}.put(Pattern).
 profile_auth(_, auth{}).
 
 identity(Request, Auth0, Auth) :-
