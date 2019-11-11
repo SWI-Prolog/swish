@@ -652,12 +652,16 @@ server_tokens(Role) :-
 
 server_tokens(TB, GroupedTokens) :-
 	current_editor(UUID, TB, _Role, _Lock, _),
+	Ignore = error(syntax_error(swi_backslash_newline),_),
 	setup_call_cleanup(
-	    open_memory_file(TB, read, Stream),
-	    ( set_stream_file(TB, Stream),
-	      prolog_colourise_stream(Stream, UUID, colour_item(TB))
-	    ),
-	    close(Stream)),
+	    asserta(user:thread_message_hook(Ignore, _, _), Ref),
+	    setup_call_cleanup(
+		open_memory_file(TB, read, Stream),
+		( set_stream_file(TB, Stream),
+		  prolog_colourise_stream(Stream, UUID, colour_item(TB))
+		),
+		close(Stream)),
+	    erase(Ref)),
 	collect_tokens(TB, GroupedTokens).
 
 collect_tokens(TB, GroupedTokens) :-
