@@ -179,9 +179,12 @@ show_source(Options) :-
 
 run([], _, _, _) :- !.
 run(Messages, StartTime, Id, Options) :-
-	pengine_event(Event, [listen(Id)]),
-	reply(Event, Id, StartTime, Messages, Messages1),
-	run(Messages1, StartTime, Id, Options).
+	pengine_event(Event, [listen(Id), timeout(10)]),
+	(   Event == timeout
+	->  print_message(error, replay(Id, timeout(Messages)))
+	;   reply(Event, Id, StartTime, Messages, Messages1),
+	    run(Messages1, StartTime, Id, Options)
+	).
 
 reply(output(_Id, Prompt), Pengine, StartTime, [Time-pull_response|T], T) :- !,
 	debug(playback(event), 'Output ~p (pull_response)', [Prompt]),
