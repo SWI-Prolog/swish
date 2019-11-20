@@ -43,6 +43,12 @@ this.
 
 There an __NPM__ [package](https://www.npmjs.com/package/pengines)
 
+## Extracting results using Python
+
+Check out [Calling Pengines from
+Python](https://www.swi-prolog.org/pengines/PenginesFromPython.md) and
+the Python [pengines library](https://pypi.org/project/pengines/)
+
 ## Extracting results using Java
 
 Check out [JavaPengines](https://github.com/Anniepoo/JavaPengine)
