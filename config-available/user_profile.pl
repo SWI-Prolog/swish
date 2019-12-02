@@ -89,6 +89,7 @@ user_profile:attribute(external_identity,   string,           [hidden(true)]).
 %   after a user was identified by IDProvider.
 
 user_profile:attribute_mapping(external_identity, _,     sub).
+user_profile:attribute_mapping(external_identity, _,     user_id). % Stack Exchange
 user_profile:attribute_mapping(avatar,            _,     picture).
 user_profile:attribute_mapping(nick_name,         local, user).
 user_profile:attribute_mapping(external_identity, local, user).
