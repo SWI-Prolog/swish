@@ -238,6 +238,8 @@ map_user_info(Dict0, Dict) :-
 map_user_field(display_name-Name, name-Name) :- !.
 map_user_field(profile_image-URL, picture-URL) :- !.
 map_user_field(link-URL,          profile_url-URL) :- !.
+map_user_field(user_id-Id,        external_identity-SId) :- !,
+    format(string(SId), '~w', [Id]).
 map_user_field(Field, Field).
 
 session_remove_user_data :-
