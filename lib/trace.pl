@@ -93,8 +93,15 @@ user:message_hook(trace_mode(_), _, _) :-
 
 trace_pengines.
 
-user:prolog_trace_interception(Port, Frame, _CHP, Action) :-
+user:prolog_trace_interception(Port, Frame, CHP, Action) :-
 	trace_pengines,
+	catch(trace_interception(Port, Frame, CHP, Action), E, true),
+	(   var(E)
+	->  true
+	;   abort			% tracer ignores non-abort exceptions.
+	).
+
+trace_interception(Port, Frame, _CHP, Action) :-
 	pengine_self(Pengine),
 	prolog_frame_attribute(Frame, predicate_indicator, PI),
 	debug(trace, 'HOOK: ~p ~p', [Port, PI]),
@@ -120,8 +127,7 @@ user:prolog_trace_interception(Port, Frame, _CHP, Action) :-
 	pengine_input(Prompt, Reply),
 	trace_action(Reply, Port, Frame, Action), !,
 	debug(trace, 'Action: ~p --> ~p', [Reply, Action]).
-user:prolog_trace_interception(Port, Frame0, _CHP, nodebug) :-
-	trace_pengines,
+trace_interception(Port, Frame0, _CHP, nodebug) :-
 	pengine_self(_),
 	prolog_frame_attribute(Frame0, goal, Goal),
 	prolog_frame_attribute(Frame0, level, Depth),
