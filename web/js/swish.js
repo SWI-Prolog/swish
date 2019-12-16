@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2016, VU University Amsterdam
+    Copyright (C): 2014-2019, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -58,6 +58,7 @@ require.config({
     sha1:        "../node_modules/js-sha1/src/sha1",
     c3:          "../node_modules/c3/c3",
     d3:          "../node_modules/d3/d3",
+    printThis:   "../node_modules/printthis/printThis",
     "svg-pan-zoom": "../node_modules/svg-pan-zoom/dist/svg-pan-zoom.min",
     sparkline:	 "../node_modules/sparkline/dist/jquery.sparkline",
 

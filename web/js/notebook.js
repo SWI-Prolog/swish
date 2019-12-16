@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2015-2018, VU University Amsterdam
+    Copyright (C): 2015-2019, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -47,7 +47,9 @@
 
 define([ "jquery", "config", "tabbed", "form",
 	 "preferences", "modal", "prolog", "links", "utils",
-	 "cm/lib/codemirror", "editor", "laconic", "runner", "storage", "sha1",
+	 "cm/lib/codemirror",
+	 "editor", "laconic", "runner", "storage", "sha1",
+	 "printThis"
        ],
        function($, config, tabbed, form, preferences, modal, prolog, links,
 	        utils, CodeMirror) {
@@ -288,6 +290,12 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	elem.on("fullscreen", function(ev, val) {
 	  preferences.setDocVal(docid, 'fullscreen', val);
 	});
+	elem.on("print", function(ev) {
+	  if ( $(ev.target).hasClass("notebook") &&
+	       $(ev.target).is(":visible") )
+	    elem.notebook('print');
+	  ev.stopPropagation();
+	});
       }); /* end .each() */
     },
 
@@ -519,6 +527,25 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	  nb.find(".prolog-editor").prologEditor('setIsClean');
 	}
       });
+    },
+
+		 /*******************************
+		 *	      PRINT		*
+		 *******************************/
+
+    /**
+     * Print the content of the notebook through printThis().  Requires
+     * additional media rules to improve the styling.
+     */
+    print: function() {
+      var elem = $(this);
+
+      elem.find(".nb-content").printThis({
+        // debug: true,
+	printDelay: 2000
+      });
+
+      return this;
     },
 
 

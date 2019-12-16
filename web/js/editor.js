@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2017, VU University Amsterdam
+    Copyright (C): 2014-2019, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -268,10 +268,12 @@ define([ "cm/lib/codemirror",
 	elem.on("preference", function(ev, pref) {
 	  elem.prologEditor('preference', pref);
 	});
-	elem.on("print", function() {
-	  if ( data.role != "query" )
-	    elem.prologEditor('print');
-	});
+	if ( elem.hasClass("printable") ) {
+	  elem.on("print", function() {
+	    if ( data.role != "query" )
+	      elem.prologEditor('print');
+	  });
+	}
 	elem.on("clearMessages", function(ev) {
 	  elem.prologEditor('clearMessages');
 	});

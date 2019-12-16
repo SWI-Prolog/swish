@@ -64,7 +64,7 @@ tabbed.tabTypes.permalink = {
   typeName: "program",
   label: "Program",
   create: function(dom, options) {
-    $(dom).addClass("prolog-editor")
+    $(dom).addClass("prolog-editor printable")
 	  .prologEditor($.extend({save:true}, options))
 	  .prologEditor('makeCurrent');
   }
