@@ -7,10 +7,10 @@
 @import url("answer.css");
 @import url("term.css");
 @import url("gitty.css");
-@import url("../bower_components/jquery.splitter/css/jquery.splitter.css");
-@import url("../bower_components/bootstrap/dist/css/bootstrap.css");
-@import url("../bower_components/tagmanager/tagmanager.css");
-@import url("../bower_components/c3/c3.css");
+@import url("../node_modules/jquery.splitter/css/jquery.splitter.css");
+@import url("../node_modules/bootstrap/dist/css/bootstrap.css");
+@import url("../node_modules/tagmanager/tagmanager.css");
+@import url("../node_modules/c3/c3.css");
 @import url("typeaheadjs.css");
 @import url("diffview.css");
 @import url("notebook.css");

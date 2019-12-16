@@ -50,7 +50,7 @@ save(Out, url(S)) :-
 	file_name_extension(_, Ext, S),
 	image_ext(Ext),
 	size_file(S, Size),
-	(   sub_string(S, _, _, _, '/bower_components/')
+	(   sub_string(S, _, _, _, '/node_modules/')
 	->  true
 	;   Size < 2000
 	), !,

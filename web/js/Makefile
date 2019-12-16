@@ -12,7 +12,7 @@ RJS=r.js
 all:	src min require.js
 
 src::
-	$(MAKE) -C ../bower_components/sparkline jqs
+	$(MAKE) -C ../node_modules/sparkline jqs
 
 doc::	$(CONF) $(JQ) $(JS)
 	-jsdoc -p -c $(CONF) $(JQ) $(JS)
@@ -34,7 +34,7 @@ swish-min.js.gz: swish-min.js
 build.js: $(MAIN) build.js.in
 	swipl mkjsbuild.pl $(MAIN) build.js.in
 
-require.js: ../bower_components/requirejs/require.js
+require.js: ../node_modules/requirejs/require.js
 	cp -p $< $@
 
 clean:

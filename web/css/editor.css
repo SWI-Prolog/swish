@@ -1,6 +1,6 @@
-@import url("../bower_components/codemirror/lib/codemirror.css");
-@import url("../bower_components/codemirror/addon/hint/show-hint.css");
-@import url("../bower_components/codemirror/addon/dialog/dialog.css");
+@import url("../node_modules/codemirror/lib/codemirror.css");
+@import url("../node_modules/codemirror/addon/hint/show-hint.css");
+@import url("../node_modules/codemirror/addon/dialog/dialog.css");
 @import url("../js/codemirror/theme/prolog.css");
 @import url("../js/codemirror/addon/hover/prolog-hover.css");
 @import url("../js/codemirror/addon/hint/templates-hint.css");

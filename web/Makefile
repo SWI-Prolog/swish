@@ -1,7 +1,7 @@
 HOVER=text-hover.css text-hover.js
 HINT=show-hint-eclipse.css templates-hint.css templates-hint.js
 RENDER_SVGTREE=svg-tree-drawer.js
-SPLITTERD=bower_components/jquery.splitter/js
+SPLITTERD=node_modules/jquery.splitter/js
 
 all:	hover hint svgtree
 

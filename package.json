@@ -1,23 +1,21 @@
 {
   "dependencies": {
-    "@bower_components/bootstrap": "twbs/bootstrap#3",
-    "@bower_components/c3": "masayuki0812/c3#*",
-    "@bower_components/codemirror": "components/codemirror#*",
-    "@bower_components/d3": "mbostock-bower/d3-bower#^5.0.0",
-    "@bower_components/jquery": "jquery/jquery-dist#>= 1.0.0",
-    "@bower_components/jquery.splitter": "jcubic/jquery.splitter#0.15",
-    "@bower_components/js-sha1": "emn178/js-sha1#*",
-    "@bower_components/laconic": "joestelmach/laconic#*",
-    "@bower_components/requirejs": "jrburke/requirejs-bower#*",
-    "@bower_components/sparkline": "gwatts/jquery.sparkline#*",
-    "@bower_components/svg-pan-zoom": "ariutta/svg-pan-zoom#*",
-    "@bower_components/tagmanager": "max-favilli/tagmanager#*",
-    "@bower_components/typeahead.js": "git://github.com/twitter/typeahead.js.git#master"
+    "bootstrap": "twbs/bootstrap#3",
+    "c3": "masayuki0812/c3#*",
+    "codemirror": "components/codemirror#*",
+    "d3": "mbostock-bower/d3-bower#^5.0.0",
+    "jquery": "jquery/jquery-dist#>= 1.0.0",
+    "jquery.splitter": "jcubic/jquery.splitter#0.15",
+    "js-sha1": "emn178/js-sha1#*",
+    "laconic": "joestelmach/laconic#*",
+    "requirejs": "jrburke/requirejs-bower#*",
+    "sparkline": "gwatts/jquery.sparkline#*",
+    "svg-pan-zoom": "ariutta/svg-pan-zoom#*",
+    "tagmanager": "max-favilli/tagmanager#*",
+    "typeahead.js": "git://github.com/twitter/typeahead.js.git#master",
+    "printthis": "git://github.com/jasonday/printThis.git#master"
   },
   "engines": {
     "yarn": ">= 1.0.0"
-  },
-  "scripts": {
-    "postinstall": "node -e \"try { require('fs').symlinkSync(require('path').resolve('node_modules/@bower_components'), 'web/bower_components', 'junction') } catch (e) { }\""
   }
 }

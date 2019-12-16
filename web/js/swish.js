@@ -47,19 +47,19 @@ require.config({
   urlArgs: "ts="+new Date().getTime(),	/* prevent caching during development */
   waitSeconds: 60,			/* swish-min.js is big */
   paths:
-  { jquery:      "../bower_components/jquery/dist/jquery.min",
-    "jquery-ui": "../bower_components/jquery-ui/jquery-ui.min",
-    laconic:     "../bower_components/laconic/laconic",
-    bootstrap:   "../bower_components/bootstrap/dist/js/bootstrap.min",
-    bloodhound:  "../bower_components/typeahead.js/dist/bloodhound",
-    typeahead:   "../bower_components/typeahead.js/dist/typeahead.jquery",
-    splitter:    "../bower_components/jquery.splitter/js/jquery.splitter-0.15.0",
-    tagmanager:  "../bower_components/tagmanager/tagmanager",
-    sha1:        "../bower_components/js-sha1/src/sha1",
-    c3:          "../bower_components/c3/c3",
-    d3:          "../bower_components/d3/d3",
-    "svg-pan-zoom": "../bower_components/svg-pan-zoom/dist/svg-pan-zoom.min",
-    sparkline:	 "../bower_components/sparkline/dist/jquery.sparkline",
+  { jquery:      "../node_modules/jquery/dist/jquery.min",
+    "jquery-ui": "../node_modules/jquery-ui/jquery-ui.min",
+    laconic:     "../node_modules/laconic/laconic",
+    bootstrap:   "../node_modules/bootstrap/dist/js/bootstrap.min",
+    bloodhound:  "../node_modules/typeahead.js/dist/bloodhound",
+    typeahead:   "../node_modules/typeahead.js/dist/typeahead.jquery",
+    splitter:    "../node_modules/jquery.splitter/js/jquery.splitter-0.15.0",
+    tagmanager:  "../node_modules/tagmanager/tagmanager",
+    sha1:        "../node_modules/js-sha1/src/sha1",
+    c3:          "../node_modules/c3/c3",
+    d3:          "../node_modules/d3/d3",
+    "svg-pan-zoom": "../node_modules/svg-pan-zoom/dist/svg-pan-zoom.min",
+    sparkline:	 "../node_modules/sparkline/dist/jquery.sparkline",
 
 					/* CodeMirror extensions */
     "cm/mode/prolog": "codemirror/mode/prolog",
@@ -69,7 +69,7 @@ require.config({
     "cm/addon/hint/show-context-info": "codemirror/addon/hint/show-context-info",
 
 					/* Standard CodeMirror */
-    "cm" : "../bower_components/codemirror"
+    "cm" : "../node_modules/codemirror"
   },
   shim:
   { bootstrap:
