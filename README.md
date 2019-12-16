@@ -76,14 +76,14 @@ get the dependencies:
 
 As installing node and yarn is not a pleasure on all operating systems,
 you can also download  the  dependencies  as   a  single  zip  file from
-http://www.swi-prolog.org/download/swish/swish-bower-components.zip.
+http://www.swi-prolog.org/download/swish/swish-node-modules.zip.
 Unpack the zip file, maintaining the directory structure, from the swish
 root directory to create the directory web/node_modules. If you have
 `make` installed you can install the above `.zip` file using
 
     make yarn-zip
 
-Last updated: Feb 18, 2018, 2017: upgraded to current dependencies.
+Last updated: Dec 16, 2019: upgraded dependencies, new archive name
 
 ### Get the latest SWI-Prolog
 
