@@ -45,8 +45,17 @@ Requires the pack `libssh` to be installed.
 */
 
 :- use_module(library(ssh_server)).
+:- use_module(library(broadcast)).
 
-:- ssh_server([ port(3250),
-		bind_address(*),
-		authorized_keys_file('etc/ssh/authorized_keys')
-              ]).
+% If library(http/http_unix_daemon) is used we are loaded before the
+% fork, but we cannot start threads before forking.  This ensures we
+% are started later.
+
+:- listen(http(pre_server_start),
+          start_sshd).
+
+start_sshd :-
+    ssh_server([ port(3250),
+                 bind_address(*),
+                 authorized_keys_file('etc/ssh/authorized_keys')
+               ]).
