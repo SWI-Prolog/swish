@@ -46,5 +46,6 @@ Requires the pack `libssh` to be installed.
 
 :- use_module(library(ssh_server)).
 
-:- ssh_server([ port(3250)
+:- ssh_server([ port(3250),
+		authorized_keys_file('etc/ssh/authorized_keys')
               ]).
