@@ -39,7 +39,9 @@
 	    replay/1,			% +Pengine
 	    replay/2,			% +Pengine, +ServerURL
 	    concurrent_replay/1,	% +Count
-	    skip_pengine/1		% +Pengine
+	    skip_pengine/1,		% +Pengine
+
+	    pengine_source/2		% ?Pengine, ?Source
 	  ]).
 :- use_module(library(debug)).
 :- use_module(library(pengines)).
@@ -317,6 +319,16 @@ assert_event(_).
 
 skip_pengine(Pengine) :-
 	assertz(skip_pengine_store(Pengine)).
+
+		 /*******************************
+		 *	       QUERY		*
+		 *******************************/
+
+pengine_source(Pengine, Src) :-
+	pengine(_Time, create(Pengine, _App, Options)),
+	memberchk(src_text(_Hash-Src), Options).
+
+
 
 		 /*******************************
 		 *	      MESSAGES		*
