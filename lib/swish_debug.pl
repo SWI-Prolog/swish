@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015-2018, VU University Amsterdam
+    Copyright (c)  2015-2020, VU University Amsterdam
 			      CWI, Amsterdam
     All rights reserved.
 
@@ -40,7 +40,8 @@
 	    swish_statistics/1,		% -Statistics
 	    start_swish_stat_collector/0,
 	    swish_stats/2,		% ?Period, ?Dicts
-	    swish_died_thread/2	% ?Thread, ?State
+	    swish_save_stats/1,		% ?File
+	    swish_died_thread/2		% ?Thread, ?State
 	  ]).
 :- use_module(library(pengines)).
 :- use_module(library(broadcast)).
@@ -48,12 +49,18 @@
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(aggregate)).
+:- use_module(library(settings)).
 :- use_module(procps).
 :- use_module(highlight).
 :- if(exists_source(library(mallocinfo))).
 :- use_module(library(mallocinfo)).
 :- export(malloc_info/1).
 :- endif.
+
+:- setting(stats_file, callable, data('stats.db'),
+	   "Save statistics to achieve a long term view").
+:- setting(stats_interval, integer, 300,	% 5 minutes
+	   "Save stats every N seconds").
 
 %!	stale_pengine(-Pengine) is nondet.
 %
@@ -185,22 +192,52 @@ uuid_code(_, X) :- char_type(X, xdigit(_)).
 start_swish_stat_collector :-
 	thread_property(_, alias(swish_stats)), !.
 start_swish_stat_collector :-
+	persistent_stats(Persists),
 	swish_stat_collector(
 	    swish_stats,
-			% Time collected | Ticks  | Push
-	    [ 60,	%	1 min	 | 1 sec  |  1 min
-	      60/6,	%       1 hr     | 1 min  |  6 min
-	      24*10/10,	%       1 day    | 6 min  |  1 hr
-	      7*24/24,	%       1 week   | 1 hr   |  1 day
-	      52	%       1 yr     | 1 day
+			% Time collected |  Ticks  | Push
+	    [ 60,	%	1 min	 |  1 sec  |  1 min
+	      60/10,	%       1 hr     |  1 min  | 10 min
+	      24*6/6,	%       1 day    | 10 min  |  1 hr
+	      7*24/24,	%       1 week   |  1 hr   |  1 day
+	      52	%       1 yr     |  1 day
 	    ],
-	    1).
+	    1,
+	    Persists),
+	at_halt(swish_save_stats(_)).
 
-swish_stat_collector(Name, Dims, Interval) :-
+swish_stat_collector(Name, Dims, Interval, Persists) :-
 	atom(Name), !,
-	thread_create(stat_collect(Dims, Interval), _, [alias(Name)]).
-swish_stat_collector(Thread, Dims, Interval) :-
-	thread_create(stat_collect(Dims, Interval), Thread, []).
+	thread_create(stat_collect(Dims, Interval, Persists), _, [alias(Name)]).
+swish_stat_collector(Thread, Dims, Interval, Persists) :-
+	thread_create(stat_collect(Dims, Interval, Persists), Thread, []).
+
+persistent_stats(save(Path, Interval)) :-
+	setting(stats_interval, Interval),
+	Interval > 0,
+	setting(stats_file, File),
+	(   absolute_file_name(File, Path,
+			       [ access(write),
+				 file_errors(fail)
+			       ])
+	->  true
+	;   File =.. [Alias,_],
+	    DirSpec =.. [Alias, '.'],
+	    absolute_file_name(DirSpec, Dir,
+			   [ solutions(all)
+			   ]),
+	    \+ exists_directory(Dir),
+	    catch(make_directory(Dir),
+		  error(permission_error(create, directory, Dir), _),
+		  fail),
+	    absolute_file_name(File, Path,
+			       [ access(write),
+				 file_errors(fail)
+			       ])
+	), !.
+persistent_stats(save(-, 0)).
+
+
 
 %%	swish_stats(?Period, ?Stats:list(dict)) is nondet.
 %
@@ -248,13 +285,13 @@ stats_died(Alias, E) :-
 	start_swish_stat_collector,
 	fail.
 
-stat_collect(Dims, Interval) :-
-	new_sliding_stats(Dims, SlidingStat),
+stat_collect(Dims, Interval, Persists) :-
+	restart_sliding_stats(Persists, Dims, SlidingStat),
 	get_time(Now),
 	ITime is floor(Now),
-	stat_loop(SlidingStat, _{}, ITime, Interval, [true]).
+	stat_loop(SlidingStat, _{}, ITime, Interval, Persists, [true]).
 
-stat_loop(SlidingStat, Stat0, StatTime, Interval, Wrap) :-
+stat_loop(SlidingStat, Stat0, StatTime, Interval, Persists, Wrap) :-
 	(   thread_self(Me),
 	    thread_get_message(Me, Request,
 			       [ deadline(StatTime)
@@ -263,12 +300,13 @@ stat_loop(SlidingStat, Stat0, StatTime, Interval, Wrap) :-
 	    ->	true
 	    ;	debug(swish_stats, 'Failed to process ~p', [Request])
 	    ),
-	    stat_loop(SlidingStat, Stat0, StatTime, Interval, Wrap)
+	    stat_loop(SlidingStat, Stat0, StatTime, Interval, Persists, Wrap)
 	;   get_stats(Wrap, Stat1),
 	    dif_stat(Stat1, Stat0, Stat),
 	    push_sliding_stats(SlidingStat, Stat, Wrap1),
 	    NextTime is StatTime+Interval,
-	    stat_loop(SlidingStat, Stat1, NextTime, Interval, Wrap1)
+	    save_stats(Persists, SlidingStat),
+	    stat_loop(SlidingStat, Stat1, NextTime, Interval, Persists, Wrap1)
 	).
 
 dif_stat(Stat1, Stat0, Stat) :-
@@ -284,10 +322,21 @@ dif_stat(Stat, _, Stat).
 dif_field(Stat1, Stat0, Key-DKey, DKey-DValue) :-
 	DValue is Stat1.get(Key) - Stat0.get(Key).
 
-reply_stats_request(Client-get_stats(Period), SlidingStat) :-
+reply_stats_request(Client-get_stats(Period), SlidingStat) :- !,
 	arg(Period, SlidingStat, Ring),
 	ring_values(Ring, Values),
 	thread_send_message(Client, get_stats(Period, Values)).
+reply_stats_request(Client-save_stats(File), SlidingStat) :- !,
+	(   var(File)
+	->  persistent_stats(save(File, _Interval))
+	;   true
+	),
+	catch(save_stats_file(File, SlidingStat), E, true),
+	(   var(E)
+	->  thread_send_message(Client, save_stats(File))
+	;   thread_send_message(Client, save_stats(error(E)))
+	).
+
 
 %%	get_stats(+Wrap, -Stats:dict) is det.
 %
@@ -429,6 +478,68 @@ avg_key(Dicts, Len, Key, Key-Avg) :-
 	maplist(get_dict(Key), Dicts, Values),
 	sum_list(Values, Sum),
 	Avg is Sum/Len.
+
+%!	save_stats(+StaveSpec, +Stats) is det.
+%
+%	Save the statistics on each interval.
+
+save_stats(save(File, Interval), Stats) :-
+	arg(1, Stats, ring(Here, _, _)),
+	Here mod Interval =:= 0,
+	E = error(_,_),
+	catch(save_stats_file(File, Stats),
+	      E, print_message(warning, E)),
+	!.
+save_stats(_, _).
+
+save_stats_file(File, Stats) :-
+	setup_call_cleanup(
+	    open(File, write, Out),
+	    save_stats_stream(Stats, Out),
+	    close(Out)).
+
+save_stats_stream(Stats, Out) :-
+	get_time(Now),
+	\+ \+ ( numbervars(Stats, 0, _, [singletons(true)]),
+		format(Out, 'stats(~1f, ~q).~n', [Now, Stats])
+	      ).
+
+restart_sliding_stats(save(File, _), Dims, Stats) :-
+	exists_file(File),
+	E = error(_,_),
+	catch(setup_call_cleanup(
+		  open(File, read, In),
+		  read(In, stats(_Saved, Stats)),
+		  close(In)),
+	      E, (print_message(warning, E), fail)),
+	new_sliding_stats(Dims, New),
+	compatible_sliding_stats(Stats, New),
+	!.
+restart_sliding_stats(_, Dims, Stats) :-
+	new_sliding_stats(Dims, Stats).
+
+compatible_sliding_stats(Stats1, Stats2) :-
+	compound_name_arguments(Stats1, Name, List1),
+	compound_name_arguments(Stats2, Name, List2),
+	maplist(compatible_window, List1, List2).
+
+compatible_window(ring(_,Avg,Data1), ring(_,Avg,Data2)) :-
+	compound_name_arity(Data1, Name, Dim),
+	compound_name_arity(Data2, Name, Dim).
+
+%!	swish_save_stats(?File)
+%
+%	Save statistcs to File or the default file.
+
+swish_save_stats(File) :-
+	thread_self(Me),
+	catch(thread_send_message(swish_stats, Me-save_stats(File)), E,
+	      stats_died(swish_stats, E)),
+	thread_get_message(save_stats(Result)),
+	(   Result = error(E)
+	->  throw(E)
+	;   File = Result
+	).
 
 
 %!	swish_died_thread(TID, Status) is nondet.
