@@ -63,8 +63,8 @@ chart(PeriodS, Keys, Chart) :-
 
 period_format(minute, '%M:%S').
 period_format(hour,   '%H:%M').
-period_format(day,    '%m-%d %H:00').
-period_format(week,   '%Y-%m-%d').
+period_format(day,    '%m-%d %H:%M').
+period_format(week,   '%Y-%m-%d %H:00').
 period_format(year,   '%Y-%m-%d').
 
 add_heap_mb(Stat0, Stat) :-

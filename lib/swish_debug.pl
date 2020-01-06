@@ -185,14 +185,16 @@ uuid_code(_, X) :- char_type(X, xdigit(_)).
 start_swish_stat_collector :-
 	thread_property(_, alias(swish_stats)), !.
 start_swish_stat_collector :-
-	swish_stat_collector(swish_stats,
-			     [ 60,	% collect a minute
-			       60,	% collect an hour
-			       24,	% collect a day
-			       7,	% collect a week
-			       52	% collect a year
-			     ],
-			     1).
+	swish_stat_collector(
+	    swish_stats,
+			% Time collected | Ticks  | Push
+	    [ 60,	%	1 min	 | 1 sec  |  1 min
+	      60/6,	%       1 hr     | 1 min  |  6 min
+	      24*10/10,	%       1 day    | 6 min  |  1 hr
+	      7*24/24,	%       1 week   | 1 hr   |  1 day
+	      52	%       1 yr     | 1 day
+	    ],
+	    1).
 
 swish_stat_collector(Name, Dims, Interval) :-
 	atom(Name), !,
@@ -359,15 +361,19 @@ push_sliding_stats(I, Stats, Values, [Wrap|WrapT]) :-
 	;   WrapT = []
 	).
 
-new_ring(Dim, ring(0, Ring)) :-
+new_ring(Dim0/Avg, ring(0, Avg, Ring)) :- !,
+	Dim is Dim0,
+	compound_name_arity(Ring, [], Dim).
+new_ring(Dim0, ring(0, Dim, Ring)) :-
+	Dim is Dim0,
 	compound_name_arity(Ring, [], Dim).
 
 push_ring(Ring, Value, Wrap) :-
-	Ring = ring(Here0, Data),
+	Ring = ring(Here0, Avg, Data),
 	Here is Here0+1,
 	compound_name_arity(Data, _, Size),
 	Arg is (Here0 mod Size)+1,
-	(   Arg == Size
+	(   Arg mod Avg =:= 0
 	->  Wrap = true
 	;   Wrap = false
 	),
@@ -375,7 +381,7 @@ push_ring(Ring, Value, Wrap) :-
 	nb_setarg(1, Ring, Here).
 
 ring_values(Ring, Values) :-
-	Ring = ring(Here, Data),
+	Ring = ring(Here, _, Data),
 	compound_name_arity(Data, _, Size),
 	Start is Here - 1,
 	End is Start - min(Here,Size),
@@ -388,9 +394,27 @@ read_ring(Here0, End, Size, Data, [H|T]) :-
 	Here1 is Here0-1,
 	read_ring(Here1, End, Size, Data, T).
 
-average_ring(ring(_,Data), Avg) :-
-	compound_name_arguments(Data, _, Dicts),
+average_ring(ring(Here0,AvgI,Data), Avg) :-
+	compound_name_arity(Data, _, Dim),
+	Here is ((Here0-1) mod Dim)+1,
+	Start0 is Here - AvgI + 1,
+	(   Start0 < 1
+	->  Start is Start0+Dim
+        ;   Start is Start0
+	),
+	avg_window(Start, Here, Dim, Data, Dicts),
 	average_dicts(Dicts, Avg).
+
+avg_window(End, End, _, Data, [Dict]) :- !,
+	arg(End, Data, Dict).
+avg_window(Here, End, DIM, Data, [H|T]) :-
+	arg(Here, Data, H),
+	Here1 is Here+1,
+	(   Here1 > DIM
+	->  Here2 is Here1-DIM
+	;   Here2 is Here1
+	),
+	avg_window(Here2, End, DIM, Data, T).
 
 average_dicts(Dicts, Avg) :-
 	dicts_to_same_keys(Dicts, dict_fill(0), Dicts1),
