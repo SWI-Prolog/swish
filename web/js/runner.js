@@ -1013,7 +1013,7 @@ define([ "jquery", "config", "preferences", "utils",
     },
 
     /**
-     * If the associated pengine is alive, send it a `destroy`.  Next,
+     * If the associated pengine is alive, send it an `abort`.  Next,
      * remove the runner from its container.
      */
     close: function() {
