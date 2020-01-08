@@ -174,11 +174,15 @@ chart(Period, [pengines,threads,visitors], Chart).
   </div>
   <p><b>rss</b> is the total (resident) memory usage as reported by Linux. <b>stack</b> is the memory
     occupied by all Prolog stacks. <b>heap</b> is an approximation of the memory used for the
-     Prolog program space, computed as <i>rss - stack - free<i>. This is incorrect for two reasons.
+     Prolog program space, computed as <i>rss - stack - free</i>. This is incorrect for two reasons.
      It ignores the C-stacks and the not-yet-committed memory of the Prolog stacks
      is not part of rss. free is memory that is freed but not yet reused as reported
-    by GNU <a href="https://www.gnu.org/software/libc/manual/html_node/Statistics-of-Malloc.html">malinfo()</a> as <code>fordblks</code>.
-  </i></i></p><div class="panel-body"><i><i>
+    by GNU <a href="https://www.gnu.org/software/libc/manual/html_node/Statistics-of-Malloc.html">malinfo()</a>
+    as <code>fordblks</code>.  Note that <code>fordblks</code> is a 32-bit value.  The implementation heuristically
+    guesses how many times the value wrapped around and corrects for this.
+  </p>
+  
+  <div class="panel-body"><i><i>
     <div class="form-group row" style="margin-bottom:0px">
       <label class="col-sm-2">Period:</label>
       <div class="col-sm-10">

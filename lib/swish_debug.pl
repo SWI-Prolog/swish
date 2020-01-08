@@ -367,11 +367,40 @@ get_stats(Wrap, Stats) :-
 	add_visitors(Stats1, Stats).
 
 :- if(current_predicate(mallinfo/1)).
+:- dynamic fordblks_wrap/1.
+fordblks_wrap(0).
+
+add_wrap(0) :- !.
+add_wrap(Amount) :-
+	retract(fordblks_wrap(Wrap0)),
+	Wrap1 is Wrap0+Amount,
+	asserta(fordblks_wrap(Wrap1)).
+
+fix_fordblks_wrap(FordBlks0, FordBlks) :-
+	fordblks_wrap(Wrap),
+	FordBlks1 is FordBlks0+Wrap,
+	(   nb_current(fordblks, Prev)
+	->  NW is FordBlks0 mod (1<<32),
+	    PW is Prev mod (1<<32),
+	    (   PW > (1<<32)-(1<<30),
+		NW < (1<<30)
+	    ->  Add is 1<<32
+	    ;   NW > (1<<32)-(1<<30),
+		PW < (1<<30)
+	    ->  Add is -(1<<32)
+	    ;   Add = 0
+	    ),
+	    add_wrap(Add),
+	    FordBlks = FordBlks1+Add
+	;   FordBlks = FordBlks1
+	).
+
 add_fordblks(Wrap, Stats0, Stats) :-
 	(   Wrap = [true|_]
 	->  member(G, [mallinfo(MallInfo)]),
 	    call(G),			% fool ClioPatria xref
-	    FordBlks = MallInfo.get(fordblks),
+	    FordBlks0 = MallInfo.get(fordblks),
+	    fix_fordblks_wrap(FordBlks0, FordBlks),
 	    b_setval(fordblks, FordBlks)
 	;   nb_current(fordblks, FordBlks)
 	), !,
