@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2018, VU University Amsterdam
+    Copyright (c)  2014-2020, VU University Amsterdam
 			      CWI, Amsterdam
     All rights reserved.
 
@@ -818,6 +818,7 @@ style(string,		 string,			   []).
 style(codes,		 codes,				   []).
 style(chars,		 chars,				   []).
 style(atom,		 atom,				   []).
+style(rational(_Value),	 rational,			   [text]).
 style(format_string,	 format_string,			   []).
 style(meta(_Spec),	 meta,				   []).
 style(op_type(_Type),	 op_type,			   [text]).

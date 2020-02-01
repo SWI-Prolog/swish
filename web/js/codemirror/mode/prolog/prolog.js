@@ -306,13 +306,20 @@
     }
 
     if ( /\d/.test(ch) || /[+-]/.test(ch) && stream.eat(/\d/)) {
+      var tp = ch == "-" ? "neg-number" :
+	       ch == "+" ? "pos-number" :
+		           "number";
+
       if ( config.groupedIntegers )
 	stream.match(/^\d*((_|\s+)\d+)*(?:\.\d+)?(?:[eE][+\-]?\d+)?/);
       else
 	stream.match(/^\d*(?:\.\d+)?(?:[eE][+\-]?\d+)?/);
-      return ret(ch == "-" ? "neg-number" :
-		 ch == "+" ? "pos-number" :
-		 "number");
+      if ( stream.match(/[/R]/, false) ) {
+	var text = stream.current();
+	return ret(tp, tp, text);
+      } else {
+	return ret(tp, tp);
+      }
     }
 
     if ( ctype.symbol(ch) ) {

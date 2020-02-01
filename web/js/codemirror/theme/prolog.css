@@ -1,5 +1,6 @@
 .cm-s-prolog span.cm-number	       {color: #000;}
 .cm-s-prolog span.cm-neg-number	       {color: #000;}
+.cm-s-prolog span.cm-rational	       {color: #48b;}
 .cm-s-prolog span.cm-atom	       {color: #730;}
 .cm-s-prolog span.cm-uatom	       {color: #730;}
 .cm-s-prolog span.cm-qatom	       {color: #008; white-space: pre;}
