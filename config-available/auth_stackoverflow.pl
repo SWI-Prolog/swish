@@ -194,10 +194,10 @@ read_reply(Code, ContentType, In, Dict) :-
 %   string.
 
 read_reply2(200, media(application/json, _Attributes), In, Dict) :- !,
-    json_read_dict(In, Dict).
+    json_read_dict(In, Dict, [default_tag(#)]).
 read_reply2(Code, media(application/json, _Attributes), In,
             error{code:Code, details:Details}) :- !,
-    json_read_dict(In, Details).
+    json_read_dict(In, Details, [default_tag(#)]).
 read_reply2(Code, Type, In,
             error{code:Code, message:Reply}) :-
     debug(oauth(token), 'Got code ~w, type ~q', [Code, Type]),
