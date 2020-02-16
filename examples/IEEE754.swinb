@@ -1,0 +1,202 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# IEEE-754 Floating point support
+
+The ISO standard for floating point arithmetic does not specify any
+properties about the floating point representation and demands the
+result of an arithmetic operation to be either a _normal_ float or an
+exception (float_overflow or evaluation_error). This makes a lot of
+sense as it avoids many of the complications handling _non-normal_
+floats. On the other hand, The [IEEE 754
+standard](https://en.wikipedia.org/wiki/IEEE_754) was estabished in 1985
+and the support for floating point numbers in most programming languages
+is based on this standard. ECLiPSe has created a proposal to include
+IEEE 754 based arithmetic [in
+Prolog](http://eclipseclp.org/Specs/core_update_float.html)
+
+This notebook expains support for IEEE 754 in SWI-Prolog. Currently,
+Prolog flags comforming the ECliPSe proposal to choose between
+exceptions and returning _special_ floats and some support for rounding
+has been implemented in SWI-Prolog 8.1.22. Consistent handling of
+special values throughoput the system is not yet implemented. As most of
+the arithmetic eventually relies on C99 float processing, many of the
+functions do comply.
+</div>
+
+<div class="nb-cell markdown" name="md2">
+## Underflows
+
+ISO Prolog defines no special handling for _subnormal_ floats, which are
+floats that are so small that their value becomes imprecise. In the
+program below we divide `1` _N_ times by `10.0` and then multiply back.
+
+This immediately results in a small error because IEEE 754 _binary_
+floats cannot precisely represent decimal fractions. Close to the
+smallest float the difference is getting large and with over `324`
+iterations the result is simply zero. The predicate float_class/2 can be
+used to test that a float is critically close to the smallest
+representable number and therefore imprecise. The flag `float_underflow`
+can be used to make this invalid computation raise an exception as
+illustrated by the third query.
+</div>
+
+<div class="nb-cell query" name="q1">
+I = 10,
+u(I, 1, X), o(I, X, Y).
+</div>
+
+<div class="nb-cell query" name="q3">
+I = 323,
+u(I, 1, X), o(I, X, Y),
+float_class(X, Class).
+</div>
+
+<div class="nb-cell query" name="q10">
+I = 323,
+set_prolog_flag(float_underflow, error),
+u(I, 1, X), o(I, X, Y),
+float_class(X, Class).
+</div>
+
+<div class="nb-cell program" data-background="true" name="p6">
+u(0, X, X) :-
+    !.
+u(N, X, Y) :-
+    X1 is X/10.0,
+    N1 is N-1,
+    u(N1, X1, Y).
+
+o(0, X, X) :-
+    !.
+o(N, X, Y) :-
+    X1 is X*10.0,
+    N1 is N-1,
+    o(N1, X1, Y).
+</div>
+
+<div class="nb-cell markdown" name="md3">
+## Infinity
+
+Using the flags `float_overflow` and `float_zero_div` some arithmetic
+operations produce +/- infinity rather than an exception. Like ignoring
+underflows ignoring overflows may be dangerous, but can also result in
+valid approximations without the need to handle exceptions and perform
+the necessary reasoning about infinity outside Prolog arithmetic
+support.
+
+The syntax for infinite numbers is `1.0Inf` or `-1.0Inf`, both of which
+is otherwise invalid Prolog syntax.
+</div>
+
+<div class="nb-cell query" name="q2">
+A is 25.0**10 000.
+</div>
+
+<div class="nb-cell query" name="q4">
+A is -25.0/10.0**(-1000),
+Z is  25.0/10.0**(-1000).
+</div>
+
+<div class="nb-cell query" name="q5">
+A is -25.0/10.0**(-1000),
+B is 1/A.
+</div>
+
+<div class="nb-cell markdown" name="md7">
+## Float rounding
+
+ISO does not define how a function rounds the _true_ value to a
+representable floating point number. Most implementation will inherid
+the C99 default behavior which rounds to the _nearest_ representable
+float. This is typically fine, but does not allow for generating an
+interval that surely contains the _real_ (ℝ) value.
+
+SWI-Prolog allows for defining the float mode using the flag `float_rounding`
+</div>
+
+<div class="nb-cell query" name="q8">
+set_prolog_flag(float_rounding, to_negative),
+Low is sqrt(2),
+set_prolog_flag(float_rounding, to_positive),
+High is sqrt(2).
+</div>
+
+<div class="nb-cell markdown" name="md8">
+In addition, the function nexttoward/2 can be used to enumerate
+representatble floats and (for example) realise a safe interval for the
+constant __π__.
+</div>
+
+<div class="nb-cell query" name="q9">
+Low  is nexttoward(pi, -inf),
+High is nexttoward(pi, inf).
+</div>
+
+<div class="nb-cell markdown" name="md4">
+## Undefined arithmetic
+
+Typically less useful is to avoid exceptions on undefined operations,
+such as `sqrt(-2)` in the absence of [complex
+numbers](https://en.wikipedia.org/wiki/Complex_number), but this too has
+its applications. Undefined floating point arithmetic is expressed by
+NaN (_Not a Number_), which uses the Prolog syntax `1.5NaN` and can be
+detected using float_class/2 with the class `nan`. The attractive aspect
+of NaN is that it propagates through the computation: any computation in
+which NaN is involved produces a NaN result. As a consequence, if a set
+of numbers is computed we know exactly which elements of this set have
+somewhere along the computation encountered an invalid operation. The
+behavior is controlled using the flag `float_undefined`
+</div>
+
+<div class="nb-cell query" name="q6">
+A is sqrt(-1),
+float_class(A, Class).
+</div>
+
+<div class="nb-cell markdown" name="md5">
+NaN is a strange value in Prolog. _Arithmetic_ comparison (=:=/2,
+&lt;/2, &gt;/2, etc.) all fails, but NaN is a normal Prolog term and has
+a normal place in the _standard order of terms_ used by sort/2, @&gt;/2,
+compare/3, etc. NaN is defined to be __before any number in the standard
+order of terms__.
+</div>
+
+<div class="nb-cell query" name="q7">
+A is log(0),
+float_class(A, Class),
+\+ A &lt; 0,
+\+ A &gt; 0,
+\+ A =:= 0,
+A @&lt; 0,
+A @&lt; 0.0.
+</div>
+
+<div class="nb-cell markdown" name="md6">
+#### Flags affecting floating point processing
+
+Note that these flags are, conform all SWI-Prolog flags, _thread
+specific_ and inherit their initial value from the creating thread.
+</div>
+
+<div class="nb-cell program" data-background="true" name="p1">
+:- set_prolog_flag(float_overflow, infinity).
+</div>
+
+<div class="nb-cell program" data-background="true" name="p2">
+:- set_prolog_flag(float_undefined, nan).
+</div>
+
+<div class="nb-cell program" name="p3">
+:- set_prolog_flag(float_underflow, error).
+</div>
+
+<div class="nb-cell program" data-background="true" name="p4">
+:- set_prolog_flag(float_zero_div, infinity).
+</div>
+
+<div class="nb-cell program" name="p5">
+:- set_prolog_flag(float_rounding, to_positive).
+</div>
+
+</div>
