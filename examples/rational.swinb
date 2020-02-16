@@ -1,0 +1,168 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# Rational number (ℚ) support
+
+SWI-Prolog supports rational numbers and rational arithmetic. Rudamental
+support has been around for many years. As of version 8.1.22, rational
+numbers have a syntax and are an atomic data type that can be checked
+using rational/1. All integers are considered rational numbers. There
+are two syntaxes for rational numbers
+
+  - The `compatibility` syntax writes rational numbers as e.g., `1r3`.
+    Both numerator
+    and denominator are decimal integers, the numerator can be negative.
+  - The `natural` syntax replaces the `r` with `/`, so we get `1/3`.
+    This is enabled by setting the Prolog flag `rational_syntax`
+    to `natural`.
+
+Rational numbers are always in _canonical form_, which implies the
+denominator is a positive integer, the numerator is any integer, the
+numerator and denominator have no common divisors and if the denominator
+is `1`, the result is an integer.
+
+If the Prolog flag `prefer_rationals` is `true`, all arithmetic that has
+a precise result as a rational number produces a rational number rather
+than a float, _except_ pure float functions, e.g., `cos(0)` is `1.0`
+rather than `1`. This rule notably affects division (`A/B`) and
+exponentiation (`A^B` or `A**B`)
+</div>
+
+<div class="nb-cell query" name="q1">
+A is 1r3 + 5r7.
+</div>
+
+<div class="nb-cell markdown" name="md6">
+Things that are true about rational numbers
+</div>
+
+<div class="nb-cell query" name="q2">
+Num is 1r3,
+rational(Num),
+\+ integer(Num),
+number(Num),
+atomic(Num),
+Num &gt; 0, Num &lt; 1,
+Num @&gt; 0, Num @&lt; 1,
+Num &gt; 0.0, Num &lt; 1.0,
+Num @&gt; 0.0, Num @&lt; 1.0.
+</div>
+
+<div class="nb-cell markdown" name="md7">
+Integers are rational numbers and rational numbers with a denominator of
+`1` are integers
+</div>
+
+<div class="nb-cell query" name="q7">
+A is 4r2,
+integer(A).
+</div>
+
+<div class="nb-cell markdown" name="md5">
+## Rational numbers in the standard order of terms
+
+Rational numbers are numbers and SWI-Prolog standard order of terms
+compares numbers by value (unlike ISO where all floats are before all
+integers). If a float and a rational number are equal as defined by
+=:=/2, the float comes before the rational.
+</div>
+
+<div class="nb-cell query" name="q6">
+sort([2, 1r3, 1, 1.0, 3r2, 1.0], List).
+</div>
+
+<div class="nb-cell markdown" name="md3">
+## Tripwire to protect against huge rational numbers
+
+Most programs run fine when using rational numbers instead of floats
+while producing precise results. There are some exceptions however.
+Consider the program below which sums all 1/N quotients up to some
+limit.
+
+Please run the two subsequent queries with both `max_rational_size`
+enabled and disabled (see bottom). The term_size/2 predicate returns the
+size of a Prolog term on the _global stack_ in _cells_ (8 bytes on a
+64-bit machine).
+</div>
+
+<div class="nb-cell program" name="p5">
+sum(N, Sum) :-
+    sum(N, N, 0, Sum).
+
+sum(I, N, S0, S) :-
+    I &gt; 0,
+    !,
+    S1 is S0 + 1/I,
+    I2 is I-1,
+    sum(I2, N, S1, S).
+sum(_, _, S, S).
+</div>
+
+<div class="nb-cell query" name="q3">
+sum(10, Sum).
+</div>
+
+<div class="nb-cell query" name="q4">
+sum(100 000, Sum),
+term_size(Sum, Size).
+</div>
+
+<div class="nb-cell markdown" name="md4">
+## Forcing float arithmetic
+
+If you are not interested in precise results for some division or
+exponentiation, force one of the operants to float. For example rewrite
+the example above as below. Note that you get the same result if you
+change the start `0` to `0.0`, but that performs all division using
+rational numbers and is slower.
+
+If you want float division and the type of both operants is unknown, use
+the function float/1. Only one of the arguments needs to be casted this
+way.
+
+    A is X/float(Y).
+</div>
+
+<div class="nb-cell program" name="p6">
+sum(N, Sum) :-
+    sum(N, N, 0, Sum).
+
+sum(I, N, S0, S) :-
+    I &gt; 0,
+    !,
+    S1 is S0 + 1.0/I,   % use float argument
+    I2 is I-1,
+    sum(I2, N, S1, S).
+sum(_, _, S, S).
+</div>
+
+<div class="nb-cell query" name="q5">
+time(sum(100 000, Sum)).
+</div>
+
+<div class="nb-cell markdown" name="md2">
+#### Set the relevant flags
+
+You can toggle the flags below to check there effect. As a query only
+uses global marked program fragments and the program immediately above
+it, setting the fragment to local effectively disables it.
+
+</div>
+
+<div class="nb-cell program" data-background="true" name="p1">
+:- set_prolog_flag(prefer_rationals, true).
+</div>
+
+<div class="nb-cell program" data-background="true" name="p2">
+:- set_prolog_flag(rational_syntax, natural).
+</div>
+
+<div class="nb-cell program" data-background="true" name="p3">
+:- set_prolog_flag(max_rational_size, 1000).
+</div>
+
+<div class="nb-cell program" data-background="true" name="p4">
+:- set_prolog_flag(max_rational_size_action, float).
+</div>
+
+</div>

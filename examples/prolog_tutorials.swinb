@@ -1,12 +1,13 @@
 <div class="notebook">
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md1">
 # Prolog tutorials
 
 This notebook collects Prolog tutorials provided as SWISH notebooks.
 
   - [Using SWI-Prolog version 7 dicts](example/dict.swinb)
   - [Using tabling in SWI-Prolog](example/tabling.swinb)
+  - [Rational number (â) support](example/rational.swinb)
   
 Note that you can find other tutorials from the *Tutorials* menu at
 the [SWI-Prolog home page](http://www.swi-prolog.org).
