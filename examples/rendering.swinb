@@ -37,6 +37,7 @@ The following rendering plugins are currently supported.  Please visit the linke
     - [c3](example/render_c3.swinb) renders =c3= dicts as charts (line, bar, pie
       etc.) using [C3.js](http://www.c3js.org)
     - [codes](example/render_codes.swinb) renders lists of code-points as text.
+    - [term](example/render_term.swinb) renders the structure of a term as a graph.
   - Domain specific renderers
     - [bdd](example/render_bdd.swinb) renders CLP(B) residual goals as Binary Decision Diagrams (BDDs)
     - [chess](example/render_chess.swinb) renders chess positions (currently only

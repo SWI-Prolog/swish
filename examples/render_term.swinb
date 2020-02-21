@@ -1,0 +1,40 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# The term render plugin
+
+This plugin renders arbitrary terms to understand their representation.  The renderer reuses code from the [gvterm add-on](https://www.swi-prolog.org/pack/list?p=gvterm)
+
+Synopsis
+
+    :- use_rendering(term).
+    
+@bug The renderer does not show cyclic terms as a single term but instead as multiple terms with linking variables.  This is because SWISH does its works to untangle cycles and constraints before calling the rendering hooks.
+</div>
+
+<div class="nb-cell query" name="q1">
+T = f(1,a,X,X,Y,42.0,"Hello world").
+</div>
+
+<div class="nb-cell query" name="q3">
+L = [a,b,c].
+</div>
+
+<div class="nb-cell query" name="q5">
+E = A+B*C/sqrt(2)*cos(pi).
+</div>
+
+<div class="nb-cell query" name="q4">
+L = t{x:1, y:2}.
+</div>
+
+<div class="nb-cell query" name="q2">
+projection([H]),
+F = f(1), G = g(F,F,G), H = h(G).
+</div>
+
+<div class="nb-cell program" data-background="true" name="p1">
+:- use_rendering(term).
+</div>
+
+</div>
