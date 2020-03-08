@@ -1,7 +1,17 @@
 # SWISH configuration
 
 At startup, SWISH reads *.pl files  from the directory `config-enabled`.
-The *.pl are loaded using ensure_loaded/1 in alphabetical order.
+This directory is searched  for  in   two  places:  the  current working
+directory of the server and the SWISH   source directory. If both exists
+the local one is used.
+
+All files in `config-enabled`  named   ``*.pl``  are loaded alphabetical
+order  using  ensure_loaded/1.  Changing   the  configuration  typically
+requires a restart of the server. In a  few cases this may be avoided by
+running `?- swish_app:load_config.` or `?-   make.`  Deciding whether or
+not a restart is needed requires knowledge of the internals of SWISH and
+the SWI-Prolog HTTP infra structure and  the general advice is therefore
+to restart the server.
 
 The directory `config-available` provides  skeleton   files  for  common
 configuration settings. These files may  be   linked  from  or copied to
