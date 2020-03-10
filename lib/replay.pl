@@ -105,8 +105,14 @@ replay :-
 	pengine_in_log(Pengine, _StartTime, Src),
 	\+ skip_pengine_store(Pengine),
 	Src \== (-),
-	catch(replay(Pengine), E,
-	      print_message(warning, E)).
+	catch(replay(Pengine), E, true),
+	(   var(E)
+	->  true
+	;   E = error(socket_error(econnrefused, _), _)
+	->  print_message(warning, E),
+	    !					% server seems dead
+	;   print_message(warning, E)
+	).
 
 replay_after(Time) :-
 	pengine_in_log(Pengine, StartTime, Src),
