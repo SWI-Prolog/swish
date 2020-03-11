@@ -67,12 +67,17 @@
 %       type(Type) wrapper.
 %       - default(+Default)
 %       Default value to use.
+%       - label(+Label)
+%       Provide a name.  This is required when projection/1 hides
+%       the Prolog variable name.
 
 parameters(List) :-
     include(not_filled, List, ToFill),
     debug(dashboard(param), 'ToFill: ~p', [ToFill]),
     fill(ToFill).
 
+not_filled(Var) :-
+    var(Var), !.
 not_filled(Var:_) :-
     var(Var).
 
@@ -91,6 +96,7 @@ fill(NotFilled) :-
                 html: HTML
               },
     pengine_input(Prompt, Reply),
+    debug(dashboard(param), 'Reply = ~p', [Reply]),
     bind_form_reply(NotFilled, Reply).
 
 buttons(
@@ -129,6 +135,10 @@ form_field(Var:Opts, field(Name, Var, [Type|Extra])) :-
 %
 %   Construct a Bootstrap input item from ParamSpec.
 
+input(Var, Input) :-
+    var(Var),
+    !,
+    input(Var:[], Input).
 input(_Var:Opts, Input) :-
     opt_list(Opts, Options),
     select_option(type(Type), Options, Options1),

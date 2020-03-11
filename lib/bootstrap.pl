@@ -204,7 +204,11 @@ input_attr(Options) -->
     data(Options).
 
 input_value(Options) -->
-    { option(value(Value), Options) },
+    { (   option(value(Value), Options)
+      ->  true
+      ;   option(default(Value), Options)
+      )
+    },
     [ value(Value) ].
 input_disabled(Options) -->
     { option(disabled(true), Options) },
