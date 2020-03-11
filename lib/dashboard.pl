@@ -147,6 +147,9 @@ input(string, Name, Options,
       textarea(Name, Options)) :-
     option(rows(_Rows), Options),
     !.
+input(oneof(Values), Name, Options,
+      select(Name, Values, Options)) :-
+    !.
 input(_, Name, Options,
       input(Name, text, Options)).
 
