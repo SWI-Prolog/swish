@@ -737,7 +737,8 @@ define([ "jquery", "config", "preferences", "utils",
 	  }));
 	  return this;
 	} else if ( options.code == "syntax_error" )
-	{ var m = options.message.match(/^HTTP:DATA:(\d+):(\d+):\s*(.*)/);
+	{ var msg = options.message||options.data;
+	  var m = msg.match(/^HTTP:DATA:(\d+):(\d+):\s*(.*)/);
 
 	  if ( m && m.length == 4 ) {
 	    this.prologRunner('syntaxError',
