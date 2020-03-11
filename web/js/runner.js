@@ -1452,6 +1452,8 @@ define([ "jquery", "config", "preferences", "utils",
 	options.breakpoints = Pengine.stringify(bps);
       if ( data.chunk )
 	options.chunk = data.chunk;
+      if ( data.query.tabled )
+	options.tabled = true;
 
       this.pengine.ask("'$swish wrapper'((\n" +
 		       termNoFullStop(data.query.query) +

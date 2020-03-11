@@ -598,6 +598,7 @@ screen_property(height(_)).
 screen_property(width(_)).
 screen_property(rows(_)).
 screen_property(cols(_)).
+screen_property(tabled(_)).
 
 %!	swish:tty_size(-Rows, -Cols) is det.
 %
