@@ -1,0 +1,39 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# Managing displayed variables (projections)
+
+Often a query contains variables in which value you are not interested.  This is notably the case when using the __table results__ option, either in the main window or using the settings button for notebook queries.  In addition one may whish to display the variables in a particular __order__.
+
+One of the options for omitting variables from being displayed is to use the _anonymous_ variable `_` or the _named singleton_ notation `_Name`, i.e., a variable whose name _starts_ with an underscore followed by a capital letter.  Such variables are not included in the output.  For example, consider the query below which displays `Y`, but hides `_X`, while this variable is still used to carry information between the two goals.
+
+Note that this way of hiding variables is also used by the normal SWI-Prolog toplevel.
+</div>
+
+<div class="nb-cell query" name="q1">
+_X = 1+1,
+Y is _X**4.
+</div>
+
+<div class="nb-cell markdown" name="md2">
+In SWISH, the above can also be achieved using projection(ListOfVars), as a __first subgoal__ in a query, where `ListOfVars` also dictates the order in which the variables are displayed.  Consider the two queries below.  
+
+A default projection can be added using the __Prejection__ menu option in the hamurger menu (notebooks) or the _Solutions_ menu (main query window).
+</div>
+
+<div class="nb-cell query" data-chunk="10" data-tabled="true" name="q2">
+Table = 7,
+between(1, 10, F),
+Value is Table*F,
+Expr = (F*Table).
+</div>
+
+<div class="nb-cell query" data-chunk="10" data-tabled="true" name="q3">
+projection([Expr,Value]),
+Table = 7,
+between(1, 10, F),
+Value is Table*F,
+Expr = (F*Table).
+</div>
+
+</div>

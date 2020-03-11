@@ -1,0 +1,104 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# Parameterized queries in notebooks
+
+Quite often one wishes to allow running the same query with different arguments (parameters), notably in notebooks.  There are roughly three options to achieve this.  The alternatives go from _geeky_ to _dashboard_ style.
+
+  - Add a parameter block as a sequence of unifications before the query
+  - Use parameters/1
+  - Use [HTML cells](example/htmlcell.swinb) to drive a query
+  
+First, the _function_ we are going to study.  This is also a parameter for the program included at the end of this notebook.  Note that a query loads the program above it and all programs marked with the global (earth-like) icon.
+</div>
+
+<div class="nb-cell program" name="p2">
+f(X,Y) :- Y is sin(X*pi/180).
+</div>
+
+<div class="nb-cell markdown" name="md3">
+Below are some examples, displaying a sine function with different ranges.
+</div>
+
+<div class="nb-cell query" name="q1">
+projection([Chart]),
+
+From  = 0,
+To    = 360,
+Steps = 36,
+
+chart(From,To,Steps,Chart).
+</div>
+
+<div class="nb-cell markdown" name="md2">
+Using a parameters/1 call.  By default the name of the parameter is the Prolog variable.  Notably when combined with a projection/1 to hide the parameter from the output we may wish to provide an explicit label.
+</div>
+
+<div class="nb-cell query" name="q2">
+parameters([ From:  integer, 
+             To:    integer,
+             Steps: integer
+           ]),
+
+chart(From,To,Steps,Chart).
+</div>
+
+<div class="nb-cell query" name="q3">
+projection([Chart]),
+parameters([ From:  integer +label('From'),
+             To:    integer +label('To'),
+             Steps: integer +label('Steps')
+           ]),
+
+chart(From,To,Steps,Chart).
+</div>
+
+<div class="nb-cell markdown" name="md5">
+## Parameterization using predicates
+
+Another way to parameterize a program is by omitting predicates from the main program
+and instead provide these predicates using a small program block immediately above the
+query.  This can both be used to provide parameters using simple facts as well as to actively change part of the program.  For example we can display the square root function by providing f/2.  In addition we define the label for chart series using the  discontiguous/1 predicate y_label/1 for which the main program provides a default.
+</div>
+
+<div class="nb-cell program" name="p3">
+f(X,Y) :- Y is sqrt(X).
+:- discontiguous y_label/1.
+y_label('Square root').
+</div>
+
+<div class="nb-cell query" name="q4">
+parameters([ From:  integer +default(0), 
+             To:    integer +default(1000),
+             Steps: integer +default(100)
+           ]),
+
+chart(From,To,Steps,Chart).
+</div>
+
+<div class="nb-cell markdown" name="md4">
+## The program
+
+Finally the program, which is parameterized by the X range, number of steps and 
+function f/2.  It computes X-Y pairs for the function and uses the
+[C3 renderer](example/render_c3.swinb) to display the chart.
+</div>
+
+<div class="nb-cell program" data-background="true" name="p1">
+:- use_rendering(c3).
+
+funcval(From,To,Steps, X, Y) :-
+    StepSize = (To-From)/Steps,
+    between(0,Steps,I),
+    X is From + I*StepSize,
+    f(X,Y).						% Function defined elsewhere
+
+chart(From,To,Steps,Chart) :-
+    once(y_label(YLabel)),
+    findall([X,Y], funcval(From,To,Steps,X,Y), Data),
+    Chart = c3{data:_{x:x, rows:[[x,YLabel]|Data]}}.
+
+y_label(y).						% Default label for the chart series.
+</div>
+
+</div>
