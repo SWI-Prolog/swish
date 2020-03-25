@@ -364,9 +364,26 @@ get_stats(Wrap, Stats) :-
 	swish_statistics(pengines(Pengines)),
 	swish_statistics(pengines_created(PenginesCreated)),
 	add_fordblks(Wrap, Stats0, Stats1),
-	add_visitors(Stats1, Stats).
+	add_heap(Stats1, Stats2),
+	add_visitors(Stats2, Stats).
 
-:- if(current_predicate(mallinfo/1)).
+:- if(current_predicate(malloc_property/1)).
+add_heap(Stats0, Stats) :-
+	malloc_property('generic.current_allocated_bytes'(Heap)),
+	Stats = Stats0.put(heep, Heap).
+:- else.
+add_heap(Stats, Stats).
+:- endif.
+
+:- if(current_predicate(malloc_property/1)).
+
+add_fordblks(_, Stats0, Stats) :-
+	malloc_property('generic.current_allocated_bytes'(Used)),
+	malloc_property('generic.heap_size'(Heap)),
+	FordBlks is Heap - Used,
+	Stats = Stats0.put(fordblks, FordBlks).
+
+:- elif(current_predicate(mallinfo/1)).
 :- dynamic fordblks_wrap/1.
 fordblks_wrap(0).
 

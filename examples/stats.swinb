@@ -68,6 +68,9 @@ period_format(week,   '%Y-%m-%d %H:00').
 period_format(year,   '%Y-%m-%d').
 
 add_heap_mb(Stat0, Stat) :-
+    Heap is Stat0.get(heap) / (1024^2), !,
+    put_dict(heap_mb, Stat0, Heap, Stat).
+add_heap_mb(Stat0, Stat) :-
     Heap is ( Stat0.get(rss) -
               Stat0.get(stack) -
               Stat0.get(fordblks)
