@@ -380,6 +380,7 @@ add_heap(Stats, Stats).
 add_fordblks(_, Stats0, Stats) :-
 	malloc_property('generic.current_allocated_bytes'(Used)),
 	malloc_property('generic.heap_size'(Heap)),
+        !,
 	FordBlks is Heap - Used,
 	Stats = Stats0.put(fordblks, FordBlks).
 
