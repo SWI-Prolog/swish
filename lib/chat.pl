@@ -252,7 +252,21 @@ must_succeed(Goal) :-
 
 visitor(WSID) :-
 	visitor_session(WSID, _Session, _Token),
-	\+ inactive(WSID, 30).
+	(   inactive(WSID, 30)
+	->  fail
+	;   reap(WSID)
+	).
+
+:- if(current_predicate(hub_member/2)).
+reap(WSID) :-
+	hub_member(swish_chat, WSID),
+	!.
+:- else.
+reap(_).
+:- endif.
+reap(WSID) :-
+	destroy_visitor(WSID),
+	fail.
 
 visitor_count(Count) :-
 	aggregate_all(count, visitor(_), Count).
