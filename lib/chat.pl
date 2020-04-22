@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2016-2018, VU University Amsterdam
+    Copyright (C): 2016-2020, VU University Amsterdam
 			      CWI Amsterdam
     All rights reserved.
 
@@ -262,10 +262,11 @@ reap(WSID) :-
 	hub_member(swish_chat, WSID),
 	!.
 :- else.
-reap(_).
+reap(_) :-
+	!.
 :- endif.
 reap(WSID) :-
-	destroy_visitor(WSID),
+	reclaim_visitor(WSID),
 	fail.
 
 visitor_count(Count) :-
