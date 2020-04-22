@@ -822,6 +822,7 @@ style(rational(_Value),	 rational,			   [text]).
 style(format_string,	 format_string,			   []).
 style(meta(_Spec),	 meta,				   []).
 style(op_type(_Type),	 op_type,			   [text]).
+style(decl_option(_Name),decl_option,			   [text]).
 style(functor,		 functor,			   [text]).
 style(control,		 control,			   [text]).
 style(delimiter,	 delimiter,			   [text]).

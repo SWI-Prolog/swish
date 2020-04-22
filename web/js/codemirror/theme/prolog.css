@@ -26,6 +26,7 @@
 .cm-s-prolog span.cm-singleton	       {color: #800; font-weight: bold;} /* Singleton */
 .cm-s-prolog span.cm-identifier	       {font-weight: bold;}
 .cm-s-prolog span.cm-keyword	       {font-weight: bold;}
+.cm-s-prolog span.cm-decl_option       {font-weight: bold;}
 .cm-s-prolog span.cm-module	       {color: #549;}
 .cm-s-prolog span.cm-constraint        {color: #008b8b;} /*dark-cyan*/
 .cm-s-prolog span.cm-head_exported     {color: blue; font-weight: bold;}
