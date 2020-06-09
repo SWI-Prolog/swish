@@ -3,8 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2017, VU University Amsterdam
-			 CWI Amsterdam
+    Copyright (C): 2017-2020, VU University Amsterdam
+			      CWI Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -77,7 +77,8 @@ user:file_search_path(hdt, '../hdt-data').
 % :- use_module(swish:swish(lib/plugin/hdt)).
 
 % EDIT: Define common RDF prefixes
-:- rdf_register_prefix(wgs84, 'http://www.w3.org/2003/01/geo/wgs84_pos#').
+:- rdf_register_prefix(wgs84,  'http://www.w3.org/2003/01/geo/wgs84_pos#').
+:- rdf_register_prefix(schema, 'http://schema.org/').
 
 :- rdf_meta(prefix(r, r)).
 
