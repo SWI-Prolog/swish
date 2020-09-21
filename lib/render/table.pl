@@ -43,6 +43,7 @@
 :- use_module(library(http/html_write)).
 :- use_module(library(http/term_html)).
 :- use_module('../render').
+:- use_module(library(error)).
 
 :- register_renderer(table, "Render data as tables").
 
@@ -69,6 +70,10 @@ Render table-like data.
 %     Multiple `header` options may be present.  The first matching
 %     row is used, next the `first_row` value and if nothing matches
 %     no header is displayed.
+%     - align(+Alignment)
+%     Specify the column alignment as one of `l`, `c` or `r` or the
+%     more verbose `left`, `center`, `right`.  Default is `left`,
+%     except for columns holding only integers.
 %
 %   @tbd: recognise more formats
 
@@ -76,7 +81,8 @@ term_rendering(Term, _Vars, Options) -->
     { is_list_of_dicts(Term, _NRows, ColNames),
       !,
       partition(is_header, Options, _HeaderOptions, Options1),
-      fix_op_priority(Options1, Options2)
+      fix_op_priority(Options1, Options2),
+      column_alignment(Term, Options2, Options3)
     },
     !,
     html(div([ style('display:inline-block'),
@@ -84,13 +90,14 @@ term_rendering(Term, _Vars, Options) -->
              ],
              [ table(class('render-table'),
                      [ \header_row(ColNames),
-                       \rows(Term, Options2)
+                       \rows(Term, Options3)
                      ])
              ])).
 term_rendering(Term, _Vars, Options) -->
     { is_list_of_terms(Term, _NRows, _NCols),
       header(Term, Rows, Header, Options, Options1),
-      fix_op_priority(Options1, Options2)
+      fix_op_priority(Options1, Options2),
+      column_alignment(Rows, Options2, Options3)
     },
     !,
     html(div([ style('display:inline-block'),
@@ -98,13 +105,14 @@ term_rendering(Term, _Vars, Options) -->
              ],
              [ table(class('render-table'),
                      [ \header_row(Header),
-                       \rows(Rows, Options2)
+                       \rows(Rows, Options3)
                      ])
              ])).
 term_rendering(Term, _Vars, Options) -->
     { is_list_of_lists(Term, _NRows, _MCols),
       header(Term, Rows, Header, Options, Options1),
-      fix_op_priority(Options1, Options2)
+      fix_op_priority(Options1, Options2),
+      column_alignment(Rows, Options2, Options3)
     },
     !,
     html(div([ style('display:inline-block'),
@@ -112,7 +120,7 @@ term_rendering(Term, _Vars, Options) -->
              ],
              [ table(class('render-table'),
                      [ \header_row(Header),
-                       \rows(Rows, Options2)
+                       \rows(Rows, Options3)
                      ])
              ])).
 
@@ -133,14 +141,33 @@ fix_op_priority(Options, Options).
 
 rows([], _) --> [].
 rows([H|T], Options) -->
-    { cells(H, Cells) },
-    html(tr(\row(Cells, Options))),
+    { cells(H, Cells),
+      option(align(Alignments), Options)
+    },
+    html(tr(\row(Cells, Alignments, Options))),
     rows(T, Options).
 
-row([], _) --> [].
-row([H|T], Options) -->
-    html(td(\term(H, Options))),
-    row(T, Options).
+row([], [], _) --> [].
+row([H|T], [AH|AT], Options) -->
+    { functor(AH, Align, _),
+      (   align_attrs(Align, Atts)
+      ->  true
+      ;   domain_error(alignment, Align)
+      ),
+      (   AH =.. [_,Format]
+      ->  Options1 = [format(Format)|Options]
+      ;   Options1 = Options
+      )
+    },
+    html(td(Atts, \term(H, Options1))),
+    row(T, AT, Options).
+
+align_attrs(left, []).
+align_attrs(right,  [style('text-align:right')]).
+align_attrs(center, [style('text-align:center')]).
+align_attrs(l, Attrs) :- align_attrs(left, Attrs).
+align_attrs(r, Attrs) :- align_attrs(right, Attrs).
+align_attrs(c, Attrs) :- align_attrs(center, Attrs).
 
 cells(Row, Cells) :-
     is_list(Row),
@@ -155,15 +182,127 @@ cells(Row, Cells) :-
     compound(Row),
     compound_name_arguments(Row, _, Cells).
 
+		 /*******************************
+		 *            ALIGNMENT		*
+		 *******************************/
+
+column_alignment([Row|_], Options0, Options) :-
+    partition(is_align, Options0, AlignOptions, Options1),
+    member(AlignOption, AlignOptions),
+    align(AlignOption, Align),
+    generalise(Row, GRow),
+    generalise(Align, GRow),
+    !,
+    cells(Align, List),
+    Options = [align(List)|Options1].
+column_alignment(Rows, Options0, Options) :-
+    partition(is_align, Options0, _AlignOptions, Options1),
+    transpose_table(Rows, Cols),
+    maplist(col_alignment, Cols, Alignments),
+    Options = [align(Alignments)|Options1].
+
+is_align(0) :- !, fail.
+is_align(align(_)).
+is_align(align=_).
+
+align(align(H), H).
+align(align=H, H).
+
+
+
+%!  transpose_table(+Table, -Columns)
+%
+%   Transpose the table to a list of   columns, each column being a list
+%   of cells.
+
+transpose_table([], Cols) :-
+    maplist(=([]), Cols).
+transpose_table([Row|Rows], Cols) :-
+    cells(Row, Cells),
+    maplist(mkcol, Cells, Cols, Cols1),
+    transpose_table(Rows, Cols1).
+
+mkcol(Cell, [Cell|T], T).
+
+col_alignment(Col, right('~D')) :-
+    maplist(integer, Col),
+    !.
+col_alignment(Col, Align) :-
+    maplist(non_rational_number, Col),
+    !,
+    (   maplist(nat_digits, Col, Digits),
+        max_list(Digits, N),
+        N < 6
+    ->  format(atom(Fmt), '~~~df', [N]),
+        Align = right(Fmt)
+    ;   abs_min_max(Col, Min, Max),
+        min_max_format(Min, Max, Align)
+    ).
+col_alignment(_, left).
+
+non_rational_number(X) :-
+    (   integer(X)
+    ->  true
+    ;   float(X)
+    ).
+
+abs_min_max([], 0, 0).
+abs_min_max([H|T], Min, Max) :-
+    abs_min_max(T, H, Min, H, Max).
+
+abs_min_max([], Min, Min, Max, Max).
+abs_min_max([H|T], Min0, Min, Max0, Max) :-
+    Min1 is min(abs(H), Min0),
+    Max1 is max(abs(H), Max0),
+    abs_min_max(T, Min1, Min, Max1, Max).
+
+min_max_format(Min, Max, right(Fmt)) :-
+    (   Min =:= 0.0
+    ;   Max/Min < 100 000
+    ),
+    !,
+    Digits is round(max(2, 6-log10(Max))),
+    format(atom(Fmt), '~~~df', [Digits]).
+min_max_format(_, _, left('~q')).
+
+%!  nat_digits(+Number, -Digits)
+%
+%   Determine the number of digits that   should  naturally be displayed
+%   for a number.
+
+nat_digits(F, N) :-
+    integer(F),
+    !,
+    N = 0.
+nat_digits(F, N) :-
+    format(string(S), '~q', [F]),
+    (   (   sub_string(S, Start, _, _, "0000")
+        ;   sub_string(S, Start, _, _, "9999")
+        ),
+        !,
+        sub_string(S, SDot, _, _, "."),
+        N is Start - SDot - 1
+    ;   sub_string(S, _, _, ADot, ".")
+    ->  (   sub_string(S, _, _, 0, "0")
+        ->  N = 0
+        ;   N = ADot
+        )
+    ).
+
+
+
+		 /*******************************
+		 *            HEADER		*
+		 *******************************/
+
 %!  header(+Table, -Rows, -Header:list(Term), +Options, -RestOptions) is semidet.
 %
 %   Compute the header to use. Fails if   a  header is specified but
 %   does not match.
 
-header(Rows, Rows, _, Options0, Options) :-
-    \+ option(header(_), Options0),
-    !,
-    Options = Options0.
+header(Rows, Rows, _, Options, Options) :-
+    \+ option(header(_), Options),
+    !.
 header(Rows, TRows, ColHead, Options0, Options) :-
     Rows = [Row|TRows0],
     partition(is_header, Options0, HeaderOptions, Options),
@@ -179,8 +318,8 @@ header(Rows, TRows, ColHead, Options0, Options) :-
         Header == first_row
     ->  header_list(Row, ColHead),
         TRows = TRows0
-    ).
-
+    ),
+    !.
 
 is_header(0) :- !, fail.
 is_header(header(_)).
