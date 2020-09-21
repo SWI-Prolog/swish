@@ -75,7 +75,8 @@ Render table-like data.
 term_rendering(Term, _Vars, Options) -->
     { is_list_of_dicts(Term, _NRows, ColNames),
       !,
-      partition(is_header, Options, _HeaderOptions, Options1)
+      partition(is_header, Options, _HeaderOptions, Options1),
+      fix_op_priority(Options1, Options2)
     },
     !,
     html(div([ style('display:inline-block'),
@@ -83,12 +84,13 @@ term_rendering(Term, _Vars, Options) -->
              ],
              [ table(class('render-table'),
                      [ \header_row(ColNames),
-                       \rows(Term, Options1)
+                       \rows(Term, Options2)
                      ])
              ])).
 term_rendering(Term, _Vars, Options) -->
     { is_list_of_terms(Term, _NRows, _NCols),
-      header(Term, Rows, Header, Options, Options1)
+      header(Term, Rows, Header, Options, Options1),
+      fix_op_priority(Options1, Options2)
     },
     !,
     html(div([ style('display:inline-block'),
@@ -96,12 +98,13 @@ term_rendering(Term, _Vars, Options) -->
              ],
              [ table(class('render-table'),
                      [ \header_row(Header),
-                       \rows(Rows, Options1)
+                       \rows(Rows, Options2)
                      ])
              ])).
 term_rendering(Term, _Vars, Options) -->
     { is_list_of_lists(Term, _NRows, _MCols),
-      header(Term, Rows, Header, Options, Options1)
+      header(Term, Rows, Header, Options, Options1),
+      fix_op_priority(Options1, Options2)
     },
     !,
     html(div([ style('display:inline-block'),
@@ -109,9 +112,24 @@ term_rendering(Term, _Vars, Options) -->
              ],
              [ table(class('render-table'),
                      [ \header_row(Header),
-                       \rows(Rows, Options1)
+                       \rows(Rows, Options2)
                      ])
              ])).
+
+%!  fix_op_priority(+Options0, -Options)
+%
+%   Bindings a normally printed with priority  699 (the right hand limit
+%   for =/2). This is rather meaningless   for  tables. We therefore map
+%   699  to  1200.  We  should  preserve    a   user  value  given  with
+%   use_rendering/2, but we  cannot  distinguish   this  from  higher up
+%   defaults.
+
+fix_op_priority(Options0, Options) :-
+    select_option(priority(699), Options0, Options1),
+    !,
+    Options = [priority(1200)|Options1].
+fix_op_priority(Options, Options).
+
 
 rows([], _) --> [].
 rows([H|T], Options) -->
