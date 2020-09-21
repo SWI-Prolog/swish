@@ -21,6 +21,16 @@ This plugin requires a two-deminsional array of terms.
 
      If no match is found and `header(first_row)` is present, the
      first row is used to create the header.
+     
+   - align(AlignSpec)
+     Specify column alignment and format options.  The matching
+     rules are the same as for header(HeaderSpec).  Each element
+     is one of `l`, `c`, `r` or the verbatim version `left`, `center`,
+     `right`.  Optionally an element caries an argument to specify
+     format/2 options for formatting _atomic_ values.  E.g., `right('~D')`
+     results in a right aligned column with integer values displayed
+     using grouping.
+     
    - float_format(+Format)
      Render floating point numbers using `format(Format,Float)`
 
@@ -34,6 +44,11 @@ number of columns and, if a header is provided, the header list must have the sa
   - A _list_
   - A _compound term_, using any functor
   - A _dict_.  In this case the keys of the dict are using to add a header.
+  
+#### Alignment and formatting
+
+The align(Alignment) option can be used to specify alignment and formatting.  If nothing is specified, heuristics are applied to the values.  Currently this supports
+columns of only integers and columns of integers and floats.  In the latter case the system attempts to establish a reasonable value for the _precision_ and sets the alignment to `right('~Nf')`, where _N_ is the precision.  If ths fails, `left('~g')` is used.
 </div>
 
 <div class="nb-cell markdown" name="md2">
@@ -108,6 +123,28 @@ X = [ capital('Amsterdam', 'The Netherlands', 825 080),
       capital('London', 'United Kingdom', 8 416 535),
       capital('Paris', 'France', 2 241 346)
     ].
+</div>
+
+<div class="nb-cell markdown" name="md7">
+## Alignment and formatting
+
+As stated with the options, alignment and formatting can be specified per column and defaults apply.  Below are some examples.
+</div>
+
+<div class="nb-cell program" name="p5">
+:- use_rendering(table).
+</div>
+
+<div class="nb-cell query" name="q7">
+findall(I-V, (between(1, 32, I), V is 2^I), Table).
+</div>
+
+<div class="nb-cell program" name="p6">
+:- use_rendering(table, [align(r-r('~2f'))]).
+</div>
+
+<div class="nb-cell query" name="q8">
+findall(Y-V, (between(1, 30, Y), V is 1.04^Y), Table).
 </div>
 
 <div class="nb-cell markdown" name="md6">
