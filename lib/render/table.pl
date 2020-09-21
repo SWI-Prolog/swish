@@ -60,10 +60,20 @@ Render table-like data.
 %     $ A list of terms of equal arity :
 %     $ A list of lists of equal length :
 %
+%   Options:
+%
+%     - header(+Header)
+%     Specify the header row. This is either a row whose number of
+%     columns must match the columns in the table or the atom
+%     `first_row`, which causes the first row to be used as header.
+%     Multiple `header` options may be present.  The first matching
+%     row is used, next the `first_row` value and if nothing matches
+%     no header is displayed.
+%
 %   @tbd: recognise more formats
 
 term_rendering(Term, _Vars, Options) -->
-    { is_list_of_dicts(Term, _Rows, ColNames),
+    { is_list_of_dicts(Term, _NRows, ColNames),
       !,
       partition(is_header, Options, _HeaderOptions, Options1)
     },
@@ -77,8 +87,8 @@ term_rendering(Term, _Vars, Options) -->
                      ])
              ])).
 term_rendering(Term, _Vars, Options) -->
-    { is_list_of_terms(Term, _Rows, _Cols),
-      header(Term, Header, Options, Options1)
+    { is_list_of_terms(Term, _NRows, _NCols),
+      header(Term, Rows, Header, Options, Options1)
     },
     !,
     html(div([ style('display:inline-block'),
@@ -86,12 +96,12 @@ term_rendering(Term, _Vars, Options) -->
              ],
              [ table(class('render-table'),
                      [ \header_row(Header),
-                       \rows(Term, Options1)
+                       \rows(Rows, Options1)
                      ])
              ])).
 term_rendering(Term, _Vars, Options) -->
-    { is_list_of_lists(Term, _Rows, _Cols),
-      header(Term, Header, Options, Options1)
+    { is_list_of_lists(Term, _NRows, _MCols),
+      header(Term, Rows, Header, Options, Options1)
     },
     !,
     html(div([ style('display:inline-block'),
@@ -99,7 +109,7 @@ term_rendering(Term, _Vars, Options) -->
              ],
              [ table(class('render-table'),
                      [ \header_row(Header),
-                       \rows(Term, Options1)
+                       \rows(Rows, Options1)
                      ])
              ])).
 
@@ -112,9 +122,6 @@ rows([H|T], Options) -->
 row([], _) --> [].
 row([H|T], Options) -->
     html(td(\term(H, Options))),
-    row(T, Options).
-row([H|T], Options) -->
-    html(td(\term(H, []))),
     row(T, Options).
 
 cells(Row, Cells) :-
@@ -130,23 +137,32 @@ cells(Row, Cells) :-
     compound(Row),
     compound_name_arguments(Row, _, Cells).
 
-%!  header(+Table, -Header:list(Term), +Options, -RestOptions) is semidet.
+%!  header(+Table, -Rows, -Header:list(Term), +Options, -RestOptions) is semidet.
 %
 %   Compute the header to use. Fails if   a  header is specified but
 %   does not match.
 
-header(_, _, Options0, Options) :-
+header(Rows, Rows, _, Options0, Options) :-
     \+ option(header(_), Options0),
     !,
     Options = Options0.
-header([Row|_], ColHead, Options0, Options) :-
+header(Rows, TRows, ColHead, Options0, Options) :-
+    Rows = [Row|TRows0],
     partition(is_header, Options0, HeaderOptions, Options),
-    member(HeaderOption, HeaderOptions),
-    header(HeaderOption, Header),
-    generalise(Row, GRow),
-    generalise(Header, GRow),
-    !,
-    header_list(Header, ColHead).
+    (   member(HeaderOption, HeaderOptions),
+        header(HeaderOption, Header),
+        Header \== first_row,
+        generalise(Row, GRow),
+        generalise(Header, GRow)
+    ->  header_list(Header, ColHead),
+        TRows = Rows
+    ;   member(HeaderOption, HeaderOptions),
+        header(HeaderOption, Header),
+        Header == first_row
+    ->  header_list(Row, ColHead),
+        TRows = TRows0
+    ).
+
 
 is_header(0) :- !, fail.
 is_header(header(_)).
@@ -192,7 +208,7 @@ header_columns([H|T]) -->
 %!  is_list_of_terms(@Term, -Rows, -Cols) is semidet.
 %
 %   Recognises a list of terms with   the  same functor and non-zero
-%   ariry.
+%   arity.
 
 is_list_of_terms(Term, Rows, Cols) :-
     is_list(Term), Term \== [],
