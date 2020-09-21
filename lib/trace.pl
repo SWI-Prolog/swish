@@ -590,15 +590,15 @@ pengines:prepare_goal(Goal0, Goal, Options) :-
 
 set_screen_property(Options) :-
 	pengine_self(Pengine),
-	screen_property(Property),
+	screen_property_decl(Property),
 	option(Property, Options),
 	assertz(Pengine:screen_property(Property)).
 
-screen_property(height(_)).
-screen_property(width(_)).
-screen_property(rows(_)).
-screen_property(cols(_)).
-screen_property(tabled(_)).
+screen_property_decl(height(_)).
+screen_property_decl(width(_)).
+screen_property_decl(rows(_)).
+screen_property_decl(cols(_)).
+screen_property_decl(tabled(_)).
 
 %!	swish:tty_size(-Rows, -Cols) is det.
 %
