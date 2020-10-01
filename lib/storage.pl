@@ -123,7 +123,8 @@ open_gittystore_guarded(Dir) :-
 			     access(write),
 			     file_errors(fail)
 			   ]), !,
-	gitty_open(Dir, []),
+	gitty_open_options(Options),
+	gitty_open(Dir, Options),
 	asserta(storage_dir(Dir)).
 open_gittystore_guarded(Dir) :-
 	setting(directory, Spec),
@@ -132,7 +133,8 @@ open_gittystore_guarded(Dir) :-
 			   ]),
 	\+ exists_directory(Dir),
 	create_store(Dir), !,
-	gitty_open(Dir, []),
+	gitty_open_options(Options),
+	gitty_open(Dir, Options),
 	asserta(storage_dir(Dir)).
 
 create_store(Dir) :-
@@ -143,6 +145,18 @@ create_store(Dir) :-
 	catch(make_directory(Dir),
 	      error(permission_error(create, directory, Dir), _),
 	      fail), !.
+
+gitty_open_options(Options) :-
+	swish_config(redis, DB),
+	!,
+	(   swish_config(redis_prefix, Prefix)
+	->  Options = [ redis(DB),
+			redis_prefix(Prefix)
+		      ]
+	;   Options = [ redis(DB)
+		      ]
+	).
+gitty_open_options(_).
 
 
 %%	web_storage(+Request) is det.

@@ -35,7 +35,8 @@
 */
 
 :- module(gitty_driver_files,
-          [ gitty_close/1,              % +Store
+          [ gitty_open/2,               % +Store, +Options
+            gitty_close/1,              % +Store
             gitty_file/4,               % +Store, ?Name, ?Ext, ?Hash
 
             gitty_update_head/4,        % +Store, +Name, +OldCommit, +NewCommit
@@ -100,7 +101,7 @@ to rounding the small objects to disk allocation units.
     pack_object/6,                      % Hash, Type, Size, Offset, Store,PackFile
     attached_packs/1,                   % Store
     attached_pack/2,                    % Store, PackFile
-    redis_db/1.                         % Use Redis for heads
+    redis_db/3.                         % Store, DB, Prefix
 
 :- volatile
     head/4,
@@ -124,6 +125,25 @@ remote_sync(false).
 remote_sync(true).
 :- endif.
 
+%!  gitty_open(+Store, +Options) is det.
+%
+%   Driver  specific  initialization.  Handles  setting    up   a  Redis
+%   connection when requested.  This processes:
+%
+%     - redis(+DB)
+%       Name of the redis DB to connect to.  See redis_server/3.
+%     - redis_prefix(+Prefix)
+%       Prefix for all keys.  This can be used to host multiple
+%       SWISH servers on the same redis cluster.  Default is `swish`.
+
+gitty_open(Store, Options) :-
+    option(redis(DB), Options),
+    !,
+    option(redis_prefix(Prefix), Options, swish),
+    asserta(redis_db(Store, DB, Prefix)).
+gitty_open(_, _).
+
+
 %!  gitty_close(+Store) is det.
 %
 %   Close resources associated with a store.
@@ -143,6 +163,11 @@ gitty_close(Store) :-
 %   True when File entry in the  gitty   store  and Head is the HEAD
 %   revision.
 
+gitty_file(Store, Head, Ext, Hash) :-
+    redis_db(Store, _, _),
+    !,
+    gitty_scan(Store),
+    redis_file(Store, Head, Ext, Hash).
 gitty_file(Store, Head, Ext, Hash) :-
     gitty_scan(Store),
     head(Store, Head, Ext, Hash).
@@ -282,6 +307,13 @@ gitty_scan(Store) :-
 gitty_scan_sync(Store) :-
     store(Store, _),
     !.
+gitty_scan_sync(Store) :-
+    redis_db(Store, _, _),
+    !,
+    gitty_attach_packs(Store),
+    redis_ensure_heads(Store),
+    get_time(Now),
+    assertz(store(Store, Now)).
 :- if(remote_sync(true)).
 gitty_scan_sync(Store) :-
     remote_sync(true),
@@ -402,6 +434,10 @@ gitty_object_file(Store, Hash, Path) :-
 %   This operation can fail because another   writer has updated the
 %   head.  This can both be in-process or another process.
 
+gitty_update_head(Store, Name, OldCommit, NewCommit) :-
+    redis_db(Store, _, _),
+    !,
+    redis_update_head(Store, Name, OldCommit, NewCommit).
 gitty_update_head(Store, Name, OldCommit, NewCommit) :-
     with_mutex(gitty,
                gitty_update_head_sync(Store, Name, OldCommit, NewCommit)).
@@ -592,12 +628,20 @@ save_heads(Store, Out) :-
 %   should they do their own thing?
 
 delete_head(Store, Head) :-
+    redis_db(Store, _, _),
+    !,
+    redis_delete_head(Store, Head).
+delete_head(Store, Head) :-
     retractall(head(Store, Head, _, _)).
 
 %!  set_head(+Store, +File, +Hash) is det.
 %
 %   Set the head of the given File to Hash
 
+set_head(Store, File, Hash) :-
+    redis_db(Store, _, _),
+    !,
+    redis_set_head(Store, File, Hash).
 set_head(Store, File, Hash) :-
     file_name_extension(_, Ext, File),
     (   head(Store, File, _, Hash0)
@@ -1055,3 +1099,131 @@ delete_directory_async2(Dir) :-
 empty_directory(Dir) :-
     directory_files(Dir, AllFiles),
     exclude(hidden, AllFiles, []).
+
+
+		 /*******************************
+		 *        REDIS PRIMITIVES	*
+		 *******************************/
+
+redis_head_db(Store, DB, Key) :-
+    redis_db(Store, DB, Prefix),
+    string_concat(Prefix, ":gitty:head", Key).
+
+%!  redis_file(+Store, ?Name, ?Ext, ?Hash)
+
+redis_file(Store, Name, Ext, Hash) :-
+    nonvar(Name),
+    !,
+    file_name_extension(_Base, Ext, Name),
+    redis_head_db(Store, DB, Heads),
+    redis(DB, hget(Heads, Name), HashS),
+    atom_string(Hash, HashS).
+redis_file(Store, Name, Ext, Hash) :-
+    nonvar(Ext),
+    !,
+    string_concat("*.", Ext, Pattern),
+    redis_head_db(Store, DB, Heads),
+    redis_hscan_2list(DB, Heads, Pattern, List),
+    two_member(NameS, HashS, List),
+    atom_string(Name, NameS),
+    atom_string(Hash, HashS).
+redis_file(Store, Name, Ext, Hash) :-
+    nonvar(Hash),
+    !,
+    load_plain_commit(Store, Hash, Commit),
+    Name = Commit.name,
+    file_name_extension(_Base, Ext, Name).
+redis_file(Store, Name, Ext, Hash) :-
+    redis_head_db(Store, DB, Heads),
+    redis(DB, hgetall(Heads), List),
+    two_member(NameS, HashS, List),
+    atom_string(Name, NameS),
+    atom_string(Hash, HashS),
+    file_name_extension(_Base, Ext, Name).
+
+%!  redis_ensure_heads(+Store)
+%
+%   Ensure the redis db contains a  hashmap   mapping  all file names to
+%   their head hashes.
+
+redis_ensure_heads(Store) :-
+    redis_head_db(Store, DB, Key),
+    redis(DB, exists(Key), 1),
+    !.
+redis_ensure_heads(Store) :-
+    redis_head_db(Store, DB, Key),
+    gitty_scan_latest(Store),
+    forall(retract(latest(Name, Hash, _Time)),
+           redis(DB, hset(Key, Name, Hash), _)).
+
+%!  redis_update_head(+Store, +Name, +OldCommit, +NewCommit)
+
+redis_update_head(Store, Name, OldCommit, NewCommit) :-
+    redis_head_db(Store, DB, Key),
+    redis_hcas(DB, Key, Name, OldCommit, NewCommit).
+
+%!  redis_delete_head(Store, Head) is det.
+%
+%   Unregister Head
+
+redis_delete_head(Store, Head) :-
+    redis_head_db(Store, DB, Key),
+    redis(DB, hdel(Key, Head)).
+
+%!  redis_set_head(+Store, +File, +Hash) is det.
+
+redis_set_head(Store, File, Hash) :-
+    redis_head_db(Store, DB, Key),
+    redis(DB, hset(Key, File, Hash)).
+
+
+
+		 /*******************************
+		 *         REDIS BASICS		*
+		 *******************************/
+
+%!  redis_hcas(+DB, +Hash, +Key, +Old, +New) is semidet.
+%
+%   Update Hash.Key to New provided the current value is Old.
+
+redis_hcas(DB, Hash, Key, Old, New) :-
+    redis(DB, eval("if redis.call('HGET', KEYS[1], KEYS[2]) == ARGV[1] then \c
+                       redis.call('HSET', KEYS[1], KEYS[2], ARGV[2]); \c
+                       return 1; \c
+                       end; \c
+                     return 0\c
+                   ",
+                   2, Hash, Key, Old, New),
+          1).
+
+%!  redis_hscan_keys(+DB, +Hash, +Pattern, -Keys) is det.
+%
+%   True when Keys is a list of strings holding all keys in Hash that
+%   match the wildcard Pattern.
+
+redis_hscan_keys(DB, Hash, Pattern, Keys) :-
+    redis_hscan_2list(DB, Hash, Pattern, List),
+    first_pair(List, Keys).
+
+redis_hscan_2list(DB, Hash, Pattern, List) :-
+    scan(DB, Hash, Pattern, 0, List, []).
+
+scan(DB, Hash, Pattern, From, Files, Tail) :-
+    scan(DB, Hash, Pattern, From, Cont, Files, Tail0),
+    (   Cont == "0"
+    ->  Tail0 = Tail
+    ;   scan(DB, Hash, Pattern, Cont, Tail0, Tail)
+    ).
+
+scan(DB, Hash, Pattern, From, Cont, Files, Tail) :-
+    redis(DB, hscan(Hash, From, match, Pattern),
+          [ Cont, Files0 ]),
+    append(Files0, Tail, Files).
+
+first_pair([], []).
+first_pair([H,_|T0], [H|T]) :-
+    first_pair(T0, T).
+
+two_member(E1, E2, [E1,E2|_]).
+two_member(E1, E2, [_,_|List]) :-
+    two_member(E1, E2, List).
