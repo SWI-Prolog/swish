@@ -163,7 +163,7 @@ gitty_open_options(Options) :-
     ;   Options = [ redis(DB)
                   ]
     ).
-gitty_open_options(_).
+gitty_open_options([]).
 
 
 %!  web_storage(+Request) is det.
