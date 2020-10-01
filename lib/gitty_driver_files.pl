@@ -140,7 +140,8 @@ gitty_open(Store, Options) :-
     option(redis(DB), Options),
     !,
     option(redis_prefix(Prefix), Options, swish),
-    asserta(redis_db(Store, DB, Prefix)).
+    asserta(redis_db(Store, DB, Prefix)),
+    redis_listen(Store).
 gitty_open(_, _).
 
 
@@ -1180,6 +1181,44 @@ redis_set_head(Store, File, Hash) :-
     redis_head_db(Store, DB, Key),
     redis(DB, hset(Key, File, Hash)).
 
+		 /*******************************
+		 *           REPLICATE		*
+		 *******************************/
+
+%!  redis_listen(+Store)
+%
+%   Start a redis client to listen for events on store.
+
+redis_listen(Store) :-
+    redis_db(Store, DB, Key),
+    !,
+    catch(thread_create(redis_listen(DB, Key), _,
+                        [ alias(redis) ]),
+          E, print_message(warning, E)).
+redis_listen(_).
+
+redis_listen(DB, Key) :-
+    redis_connect(DB, Connection, []),
+    redis_write(Connection, subscribe(Key)),
+    listen_loop(DB, Key, Connection).
+
+listen_loop(DB, Key, Connection) :-
+    repeat,
+    (   catch(redis_read(Connection, Message), E, true),
+        var(E)
+    ->  catch(redis_dispatch(Message), E,
+              print_message(warning, E)),
+        fail
+    ;   redis_listen(DB, Key)
+    ).
+
+redis_dispatch(["message", _Channel, Data]) :-
+    dispatch(Data).
+
+:- debug(redis(subscribe)).
+
+dispatch(Data) :-
+    debug(redis(subscribe), 'Got ~p~n', [Data]).
 
 
 		 /*******************************
@@ -1192,10 +1231,10 @@ redis_set_head(Store, File, Hash) :-
 
 redis_hcas(DB, Hash, Key, Old, New) :-
     redis(DB, eval("if redis.call('HGET', KEYS[1], KEYS[2]) == ARGV[1] then \c
-                       redis.call('HSET', KEYS[1], KEYS[2], ARGV[2]); \c
-                       return 1; \c
-                       end; \c
-                     return 0\c
+                      redis.call('HSET', KEYS[1], KEYS[2], ARGV[2]); \c
+                      return 1; \c
+                      end; \c
+                    return 0\c
                    ",
                    2, Hash, Key, Old, New),
           1).
