@@ -3,7 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2018, VU University Amsterdam
+    Copyright (c)  2014-2020, VU University Amsterdam
+                              SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -105,10 +106,13 @@ the newly created (gitty_create/5) or updated object (gitty_update/5).
 %   options are:
 %
 %     - driver(+Driver)
-%     Backend driver to use.  One of =files= or =bdb=.  When
+%     Backend driver to use.  One of `files` or `bdb`.  When
 %     omitted and the store exists, the current store is
 %     examined.  If the store does not exist, the default
-%     is =files=.
+%     is `files`.
+%
+%   Other options are passed to the driver method gitty_open(Store,
+%   Options).
 
 gitty_open(Store, Options) :-
     (   exists_directory(Store)
@@ -119,7 +123,8 @@ gitty_open(Store, Options) :-
     ->  true
     ;   default_driver(Store, Driver)
     ),
-    set_driver(Store, Driver).
+    set_driver(Store, Driver),
+    gitty_driver_open(Store, Options).
 
 default_driver(Store, Driver) :-
     directory_file_path(Store, ref, RefDir),
@@ -157,6 +162,14 @@ gitty_driver(Store, Driver) :-
     store_driver_module(Store, Module),
     driver_module(Driver, Module),
     !.
+
+%!  gitty_driver_open(+Store, +Options) is det.
+%
+%   Initialise the driver
+
+gitty_driver_open(Store, Options) :-
+    store_driver_module(Store, M),
+    M:gitty_open(Store, Options).
 
 %!  gitty_close(+Store) is det.
 %
