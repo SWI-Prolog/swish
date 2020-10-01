@@ -307,7 +307,9 @@ object_bytes(Type, Size, Data, Bytes) :-
               open_memory_file(MF, write, Out, [encoding(octet)]),
               setup_call_cleanup(
                   zopen(Out, ZOut, [format(gzip), close_parent(false)]),
-                  format(ZOut, '~w ~d\u0000~w', [Type, Size, Data]),
+                  ( set_stream(ZOut, encoding(utf8)),
+                    format(ZOut, '~w ~d\u0000~w', [Type, Size, Data])
+                  ),
                   close(ZOut)),
               close(Out)),
           memory_file_to_string(MF, Bytes, octet)
@@ -1305,13 +1307,9 @@ listen_loop(DB, Key, Connection) :-
     ).
 
 redis_dispatch(["message", _Channel, Data]) :-
+    debug(redis(subscribe), 'Subscribe: got ~p', [Data]),
     dispatch(Data).
 
-:- debug(redis(subscribe)).
-
-dispatch(Data) :-
-    debug(redis(subscribe), 'Subscribe: got ~p', [Data]),
-    fail.
 dispatch(gitty(replicate(Hash))) :-
     store(Store, _),
     load_object_raw(Store, Hash, Data),
