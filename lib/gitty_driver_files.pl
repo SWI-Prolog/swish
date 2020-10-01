@@ -1161,6 +1161,10 @@ redis_ensure_heads(Store) :-
 
 %!  redis_update_head(+Store, +Name, +OldCommit, +NewCommit)
 
+redis_update_head(Store, Name, -, NewCommit) :-
+    !,
+    redis_head_db(Store, DB, Key),
+    redis(DB, hset(Key, Name, NewCommit), _).
 redis_update_head(Store, Name, OldCommit, NewCommit) :-
     redis_head_db(Store, DB, Key),
     redis_hcas(DB, Key, Name, OldCommit, NewCommit).
