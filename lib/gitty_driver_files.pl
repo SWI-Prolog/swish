@@ -234,6 +234,26 @@ ensure_directory(Dir) :-
 ensure_directory(Dir) :-
     make_directory(Dir).
 
+%!  store_object_raw(+Store, +Hash, +Bytes:string) is det.
+%
+%   Store an object  from  raw  bytes.   This  is  used  for replicating
+%   objects.
+
+store_object_raw(Store, Hash, _Bytes) :-
+    pack_object(Hash, _Type, _Size, _Offset, Store, _Pack),
+    !.
+store_object_raw(Store, Hash, Bytes) :-
+    gitty_object_file(Store, Hash, Path),
+    with_mutex(gitty_file, exists_or_create(Path, Out)),
+    (   var(Out)
+    ->  true
+    ;   call_cleanup(
+            ( set_stream(Out, type(binary)),
+              write(Out, Bytes)
+            ),
+            close(Out))
+    ).
+
 %!  load_object(+Store, +Hash, -Data, -Type, -Size) is det.
 %
 %   Load the given object.
@@ -243,12 +263,57 @@ load_object(_Store, Hash, Data, Type, Size) :-
     !,
     f(Data0, Type0, Size0) = f(Data, Type, Size).
 load_object(Store, Hash, Data, Type, Size) :-
+    load_object_file(Store, Hash, Data, Type, Size),
+    !.
+load_object(Store, Hash, Data, Type, Size) :-
+    redis_db(Store, _, _),
+    redis_replicate_get(Store, Hash),
+    load_object_file(Store, Hash, Data, Type, Size).
+
+load_object_file(Store, Hash, Data, Type, Size) :-
     gitty_object_file(Store, Hash, Path),
     exists_file(Path),
+    !,
     setup_call_cleanup(
         gzopen(Path, read, In, [encoding(utf8)]),
         read_object(In, Data, Type, Size),
         close(In)).
+
+%!  load_object_raw(+Store, +Hash, -Data)
+%
+%   Load the compressed data for an object. Intended for replication.
+
+load_object_raw(_Store, Hash, Bytes) :-
+    load_object_from_pack(Hash, Data, Type, Size),
+    !,
+    object_bytes(Type, Size, Data, Bytes).
+load_object_raw(Store, Hash, Data) :-
+    gitty_object_file(Store, Hash, Path),
+    exists_file(Path),
+    !,
+    setup_call_cleanup(
+        open(Path, read, In, [type(binary)]),
+        read_string(In, _, Data),
+        close(In)).
+
+%!  object_bytes(+Type, +Size, +Data, -Bytes) is det.
+%
+%   Encode an object with the given parameters in memory.
+
+object_bytes(Type, Size, Data, Bytes) :-
+    setup_call_cleanup(
+        new_memory_file(MF),
+        ( setup_call_cleanup(
+              open_memory_file(MF, write, Out, [encoding(octet)]),
+              setup_call_cleanup(
+                  zopen(Out, ZOut, [format(gzip), close_parent(false)]),
+                  format(ZOut, '~w ~d\u0000~w', [Type, Size, Data]),
+                  close(ZOut)),
+              close(Out)),
+          memory_file_to_string(MF, Bytes, octet)
+        ),
+        free_memory_file(MF)).
+
 
 %!  load_object_header(+Store, +Hash, -Type, -Size) is det.
 %
@@ -983,6 +1048,7 @@ read_object_here(In, Data, Type, Size) :-
           set_stream(In, encoding(Enc))
         )).
 
+
 %!  unpack_packs(+Store) is det.
 %
 %   Unpack all packs.
@@ -1185,6 +1251,32 @@ redis_set_head(Store, File, Hash) :-
 		 *           REPLICATE		*
 		 *******************************/
 
+%!  redis_replicate_get(+Store, +Hash)
+%
+%   Try to get an object from another SWISH server in the network.
+
+redis_replicate_get(Store, Hash) :-
+    redis_db(Store, DB, Prefix),
+    repl_key(Prefix, Hash, Key),
+    between(0, 3, I),
+    (   redis(DB, get(Key), Data)
+    ->  !,
+        debug(redis(replicate), 'Received object ~p', [Hash]),
+        store_object_raw(Store, Hash, Data)
+    ;   debug(redis(replicate), 'Asking object ~p', [Hash]),
+        publish(Store, gitty(replicate(Hash))),
+        Sleep is min(10, (1<<I)*0.05),
+        sleep(Sleep),
+        fail
+    ).
+
+repl_key(Prefix, Hash, Key) :-
+    atomics_to_string([Prefix,gitty,object,Hash], ":", Key).
+
+publish(Store, Term) :-
+    redis_db(Store, DB, Prefix),
+    redis(DB, publish(Prefix, prolog(Term)), _).
+
 %!  redis_listen(+Store)
 %
 %   Start a redis client to listen for events on store.
@@ -1218,7 +1310,17 @@ redis_dispatch(["message", _Channel, Data]) :-
 :- debug(redis(subscribe)).
 
 dispatch(Data) :-
-    debug(redis(subscribe), 'Got ~p~n', [Data]).
+    debug(redis(subscribe), 'Subscribe: got ~p', [Data]),
+    fail.
+dispatch(gitty(replicate(Hash))) :-
+    store(Store, _),
+    load_object_raw(Store, Hash, Data),
+    redis_db(Store, DB, Prefix),
+    repl_key(Prefix, Hash, Key),
+    (   redis(DB, exists(Key), 1)
+    ->  true
+    ;   redis(DB, set(Key, Data, ex, 60), _)
+    ).
 
 
 		 /*******************************
