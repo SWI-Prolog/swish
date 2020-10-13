@@ -267,8 +267,9 @@ load_object(_Store, Hash, Data, Type, Size) :-
     !,
     f(Data0, Type0, Size0) = f(Data, Type, Size).
 load_object(Store, Hash, Data, Type, Size) :-
-    load_object_file(Store, Hash, Data, Type, Size),
-    !.
+    load_object_file(Store, Hash, Data0, Type0, Size0),
+    !,
+    f(Data0, Type0, Size0) = f(Data, Type, Size).
 load_object(Store, Hash, Data, Type, Size) :-
     redis_db(Store, _, _),
     redis_replicate_get(Store, Hash),
@@ -1225,9 +1226,11 @@ redis_ensure_heads(Store) :-
     !.
 redis_ensure_heads(Store) :-
     redis_head_db(Store, DB, Key),
+    debug(gitty(redis), 'Initializing gitty heads in ~p ...', [Key]),
     gitty_scan_latest(Store),
     forall(retract(latest(Name, Hash, _Time)),
-           redis(DB, hset(Key, Name, Hash), _)).
+           redis(DB, hset(Key, Name, Hash), _)),
+    debug(gitty(redis), '... finished gitty heads', []).
 
 %!  redis_update_head(+Store, +Name, +OldCommit, +NewCommit)
 
