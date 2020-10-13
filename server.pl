@@ -46,7 +46,7 @@ This file is normally used from  `run.pl`,   which  is started like this
 from   the   shell   to   start   the   SWISH   server   accessible   on
 http://localhost:3050/
 
-    swipl run.pl
+    swipl run.pl [--public] [--port=Port]
 
 @see	run.pl and daemon.pl
 */
@@ -57,13 +57,16 @@ http://localhost:3050/
 %    Start the web-server on Port.  Port  may   be  unbound  to make the
 %    system  select  a  free  port.  Port  can   also  be  of  the  form
 %    `localhost:Port`  to  bind  the  server    only  to  the  localhost
-%    interface.
+%    interface.   The   broadcast   messages     are   compatible   with
+%    library(http/http_unix_daemon).
 
 server :-
 	server(localhost:3050).
 server(Port) :-
 	broadcast(http(pre_server_start)),
+	broadcast(http(pre_server_start(Port))),
 	http_server(http_dispatch,
 		    [ port(Port)
 		    ]),
+	broadcast(http(post_server_start(Port))),
 	broadcast(http(post_server_start)).
