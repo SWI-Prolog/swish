@@ -83,6 +83,7 @@ init_redis(Port) :-
 
 reinit_redis :-
     catch(stop_listener, error(_,_), true),
+    catch(thread_join(redis_listener, _), error(_,_), true),
     port(Port),
     init_redis(Port).
 
