@@ -1288,14 +1288,19 @@ init_replicator :-
            discover(Data2, Context2)),
     message_queue_create(_, [alias(gitty_queue)]).
 
-discover(Data, _Context) :-
+:- debug(gitty(replicate)).
+
+discover(Message, _Context) :-
+    debug(gitty(replicate), 'Discover: ~p', [Message]),
     store(Store, _),
+    atom_string(Hash, Message.hash),
     load_object_raw(Store, Hash, Data),
     debug(gitty(replicate), 'Sending object ~p', [Hash]),
     redis_swish_stream('gitty:replicate', ReplKey),
     xadd(swish, ReplKey, _, _{hash:Hash, data:Data}).
 
 replicate(Data, _Context) :-
+    debug(gitty(replicate), 'Replicate: ~p', [Data]),
     redis_db(Store, _DB, _Prefix),
     atom_string(Hash, Data.hash),
     store_object_raw(Store, Hash, Data.data, _0New),
