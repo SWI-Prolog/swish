@@ -8,3 +8,4 @@
 :- multifile swish_config:config/2.
 swish_config:config(redis, swish).
 swish_config:config(redis_prefix, swish).
+%swish_config:config(redis_consumer, alice).

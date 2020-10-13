@@ -75,6 +75,10 @@
 :- use_module(library(option)).
 :- use_module(library(dcg/basics)).
 
+:- use_module(swish_redis).
+:- use_module(library(redis)).
+:- use_module(library(redis_streams)).
+
 /** <module> Gitty plain files driver
 
 This version of the driver uses plain files  to store the gitty data. It
@@ -140,8 +144,7 @@ gitty_open(Store, Options) :-
     option(redis(DB), Options),
     !,
     option(redis_prefix(Prefix), Options, swish),
-    asserta(redis_db(Store, DB, Prefix)),
-    redis_listen(Store).
+    asserta(redis_db(Store, DB, Prefix)).
 gitty_open(_, _).
 
 
@@ -234,24 +237,25 @@ ensure_directory(Dir) :-
 ensure_directory(Dir) :-
     make_directory(Dir).
 
-%!  store_object_raw(+Store, +Hash, +Bytes:string) is det.
+%!  store_object_raw(+Store, +Hash, +Bytes:string, -New) is det.
 %
 %   Store an object  from  raw  bytes.   This  is  used  for replicating
 %   objects.
 
-store_object_raw(Store, Hash, _Bytes) :-
+store_object_raw(Store, Hash, _Bytes, false) :-
     pack_object(Hash, _Type, _Size, _Offset, Store, _Pack),
     !.
-store_object_raw(Store, Hash, Bytes) :-
+store_object_raw(Store, Hash, Bytes, New) :-
     gitty_object_file(Store, Hash, Path),
     with_mutex(gitty_file, exists_or_create(Path, Out)),
     (   var(Out)
-    ->  true
+    ->  New = false
     ;   call_cleanup(
             ( set_stream(Out, type(binary)),
               write(Out, Bytes)
             ),
-            close(Out))
+            close(Out)),
+        New = true
     ).
 
 %!  load_object(+Store, +Hash, -Data, -Type, -Size) is det.
@@ -1255,70 +1259,53 @@ redis_set_head(Store, File, Hash) :-
 
 %!  redis_replicate_get(+Store, +Hash)
 %
-%   Try to get an object from another SWISH server in the network.
-
-redis_replicate_get(Store, Hash) :-
-    redis_db(Store, DB, Prefix),
-    repl_key(Prefix, Hash, Key),
-    between(0, 3, I),
-    (   redis(DB, get(Key), Data)
-    ->  !,
-        debug(redis(replicate), 'Received object ~p', [Hash]),
-        store_object_raw(Store, Hash, Data)
-    ;   debug(redis(replicate), 'Asking object ~p', [Hash]),
-        publish(Store, gitty(replicate(Hash))),
-        Sleep is min(10, (1<<I)*0.05),
-        sleep(Sleep),
-        fail
-    ).
-
-repl_key(Prefix, Hash, Key) :-
-    atomics_to_string([Prefix,gitty,object,Hash], ":", Key).
-
-publish(Store, Term) :-
-    redis_db(Store, DB, Prefix),
-    redis(DB, publish(Prefix, prolog(Term)), _).
-
-%!  redis_listen(+Store)
+%   Try to get an object from another   SWISH  server in the network. We
+%   implement replication using two streams:
 %
-%   Start a redis client to listen for events on store.
+%     - <prefix>:gitty:replicate
+%     - <prefix>:gitty:discover
+%
+%
 
-redis_listen(Store) :-
-    redis_db(Store, DB, Key),
-    !,
-    catch(thread_create(redis_listen(DB, Key), _,
-                        [ alias(redis) ]),
-          E, print_message(warning, E)).
-redis_listen(_).
+:- multifile
+    swish_redis:stream/2.
 
-redis_listen(DB, Key) :-
-    redis_connect(DB, Connection, []),
-    redis_write(Connection, subscribe(Key)),
-    listen_loop(DB, Key, Connection).
+swish_redis:stream('gitty:replicate', [maxlen(1000)]).
+swish_redis:stream('gitty:discover',  [maxlen(1000)]).
 
-listen_loop(DB, Key, Connection) :-
-    repeat,
-    (   catch(redis_read(Connection, Message), E, true),
-        var(E)
-    ->  catch(redis_dispatch(Message), E,
-              print_message(warning, E)),
-        fail
-    ;   redis_listen(DB, Key)
-    ).
+:- listen(http(pre_server_start(_)),
+          init_replicator).
 
-redis_dispatch(["message", _Channel, Data]) :-
-    debug(redis(subscribe), 'Subscribe: got ~p', [Data]),
-    dispatch(Data).
+init_replicator :-
+    redis_swish_stream('gitty:replicate', ReplKey),
+    listen(redis_consume(ReplKey, Data1, Context1),
+           replicate(Data1, Context1)),
+    redis_swish_stream('gitty:discover', DiscKey),
+    listen(redis_consume(DiscKey, Data2, Context2),
+           discover(Data2, Context2)),
+    message_queue_create(_, [alias(gitty_queue)]).
 
-dispatch(gitty(replicate(Hash))) :-
+discover(Data, _Context) :-
     store(Store, _),
     load_object_raw(Store, Hash, Data),
-    redis_db(Store, DB, Prefix),
-    repl_key(Prefix, Hash, Key),
-    (   redis(DB, exists(Key), 1)
-    ->  true
-    ;   redis(DB, set(Key, Data, ex, 60), _)
-    ).
+    debug(gitty(replicate), 'Sending object ~p', [Hash]),
+    redis_swish_stream('gitty:replicate', ReplKey),
+    xadd(swish, ReplKey, _, _{hash:Hash, data:Data}).
+
+replicate(Data, _Context) :-
+    redis_db(Store, _DB, _Prefix),
+    atom_string(Hash, Data.hash),
+    store_object_raw(Store, Hash, Data.data, _0New),
+    debug(gitty(replicate), 'Received object ~p (new=~p)', [Hash, _0New]),
+    thread_send_message(gitty_queue, Hash).
+
+redis_replicate_get(Store, Hash) :-
+    redis_db(Store, _DB, _Prefix),
+    redis_swish_stream('gitty:discover', DiscKey),
+    xadd(swish, DiscKey, _, _{hash:Hash}),
+    thread_get_message(gitty_queue, Hash,
+                       [ timeout(10)
+                       ]).
 
 
 		 /*******************************
