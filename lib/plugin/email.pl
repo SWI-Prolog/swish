@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2017, VU University Amsterdam
-			 CWI Amsterdam
+    Copyright (C): 2017-2020, VU University Amsterdam
+			      CWI Amsterdam
+                              SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -61,6 +62,8 @@
 :- use_module(library(broadcast)).
 :- use_module(library(user_profile)).
 
+:- use_module('../config').
+
 /** <module> Email plugin for SWISH
 
 This module deals with sending  email  from   SWISH.  Email  is sent for
@@ -86,12 +89,27 @@ confirmation (of the email address) as well as for notifications.
 		 *            DATABASE		*
 		 *******************************/
 
+%!  redis_db(+Id, -Server, -Key) is semidet.
+%
+%   Get the Redis server and for a specific request.
+
+redis_key(Id, Server, Key) :-
+    swish_config(redis, Server),
+    swish_config(redis_prefix, Prefix),
+    atomic_list_concat([Prefix, confirm, Id], :, Key).
+
+use_redis :-
+    swish_config(redis, _).
+
 :- persistent
         request(key:string,
                 deadline:integer,
                 action:callable,
                 reply:callable).
 
+email_open_db :-
+    use_redis,
+    !.
 email_open_db :-
     db_attached(_),
     !.
@@ -105,6 +123,9 @@ email_open_db :-
 %   Strip the email confirmation queue from outdated messages.
 
 email_cleanup_db :-
+    use_redis,
+    !.
+email_cleanup_db :-
     with_mutex(swish_email, email_cleanup_db_sync).
 
 email_cleanup_db_sync :-
@@ -114,6 +135,30 @@ email_cleanup_db_sync :-
            ),
            retract_request(Key, Deadline, _, _)),
     db_sync(gc).
+
+add_request(Id, Deadline, Action, Reply) :-
+    redis_key(Id, Server, Key),
+    !,
+    get_time(Now),
+    TTL is integer(Deadline-Now),
+    redis(Server, set(Key, prolog(request(Action, Reply)), ex, TTL), _).
+add_request(Id, Deadline, Action, Reply) :-
+    with_mutex(swish_email,
+               assert_request(Id, Deadline, Action, Reply)).
+
+get_and_del_request(Id, Deadline, Action, Reply) :-
+    redis_key(Id, Server, Key),
+    !,
+    redis(Server,
+          [ ttl(Key) -> TTL,
+            get(Key) -> request(Action, Reply),
+            del(Key)
+          ]),
+    get_time(Now),
+    Deadline is Now+TTL.
+get_and_del_request(Id, Deadline, Action, Reply) :-
+    with_mutex(swish_email,
+               retract_request(Id, Deadline, Action, Reply)).
 
 
 
@@ -234,8 +279,7 @@ email_action_link(Label, Reply, Action, Options) -->
       option(timeout(TMO), Options, TMODef),
       get_time(Now),
       Deadline is round(Now+TMO),
-      with_mutex(swish_email,
-                 assert_request(Key, Deadline, Action, Reply))
+      add_request(Key, Deadline, Action, Reply)
     },
     html(a(href(HREF), Label)).
 
@@ -247,8 +291,7 @@ on_mail_link(Request) :-
     email_open_db,
     option(path_info(Path), Request),
     atom_string(Path, Key),
-    with_mutex(swish_email,
-               retract_request(Key, Deadline, Action, Reply)),
+    get_and_del_request(Key, Deadline, Action, Reply),
     !,
     (   get_time(Now),
         Now =< Deadline
