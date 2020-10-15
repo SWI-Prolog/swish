@@ -1267,14 +1267,12 @@ redis_set_head(Store, File, Hash) :-
 %
 %     - <prefix>:gitty:replicate
 %     - <prefix>:gitty:discover
-%
-%
 
 :- multifile
     swish_redis:stream/2.
 
-swish_redis:stream('gitty:replicate', [maxlen(1000)]).
-swish_redis:stream('gitty:discover',  [maxlen(1000)]).
+swish_redis:stream('gitty:replicate', [maxlen(1000), group(gitty)]).
+swish_redis:stream('gitty:discover',  [maxlen(1000), group(gitty)]).
 
 :- listen(http(pre_server_start(_)),
           init_replicator).

@@ -42,12 +42,19 @@
 :- use_module(library(broadcast)).
 :- use_module(library(option)).
 :- use_module(library(socket)).
+:- use_module(library(apply)).
+:- use_module(library(pairs)).
 
 :- use_module(config).
 
 /** <module> Redis stream connection
 
-Setup a thread to listen to redis connections.
+Setup to listening to redis events. We need all the _push_ facilities of
+Redis:
+
+  - redis_subscribe/4 to listen to volatile PUB/SUB messages
+  - Listen on reliable redis streams using ``XREAD``
+  - Listen on reliable redis streams using consumer groups
 
 Note that config-available sets up  the   redis  server  using the alias
 `swish`. Streams (redis keys) to  listen   on  are  registered using the
@@ -60,21 +67,37 @@ multifile predicate stream/2.
 :- listen(http(pre_server_start(Port)),
           init_redis(Port)).
 
-:- dynamic port/1.
+:- dynamic
+    port/1,                             % Server port
+    thread/1.                           % Listener thread.
 
 init_redis(_Port) :-
     catch(thread_property(redis_listener, id(_)), error(_,_), fail),
     !.
 init_redis(Port) :-
+    init_pubsub,
     retractall(port(_)),
     asserta(port(Port)),
-    findall(S, stream(S), Streams),
+    findall(Group-S, group_stream(S, Group), Pairs),
+    keysort(Pairs, Sorted),
+    group_pairs_by_key(Sorted, Grouped),
     consumer(Port, Consumer),
-    thread_create(xlisten_group(swish, swish, Consumer, Streams,
+    maplist(create_listener(Consumer), Grouped).
+
+create_listener((-)-Streams, _) :-
+    !,
+    thread_create(xlisten(swish, Streams, []),
+                  Id, [ alias(redis_no_group)
+                      ]),
+    assertz(thread(Id)).
+create_listener(Group-Streams, Consumer) :-
+    atom_concat(redis_, Group, Alias),
+    thread_create(xlisten_group(swish, Group, Consumer, Streams,
                                 [ block(1)
                                 ]),
-                  _, [ alias(redis_listener)
-                     ]).
+                  Id, [ alias(Alias)
+                      ]),
+    assertz(thread(Id)).
 
 %!  reinit_redis
 %
@@ -82,24 +105,27 @@ init_redis(Port) :-
 %   restart when crashed.
 
 reinit_redis :-
-    catch(stop_listener, error(_,_), true),
-    catch(thread_join(redis_listener, _), error(_,_), true),
+    forall(retract(thread(Id)),
+           catch(stop_listener(Id), error(_,_), true)),
     port(Port),
     init_redis(Port).
 
-stop_listener :-
-    thread_signal(redis_listener, redis(stop(false))),
-    thread_join(redis_listener, _).
+stop_listener(Id) :-
+    thread_signal(Id, redis(stop(false))),
+    thread_join(Id, _).
 
-stream(Key) :-
+group_stream(Key, Group) :-
     stream(Name, Options),
     redis_swish_stream(Name, Key),
     option(max_len(MaxLen), Options, 1000),
-    add_consumer_group(Key),
+    option(group(Group), Options, -),
+    add_consumer_group(Group, Key),
     xstream_set(swish, Key, maxlen(MaxLen)).
 
-add_consumer_group(Key) :-
-    catch(redis(swish, xgroup(create, Key, swish, $, mkstream), _),
+add_consumer_group(-, _) :-
+    !.
+add_consumer_group(Group, Key) :-
+    catch(redis(swish, xgroup(create, Key, Group, $, mkstream), _),
           error(redis_error(busygroup,_),_),
           true).
 
@@ -117,3 +143,10 @@ consumer(Port, Consumer) :-
     gethostname(Host),
     atomic_list_concat([Host,Port], :, Consumer).
 
+init_pubsub :-
+    redis_current_subscription(swish, _),
+    !.
+init_pubsub :-
+    redis_subscribe(swish, swish, _,
+                    [ alias(redis_pubsub)
+                    ]).
