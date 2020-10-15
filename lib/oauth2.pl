@@ -381,15 +381,15 @@ read_reply(Code, ContentType, In, Dict) :-
 %	string.
 
 read_reply2(200, media(application/json, _Attributes), In, Dict) :- !,
-	json_read_dict(In, Dict).
+	json_read_dict(In, Dict, [default_tag(oauth2)]).
 read_reply2(200, media(text/plain, _Attributes), In, Dict) :- !,
 	read_string(In, _, Reply),
 	uri_query_components(Reply, Fields0),
 	maplist(convert_field, Fields0, Fields),
-	dict_create(Dict, _, Fields).
+	dict_create(Dict, oauth2, Fields).
 read_reply2(Code, media(application/json, _Attributes), In,
 	   error{code:Code, details:Details}) :- !,
-	json_read_dict(In, Details).
+	json_read_dict(In, Details, [default_tag(error)]).
 read_reply2(Code, Type, In,
 	   error{code:Code, message:Reply}) :-
 	debug(oauth(token), 'Got code ~w, type ~q', [Code, Type]),
