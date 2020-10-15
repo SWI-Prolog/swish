@@ -39,7 +39,8 @@
             gitty_close/1,              % +Store
             gitty_file/4,               % +Store, ?Name, ?Ext, ?Hash
 
-            gitty_update_head/4,        % +Store, +Name, +OldCommit, +NewCommit
+            gitty_update_head/5,        % +Store, +Name, +OldCommit, +NewCommit
+					% +DataHash
             delete_head/2,              % +Store, +Name
             set_head/3,                 % +Store, +Name, +Hash
             store_object/4,             % +Store, +Hash, +Header, +Data
@@ -74,10 +75,11 @@
 :- use_module(library(hash_stream)).
 :- use_module(library(option)).
 :- use_module(library(dcg/basics)).
-
-:- use_module(swish_redis).
 :- use_module(library(redis)).
 :- use_module(library(redis_streams)).
+:- use_module(gitty, [is_gitty_hash/1]).
+
+:- use_module(swish_redis).
 
 /** <module> Gitty plain files driver
 
@@ -498,7 +500,8 @@ gitty_object_file(Store, Hash, Path) :-
                  *            SYNCING           *
                  *******************************/
 
-%!  gitty_update_head(+Store, +Name, +OldCommit, +NewCommit) is det.
+%!  gitty_update_head(+Store, +Name, +OldCommit,
+%!                    +NewCommit, +DataHash) is det.
 %
 %   Update the head of a gitty  store   for  Name.  OldCommit is the
 %   current head and NewCommit is the new  head. If Name is created,
@@ -507,11 +510,11 @@ gitty_object_file(Store, Hash, Path) :-
 %   This operation can fail because another   writer has updated the
 %   head.  This can both be in-process or another process.
 
-gitty_update_head(Store, Name, OldCommit, NewCommit) :-
+gitty_update_head(Store, Name, OldCommit, NewCommit, DataHash) :-
     redis_db(Store, _, _),
     !,
-    redis_update_head(Store, Name, OldCommit, NewCommit).
-gitty_update_head(Store, Name, OldCommit, NewCommit) :-
+    redis_update_head(Store, Name, OldCommit, NewCommit, DataHash).
+gitty_update_head(Store, Name, OldCommit, NewCommit, _) :-
     with_mutex(gitty,
                gitty_update_head_sync(Store, Name, OldCommit, NewCommit)).
 
@@ -1232,15 +1235,17 @@ redis_ensure_heads(Store) :-
            redis(DB, hset(Key, Name, Hash), _)),
     debug(gitty(redis), '... finished gitty heads', []).
 
-%!  redis_update_head(+Store, +Name, +OldCommit, +NewCommit)
+%!  redis_update_head(+Store, +Name, +OldCommit, +NewCommit, +DataHash)
 
-redis_update_head(Store, Name, -, NewCommit) :-
+redis_update_head(Store, Name, -, NewCommit, DataHash) :-
     !,
     redis_head_db(Store, DB, Key),
-    redis(DB, hset(Key, Name, NewCommit), _).
-redis_update_head(Store, Name, OldCommit, NewCommit) :-
+    redis(DB, hset(Key, Name, NewCommit), _),
+    publish_objects(Store, [NewCommit, DataHash]).
+redis_update_head(Store, Name, OldCommit, NewCommit, DataHash) :-
     redis_head_db(Store, DB, Key),
-    redis_hcas(DB, Key, Name, OldCommit, NewCommit).
+    redis_hcas(DB, Key, Name, OldCommit, NewCommit),
+    publish_objects(Store, [NewCommit, DataHash]).
 
 %!  redis_delete_head(Store, Head) is det.
 %
@@ -1263,55 +1268,104 @@ redis_set_head(Store, File, Hash) :-
 %!  redis_replicate_get(+Store, +Hash)
 %
 %   Try to get an object from another   SWISH  server in the network. We
-%   implement replication using two streams:
+%   implement replication using the PUB/SUB protocol   of Redis. This is
+%   not ideal as this route of the   synchronisation is only used if for
+%   some reason this server lacks some object. This typically happens if
+%   this node is new to the cluster or has been offline for a long time.
+%   In a large cluster, most nodes  will   have  the objects and each of
+%   them will send the object around. A consumer group based solution is
+%   not ideal either, as the message may  be   picked  up by a node that
+%   does not have this object, after which  we need the failure recovery
+%   protocol to get it right. This  is   particularly  the case with two
+%   nodes, where we have a fair chance to have be requested for the hash
+%   we miss ourselves.
 %
-%     - <prefix>:gitty:replicate
-%     - <prefix>:gitty:discover
+%   We could improve on this two ways: (1)   put the hash published in a
+%   short-lived key on Redis and make others  check that. That is likely
+%   to avoid many nodes sending the  same   object  or  (2) see how many
+%   nodes are in the pool and switch  to a consumer group based approach
+%   if this number is  high  (and  thus   we  are  unlikely  to be asked
+%   ourselves for the missing hash).
+%
+%   @see publish_objects/2 for the incremental replication
 
 :- multifile
     swish_redis:stream/2.
 
-swish_redis:stream('gitty:replicate', [maxlen(1000), group(gitty)]).
-swish_redis:stream('gitty:discover',  [maxlen(1000), group(gitty)]).
+swish_redis:stream('gitty:replicate', [maxlen(100)]).
 
 :- listen(http(pre_server_start(_)),
           init_replicator).
 
 init_replicator :-
     redis_swish_stream('gitty:replicate', ReplKey),
-    listen(redis_consume(ReplKey, Data1, Context1),
-           replicate(Data1, Context1)),
-    redis_swish_stream('gitty:discover', DiscKey),
-    listen(redis_consume(DiscKey, Data2, Context2),
-           discover(Data2, Context2)),
+    listen(redis(_Redis, ReplKey, _Id, Data),
+           replicate(Data)),
+    listen(redis(_, gitty, Message),
+           gitty_message(Message)),
     message_queue_create(_, [alias(gitty_queue)]).
 
 :- debug(gitty(replicate)).
 
-discover(Message, _Context) :-
-    debug(gitty(replicate), 'Discover: ~p', [Message]),
+gitty_message(discover(Hash)) :-
+    debug(gitty(replicate), 'Discover: ~p', [Hash]),
     store(Store, _),
-    atom_string(Hash, Message.hash),
     load_object_raw(Store, Hash, Data),
     debug(gitty(replicate), 'Sending object ~p', [Hash]),
-    redis_swish_stream('gitty:replicate', ReplKey),
-    xadd(swish, ReplKey, _, _{hash:Hash, data:Data}).
-
-replicate(Data, _Context) :-
-    debug(gitty(replicate), 'Replicate: ~p', [Data]),
+    redis(swish, publish(gitty, prolog(object(Hash, Data)))).
+gitty_message(object(Hash, Data)) :-
+    debug(gitty(replicate), 'Replicate: ~p', [Hash]),
     redis_db(Store, _DB, _Prefix),
-    atom_string(Hash, Data.hash),
-    store_object_raw(Store, Hash, Data.data, _0New),
-    debug(gitty(replicate), 'Received object ~p (new=~p)', [Hash, _0New]),
-    thread_send_message(gitty_queue, Hash).
+    store_object_raw(Store, Hash, Data, New),
+    debug(gitty(replicate), 'Received object ~p (new=~p)', [Hash, New]),
+    (   New == true
+    ->  thread_send_message(gitty_queue, Hash)
+    ;   true
+    ).
 
-redis_replicate_get(Store, Hash) :-
-    redis_db(Store, _DB, _Prefix),
-    redis_swish_stream('gitty:discover', DiscKey),
-    xadd(swish, DiscKey, _, _{hash:Hash}),
+redis_replicate_get(_Store, Hash) :-
+    is_gitty_hash(Hash),
+    redis(swish, publish(gitty, prolog(discover(Hash))), Count),
+    Count > 1,                          % If I'm alone it won't help :(
     thread_get_message(gitty_queue, Hash,
                        [ timeout(10)
                        ]).
+
+
+%!  publish_objects(+Store, +Hashes)
+%
+%   Make the objects we just stored globally   known. These are added to
+%   the Redis stream gitty:replicate and received by replicate/1 below.
+%
+%   This realized eager  replication  as  opposed   to  the  above  code
+%   (redis_replicate_get/2)  which  performs  lazy   replication.  Eager
+%   replication ensure the object is  on   multiple  places in the event
+%   that the node on which it was saved dies shortly after.
+%
+%   Note that we also  receive  the  object   we  just  saved.  That  is
+%   unavoidable in a network where all nodes are equal.
+
+publish_objects(Store, Hashes) :-
+    redis_swish_stream('gitty:replicate', ReplKey),
+    maplist(publish_object(Store, ReplKey), Hashes).
+
+publish_object(Store, Stream, Hash) :-
+    load_object_raw(Store, Hash, Data),
+    debug(gitty(replicate), 'Sending ~p to ~p', [Hash, Stream]),
+    xadd(swish, Stream, _, _{hash:Hash, data:Data}).
+
+%!  replicate(+Data) is det.
+%
+%   Act on a message send to the  gitty:replicate stream. Add the object
+%   to our store unless we already have it. Note that we receive our own
+%   objects as well.
+
+replicate(Data) :-
+    redis_db(Store, _DB, _Prefix),
+    atom_string(Hash, Data.hash),
+    store_object_raw(Store, Hash, Data.data, _0New),
+    debug(gitty(replicate), 'Received object ~p (new=~p)',
+          [Hash, _0New]).
 
 
 		 /*******************************

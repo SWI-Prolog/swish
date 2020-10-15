@@ -84,13 +84,13 @@ init_redis(Port) :-
     consumer(Port, Consumer),
     maplist(create_listener(Consumer), Grouped).
 
-create_listener((-)-Streams, _) :-
+create_listener(_, (-)-Streams) :-
     !,
     thread_create(xlisten(swish, Streams, []),
                   Id, [ alias(redis_no_group)
                       ]),
     assertz(thread(Id)).
-create_listener(Group-Streams, Consumer) :-
+create_listener(Consumer, Group-Streams) :-
     atom_concat(redis_, Group, Alias),
     thread_create(xlisten_group(swish, Group, Consumer, Streams,
                                 [ block(1)
@@ -144,9 +144,9 @@ consumer(Port, Consumer) :-
     atomic_list_concat([Host,Port], :, Consumer).
 
 init_pubsub :-
-    redis_current_subscription(swish, _),
+    redis_current_subscription(redis_pubsub, _),
     !.
 init_pubsub :-
-    redis_subscribe(swish, swish, _,
+    redis_subscribe(swish, [swish,gitty], _,
                     [ alias(redis_pubsub)
                     ]).

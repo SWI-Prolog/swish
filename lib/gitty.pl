@@ -211,7 +211,7 @@ gitty_create(Store, Name, Data, Meta, CommitRet) :-
     format(string(CommitString), '~q.~n', [Commit]),
     save_object(Store, CommitString, commit, CommitHash),
     CommitRet = Commit.put(commit, CommitHash),
-    catch(gitty_update_head(Store, Name, -, CommitHash),
+    catch(gitty_update_head(Store, Name, -, CommitHash, Hash),
           E,
           ( delete_object(Store, CommitHash),
             throw(E))).
@@ -240,10 +240,11 @@ gitty_update(Store, Name, Data, Meta, CommitRet) :-
     format(string(CommitString), '~q.~n', [Commit]),
     save_object(Store, CommitString, commit, CommitHash),
     CommitRet = Commit.put(commit, CommitHash),
-    catch(gitty_update_head(Store, Name, OldHead, CommitHash),
+    catch(gitty_update_head(Store, Name, OldHead, CommitHash, Hash),
           E,
           ( delete_object(Store, CommitHash),
             throw(E))).
+
 
 %!  filter_identity(+Meta0, -Meta)
 %
@@ -266,7 +267,8 @@ delete_keys([_|T], Dict0, Dict) :-
     delete_keys(T, Dict0, Dict).
 
 
-%!  gitty_update_head(+Store, +Name, +OldCommit, +NewCommit) is det.
+%!  gitty_update_head(+Store, +Name, +OldCommit,
+%!                    +NewCommit, +DataHash) is det.
 %
 %   Update the head of a gitty  store   for  Name.  OldCommit is the
 %   current head and NewCommit is the new  head. If Name is created,
@@ -279,9 +281,9 @@ delete_keys([_|T], Dict0, Dict) :-
 %   @error gitty(not_at_head(Name, OldCommit) if the head was moved
 %          by someone else.
 
-gitty_update_head(Store, Name, OldCommit, NewCommit) :-
+gitty_update_head(Store, Name, OldCommit, NewCommit, DataHash) :-
     store_driver_module(Store, Module),
-    Module:gitty_update_head(Store, Name, OldCommit, NewCommit).
+    Module:gitty_update_head(Store, Name, OldCommit, NewCommit, DataHash).
 
 %!  gitty_data(+Store, +NameOrHash, -Data, -Meta) is semidet.
 %
