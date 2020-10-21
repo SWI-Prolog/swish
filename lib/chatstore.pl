@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2017, VU University Amsterdam
-			 CWI Amsterdam
+    Copyright (C): 2017-2020, VU University Amsterdam
+			      CWI Amsterdam
+                              SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -46,6 +47,8 @@
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
 
+:- use_module(config).
+
 :- http_handler(swish(chat/messages), chat_messages, [ id(chat_messages) ]).
 :- http_handler(swish(chat/status),   chat_status,   [ id(chat_status)   ]).
 
@@ -53,6 +56,12 @@
 	   'The directory for storing chat messages.').
 
 /** <module> Store chat messages
+
+When using redis, the messages for  a   document  are  stored in the key
+below as a _sorted set_ where the score is  the time in ms and the value
+is a Prolog dict holding the message.
+
+    Prefix:chat:docid:DocId
 */
 
 :- multifile
@@ -61,9 +70,22 @@
 :- listen(http(pre_server_start),
           open_chatstore).
 
+%!  redis_docid_key(+DocID, -Server, -Key) is semidet.
+
+redis_docid_key(DocId, Server, Key) :-
+    swish_config(redis, Server),
+    swish_config(redis_prefix, Prefix),
+    atomic_list_concat([Prefix, chat, docid, DocId], :, Key).
+
+uses_redis :-
+    swish_config(redis, _).
+
 :- dynamic  storage_dir/1.
 :- volatile storage_dir/1.
 
+open_chatstore :-
+    uses_redis,
+    !.
 open_chatstore :-
     storage_dir(_),
     !.
@@ -123,25 +145,48 @@ existing_chat_file(DocID, File) :-
 %   used to only insert messages about changes   to the file if there is
 %   an ongoing chat so we know to which version chat messages refer.
 
-chat_store(Message) :-
-    chat{docid:DocIDS} :< Message,
-    atom_string(DocID, DocIDS),
+chat_store(Message0) :-
+    uses_redis,
+    !,
+    (   prepare_message(Message0, DocID, Create, Message),
+        redis_docid_key(DocID, Server, Key),
+        (   Create == false
+        ->  redis(Server, exists(Key), 1)
+        ;   true
+        )
+    ->  Score is integer(Message.time*1000),
+        redis(Server, zadd(Key, nx, Score, prolog(Message)))
+    ;   true
+    ).
+chat_store(Message0) :-
+    prepare_message(Message0, DocID, Create, Message),
     chat_dir_file(DocID, Dir, File),
-    (	del_dict(create, Message, false, Message1)
-    ->	exists_file(File)
-    ;	Message1 = Message
+    (   Create == false
+    ->  exists_file(File)
+    ;   true
     ),
     !,
     make_directory_path(Dir),
-    strip_chat(Message1, Message2),
     with_mutex(chat_store,
                (   setup_call_cleanup(
                        open(File, append, Out, [encoding(utf8)]),
-                       format(Out, '~q.~n', [Message2]),
+                       format(Out, '~q.~n', [Message]),
                        close(Out)),
                    increment_message_count(DocID)
                )).
 chat_store(_).
+
+prepare_message(Message0, DocID, Create, Message) :-
+    chat{docid:DocIDS} :< Message0,
+    atom_string(DocID, DocIDS),
+    (	del_dict(create, Message0, false, Message1)
+    ->  Create = false
+    ;   Create = true,
+        Message1 = Message
+    ),
+    strip_chat(Message1, Message).
+
+
 
 %!  strip_chat(_Message0, -Message) is det.
 %
@@ -169,6 +214,18 @@ strip_chat_user(User, User).
 %     - after(+TimeStamp)
 %     Only get messages after TimeStamp
 
+chat_messages(DocID, Messages, Options) :-
+    redis_docid_key(DocID, Server, Key),
+    !,
+    (   option(max(Max), Options)
+    ->  Start is -Max,
+        redis(Server, zrange(Key, Start, -1), Messages0),
+        filter_old(Messages0, Messages, Options)
+    ;   option(after(Time), Options)
+    ->  Score is integer(Time*1000),
+        redis(Score, zrangebyscore(Key, Score, +inf), Messages)
+    ;   redis(Server, zrange(Key, 0, -1), Messages)
+    ).
 chat_messages(DocID, Messages, Options) :-
     (   existing_chat_file(DocID, File)
     ->  read_messages(File, Messages0, Options),
@@ -245,6 +302,10 @@ after(After, Message) :-
 :- dynamic  message_count/2.
 :- volatile message_count/2.
 
+chat_message_count(DocID, Count) :-
+    redis_docid_key(DocID, Server, Key),
+    !,
+    redis(Server, zcount(Key, 0, -1), Count).
 chat_message_count(DocID, Count) :-
     message_count(DocID, Count),
     !.
