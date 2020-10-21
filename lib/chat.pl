@@ -181,7 +181,7 @@ accept_chat(Session, Options, WebSocket) :-
 accept_chat_(Session, Options, WebSocket) :-
     create_chat_room,
     (   reconnect_token(WSID, Token, Options),
-        retractall(visitor_status(WSID, lost(_))),
+        visitor_status_del_lost(WSID),
         existing_visitor(WSID, Session, Token, TmpUser, UserData),
         hub_add(swish_chat, WebSocket, WSID)
     ->  Reason = rejoined
@@ -262,11 +262,11 @@ must_succeed(Goal) :-
 %   @arg SubChannel is a related sub channel.
 
 :- dynamic
-    visitor_status/2,               % WSID, Status
-    visitor_session/3,              % WSID, Session, Token
-    session_user/2,                 % Session, TmpUser
-    visitor_data/2,                 % TmpUser, Data
-    subscription/3.                 % WSID, Channel, SubChannel
+    visitor_status_db/2,            % WSID, Status
+    visitor_session_db/3,           % WSID, Session, Token
+    session_user_db/2,		    % Session, TmpUser
+    visitor_data_db/2,		    % TmpUser, Data
+    subscription_db/3.		    % WSID, Channel, SubChannel
 
 
 %!  redis_key(+Which, -Server, -Key) is semidet.
@@ -281,8 +281,85 @@ use_redis :-
     swish_config(redis, _).
 
 
+%!  visitor_status(+WSID, -Status)
+
+visitor_status(WSID, Status) :-
+    visitor_status_db(WSID, Status).
+
+visitor_status_del(WSID) :-
+    retractall(visitor_status_db(WSID, _Status)).
+
+visitor_status_del_lost(WSID) :-
+    retractall(visitor_status_db(WSID, lost(_))).
+
+visitor_status_set_lost(WSID, Time) :-
+    assertz(visitor_status_db(WSID, lost(Time))).
+
+visitor_status_set_unload(WSID) :-
+    assertz(visitor_status_db(WSID, unload)).
+
+visitor_status_del_unload(WSID) :-
+    retract(visitor_status_db(WSID, unload)).
+
+%!  visitor_session(?WSID, ?Session, ?Token).
+
+visitor_session(WSID, Session, Token) :-
+    visitor_session_db(WSID, Session, Token).
+
+visitor_session_create(WSID, Session, Token) :-
+    assertz(visitor_session_db(WSID, Session, Token)).
+
+visitor_session_reclaim(WSID, Session) :-
+    retract(visitor_session_db(WSID, Session, _Token)).
+
+visiton_session_del_session(Session) :-
+    retractall(visitor_session_db(_, Session, _)).
 
 
+%!  session_user(?Session, ?TmpUser).
+
+session_user(Session, TmpUser) :-
+    session_user_db(Session, TmpUser).
+
+session_user_create(Session, User) :-
+    assertz(session_user_db(Session, User)).
+
+session_user_del(Session, User) :-
+    retract(session_user_db(Session, User)).
+
+%!  visitor_data(?TmpUser, ?Data)
+
+visitor_data(TmpUser, Data) :-
+    visitor_data_db(TmpUser, Data).
+
+visitor_data_create(User, Data) :-
+    assertz(visitor_data_db(User, Data)).
+
+visitor_data_del(User, Data) :-
+    retract(visitor_data_db(User, Data)).
+
+visitor_data_set(User, Data) :-
+    retractall(visitor_data_db(User, _)),
+    assertz(visitor_data_db(User, Data)).
+
+%!  subscription(?WSID, ?Channel, ?SubChannel)
+
+subscription(WSID, Channel, SubChannel) :-
+    subscription_db(WSID, Channel, SubChannel).
+
+subscribe(WSID, Channel, SubChannel) :-
+    (   subscription(WSID, Channel, SubChannel)
+    ->  true
+    ;   assertz(subscription_db(WSID, Channel, SubChannel))
+    ).
+
+unsubscribe(WSID, Channel, SubChannel) :-
+    retractall(subscription_db(WSID, Channel, SubChannel)).
+
+
+		 /*******************************
+		 *        HIGH LEVEL DB		*
+		 *******************************/
 
 %!  visitor(?WSID) is nondet
 %
@@ -363,7 +440,7 @@ existing_visitor(WSID, Session, Token, _, _) :-
 
 create_visitor(WSID, Session, Token, TmpUser, UserData, Options) :-
     generate_key(Token),
-    assertz(visitor_session(WSID, Session, Token)),
+    visitor_session_create(WSID, Session, Token),
     create_session_user(Session, TmpUser, UserData, Options).
 
 %!  generate_key(-Key) is det.
@@ -393,7 +470,7 @@ destroy_visitor(WSID) :-
     (   Reason == unload
     ->  reclaim_visitor(WSID)
     ;   get_time(Now),
-        assertz(visitor_status(WSID, lost(Now)))
+        visitor_status_set_lost(WSID, Now)
     ),
     visitor_count(Count),
     chat_broadcast(_{ type:removeUser,
@@ -403,7 +480,7 @@ destroy_visitor(WSID) :-
                     }).
 
 destroy_reason(WSID, Reason) :-
-    retract(visitor_status(WSID, unload)),
+    visitor_status_del_unload(WSID),
     !,
     Reason = unload.
 destroy_reason(_, close).
@@ -442,12 +519,12 @@ do_gc_visitors :-
 reclaim_visitor(WSID) :-
     debug(chat(gc), 'Reclaiming idle ~p', [WSID]),
     reclaim_visitor_session(WSID),
-    retractall(visitor_status(WSID, _Status)),
+    visitor_status_del(WSID),
     unsubscribe(WSID, _).
 
 reclaim_visitor_session(WSID) :-
-    forall(retract(visitor_session(WSID, Session, _Token)),
-                   http_session_retractall(websocket(_, _), Session)).
+    forall(visitor_session_reclaim(WSID, Session),
+           http_session_retractall(websocket(_, _), Session)).
 
 
 %!  create_session_user(+Session, -User, -UserData, +Options)
@@ -466,18 +543,18 @@ create_session_user(Session, TmpUser, UserData, _Options) :-
 create_session_user(Session, TmpUser, UserData, Options) :-
     uuid(TmpUser),
     get_visitor_data(UserData, Options),
-    assertz(session_user(Session, TmpUser)),
-    assertz(visitor_data(TmpUser, UserData)).
+    session_user_create(Session, TmpUser),
+    visitor_data_create(TmpUser, UserData).
 
 destroy_session_user(Session) :-
     forall(visitor_session(WSID, Session, _Token),
            inform_session_closed(WSID, Session)),
-    retractall(visitor_session(_, Session, _)),
-    forall(retract(session_user(Session, TmpUser)),
+    visiton_session_del_session(Session),
+    forall(session_user_del(Session, TmpUser),
            destroy_visitor_data(TmpUser)).
 
 destroy_visitor_data(TmpUser) :-
-    (   retract(visitor_data(TmpUser, Data)),
+    (   visitor_data_del(TmpUser, Data),
         release_avatar(Data.get(avatar)),
         fail
     ;   true
@@ -625,8 +702,7 @@ anonymise_user_data(_, Data) :-
 %   the changes.
 
 set_visitor_data(TmpUser, Data, Reason) :-
-    retractall(visitor_data(TmpUser, _)),
-    assertz(visitor_data(TmpUser, Data)),
+    visitor_data_set(TmpUser, Data),
     inform_visitor_change(TmpUser, Reason).
 
 %!  inform_visitor_change(+TmpUser, +Reason) is det.
@@ -665,16 +741,9 @@ viewing_same_file(WSID, Friend) :-
 
 subscribe(WSID, Channel) :-
     subscribe(WSID, Channel, _SubChannel).
-subscribe(WSID, Channel, SubChannel) :-
-    (   subscription(WSID, Channel, SubChannel)
-    ->  true
-    ;   assertz(subscription(WSID, Channel, SubChannel))
-    ).
 
 unsubscribe(WSID, Channel) :-
     unsubscribe(WSID, Channel, _SubChannel).
-unsubscribe(WSID, Channel, SubChannel) :-
-    retractall(subscription(WSID, Channel, SubChannel)).
 
 %!  sync_gazers(+WSID, +Files:list(atom)) is det.
 %
@@ -1011,7 +1080,7 @@ json_message(Dict, WSID) :-
     _{type: "unload"} :< Dict,     % clean close/reload
     !,
     sync_gazers(WSID, []),
-    assertz(visitor_status(WSID, unload)).
+    visitor_status_set_unload(WSID).
 json_message(Dict, WSID) :-
     _{type: "has-open-files", files:FileDicts} :< Dict,
     !,
@@ -1135,7 +1204,7 @@ block(User, Score, Score, 1) :-
 %   Decorate a message with the user credentials.
 
 chat_add_user_id(WSID, Dict, Message) :-
-    visitor_session(WSID, Session, _Token),
+    visitor_session(WSID, Session),
     session_user(Session, Visitor),
     visitor_data(Visitor, UserData),
     User0 = u{avatar:UserData.avatar,
