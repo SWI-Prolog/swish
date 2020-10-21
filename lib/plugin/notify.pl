@@ -50,6 +50,7 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
+:- use_module(library(redis)).
 
 :- use_module(library(user_profile)).
 
@@ -57,6 +58,7 @@
 :- use_module('../bootstrap').
 :- use_module('../storage').
 :- use_module('../chat').
+:- use_module('../config').
 
 /** <module> SWISH notifications
 
@@ -86,6 +88,28 @@ A user has the following options to control notifications:
 		 *            DATABASE		*
 		 *******************************/
 
+%!  redis_docid_key(+DocId, -Server, -Key) is semidet.
+%!  redis_queue_key(Server, -Key) is semidet.
+%
+%   Get the Redis server and key for specific requests.  The Redis DB is
+%   organised as follows:
+%
+%      - Prefix:notify:docid:Docid
+%        A hash mapping profile ids onto a Prolog list of flags
+%      - Prefix:notify:queue
+%        A list of Prolog terms holding queued pending
+%        email notifications.
+
+redis_docid_key(DocId, Server, Key) :-
+    swish_config(redis, Server),
+    swish_config(redis_prefix, Prefix),
+    atomic_list_concat([Prefix, notify, docid, DocId], :, Key).
+
+redis_queue_key(Server, Key) :-
+    swish_config(redis, Server),
+    swish_config(redis_prefix, Prefix),
+    atomic_list_concat([Prefix, notify, queue], :, Key).
+
 :- persistent
         follower(docid:atom,
                  profile:atom,
@@ -104,9 +128,17 @@ notify_open_db :-
 %
 %   Queue an email notification for  Profile,   described  by Action. We
 %   simply append these events as Prolog terms to a file.
+%
+%   @arg Status is one of `new` or retry(Count,Status), where Count is
+%   the number of left attempts and Status is the last status.
 
 queue_event(Profile, DocID, Action) :-
     queue_event(Profile, DocID, Action, new).
+
+queue_event(Profile, DocID, Action, Status) :-
+    redis_queue_key(Server, Key),
+    !,
+    redis(Server, rpush(Key, prolog(notify(Profile, DocID, Action, Status)))).
 queue_event(Profile, DocID, Action, Status) :-
     queue_file(Path),
     with_mutex(swish_notify,
@@ -128,6 +160,10 @@ queue_file(Path) :-
 %   Send possible queued emails.
 
 send_queued_mails :-
+    redis_queue_key(Server, Key),
+    !,
+    redis_send_queued_mails(Server, Key).
+send_queued_mails :-
     queue_file(Path),
     exists_file(Path), !,
     atom_concat(Path, '.sending', Tmp),
@@ -137,6 +173,14 @@ send_queued_mails :-
            send_queued(Term)),
     delete_file(Tmp).
 send_queued_mails.
+
+
+redis_send_queued_mails(Server, Key) :-
+    (   redis(Server, lpop(Key), Term)
+    ->  send_queued(Term),
+        redis_send_queued_mails(Server, Key)
+    ;   true
+    ).
 
 send_queued(notify(Profile, DocID, Action, Status)) :-
     profile_property(Profile, email(Email)),
@@ -205,11 +249,25 @@ next_send_queue_time(T) :-
     ),
     date_time_stamp(date(Y,M,D,HH,MM,0,Off,TZ,DST), T).
 
+%!  following(+DocID, ?ProfileID, ?Flags) is nondet.
+
+following(DocID, ProfileID, Flags) :-
+    redis_docid_key(DocID, Server, Key),
+    redis(Server, hgetall(Key), Pairs as pairs(atom, auto)),
+    member(ProfileID-Flags, Pairs).
 
 %!  follow(+DocID, +ProfileID, +Flags) is det.
 %
 %   Assert that DocID is being followed by ProfileID using Flags.
 
+follow(DocID, ProfileID, Flags) :-
+    redis_docid_key(DocID, Server, Key),
+    !,
+    (   Flags == []
+    ->  redis(Server, hdel(Key, ProfileID))
+    ;   maplist(to_atom, Flags, Options),
+        redis(Server, hset(Key, ProfileID, prolog(Options)))
+    ).
 follow(DocID, ProfileID, Flags) :-
     to_atom(DocID, DocIDA),
     to_atom(ProfileID, ProfileIDA),
@@ -229,6 +287,15 @@ follow(DocID, ProfileID, Flags) :-
     ;   true
     ).
 
+nofollow(DocID, ProfileID, Flags) :-
+    redis_docid_key(DocID, Server, Key),
+    !,
+    maplist(to_atom, Flags, Options),
+    (   redis(Server, hget(Key, ProfileID), OldOptions)
+    ->  subtract(OldOptions, Options, NewOptions),
+        follow(DocID, ProfileID, NewOptions)
+    ;   true
+    ).
 nofollow(DocID, ProfileID, Flags) :-
     to_atom(DocID, DocIDA),
     to_atom(ProfileID, ProfileIDA),
@@ -261,7 +328,7 @@ notify(DocID, Action) :-
     to_atom(DocID, DocIDA),
     try(notify_in_chat(DocIDA, Action)),
     notify_open_db,
-    forall(follower(DocIDA, Profile, Options),
+    forall(following(DocIDA, Profile, Options),
            notify_user(Profile, DocIDA, Action, Options)).
 
 to_atom(Text, Atom) :-
@@ -732,7 +799,7 @@ follow_file_options(Request) :-
     ;   existence_error(profile_property, email_notifications)
     ),
 
-    (   follower(DocID, ProfileID, Follow)
+    (   following(DocID, ProfileID, Follow)
     ->  true
     ;   Follow = []
     ),
