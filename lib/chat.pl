@@ -1,7 +1,7 @@
 /*  Part of SWISH
 
     Author:        Jan Wielemaker
-    E-mail:        J.Wielemaker@cs.vu.nl
+    E-mail:        jan@swi-prolog.org
     WWW:           http://www.swi-prolog.org
     Copyright (C): 2016-2020, VU University Amsterdam
 			      CWI Amsterdam
@@ -221,12 +221,28 @@ must_succeed(Goal) :-
 		 *	        DATA		*
 		 *******************************/
 
-%%	visitor_session(?WSId, ?Session, ?Token).
+%%	visitor_status(?WSID, ?Status).
+%%	visitor_session(?WSID, ?SessionId, ?Token).
 %%	session_user(?Session, ?TmpUser).
 %%	visitor_data(?TmpUser, ?UserData:dict).
-%%	subscription(?Session, ?Channel, ?SubChannel).
+%%	subscription(?WSID, ?Channel, ?SubChannel).
 %
-%	These predicates represent our notion of visitors.
+%	These predicates represent our notion of visitors. Active modes:
+%
+%	  - visitor_status(+WSID, -Status)
+%	    - Indexes: 1
+%	    - retract(visitor_status(+WSID, -Status))
+%	    - assertz(visitor_status(+WSID, +Status))
+%	    - retractall(visitor_status(+WSID, _))
+%	  - visitor_session(+WSID, -SessionId, -Token)
+%	    - Indexes: 1,2,3
+%	  - session_user(?Session, ?TmpUser)
+%	    - Indexes: 1
+%	  - visitor_data(?TmpUser, ?UserData)
+%	    - Indexes: 1
+%	  - subscription(?WSID, ?Channel, ?SubChannel)
+%	    - Indexes: 1,3
+%	    Currently all subscriptions are on the Channel `gitty`
 %
 %	@arg WSID is the identifier of the web socket. As we may have to
 %	reconnect lost connections, this is may be replaced.
@@ -235,9 +251,12 @@ must_succeed(Goal) :-
 %	@arg TmpUser is the ID with which we identify the user for this
 %	run. The value is a UUID and thus doesn't reveal the real
 %	identity of the user.
-%	@arg UserDict is a dict that holds information about the real
+%	@arg UserData is a dict that holds information about the real
 %	user identity.  This can be empty if no information is known
 %	about this user.
+%	@arg Status is one of `unload` or `lost(Time)`
+%	@arg Channel is an atom denoting a chat channel
+%	@arg SubChannel is a related sub channel.
 
 :- dynamic
 	visitor_status/2,		% WSID, Status
@@ -257,14 +276,9 @@ visitor(WSID) :-
 	;   reap(WSID)
 	).
 
-:- if(current_predicate(hub_member/2)).
 reap(WSID) :-
 	hub_member(swish_chat, WSID),
 	!.
-:- else.
-reap(_) :-
-	!.
-:- endif.
 reap(WSID) :-
 	reclaim_visitor(WSID),
 	fail.
@@ -412,11 +426,6 @@ reclaim_visitor_session(WSID) :-
 	forall(retract(visitor_session(WSID, Session, _Token)),
 		       http_session_retractall(websocket(_, _), Session)).
 
-:- if(\+current_predicate(http_session_retractall/2)).
-http_session_retractall(Data, Session) :-
-	retractall(http_session:session_data(Session, Data)).
-:- endif.
-
 
 %%	create_session_user(+Session, -User, -UserData, +Options)
 %
@@ -459,7 +468,7 @@ inform_session_closed(WSID, Session) :-
 %!	update_visitor_data(+TmpUser, +Data, +Reason) is det.
 %
 %	Update the user data for the visitor   TmpUser  to Data. This is
-%	rather complicates due to all the   defaulting  rules. Reason is
+%	rather complicated due to all the   defaulting  rules. Reason is
 %	one of:
 %
 %	  - login
