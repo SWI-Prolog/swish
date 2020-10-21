@@ -141,7 +141,7 @@ add_request(Id, Deadline, Action, Reply) :-
     !,
     get_time(Now),
     TTL is integer(Deadline-Now),
-    redis(Server, set(Key, prolog(request(Action, Reply)), ex, TTL), _).
+    redis(Server, set(Key, prolog(request(Action, Reply)), ex, TTL)).
 add_request(Id, Deadline, Action, Reply) :-
     with_mutex(swish_email,
                assert_request(Id, Deadline, Action, Reply)).

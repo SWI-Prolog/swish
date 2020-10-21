@@ -1193,15 +1193,14 @@ redis_file(Store, Name, Ext, Hash) :-
     !,
     file_name_extension(_Base, Ext, Name),
     redis_head_db(Store, DB, Heads),
-    redis(DB, hget(Heads, Name), HashS),
-    atom_string(Hash, HashS).
+    redis(DB, hget(Heads, Name), Hash as atom).
 redis_file(Store, Name, Ext, Hash) :-
     nonvar(Ext),
     !,
     string_concat("*.", Ext, Pattern),
     redis_head_db(Store, DB, Heads),
-    redis_hscan_2list(DB, Heads, Pattern, List),
-    two_member(NameS, HashS, List),
+    redis_hscan(DB, Heads, LazyList, [match(Pattern)]),
+    member(NameS-HashS, LazyList),
     atom_string(Name, NameS),
     atom_string(Hash, HashS).
 redis_file(Store, Name, Ext, Hash) :-
@@ -1212,10 +1211,8 @@ redis_file(Store, Name, Ext, Hash) :-
     file_name_extension(_Base, Ext, Name).
 redis_file(Store, Name, Ext, Hash) :-
     redis_head_db(Store, DB, Heads),
-    redis(DB, hgetall(Heads), List),
-    two_member(NameS, HashS, List),
-    atom_string(Name, NameS),
-    atom_string(Hash, HashS),
+    redis(DB, hgetall(Heads), Pairs as pairs(atom,atom)),
+    member(Name-Hash, Pairs),
     file_name_extension(_Base, Ext, Name).
 
 %!  redis_ensure_heads(+Store)
@@ -1232,7 +1229,7 @@ redis_ensure_heads(Store) :-
     debug(gitty(redis), 'Initializing gitty heads in ~p ...', [Key]),
     gitty_scan_latest(Store),
     forall(retract(latest(Name, Hash, _Time)),
-           redis(DB, hset(Key, Name, Hash), _)),
+           redis(DB, hset(Key, Name, Hash))),
     debug(gitty(redis), '... finished gitty heads', []).
 
 %!  redis_update_head(+Store, +Name, +OldCommit, +NewCommit, +DataHash)
@@ -1240,7 +1237,7 @@ redis_ensure_heads(Store) :-
 redis_update_head(Store, Name, -, NewCommit, DataHash) :-
     !,
     redis_head_db(Store, DB, Key),
-    redis(DB, hset(Key, Name, NewCommit), _),
+    redis(DB, hset(Key, Name, NewCommit)),
     publish_objects(Store, [NewCommit, DataHash]).
 redis_update_head(Store, Name, OldCommit, NewCommit, DataHash) :-
     redis_head_db(Store, DB, Key),
@@ -1385,35 +1382,3 @@ redis_hcas(DB, Hash, Key, Old, New) :-
                    ",
                    2, Hash, Key, Old, New),
           1).
-
-%!  redis_hscan_keys(+DB, +Hash, +Pattern, -Keys) is det.
-%
-%   True when Keys is a list of strings holding all keys in Hash that
-%   match the wildcard Pattern.
-
-redis_hscan_keys(DB, Hash, Pattern, Keys) :-
-    redis_hscan_2list(DB, Hash, Pattern, List),
-    first_pair(List, Keys).
-
-redis_hscan_2list(DB, Hash, Pattern, List) :-
-    scan(DB, Hash, Pattern, 0, List, []).
-
-scan(DB, Hash, Pattern, From, Files, Tail) :-
-    scan(DB, Hash, Pattern, From, Cont, Files, Tail0),
-    (   Cont == "0"
-    ->  Tail0 = Tail
-    ;   scan(DB, Hash, Pattern, Cont, Tail0, Tail)
-    ).
-
-scan(DB, Hash, Pattern, From, Cont, Files, Tail) :-
-    redis(DB, hscan(Hash, From, match, Pattern),
-          [ Cont, Files0 ]),
-    append(Files0, Tail, Files).
-
-first_pair([], []).
-first_pair([H,_|T0], [H|T]) :-
-    first_pair(T0, T).
-
-two_member(E1, E2, [E1,E2|_]).
-two_member(E1, E2, [_,_|List]) :-
-    two_member(E1, E2, List).
