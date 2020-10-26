@@ -182,7 +182,7 @@ prepare_message(Message0, DocID, Create, Message) :-
     (	del_dict(create, Message0, false, Message1)
     ->  Create = false
     ;   Create = true,
-        Message1 = Message
+        Message1 = Message0
     ),
     strip_chat(Message1, Message).
 
