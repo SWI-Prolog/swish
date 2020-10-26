@@ -312,6 +312,9 @@ visitor_session_create(WSID, Session, Token) :-
 visitor_session_reclaim(WSID, Session) :-
     retract(visitor_session_db(WSID, Session, _Token)).
 
+visitor_session_reclaim_all(WSID, Session, Token) :-
+    retractall(visitor_session_db(WSID, Session, Token)).
+
 visiton_session_del_session(Session) :-
     retractall(visitor_session_db(_, Session, _)).
 
@@ -423,7 +426,7 @@ existing_visitor(WSID, Session, Token, TmpUser, UserData) :-
     visitor_data(TmpUser, UserData),
     !.
 existing_visitor(WSID, Session, Token, _, _) :-
-    retractall(visitor_session(WSID, Session, Token)),
+    visitor_session_reclaim_all(WSID, Session, Token),
     fail.
 
 %!  create_visitor(+WSID, +Session, ?Token, -TmpUser, -UserData, +Options)
