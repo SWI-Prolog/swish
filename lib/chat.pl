@@ -492,8 +492,8 @@ subscription(WSID, Channel, SubChannel) :-
     ->  redis_key(channel(SubChannel), Server, ChKey),
         redis_sscan(Server, ChKey, List, []),
         member(WSID-Channel, List)
-    ;   current_wsid(WSID)
-    ->  redis_key(subscription(WSID), Server, WsKey),
+    ;   current_wsid(WSID),
+        redis_key(subscription(WSID), Server, WsKey),
         redis_sscan(Server, WsKey, List, []),
         member(Channel-SubChannel, List)
     ).
@@ -518,8 +518,8 @@ unsubscribe(WSID, Channel, SubChannel) :-
     subscription(WSID, Channel, SubChannel),
     redis_key(channel(SubChannel), Server, ChKey),
     redis_key(subscription(WSID), Server, WsKey),
-    redis(Server, srem(ChKey, SubChannel)),
-    redis(Server, srem(WsKey, WSID)).
+    redis(Server, srem(ChKey, prolog(WSID-Channel))),
+    redis(Server, srem(WsKey, prolog(Channel-SubChannel))).
 unsubscribe(WSID, Channel, SubChannel) :-
     retractall(subscription_db(WSID, Channel, SubChannel)).
 
