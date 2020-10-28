@@ -461,16 +461,48 @@ visitor_data_del(Visitor, Data) :-
     retract(visitor_data_db(Visitor, Data)).
 
 %!  subscription(?WSID, ?Channel, ?SubChannel)
+%
+%   Requires both WSID -> Channel/SubChannel and backward relation.
+%   Redis:
+%
+%     channel:SubChannel --> set(WSID-Channel)
+%     subscription:WSID  --> set(Channel-SubChannel)
 
+subscription(WSID, Channel, SubChannel) :-
+    use_redis,
+    !,
+    (   nonvar(SubChannel)
+    ->  redis_key(channel(SubChannel), Server, ChKey),
+        redis_sscan(Server, ChKey, List, []),
+        member(WSID-Channel, List)
+    ;   current_wsid(WSID)
+    ->  redis_key(subscription(WSID), Server, WsKey),
+        redis_sscan(Server, WsKey, List, []),
+        member(WSID, List)
+    ).
 subscription(WSID, Channel, SubChannel) :-
     subscription_db(WSID, Channel, SubChannel).
 
+subscribe(WSID, Channel, SubChannel) :-
+    redis_key(channel(SubChannel), Server, ChKey),
+    redis_key(subscription(WSID), Server, WsKey),
+    !,
+    redis(Server, sadd(ChKey, prolog(WSID-Channel))),
+    redis(Server, sadd(WsKey, prolog(Channel-SubChannel))).
 subscribe(WSID, Channel, SubChannel) :-
     (   subscription(WSID, Channel, SubChannel)
     ->  true
     ;   assertz(subscription_db(WSID, Channel, SubChannel))
     ).
 
+unsubscribe(WSID, Channel, SubChannel) :-
+    use_redis,
+    !,
+    subscription(WSID, Channel, SubChannel),
+    redis_key(channel(SubChannel), Server, ChKey),
+    redis_key(subscription(WSID), Server, WsKey),
+    redis(Server, sdel(ChKey, SubChannel)),
+    redis(Server, sdel(WsKey, WSID)).
 unsubscribe(WSID, Channel, SubChannel) :-
     retractall(subscription_db(WSID, Channel, SubChannel)).
 
