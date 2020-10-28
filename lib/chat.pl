@@ -290,8 +290,8 @@ use_redis :-
 %   that these keys only  exist  on   temporary  lost  or  disconnecting
 %   websockets.
 %
-%     - WSID:unload = boolean
-%     - WSID:lost = time
+%     - unload:WSID = boolean
+%     - lost:WSID = time
 
 visitor_status(WSID, Status) :-
     redis_key(unload(WSID), Server, UnloadKey),
@@ -349,22 +349,77 @@ visitor_status_del_unload(WSID) :-
     retract(visitor_status_db(WSID, unload)).
 
 %!  visitor_session(?WSID, ?Session, ?Token).
+%
+%   Redis data:
+%
+%     - wsid: set of WSID
+%     - Map WSID:session to prolog(Session-Token)
 
-visitor_session(WSID, Session, Token) :-
-    visitor_session_db(WSID, Session, Token).
-
+visitor_session_create(WSID, Session, Token) :-
+    redis_key(wsid, Server, SetKey),
+    redis_key(session(WSID), Server, SessionKey),
+    !,
+    redis(Server, zadd(SetKey, WSID)),
+    redis(SetKey, set(SessionKey, prolog(Session-Token))).
 visitor_session_create(WSID, Session, Token) :-
     assertz(visitor_session_db(WSID, Session, Token)).
 
+visitor_session(WSID, Session, Token) :-
+    use_redis,
+    !,
+    current_wsid(WSID),
+    redis_key(session(WSID), Server, SessionKey),
+    redis(Server, get(SessionKey), Session-Token).
+visitor_session(WSID, Session, Token) :-
+    visitor_session_db(WSID, Session, Token).
+
+%!  visitor_session_reclaim(+WSID, -Session) is semidet.
+
+visitor_session_reclaim(WSID, Session) :-
+    redis_key(session(WSID), Server, SessionKey),
+    !,
+    (   redis(Server, get(SessionKey), Session-_Token)
+    ->  redis(Session, zdel(SessionKey, WSID))
+    ;   true
+    ).
 visitor_session_reclaim(WSID, Session) :-
     retract(visitor_session_db(WSID, Session, _Token)).
 
+%!  visitor_session_reclaim_all(+WSID, +Session, +Token) is det.
+
+visitor_session_reclaim_all(WSID, _Session, _Token) :-
+    redis_key(session(WSID), Server, SessionKey),
+    !,
+    redis(Server, zdel(SessionKey, WSID)),
+    redis_key(session(WSID), Server, SessionKey),
+    redis(Server, del(SessionKey)).
 visitor_session_reclaim_all(WSID, Session, Token) :-
     retractall(visitor_session_db(WSID, Session, Token)).
 
 visiton_session_del_session(Session) :-
+    use_redis,
+    !,
+    (   current_wsid(WSID),
+        visitor_session_reclaim(WSID, Session),
+        fail
+    ;   true
+    ).
+visiton_session_del_session(Session) :-
     retractall(visitor_session_db(_, Session, _)).
 
+%!  current_wsid(?WSID) is nondet.
+%
+%   True when WSID is a (Redis) known WSID.
+
+current_wsid(WSID) :-
+    nonvar(WSID),
+    !,
+    redis_key(wsid, Server, SetKey),
+    redis(Server, sismember(SetKey, WSID), 1).
+current_wsid(WSID) :-
+    redis_key(wsid, Server, SetKey),
+    redis_sscan(Server, SetKey, List, []),
+    member(WSID, List).
 
 %!  session_user(?Session, ?TmpUser).
 
