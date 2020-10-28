@@ -275,29 +275,76 @@ redis_key(Which, Server, Key) :-
     swish_config(redis, Server),
     swish_config(redis_prefix, Prefix),
     Which =.. List,
-    atomic_list_concat([Prefix, chat, docid | List], :, Key).
+    atomic_list_concat([Prefix, chat | List], :, Key).
 
 use_redis :-
     swish_config(redis, _).
 
 
 %!  visitor_status(+WSID, -Status)
+%
+%   Status is one of lost(Time) if we   lost contact at Time or `unload`
+%   if the websocket was cleanly disconnected.
+%
+%   The Redis version keeps two keys per   WSID as described below. Note
+%   that these keys only  exist  on   temporary  lost  or  disconnecting
+%   websockets.
+%
+%     - WSID:unload = boolean
+%     - WSID:lost = time
 
+visitor_status(WSID, Status) :-
+    redis_key(unload(WSID), Server, UnloadKey),
+    !,
+    redis_key(lost(WSID), Server, LostKey),
+    redis(Server,
+          [ get(UnloadKey) -> Unload,
+            get(LostKey) -> Lost
+          ]),
+    (   number(Lost),
+        Status = lost(Lost)
+    ;   Unload \== nil
+    ->  Status = unload
+    ).
 visitor_status(WSID, Status) :-
     visitor_status_db(WSID, Status).
 
 visitor_status_del(WSID) :-
+    redis_key(unload(WSID), Server, UnloadKey),
+    !,
+    redis_key(lost(WSID), Server, LostKey),
+    redis(Server,
+          [ del(UnloadKey),
+            del(LostKey)
+          ]).
+visitor_status_del(WSID) :-
     retractall(visitor_status_db(WSID, _Status)).
 
+visitor_status_del_lost(WSID) :-
+    redis_key(lost(WSID), Server, Key),
+    !,
+    redis(Server, del(Key)).
 visitor_status_del_lost(WSID) :-
     retractall(visitor_status_db(WSID, lost(_))).
 
 visitor_status_set_lost(WSID, Time) :-
+    redis_key(lost(WSID), Server, Key),
+    !,
+    redis(Server, set(Key, Time)).
+visitor_status_set_lost(WSID, Time) :-
     assertz(visitor_status_db(WSID, lost(Time))).
 
 visitor_status_set_unload(WSID) :-
+    redis_key(unload(WSID), Server, Key),
+    !,
+    redis(Server, set(Key, true)).
+visitor_status_set_unload(WSID) :-
     assertz(visitor_status_db(WSID, unload)).
 
+visitor_status_del_unload(WSID) :-
+    redis_key(unload(WSID), Server, Key),
+    !,
+    redis(Server, del(Key)).
 visitor_status_del_unload(WSID) :-
     retract(visitor_status_db(WSID, unload)).
 
