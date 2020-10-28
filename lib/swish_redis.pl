@@ -35,7 +35,8 @@
 
 :- module(swish_redis,
           [ reinit_redis/0,
-            redis_swish_stream/2
+            redis_swish_stream/2,       % +Name, -Key
+            redis_consumer/1            % -Consumer
           ]).
 :- use_module(library(redis)).
 :- use_module(library(redis_streams)).
@@ -133,15 +134,38 @@ redis_swish_stream(Name, Key) :-
     swish_config(redis_prefix, Prefix),
     atomic_list_concat([Prefix, Name], :, Key).
 
+%!  consumer(+Address, -Consumer) is det.
+%
+%   Find the name of this node in the  redis network. Each node needs to
+%   have a name to be part of a Redis  consumer node, as well as to know
+%   which sessions reside on which node.
+
+:- dynamic consumer/1.
+
 consumer(_, Consumer) :-
+    consumer(Consumer0), !,
+    Consumer = Consumer0.
+consumer(Address, Consumer) :-
+    address_consumer(Address, Consumer0),
+    asserta(consumer(Consumer0)),
+    Consumer = Consumer0.
+
+address_consumer(_, Consumer) :-
     swish_config(redis_consumer, Consumer),
     !.
-consumer(Host:Port, Consumer) :-
+address_consumer(Host:Port, Consumer) :-
     !,
     atomic_list_concat([Host,Port], :, Consumer).
-consumer(Port, Consumer) :-
+address_consumer(Port, Consumer) :-
     gethostname(Host),
     atomic_list_concat([Host,Port], :, Consumer).
+
+%!  redis_consumer(-Consumer) is det.
+%
+%   True when Consumer is the name of this redis node.
+
+redis_consumer(Consumer) :-
+    consumer(Consumer).
 
 init_pubsub :-
     redis_current_subscription(redis_pubsub, _),

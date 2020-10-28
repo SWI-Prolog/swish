@@ -74,6 +74,7 @@
 :- use_module(authenticate).
 :- use_module(pep).
 :- use_module(content_filter).
+:- use_module(swish_redis).
 
 :- html_meta(chat_to_profile(+, html)).
 
@@ -349,28 +350,33 @@ visitor_status_del_unload(WSID) :-
     retract(visitor_status_db(WSID, unload)).
 
 %!  visitor_session(?WSID, ?Session, ?Token).
+%!  visitor_session(?WSID, ?Session, ?Token, ?Consumer).
 %
 %   Redis data:
 %
 %     - wsid: set of WSID
-%     - session:WSID to prolog(Session-Token)
+%     - session:WSID to prolog(at(Consumer,Session,Token))
 
 visitor_session_create(WSID, Session, Token) :-
     redis_key(wsid, Server, SetKey),
     redis_key(session(WSID), Server, SessionKey),
     !,
+    redis_consumer(Consumer),
     redis(Server, sadd(SetKey, WSID)),
-    redis(Server, set(SessionKey, prolog(Session-Token))).
+    redis(Server, set(SessionKey, prolog(at(Consumer,Session,Token)))).
 visitor_session_create(WSID, Session, Token) :-
     assertz(visitor_session_db(WSID, Session, Token)).
 
 visitor_session(WSID, Session, Token) :-
+    visitor_session(WSID, Session, Token, _Consumer).
+
+visitor_session(WSID, Session, Token, Consumer) :-
     use_redis,
     !,
     current_wsid(WSID),
     redis_key(session(WSID), Server, SessionKey),
-    redis(Server, get(SessionKey), Session-Token).
-visitor_session(WSID, Session, Token) :-
+    redis(Server, get(SessionKey), at(Consumer,Session,Token)).
+visitor_session(WSID, Session, Token, single) :-
     visitor_session_db(WSID, Session, Token).
 
 %!  visitor_session_reclaim(+WSID, -Session) is semidet.
@@ -379,7 +385,7 @@ visitor_session_reclaim(WSID, Session) :-
     redis_key(session(WSID), Server, SessionKey),
     redis_key(wsid, Server, SetKey),
     !,
-    (   redis(Server, get(SessionKey), Session-_Token)
+    (   redis(Server, get(SessionKey), at(_,Session,_Token))
     ->  redis(Server, srem(SetKey, WSID))
     ;   true
     ).
@@ -421,6 +427,16 @@ current_wsid(WSID) :-
     redis_key(wsid, Server, SetKey),
     redis_sscan(Server, SetKey, List, []),
     member(WSID, List).
+
+%!  current_wsid(?WSID, -Consumer)
+%
+%   True when we have a visitor WSID on SWISH node Consumer.
+
+current_wsid(WSID, Consumer) :-
+    current_wsid(WSID),
+    redis_key(session(WSID), Server, SessionKey),
+    redis(Server, get(SessionKey), at(Consumer,_Session,_Token)).
+
 
 %!  session_user(?Session, ?TmpUser:atom).
 %
@@ -517,28 +533,36 @@ unsubscribe(WSID, Channel, SubChannel) :-
 %   True when WSID should be considered an active visitor.
 
 visitor(WSID) :-
-    visitor_session(WSID, _Session, _Token),
-    (   inactive(WSID, 30)
+    visitor_session(WSID, _Session, _Token, Consumer),
+    (   pending_visitor(WSID, 30)
     ->  fail
-    ;   reap(WSID)
+    ;   reap(WSID, Consumer)
     ).
 
-reap(WSID) :-
+reap(WSID, _) :-
     hub_member(swish_chat, WSID),
     !.
-reap(WSID) :-
+reap(WSID, Consumer) :-
+    redis_consumer(Me),
+    !,
+    (   Me == Consumer
+    ->  reclaim_visitor(WSID),
+        fail
+    ;   true
+    ).
+reap(WSID, _Consumer) :-            % non-redis setup
     reclaim_visitor(WSID),
     fail.
 
 visitor_count(Count) :-
     aggregate_all(count, visitor(_), Count).
 
-%!  inactive(+WSID, +Timeout) is semidet.
+%!  pending_visitor(+WSID, +Timeout) is semidet.
 %
 %   True if WSID is inactive. This means   we lost the connection at
 %   least Timeout seconds ago.
 
-inactive(WSID, Timeout) :-
+pending_visitor(WSID, Timeout) :-
     visitor_status(WSID, lost(Lost)),
     get_time(Now),
     Now - Lost > Timeout.
@@ -663,7 +687,7 @@ gc_visitors_sync :-
 
 do_gc_visitors :-
     forall(( visitor_session(WSID, _Session, _Token),
-             inactive(WSID, 5*60)
+             pending_visitor(WSID, 5*60)
            ),
            reclaim_visitor(WSID)).
 
