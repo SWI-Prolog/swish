@@ -435,20 +435,30 @@ session_user_create(Session, User) :-
 session_user_del(Session, User) :-
     http_session_retract(Session, swish_user(User)).
 
-%!  visitor_data(?TmpUser, ?Data)
+%!  visitor_data(?Visitor, ?Data)
 
-visitor_data(TmpUser, Data) :-
-    visitor_data_db(TmpUser, Data).
+visitor_data(Visitor, Data) :-
+    redis_key(visitor(Visitor), Server, Key),
+    !,
+    redis_get_hash(Server, Key, Data).
+visitor_data(Visitor, Data) :-
+    visitor_data_db(Visitor, Data).
 
-visitor_data_create(User, Data) :-
-    assertz(visitor_data_db(User, Data)).
+visitor_data_set(Visitor, Data) :-
+    redis_key(visitor(Visitor), Server, Key),
+    !,
+    redis_set_hash(Server, Key, Data).
+visitor_data_set(Visitor, Data) :-
+    retractall(visitor_data_db(Visitor, _)),
+    assertz(visitor_data_db(Visitor, Data)).
 
-visitor_data_del(User, Data) :-
-    retract(visitor_data_db(User, Data)).
-
-visitor_data_set(User, Data) :-
-    retractall(visitor_data_db(User, _)),
-    assertz(visitor_data_db(User, Data)).
+visitor_data_del(Visitor, Data) :-
+    redis_key(visitor(Visitor), Server, Key),
+    !,
+    redis_get_hash(Server, Key, Data),
+    redis(Server, del(Key)).
+visitor_data_del(Visitor, Data) :-
+    retract(visitor_data_db(Visitor, Data)).
 
 %!  subscription(?WSID, ?Channel, ?SubChannel)
 
@@ -652,7 +662,7 @@ create_session_user(Session, TmpUser, UserData, Options) :-
     uuid(TmpUser),
     get_visitor_data(UserData, Options),
     session_user_create(Session, TmpUser),
-    visitor_data_create(TmpUser, UserData).
+    visitor_data_set(TmpUser, UserData).
 
 destroy_session_user(Session) :-
     forall(visitor_session(WSID, Session, _Token),
