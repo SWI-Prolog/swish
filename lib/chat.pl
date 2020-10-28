@@ -421,16 +421,19 @@ current_wsid(WSID) :-
     redis_sscan(Server, SetKey, List, []),
     member(WSID, List).
 
-%!  session_user(?Session, ?TmpUser).
+%!  session_user(?Session, ?TmpUser:atom).
+%
+%   Relate Session to a  tmp  user  id.   Info  about  the  tmp  user is
+%   maintained in visitor_data/2.
 
 session_user(Session, TmpUser) :-
-    session_user_db(Session, TmpUser).
+    http_current_session(Session, swish_user(TmpUser)).
 
 session_user_create(Session, User) :-
-    assertz(session_user_db(Session, User)).
+    http_session_asserta(Session, swish_user(User)).
 
 session_user_del(Session, User) :-
-    retract(session_user_db(Session, User)).
+    http_session_retract(Session, swish_user(User)).
 
 %!  visitor_data(?TmpUser, ?Data)
 
