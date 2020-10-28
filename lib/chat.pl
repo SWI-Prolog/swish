@@ -64,6 +64,8 @@
 :- use_module(library(user_profile)).
 :- endif.
 :- use_module(library(aggregate)).
+:- use_module(library(redis)).
+:- use_module(library(solution_sequences)).
 
 :- use_module(storage).
 :- use_module(gitty).
@@ -904,7 +906,7 @@ inform_friend_change(WSID, Data, Reason) :-
                       reason:Reason
                     }.put(Data)),
     hub_send(WSID, Message),
-    forall(viewing_same_file(WSID, Friend),
+    forall(distinct(viewing_same_file(WSID, Friend)),
            ignore(hub_send(Friend, Message))).
 
 viewing_same_file(WSID, Friend) :-
