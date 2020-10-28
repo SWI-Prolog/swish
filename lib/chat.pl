@@ -353,14 +353,14 @@ visitor_status_del_unload(WSID) :-
 %   Redis data:
 %
 %     - wsid: set of WSID
-%     - Map WSID:session to prolog(Session-Token)
+%     - session:WSID to prolog(Session-Token)
 
 visitor_session_create(WSID, Session, Token) :-
     redis_key(wsid, Server, SetKey),
     redis_key(session(WSID), Server, SessionKey),
     !,
-    redis(Server, zadd(SetKey, WSID)),
-    redis(SetKey, set(SessionKey, prolog(Session-Token))).
+    redis(Server, sadd(SetKey, WSID)),
+    redis(Server, set(SessionKey, prolog(Session-Token))).
 visitor_session_create(WSID, Session, Token) :-
     assertz(visitor_session_db(WSID, Session, Token)).
 
@@ -377,9 +377,10 @@ visitor_session(WSID, Session, Token) :-
 
 visitor_session_reclaim(WSID, Session) :-
     redis_key(session(WSID), Server, SessionKey),
+    redis_key(wsid, Server, SetKey),
     !,
     (   redis(Server, get(SessionKey), Session-_Token)
-    ->  redis(Session, zdel(SessionKey, WSID))
+    ->  redis(Server, srem(SetKey, WSID))
     ;   true
     ).
 visitor_session_reclaim(WSID, Session) :-
@@ -388,9 +389,9 @@ visitor_session_reclaim(WSID, Session) :-
 %!  visitor_session_reclaim_all(+WSID, +Session, +Token) is det.
 
 visitor_session_reclaim_all(WSID, _Session, _Token) :-
-    redis_key(session(WSID), Server, SessionKey),
+    redis_key(wsid, Server, SetKey),
     !,
-    redis(Server, zdel(SessionKey, WSID)),
+    redis(Server, srem(SetKey, WSID)),
     redis_key(session(WSID), Server, SessionKey),
     redis(Server, del(SessionKey)).
 visitor_session_reclaim_all(WSID, Session, Token) :-
@@ -430,10 +431,10 @@ session_user(Session, TmpUser) :-
     http_current_session(Session, swish_user(TmpUser)).
 
 session_user_create(Session, User) :-
-    http_session_asserta(Session, swish_user(User)).
+    http_session_asserta(swish_user(User), Session).
 
 session_user_del(Session, User) :-
-    http_session_retract(Session, swish_user(User)).
+    http_session_retract(swish_user(User), Session).
 
 %!  visitor_data(?Visitor, ?Data)
 
@@ -478,7 +479,7 @@ subscription(WSID, Channel, SubChannel) :-
     ;   current_wsid(WSID)
     ->  redis_key(subscription(WSID), Server, WsKey),
         redis_sscan(Server, WsKey, List, []),
-        member(WSID, List)
+        member(Channel-SubChannel, List)
     ).
 subscription(WSID, Channel, SubChannel) :-
     subscription_db(WSID, Channel, SubChannel).
@@ -501,8 +502,8 @@ unsubscribe(WSID, Channel, SubChannel) :-
     subscription(WSID, Channel, SubChannel),
     redis_key(channel(SubChannel), Server, ChKey),
     redis_key(subscription(WSID), Server, WsKey),
-    redis(Server, sdel(ChKey, SubChannel)),
-    redis(Server, sdel(WsKey, WSID)).
+    redis(Server, srem(ChKey, SubChannel)),
+    redis(Server, srem(WsKey, WSID)).
 unsubscribe(WSID, Channel, SubChannel) :-
     retractall(subscription_db(WSID, Channel, SubChannel)).
 
