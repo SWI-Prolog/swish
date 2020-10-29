@@ -1531,7 +1531,7 @@ propagate_profile_change(ProfileID, _, _) :-
 %
 %   If true, broadcast this event.
 
-broadcast_event(updated(_File, _From, _To)).
+broadcast_event(updated(_File, _Commit)).
 
 
 %!  broadcast_event(+Event, +File, +WSID) is det.
@@ -1579,7 +1579,7 @@ event_message(created(File)) -->
     html([ 'Created ', \file(File) ]).
 event_message(reloaded(File)) -->
     html([ 'Reloaded ', \file(File) ]).
-event_message(updated(File, _From, _To)) -->
+event_message(updated(File, _Commit)) -->
     html([ 'Saved ', \file(File) ]).
 event_message(deleted(File, _From, _To)) -->
     html([ 'Deleted ', \file(File) ]).
