@@ -146,7 +146,8 @@ gitty_open(Store, Options) :-
     option(redis(DB), Options),
     !,
     option(redis_prefix(Prefix), Options, swish),
-    asserta(redis_db(Store, DB, Prefix)).
+    asserta(redis_db(Store, DB, Prefix)),
+    thread_create(gitty_scan(Store), _, [detached(true)]).
 gitty_open(_, _).
 
 
