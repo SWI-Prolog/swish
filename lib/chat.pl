@@ -905,14 +905,7 @@ inform_friend_change(WSID, Data, Reason) :-
                       wsid:WSID,
                       reason:Reason
                     }.put(Data)),
-    hub_send(WSID, Message),
-    forall(distinct(viewing_same_file(WSID, Friend)),
-           ignore(hub_send(Friend, Message))).
-
-viewing_same_file(WSID, Friend) :-
-    subscription(WSID, gitty, File),
-    subscription(Friend, gitty, File),
-    Friend \== WSID.
+    send_friends(WSID, Message).
 
 %!  subscribe(+WSID, +Channel) is det.
 
@@ -1150,6 +1143,32 @@ subscribed(gitty, SubChannel, WSID) :-
     swish_config:config(hangout, SubChannel),
     \+ subscription(WSID, gitty, SubChannel).
 
+%!  send_friends(+WSID, +Message)
+%
+%   Send Message to WSID and all its friends.
+
+send_friends(WSID, Message) :-
+    use_redis,
+    !,
+    redis(swish, publish(swish:chat, prolog(send_friends(WSID, Message)))).
+send_friends(WSID, Message) :-
+    send_friends_local(WSID, Message).
+
+send_friends_local(WSID, Message) :-
+    hub_send_if_on_me(WSID, Message),
+    forall(distinct(viewing_same_file(WSID, Friend)),
+           ignore(hub_send_if_on_me(Friend, Message))).
+
+hub_send_if_on_me(WSID, Message) :-
+    hub_member(swish_chat, WSID),
+    !,
+    hub_send(WSID, Message).
+hub_send_if_on_me(_, _).
+
+viewing_same_file(WSID, Friend) :-
+    subscription(WSID, gitty, File),
+    subscription(Friend, gitty, File),
+    Friend \== WSID.
 
 :- initialization
     listen(redis(_, 'swish:chat', Message),
@@ -1159,6 +1178,8 @@ chat_message(chat(Message)) :-
     chat_broadcast_local(Message).
 chat_message(chat(Message, Channel)) :-
     chat_broadcast_local(Message, Channel).
+chat_message(send_friends(WSID, Message)) :-
+    send_friends_local(WSID, Message).
 
 
                  /*******************************
