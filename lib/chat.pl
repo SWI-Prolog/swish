@@ -545,11 +545,14 @@ reap(WSID, _) :-
     hub_member(swish_chat, WSID),
     !.
 reap(WSID, Consumer) :-
-    redis_consumer(Me),
+    use_redis,
     !,
-    (   Me == Consumer
-    ->  reclaim_visitor(WSID),
-        fail
+    (   redis_consumer(Me)
+    ->  (   Me == Consumer
+        ->  reclaim_visitor(WSID),
+            fail
+        ;   true
+        )
     ;   true
     ).
 reap(WSID, _Consumer) :-            % non-redis setup
