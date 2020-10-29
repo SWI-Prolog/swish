@@ -1299,7 +1299,7 @@ init_replicator :-
     redis_swish_stream('gitty:replicate', ReplKey),
     listen(redis(_Redis, ReplKey, _Id, Data),
            replicate(Data)),
-    listen(redis(_, gitty, Message),
+    listen(redis(_, 'swish:gitty', Message),
            gitty_message(Message)),
     message_queue_create(_, [alias(gitty_queue)]).
 
@@ -1310,7 +1310,7 @@ gitty_message(discover(Hash)) :-
     store(Store, _),
     load_object_raw(Store, Hash, Data),
     debug(gitty(replicate), 'Sending object ~p', [Hash]),
-    redis(swish, publish(gitty, prolog(object(Hash, Data)))).
+    redis(swish, publish(swish:gitty, prolog(object(Hash, Data)))).
 gitty_message(object(Hash, Data)) :-
     debug(gitty(replicate), 'Replicate: ~p', [Hash]),
     redis_db(Store, _DB, _Prefix),

@@ -1110,10 +1110,25 @@ noble_avatar_url(HREF, _Options) :-
 %   where both Channel and SubChannel are atoms.
 
 chat_broadcast(Message) :-
+    use_redis,
+    !,
+    redis(swish, publish(swish:chat, prolog(chat(Message)))).
+chat_broadcast(Message) :-
+    chat_broadcast_local(Message).
+
+chat_broadcast(Message, Channel) :-
+    use_redis,
+    !,
+    redis(swish, publish(swish:chat, prolog(chat(Message, Channel)))).
+chat_broadcast(Message, Channel) :-
+    chat_broadcast_local(Message, Channel).
+
+
+chat_broadcast_local(Message) :-
     debug(chat(broadcast), 'Broadcast: ~p', [Message]),
     hub_broadcast(swish_chat, json(Message)).
 
-chat_broadcast(Message, Channel/SubChannel) :-
+chat_broadcast_local(Message, Channel/SubChannel) :-
     !,
     must_be(atom, Channel),
     must_be(atom, SubChannel),
@@ -1121,7 +1136,7 @@ chat_broadcast(Message, Channel/SubChannel) :-
           [Channel/SubChannel, Message]),
     hub_broadcast(swish_chat, json(Message),
                   subscribed(Channel, SubChannel)).
-chat_broadcast(Message, Channel) :-
+chat_broadcast_local(Message, Channel) :-
     must_be(atom, Channel),
     debug(chat(broadcast), 'Broadcast on ~p: ~p', [Channel, Message]),
     hub_broadcast(swish_chat, json(Message),
@@ -1134,6 +1149,16 @@ subscribed(Channel, SubChannel, WSID) :-
 subscribed(gitty, SubChannel, WSID) :-
     swish_config:config(hangout, SubChannel),
     \+ subscription(WSID, gitty, SubChannel).
+
+
+:- initialization
+    listen(redis(_, 'swish:chat', Message),
+           chat_message(Message)).
+
+chat_message(chat(Message)) :-
+    chat_broadcast_local(Message).
+chat_message(chat(Message, Channel)) :-
+    chat_broadcast_local(Message, Channel).
 
 
                  /*******************************
