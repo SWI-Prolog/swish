@@ -171,6 +171,10 @@ init_pubsub :-
     redis_current_subscription(redis_pubsub, _),
     !.
 init_pubsub :-
-    redis_subscribe(swish, [swish,gitty], _,
+    redis_subscribe(swish,
+                    [ swish:chat,     % Chat broadcast messages
+                      swish:gitty     % Gitty sync requests
+                    ],
+                    _,
                     [ alias(redis_pubsub)
                     ]).
