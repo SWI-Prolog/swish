@@ -223,7 +223,7 @@ chat_messages(DocID, Messages, Options) :-
         filter_old(Messages0, Messages, Options)
     ;   option(after(Time), Options)
     ->  Score is integer(Time*1000),
-        redis(Score, zrangebyscore(Key, Score, +inf), Messages)
+        redis(Server, zrangebyscore(Key, Score, +inf), Messages)
     ;   redis(Server, zrange(Key, 0, -1), Messages)
     ).
 chat_messages(DocID, Messages, Options) :-
