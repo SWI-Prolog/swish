@@ -357,7 +357,7 @@ visitor_status_del_unload(WSID) :-
 %   Redis data:
 %
 %     - wsid: set of WSID
-%     - session:WSID to prolog(at(Consumer,Session,Token))
+%     - session:WSID to at(Consumer,Session,Token)
 
 visitor_session_create(WSID, Session, Token) :-
     redis_key(wsid, Server, SetKey),
@@ -365,7 +365,7 @@ visitor_session_create(WSID, Session, Token) :-
     !,
     redis_consumer(Consumer),
     redis(Server, sadd(SetKey, WSID)),
-    redis(Server, set(SessionKey, prolog(at(Consumer,Session,Token)))).
+    redis(Server, set(SessionKey, at(Consumer,Session,Token) as prolog)).
 visitor_session_create(WSID, Session, Token) :-
     assertz(visitor_session_db(WSID, Session, Token)).
 
@@ -506,8 +506,8 @@ subscribe(WSID, Channel, SubChannel) :-
     redis_key(channel(SubChannel), Server, ChKey),
     redis_key(subscription(WSID), Server, WsKey),
     !,
-    redis(Server, sadd(ChKey, prolog(WSID-Channel))),
-    redis(Server, sadd(WsKey, prolog(Channel-SubChannel))).
+    redis(Server, sadd(ChKey, WSID-Channel as prolog)),
+    redis(Server, sadd(WsKey, Channel-SubChannel as prolog)).
 subscribe(WSID, Channel, SubChannel) :-
     (   subscription(WSID, Channel, SubChannel)
     ->  true
@@ -520,8 +520,8 @@ unsubscribe(WSID, Channel, SubChannel) :-
     subscription(WSID, Channel, SubChannel),
     redis_key(channel(SubChannel), Server, ChKey),
     redis_key(subscription(WSID), Server, WsKey),
-    redis(Server, srem(ChKey, prolog(WSID-Channel))),
-    redis(Server, srem(WsKey, prolog(Channel-SubChannel))).
+    redis(Server, srem(ChKey, WSID-Channel as prolog)),
+    redis(Server, srem(WsKey, Channel-SubChannel as prolog)).
 unsubscribe(WSID, Channel, SubChannel) :-
     retractall(subscription_db(WSID, Channel, SubChannel)).
 
@@ -1108,14 +1108,14 @@ noble_avatar_url(HREF, _Options) :-
 chat_broadcast(Message) :-
     use_redis,
     !,
-    redis(swish, publish(swish:chat, prolog(chat(Message)))).
+    redis(swish, publish(swish:chat, chat(Message) as prolog)).
 chat_broadcast(Message) :-
     chat_broadcast_local(Message).
 
 chat_broadcast(Message, Channel) :-
     use_redis,
     !,
-    redis(swish, publish(swish:chat, prolog(chat(Message, Channel)))).
+    redis(swish, publish(swish:chat, chat(Message, Channel) as prolog)).
 chat_broadcast(Message, Channel) :-
     chat_broadcast_local(Message, Channel).
 
@@ -1153,7 +1153,7 @@ subscribed(gitty, SubChannel, WSID) :-
 send_friends(WSID, Message) :-
     use_redis,
     !,
-    redis(swish, publish(swish:chat, prolog(send_friends(WSID, Message)))).
+    redis(swish, publish(swish:chat, send_friends(WSID, Message) as prolog)).
 send_friends(WSID, Message) :-
     send_friends_local(WSID, Message).
 

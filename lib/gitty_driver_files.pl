@@ -1310,7 +1310,7 @@ gitty_message(discover(Hash)) :-
     store(Store, _),
     load_object_raw(Store, Hash, Data),
     debug(gitty(replicate), 'Sending object ~p', [Hash]),
-    redis(swish, publish(swish:gitty, prolog(object(Hash, Data)))).
+    redis(swish, publish(swish:gitty, object(Hash, Data) as prolog)).
 gitty_message(object(Hash, Data)) :-
     debug(gitty(replicate), 'Replicate: ~p', [Hash]),
     redis_db(Store, _DB, _Prefix),
@@ -1323,7 +1323,7 @@ gitty_message(object(Hash, Data)) :-
 
 redis_replicate_get(_Store, Hash) :-
     is_gitty_hash(Hash),
-    redis(swish, publish(gitty, prolog(discover(Hash))), Count),
+    redis(swish, publish(gitty, discover(Hash) as prolog), Count),
     Count > 1,                          % If I'm alone it won't help :(
     thread_get_message(gitty_queue, Hash,
                        [ timeout(10)
