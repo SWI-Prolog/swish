@@ -138,7 +138,7 @@ queue_event(Profile, DocID, Action) :-
 queue_event(Profile, DocID, Action, Status) :-
     redis_queue_key(Server, Key),
     !,
-    redis(Server, rpush(Key, prolog(notify(Profile, DocID, Action, Status)))).
+    redis(Server, rpush(Key, notify(Profile, DocID, Action, Status) as prolog)).
 queue_event(Profile, DocID, Action, Status) :-
     queue_file(Path),
     with_mutex(swish_notify,
@@ -266,7 +266,7 @@ follow(DocID, ProfileID, Flags) :-
     (   Flags == []
     ->  redis(Server, hdel(Key, ProfileID))
     ;   maplist(to_atom, Flags, Options),
-        redis(Server, hset(Key, ProfileID, prolog(Options)))
+        redis(Server, hset(Key, ProfileID, Options as prolog))
     ).
 follow(DocID, ProfileID, Flags) :-
     to_atom(DocID, DocIDA),

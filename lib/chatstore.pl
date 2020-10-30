@@ -155,7 +155,7 @@ chat_store(Message0) :-
         ;   true
         )
     ->  Score is integer(Message.time*1000),
-        redis(Server, zadd(Key, nx, Score, prolog(Message)))
+        redis(Server, zadd(Key, nx, Score, Message as prolog))
     ;   true
     ).
 chat_store(Message0) :-

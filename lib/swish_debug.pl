@@ -574,7 +574,7 @@ save_stats_file(_, Stats) :-
     use_redis,
     !,
     (   redis_key(Server, Key)
-    ->  redis(Server, set(Key, prolog(Stats)))
+    ->  redis(Server, set(Key, Stats as prolog))
     ;   true
     ).
 save_stats_file(File, Stats) :-
