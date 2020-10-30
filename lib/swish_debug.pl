@@ -68,7 +68,7 @@ redis_key(Server, Key) :-
     swish_config(redis, Server),
     swish_config(redis_prefix, Prefix),
     redis_consumer(Consumer),
-    atomic_list_concat([Prefix, stat | Consumer], :, Key).
+    atomic_list_concat([Prefix,stat,Consumer], :, Key).
 
 wait_redis_key(Server, Key) :-
     between(1, 10, X),
@@ -588,6 +588,12 @@ save_stats_stream(Stats, Out) :-
     \+ \+ ( numbervars(Stats, 0, _, [singletons(true)]),
             format(Out, 'stats(~1f, ~q).~n', [Now, Stats])
           ).
+
+%!  restart_sliding_stats(+Options, +Dim, -Stats) is det.
+%
+%   Try to reload the stats from the saved   version. On any error or if
+%   the format is incompatible, drop the saved   version and start a new
+%   series.
 
 restart_sliding_stats(save(_, _), Dims, Stats) :-
     use_redis,
