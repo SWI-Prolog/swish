@@ -193,6 +193,7 @@ accept_chat_(Session, Options, WebSocket) :-
                                     TmpUser, UserData, Options)),
         Reason = joined
     ),
+    gc_visitors,
     visitor_count(Visitors),
     option(check_login(CheckLogin), Options, true),
     Msg = _{ type:welcome,
@@ -206,7 +207,6 @@ accept_chat_(Session, Options, WebSocket) :-
     must_succeed(chat_broadcast(UserData.put(_{type:Reason,
                                                visitors:Visitors,
                                                wsid:WSID}))),
-    gc_visitors,
     debug(chat(websocket), '~w (session ~p, wsid ~p)',
           [Reason, Session, WSID]).
 
