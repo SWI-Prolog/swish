@@ -1323,7 +1323,7 @@ gitty_message(object(Hash, Data)) :-
 
 redis_replicate_get(_Store, Hash) :-
     is_gitty_hash(Hash),
-    redis(swish, publish(gitty, discover(Hash) as prolog), Count),
+    redis(swish, publish(swish:gitty, discover(Hash) as prolog), Count),
     Count > 1,                          % If I'm alone it won't help :(
     thread_get_message(gitty_queue, Hash,
                        [ timeout(10)
