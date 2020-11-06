@@ -192,10 +192,10 @@ swish_message(Message) :-
 :- multifile prolog:message//1.
 
 prolog:message(swish(redis_peers(Count))) -->
-    [ 'Redis: the are ~d peers in the cluster', [Count] ].
+    [ 'Redis: the are ~d peers in the cluster'-[Count] ].
 prolog:message(swish(joined(Consumer))) -->
     (   { redis_consumer(Consumer) }
     ->  []
-    ;   [ 'Redis: ~w joined the cluster', [Consumer] ]
+    ;   [ 'Redis: ~w joined the cluster'-[Consumer] ]
     ).
 
