@@ -83,7 +83,9 @@ init_redis(Port) :-
     keysort(Pairs, Sorted),
     group_pairs_by_key(Sorted, Grouped),
     consumer(Port, Consumer),
-    maplist(create_listener(Consumer), Grouped).
+    maplist(create_listener(Consumer), Grouped),
+    redis(swish, publish(swish:swish, joined(Consumer) as prolog), Count),
+    print_message(informational, swish(redis_peers(Count))).
 
 create_listener(_, (-)-Streams) :-
     !,
@@ -172,9 +174,28 @@ init_pubsub :-
     !.
 init_pubsub :-
     redis_subscribe(swish,
-                    [ swish:chat,     % Chat broadcast messages
+                    [ swish:swish,    % Overall control
+                      swish:chat,     % Chat broadcast messages
                       swish:gitty     % Gitty sync requests
                     ],
                     _,
                     [ alias(redis_pubsub)
                     ]).
+
+:- initialization
+    listen(redis(_, 'swish:swish', Message),
+           swish_message(swish(Message))).
+
+swish_message(Message) :-
+    print_message(informational, Message).
+
+:- multifile prolog:message//1.
+
+prolog:message(swish(redis_peers(Count))) -->
+    [ 'Redis: the are ~d peers in the cluster', [Count] ].
+prolog:message(swish(joined(Consumer))) -->
+    (   { redis_consumer(Consumer) }
+    ->  []
+    ;   [ 'Redis: ~w joined the cluster', [Consumer] ]
+    ).
+
