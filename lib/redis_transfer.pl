@@ -109,8 +109,9 @@ chat_doc_id(Id) :-
 
 redis_transfer_profiles :-
     file_profiles(Pairs),
-    forall(member(ProfileID-Attributes, Pairs),
-           profile_create(ProfileID, Attributes)).
+    forall(member(ProfileID-Dict, Pairs),
+           (   dict_pairs(Dict, _, Attributes),
+               profile_create(ProfileID, Attributes))).
 
 file_profiles(Pairs) :-
     set_setting(user_profile:backend, impl_profile_prolog),
