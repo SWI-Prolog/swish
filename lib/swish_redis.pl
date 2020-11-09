@@ -85,7 +85,11 @@ init_redis(Port) :-
     consumer(Port, Consumer),
     maplist(create_listener(Consumer), Grouped),
     redis(swish, publish(swish:swish, joined(Consumer) as prolog), Count),
-    print_message(informational, swish(redis_peers(Count))).
+    print_message(informational, swish(redis_peers(Count))),
+    at_halt(publish_halt(Consumer)).
+
+publish_halt(Consumer) :-
+    redis(swish, publish(swish:swish, left(Consumer) as prolog), _Count).
 
 create_listener(_, (-)-Streams) :-
     !,
@@ -197,5 +201,10 @@ prolog:message(swish(joined(Consumer))) -->
     (   { redis_consumer(Consumer) }
     ->  []
     ;   [ 'Redis: ~w joined the cluster'-[Consumer] ]
+    ).
+prolog:message(swish(left(Consumer))) -->
+    (   { redis_consumer(Consumer) }
+    ->  []
+    ;   [ 'Redis: ~w left the cluster'-[Consumer] ]
     ).
 
