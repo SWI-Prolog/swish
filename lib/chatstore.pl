@@ -227,6 +227,9 @@ chat_messages(DocID, Messages, Options) :-
     ;   redis(Server, zrange(Key, 0, -1), Messages)
     ).
 chat_messages(DocID, Messages, Options) :-
+    chat_messages_from_files(DocID, Messages, Options).
+
+chat_messages_from_files(DocID, Messages, Options) :-
     (   existing_chat_file(DocID, File)
     ->  read_messages(File, Messages0, Options),
         filter_old(Messages0, Messages, Options)
