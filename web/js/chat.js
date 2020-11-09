@@ -126,6 +126,8 @@ var MAX_RECONNECT_DELAY = 300000;
       if ( data.reconnect ) {			/* reconnecting */
 	url += lead + "reconnect" + "=" + encodeURIComponent(data.reconnect);
 	lead = "&";
+      } else {
+	add_pref_param("wsid-token", "reconnect");
       }
 
       try {
@@ -188,6 +190,7 @@ var MAX_RECONNECT_DELAY = 300000;
 	data.connection.onclose = function(){};
 	data.connection.close();
 	data.connection = undefined;
+	preferences.setVal("wsid-token", data.reconnect);
       }
 
       return this;
@@ -257,6 +260,7 @@ var MAX_RECONNECT_DELAY = 300000;
 
       data.wsid = e.wsid;
       data.reconnect = e.reconnect;		/* reconnection token */
+      preferences.setVal("wsid-token", undefined);
       if ( e.avatar && e.avatar_source == 'generated' )
 	preferences.setVal("anon-avatar", e.avatar);
       e.role = "self";
