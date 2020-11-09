@@ -10,8 +10,9 @@
 server=${SWISH_SERVER-http://localhost:3050}
 srctext=
 curlarg=
-format=${SWISH_FORMAT-prolog}
+format=${SWISH_FORMAT-csv}
 program=$(basename $0)
+application=swish
 
 usage()
 {
@@ -51,13 +52,17 @@ while [ $done = false ]; do
 	--format=*)
 	    format=$(echo $1 | sed 's/.*=//')
 	    case "$format" in
-	        rdf|prolog)
+	        rdf|prolog|json)
 		    ;;
 		*)
 		    usage
 		    exit 1
 		    ;;
 	    esac
+            shift
+            ;;
+	--application=*)
+	    application=$(echo $1 | sed 's/.*=//')
             shift
             ;;
 	https://*.pl|http://*.pl)
@@ -86,9 +91,9 @@ fi
 curl -s \
      -d ask="$query" \
      -d template="$format($vars)" \
-     -d application="swish" \
+     -d application="$application" \
      -d src_text="$srctext" \
-     -d format=csv \
+     -d format="$format" \
      -d chunk=10 \
      -d solutions=all \
      $curlarg \
