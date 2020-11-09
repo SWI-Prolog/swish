@@ -517,11 +517,14 @@ subscribe(WSID, Channel, SubChannel) :-
 unsubscribe(WSID, Channel, SubChannel) :-
     use_redis,
     !,
-    subscription(WSID, Channel, SubChannel),
-    redis_key(channel(SubChannel), Server, ChKey),
-    redis_key(subscription(WSID), Server, WsKey),
-    redis(Server, srem(ChKey, WSID-Channel as prolog)),
-    redis(Server, srem(WsKey, Channel-SubChannel as prolog)).
+    (   subscription(WSID, Channel, SubChannel),
+        redis_key(channel(SubChannel), Server, ChKey),
+        redis_key(subscription(WSID), Server, WsKey),
+        redis(Server, srem(ChKey, WSID-Channel as prolog)),
+        redis(Server, srem(WsKey, Channel-SubChannel as prolog)),
+        fail
+    ;   true
+    ).
 unsubscribe(WSID, Channel, SubChannel) :-
     retractall(subscription_db(WSID, Channel, SubChannel)).
 
@@ -653,6 +656,7 @@ destroy_visitor(WSID) :-
         visitor_status_set_lost(WSID, Now)
     ),
     visitor_count(Count),
+    debug(chat(visitor), '~p left. Broadcasting ~d visitors', [WSID,Count]),
     chat_broadcast(_{ type:removeUser,
                       wsid:WSID,
                       reason:Reason,
