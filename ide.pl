@@ -137,7 +137,19 @@ host_port(Host:Port, Host, Port) :- !.
 host_port(Port, localhost, Port).
 
 
+		 /*******************************
+		 *	LOAD IDE RENDERERS	*
+		 *******************************/
+
+:- use_module(swish(lib/render/ide),   []).
+
+
+		 /*******************************
+		 *	      MESSAGES		*
+		 *******************************/
+
 :- multifile prolog:message//1.
 
 prolog:message(swish(reuse_port(Port))) -->
 	[ 'Trying to reuse old address ~p'-[Port] ].
+
