@@ -65,6 +65,7 @@ Open SWISH as an IDE for developing a local application.
 
 user:file_search_path(project, '.').
 
+swish_config:config(ide,		true).
 swish_config:config(show_beware,        false).
 swish_config:config(community_examples, true).
 
