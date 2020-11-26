@@ -924,6 +924,12 @@ goal_type(foreign(_),	      goal_foreign,	 []).
 goal_type(local(Line),	      goal_local,	 [line(Line)]).
 goal_type(constraint(Line),   goal_constraint,	 [line(Line)]).
 goal_type(not_callable,	      goal_not_callable, []).
+goal_type(global(Type,_Loc),  Class,	         []) :-
+	global_class(Type, Class).
+
+global_class(dynamic,   goal_dynamic) :- !.
+global_class(multifile, goal_multifile) :- !.
+global_class(_,		goal_global).
 
 %%	goal_arity(+Goal, -Arity) is det.
 %
