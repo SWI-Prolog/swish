@@ -40,7 +40,7 @@
 
   var isSymbolChar = /[-#$&*+./:<=>?@\\^~]/;	/* Prolog glueing symbols chars */
   var isSoloChar   = /[[\]{}(),;|!]/;		/* Prolog solo chars */
-  var isNeck       = /^(:-|-->)$/;
+  var isNeck       = /^(:-|-->|=>)$/;
   var isControlOp  = /^(,|;|->|\*->|\\+|\|)$/;
 
 

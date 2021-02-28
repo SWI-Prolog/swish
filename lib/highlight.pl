@@ -884,11 +884,12 @@ style(table_mode(_Mode), table_mode,			   [text]).
 style(table_option(_Mode), table_option,		   [text]).
 
 
-neck_text(clause,       (:-)).
-neck_text(grammar_rule, (-->)).
-neck_text(method(send), (:->)).
-neck_text(method(get),  (:<-)).
-neck_text(directive,    (:-)).
+neck_text(clause,       (:-))  :- !.
+neck_text(grammar_rule, (-->)) :- !.
+neck_text(method(send), (:->)) :- !.
+neck_text(method(get),  (:<-)) :- !.
+neck_text(directive,    (:-))  :- !.
+neck_text(Text,         Text).		% new style
 
 head_type(exported,	 head_exported).
 head_type(public(_),	 head_public).
