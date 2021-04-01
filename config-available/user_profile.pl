@@ -75,7 +75,7 @@ user_profile:attribute(email,               email,            []).
 user_profile:attribute(email_verified,      boolean,          [access(ro)]).
 user_profile:attribute(email_notifications, oneof([immediate,daily,never]),
                                                            [default(immediate)]).
-user_profile:attribute(avatar,              url(http),        []).
+user_profile:attribute(avatar,              url(http),        [hidden(true)]).
 user_profile:attribute(home_page,           url(http),        []).
 user_profile:attribute(last_login,          time_stamp('%+'), [access(ro)]).
 user_profile:attribute(last_peer,           string,           [access(ro)]).
