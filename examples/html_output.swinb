@@ -3,7 +3,7 @@
 <div class="nb-cell markdown" name="md1">
 # HTML output from queries
 
-In addition to output generated using write/1, format/2, print_message/2, etc., SWISH allows for HTML output.  This is arranged using a wrapper around library(http/html_write) that is used for generating HTML output from the web server framework.  Generating HTML is presented to the user using the predicate html/1.  A general tutorial for producing HTML using this approach has been written by Anne Ogborn and can be found [here](http://www.pathwayslms.com/swipltuts/html/index.html#_html_1_and_termerized_html)
+In addition to output generated using write/1, format/2, print_message/2, etc., SWISH allows for HTML output.  This is arranged using a wrapper around library(http/html_write) that is used for generating HTML output from the web server framework.  Generating HTML is presented to the user using the predicate html/1.  A general tutorial for producing HTML using this approach has been written by Anne Ogborn and can be found [here](https://github.com/Anniepoo/swiplwebtut/blob/master/web.adoc#html1-and-termerized-html)
 
 The html/1 predicate can also be used from [evaluable code in markdown cells](example/md_eval.swinb)
 
@@ -24,7 +24,7 @@ The argument to html/1 is one of
     typically calls (indirectly) html//1.
   - __A term \List__ inserts the elements of `List` unchecked into the
     HTML output.  __THIS IS DISCOURAGED AS IT MAY CREATE INVALID HTML__.
-    
+
 This notebook gives some examples.  We start with the common _hello world_ example.
 </div>
 
@@ -73,7 +73,7 @@ The next example shows this construct in a more advanced setting.  It illustrate
 <div class="nb-cell query" data-tabled="true" name="q4">
 projection([]),
 From = 7,
-html(table([ class([table, 'table-striped']), 
+html(table([ class([table, 'table-striped']),
              style('width:auto; margin-left:2em')
            ],
            [ tr(th(colspan(2), ['Table for ', From])),
@@ -89,7 +89,7 @@ html(table([ class([table, 'table-striped']),
 
 The _quasi quotation_ mechanism of SWI-Prolog allows for inserting literal HTML strings and interpolating values.  Note that the interpolated Prolog value must appear as the entire content or attribute value of the HTML input.
 
-Below is an example. 
+Below is an example.
 </div>
 
 <div class="nb-cell query" data-tabled="true" name="q5">
