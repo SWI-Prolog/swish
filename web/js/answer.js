@@ -119,7 +119,9 @@ define([ "jquery", "laconic" ],
   function answerHasOutput(answer) {
     return ( answer.variables.length > 0 ||
 	     answer.residuals ||
-	     answer.wfs_residual_program );
+	     answer.wfs_residual_program ||
+	     answer.scasp_model ||
+	     answer.scasp_justification );
   }
 
   function renderSubstitutions(substs, html) {
@@ -138,7 +140,6 @@ define([ "jquery", "laconic" ],
     var bindings = answer.variables;
     var wfshelp = "http://www.swi-prolog.org/pldoc/man?section=WFS";
 
-    console.log(answer);
     if ( answer.wfs_residual_program )
     { html.push("<div class=\"wfs-residual-program\">",
 		"<div class=\"wfs-title\">",
@@ -172,6 +173,20 @@ define([ "jquery", "laconic" ],
 	  html.push(",<br/>");
       }
     }
+
+    // s(CASP) handling.
+
+    if ( answer.scasp_model || answer.scasp_justification ) {
+      html.push("<div class='scasp-answer'>\n",
+		answer.scasp_model || "",
+		answer.scasp_justification || "",
+		"</div>\n",
+		"<script>\n",
+		"$.ajaxScript.parent().find('div.scasp-answer')"+
+				     ".sCASP('swish_answer');\n",
+		"</script>\n");
+    }
+
     return html.join("");
   }
 

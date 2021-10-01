@@ -1434,17 +1434,15 @@ define([ "jquery", "config", "preferences", "utils",
     { var options = $.extend({}, data.screen);
       var bps;
       var resvar    = config.swish.residuals_var || "Residuals";
-      var hashvar   = config.swish.permahash_var;
-      var wfsresvar = config.swish.wfs_residual_program_var;
 
-      if ( hashvar )
-	hashvar = ", "+hashvar;
-      else
-	hashvar = "";
-      if ( wfsresvar )
-	wfsresvar = ", "+wfsresvar;
-      else
-	wfsresvar = "";
+      function askvar(v) {
+	return v ? ", "+v : "";
+      }
+
+      var hashvar   = askvar(config.swish.permahash_var);
+      var wfsresvar = askvar(config.swish.wfs_residual_program_var);
+      var modelvar  = askvar(config.swish.scasp_model_var);
+      var treevar   = askvar(config.swish.scasp_justification_var);
 
       registerSources(this.pengine);
 
@@ -1457,13 +1455,41 @@ define([ "jquery", "config", "preferences", "utils",
 
       this.pengine.ask("'$swish wrapper'((\n" +
 		       termNoFullStop(data.query.query) +
-		       "\n), ["+resvar+hashvar+wfsresvar+"])", options);
+		       "\n), ["+resvar+hashvar+wfsresvar+modelvar+treevar+"])",
+		       options);
       elem.prologRunner('setState', "running");
     }
   }
 
   function handleSuccess() {
     var elem = this.pengine.options.runner;
+
+    /* Handle the s(CASP) bindings.  These are passed in reserved bindings
+     * as escaped HTML holding a Prolog string.
+     * TBD: Consider a clear way to pass real HTML around!
+     */
+
+    function specialBindings(answer)
+    { var vl = [];
+
+      for(var i=0; i<answer.variables.length; i++)
+      { var v = answer.variables[i];
+
+	function unescapeHTML(string_with_html) {
+	  //return $('<div></div>').html(JSON.parse(string_with_html)).text();
+	  return JSON.parse($('<div></div>').html(string_with_html).text());
+	}
+
+	if ( v.variables[0] == config.swish.scasp_model_var )
+	{ answer.scasp_model = unescapeHTML(v.value);
+	} else if ( v.variables[0] == config.swish.scasp_justification_var )
+	{ answer.scasp_justification = unescapeHTML(v.value);
+	} else
+	  vl.push(v);
+      }
+
+      answer.variables = vl;
+    }
 
     if ( elem.data(pluginName) == undefined )
     { this.pengine.destroy();			/* element already gone */
@@ -1472,6 +1498,7 @@ define([ "jquery", "config", "preferences", "utils",
 	var answer = this.data[i];
 	if ( this.projection )
 	  answer.projection = this.projection;
+	specialBindings(answer);
 
 	elem.prologRunner('renderAnswer', answer);
       }
@@ -1691,19 +1718,6 @@ define([ "jquery", "config", "preferences", "utils",
     var elem = this.pengine.options.runner;
 
     elem.prologRunner('ping', this.data);
-  }
-
-  /**
-   * @param {Object} answer a positive answer from the Pengine
-   * @returns {Boolean} true if the answer has printable part, i.e., no
-   * variable bindings nor residual goals.
-   */
-
-  function answerHasOutput(answer) {
-    return ( answer.variables.length > 0 ||
-	     answer.residuals ||
-	     answer.wfs_residual_program
-	   );
   }
 
   function termNoFullStop(s) {
