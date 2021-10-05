@@ -260,6 +260,8 @@ delays_residual_program(_, _:[]).
 	    )
 	;   notrace
 	),
+	call_post_context(_{goal:Goal, bindings:Bindings,
+			    delays:Delays, context:Extra}),
 	maplist(call_post_context(Goal, Bindings, Delays), Extra).
 
 throw_backtrace(error(Formal, context(prolog_stack(Stack0), Msg))) :-
@@ -299,6 +301,7 @@ no_lco.
 
 :- multifile
 	pre_context/3,
+	post_context/1,
 	post_context/3,
 	post_context/4.
 
@@ -307,6 +310,17 @@ call_pre_context(Goal, Bindings, Var) :-
 	pre_context(Name, Goal, Var), !.
 call_pre_context(_, _, _).
 
+%!	call_post_context(+Dict)
+
+call_post_context(Dict) :-
+	post_context(Dict), !.
+call_post_context(_).
+
+%!	call_post_context(+Goal, +Bindings, +Delays, +Var)
+%
+%	Hook to allow filling Var from  the   context.  I.e., there is a
+%	binding `Name=Var` in Bindings that gives us the name of what is
+%	expected in Var.
 
 call_post_context(Goal, Bindings, Delays, Var) :-
 	binding(Bindings, Var, Name),
