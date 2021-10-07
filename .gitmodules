@@ -19,3 +19,7 @@
 [submodule "pack/chat80"]
 	path = pack/chat80
 	url = https://github.com/JanWielemaker/chat80.git
+[submodule "pack/sCASP"]
+	path = pack/sCASP
+	url = https://github.com/JanWielemaker/sCASP.git
+	branch = swipl
