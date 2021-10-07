@@ -1,0 +1,22 @@
+<div class="notebook">
+
+<div class="nb-cell markdown">
+# s(CASP): Goal directed Constraint Answer Set Programming
+
+This skeleton notebook pre-loads SWI-Prolog's libraries for s(CASP).  See
+[examples](example/scasp.swinb) for details.
+</div>
+
+<div class="nb-cell program" data-background="true">
+:- use_module(library(scasp)).
+</div>
+
+<div class="nb-cell program">
+
+</div>
+
+<div class="nb-cell query">
+?
+</div>
+
+</div>

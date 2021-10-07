@@ -1,0 +1,92 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# s(CASP): Goal directed Constraint Answer Set Programming
+
+s(CASP) is related to ASP. Unlike ASP, which is traditionally solved using _grounding_ and a SAT solver, s(CASP) is solved using top-down goal directed search without grounding. This allows s(CASP) to solve problems that cannot be grounded, while the generated proof tree is a good basis for giving a justification for the answer. s(CASP) supports both negation as failure (NAF) and classical negation. These features make s(CASP) particularly suitable for commonsense reasoning tasks that require a
+justification of the answer.
+
+For more information we refer to [Gopal Gupta's home page](https://personal.utdallas.edu/~gupta/) which provides many pointers to related resources.   The original source by Joaquin Arias is at [here](https://gitlab.software.imdea.org/ciao-lang/sCASP)
+
+## S(CASP) and SWI-Prolog
+
+s(CASP) traditionally comes as an executable `scasp` which takes an s(CASP) program, usually with an embedded query, and prints the result at different levels of detail.   The SWI-Prolo port primarily aims at __embedding s(CASP) into Prolog__.   It provides two ways for embedding.  One embeds the s(CASP) program as a _block_ and makes some of its predicates available as normal Prolog predicates, e.g.,
+
+```
+:- begin_scasp(pq, [p/0]).
+p(X) :- not q(X).
+q(X) :- not p(X).
+:- end_scasp.
+```
+
+After which we can execute e.g.,
+
+   ?- p(X).
+   
+Alternatively, we can evaluate normal Prolog code using s(CASP) semantics using the predicate scasp/1 or its shorthand ?/1.  This collects the reachable call tree, all _global constraints_ whose call tree _overlaps_ with the reachable call tree, prepares this program for execution usig the s(CASP) solver and solves the query.  Note that unlike default s(CASP) this implies that global constraints that are completely unrelated from the query are not considered.  This is the implementation currently embedded into SWISH.
+
+### Differences from Prolog
+
+As s(CASP) has a few extensions when compared to normal Prolog we need to establish some program transformation:
+
+  - After loading library(scasp), literals subject to _classical negation_ are prefixed using the unary `-` operator, as in `-p(X)`.  The term- and goal expansion include the `-` into the functor, thus generating e.g., `'-p'(X)`.   User predicates whose name start with `-` are considered negative literals.
+  - Normally, _global constraints_ are written with an "empty head", i.e., using the Prolog syntax for _directives_.  To avoid this conflict, _global constraints_ are written as rules for the predicate false/0.  For example, the following rule defines that something cannot be a `p` and a `q` at the same time.
+  
+      false :- p(X), q(X).
+  - Normal assert/1, etc. to modify the database cannot be used as it has to perform the above transformations.  For this reason we provide scasp_assert/1.
+
+## s(CASP) in SWISH
+
+All the normal conventions of SWISH apply to using s(CASP) programs.  Every program or notebook that wishes to use s(CASP) must load library(scasp).  Every query must be inside scasp/1 or its shorthand ?/1.
+
+## Status of s(CASP) in SWI-Prolog and SWISH
+
+s(CASP) for SWI-Prolog and SWISH is very much __work in progress__.   We intend to make s(CASP) a stable standard library for SWI-Prolog.   For discussion please go to the [SWI-Prolog forum](https://swi-prolog.discourse.group/).   For now, the s(CASP) port for SWI-Prolog is at [GitHub](https://github.com/JanWielemaker/sCASP).
+
+## Examples
+
+First we need to include the library!
+</div>
+
+<div class="nb-cell program" data-background="true" name="p1">
+:- use_module(library(scasp)).
+</div>
+
+<div class="nb-cell markdown" name="md3">
+### Opera
+
+from http://platon.etsii.urjc.es/~jarias/slides/gde21-tutorial.pdf, slide 6
+</div>
+
+<div class="nb-cell program" name="p3">
+opera(D) :- not home(D).
+home(D):- not opera(D).
+home(monday).
+
+false :- baby(D), opera(D).
+
+baby(tuesday).
+</div>
+
+<div class="nb-cell query" name="q3">
+? opera(D).
+</div>
+
+<div class="nb-cell markdown" name="md2">
+### Cyclic programs with an even number of negations
+</div>
+
+<div class="nb-cell program" name="p2">
+p(X) :- not q(X).
+q(X) :- not p(X).
+</div>
+
+<div class="nb-cell query" name="q1">
+? p(X).
+</div>
+
+<div class="nb-cell query" name="q2">
+? not p(X).
+</div>
+
+</div>
