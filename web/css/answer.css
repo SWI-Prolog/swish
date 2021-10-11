@@ -98,6 +98,16 @@ pre.wfs-residual-program
   padding-bottom: 3px;
 }
 
+span.wfs_undefined span.pl-atom
+{ color: #51a3a3;
+  font-weight: bold;
+}
+
+span.wfs_undefined span.pl-compound.pl-level-0 span.pl-functor
+{ color: #51a3a3;
+  font-weight: bold;
+}
+
 		 /*******************************
 		 *	GENERAL RENDERERS	*
 		 *******************************/

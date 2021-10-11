@@ -332,10 +332,16 @@ post_context(Name, Goal, _Delays, Extra) :-
 post_context(Name, M:_Goal, _, '$residuals'(Residuals)) :-
 	swish_config(residuals_var, Name), !,
 	residuals(M, Residuals).
-post_context(Name, M:_Goal, Delays, '$wfs_residual_program'(Delays, Program)) :-
+post_context(Name, M:_Goal, Delays,
+	     '$wfs_residual_program'(TheDelays, Program)) :-
+	Delays \== true,
 	swish_config(wfs_residual_program_var, Name), !,
-	delays_residual_program(Delays, M:Program).
-
+	(   current_prolog_flag(toplevel_list_wfs_residual_program, true)
+	->  delays_residual_program(Delays, M:Program),
+	    TheDelays = Delays
+	;   TheDelays = undefined,
+	    Program = []
+	).
 
 binding([Name=Var|_], V, Name) :-
 	Var == V, !.
