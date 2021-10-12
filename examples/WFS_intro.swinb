@@ -1,0 +1,79 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# Tabling with Well Founded Semantics
+
+SWI-Prolog supports almost all tabling features initiated in [XSB](http://xsb.sourceforge.net/) by David S Warren and Theresa Swift.  This includes sound threadment of loops through negation following the [Well Founded Semantics](https://en.wikipedia.org/wiki/Well-founded_semantics) (WFS).
+
+When using tabling with WFS, negations may only be expressed on tabled predicates using tnot/1.  The first example we is one of the classical [Russel's paradoxes](https://en.wikipedia.org/wiki/Russell%27s_paradox):
+</div>
+
+<div class="nb-cell program" name="p1">
+:- table shaves/2.
+
+shaves(barber,P) :- person(P),  tnot(shaves(P,P)).
+person(barber).
+person(mayor).
+</div>
+
+<div class="nb-cell query" data-chunk="2" name="q1">
+shaves(X, Y).
+</div>
+
+<div class="nb-cell markdown" name="md2">
+It is clearly the case that the barber shaves the mayor.   Does he shaves himself though?  Here we are faced with an odd loop over a negation, which leads to an __undefined__ result according to WFS.  By default, SWI-Prolog answer substitution contains the _bindings_ in the normal way and adds the _delayed goal_ in cyan.   The delayed goal represents the condition under which the answer is true.  So, this effectively states _"It is unknown whether the barber shaves himself"_, but also the rather trivial _"It is true that the barber shaves himself if shaves(barber,barber) holds"_.   In addition it shows what the __residual program__, which is a small program that captures the contradiction.   In this case this is all very trivial.   In general, any goal that (indirectly) depends on this contradiction is considered undefined, unless there is some other way that proves the goal to be true.
+
+XSB simply states such answers as _undefined_ without providing the residual program.  We can get the XSB behavior using a Prolog flag:
+</div>
+
+<div class="nb-cell program" name="p2">
+:- set_prolog_flag(toplevel_list_wfs_residual_program, false).
+
+:- table shaves/2.
+
+shaves(barber,P) :- person(P),  tnot(shaves(P,P)).
+person(barber).
+person(mayor).
+</div>
+
+<div class="nb-cell query" data-chunk="2" name="q2">
+shaves(X, Y).
+</div>
+
+<div class="nb-cell markdown" name="md3">
+## Is a query true, false or undefined?
+
+Under WFS, both undefined and true answers are true in the classical Prolog sense.  How do we distinguish these two?  If it concerns a tabled predicate, we are dealing with an undefined result if both the result and tnot/1 on the result are true in the Prolog sense.  Thus, the query below returns only undefined results.
+</div>
+
+<div class="nb-cell query" name="q3">
+shaves(X,Y), tnot(shaves(X,Y)).
+</div>
+
+<div class="nb-cell markdown" name="md4">
+The SWI-Prolog predicate call_delays/2 provides an alternative.  It proves the first argument and returns the _condition_ under which this is true as the second argument.  If the condition is __true__, the answer is unconditional.  Now we can define:
+</div>
+
+<div class="nb-cell program" data-background="true" name="p3">
+is_true(G)  :- call_delays(G, true).
+is_undef(G) :- call_delays(G, Cond), Cond \== true.
+is_false(G) :- \+ G.
+</div>
+
+<div class="nb-cell program" name="p4">
+:- table shaves/2.
+
+shaves(barber,P) :- person(P),  tnot(shaves(P,P)).
+person(barber).
+person(mayor).
+</div>
+
+<div class="nb-cell query" name="q4">
+is_true(shaves(X,Y)).
+</div>
+
+<div class="nb-cell query" name="q5">
+is_undef(shaves(X,Y)).
+</div>
+
+</div>

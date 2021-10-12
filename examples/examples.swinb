@@ -43,6 +43,7 @@ You are reading a SWISH _notebook_.  A notebook is a mixture of _text_, _program
     - [EM Clustering of the Iris Dataset](example/iris.swinb)
     - [SIATEC pattern discovery in polyphonic music](example/siatec.swinb)
   - *Reasoning*
+    - [Tabling with Well Founded Semantics](example/WFS_intro.swinb)
     - [s(CASP): Goal directed Constraint Answer Set Programming](example/scasp.swinb)
   - *Graphical output* (see also [rendering](example/rendering.swinb))
     - [Using Graphviz to display graphs](example/render_graphviz.swinb)
