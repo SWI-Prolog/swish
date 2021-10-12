@@ -801,7 +801,7 @@ swish_rest_reply(put, Request, Options) :-
 	read_data(Type, Request, Data, Meta),
 	authorized(file(update(File,Meta)), Options1),
 	setup_call_cleanup(
-	    open(File, write, Out),
+	    open(File, write, Out, [encoding(utf8)]),
 	    format(Out, '~s', [Data]),
 	    close(Out)),
 	reply_json_dict(true).
@@ -811,4 +811,7 @@ read_data(media(Type,_), Request, Data, Meta) :-
 	http_read_json_dict(Request, Dict),
 	del_dict(data, Dict, Data, Meta).
 read_data(media(text/_,_), Request, Data, _{}) :-
-	http_read_data(Request, Data, [to(string)]).
+	http_read_data(Request, Data,
+		       [ to(string),
+			 input_encoding(utf8)
+		       ]).
