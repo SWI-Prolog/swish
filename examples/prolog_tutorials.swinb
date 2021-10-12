@@ -7,7 +7,7 @@ This notebook collects Prolog tutorials provided as SWISH notebooks.
 
   - [Using SWI-Prolog version 7 dicts](example/dict.swinb)
   - [Using tabling in SWI-Prolog](example/tabling.swinb)
-  - [Rational number (â) support](example/rational.swinb)
+  - [Rational number (ℚ) support](example/rational.swinb)
   - [IEEE-754 Floating point support](example/IEEE754.swinb)
   
 Note that you can find other tutorials from the *Tutorials* menu at
