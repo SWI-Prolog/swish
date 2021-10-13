@@ -68,6 +68,14 @@ false :- baby(D), opera(D).
 baby(tuesday).
 </div>
 
+<div class="nb-cell query" name="q4">
+scasp(opera(D)).
+</div>
+
+<div class="nb-cell markdown" name="md4">
+So our subject can go to the opera on any day but Monday and Tuesday.  Great!  Now typing scasp(Goal) is a lot of typing.  We can use the _prefix operator_ ?/1 as __shorthand__.
+</div>
+
 <div class="nb-cell query" name="q3">
 ? opera(D).
 </div>
