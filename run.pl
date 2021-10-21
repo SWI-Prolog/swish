@@ -67,3 +67,11 @@ run_swish :-
     ),
     server(Address).
 
+opt_type(port,   port,   natural).
+opt_type(p,      port,   natural).
+opt_type(public, public, boolean).
+
+opt_help(port,    "TCP/IP port to bind to").
+opt_help(public,  "Connect to all interfaces instead of only to localhost").
+
+opt_meta(port, 'PORT').
