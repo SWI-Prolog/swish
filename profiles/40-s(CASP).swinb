@@ -9,6 +9,9 @@ This skeleton notebook pre-loads SWI-Prolog's libraries for s(CASP).  See
 
 <div class="nb-cell program" data-background="true">
 :- use_module(library(scasp)).
+% Uncomment to suppress warnings
+%:- style_check(-discontiguous).
+%:- style_check(-singleton).
 </div>
 
 <div class="nb-cell program">
