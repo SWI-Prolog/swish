@@ -7,7 +7,7 @@ SWIPL=swipl
 
 # Packs to download and configure.  Run `git submodule` to see the
 # available packs.
-PACKS=profile rserve_client smtp pcache
+PACKS=profile rserve_client smtp pcache sCASP
 
 all:
 	@echo "Targets"
