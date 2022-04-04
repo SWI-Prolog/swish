@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2016, VU University Amsterdam
+    Copyright (C): 2014-2022, VU University Amsterdam
 			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,8 +43,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "laconic" ],
-       function() {
+define([ "jquery", "preferences", "laconic" ],
+       function($, preferences) {
 
 		 /*******************************
 		 *	RENDER AN ANSWER	*
@@ -109,6 +110,8 @@ define([ "jquery", "laconic" ],
 	    elem[0].innerHTML = renderAnswer(answer);
 	    evalScripts(elem);
 	    elem.find(".render-multi").renderMulti();
+	    if ( preferences.getVal("auto-binding-layout") )
+	      elem.find(".pl-binding").pl_term('layout', 'auto');
 	  }
 	} else
 	  elem.append($.el.span({class: "prolog-true"}, "true"));
@@ -156,8 +159,12 @@ define([ "jquery", "laconic" ],
 	html.push("<span class='pl-ovar'>", vars[v], "</span> = ",
 		  "<span class='pl-var'>", vars[v + 1], "</span>, ");
       }
-      html.push("<span class='pl-ovar'>", vars[vars.length - 1],
-		"</span> = ", bindings[i].value);
+      html.push("<span class='pl-binding pl-adaptive'>",
+		"<span class='pl-ovar pl-trigger'>",
+		vars[vars.length - 1],
+		"</span> = <span class='pl-binding-value'>",
+		bindings[i].value,
+	        "</span></span>");
       if (bindings[i].substitutions) {
 	renderSubstitutions(bindings[i].substitutions, html);
       }

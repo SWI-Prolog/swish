@@ -72,6 +72,7 @@ preferences.setDefault("semantic-highlighting", true);
 preferences.setDefault("emacs-keybinding", false);
 preferences.setDefault("new-tab", true);
 preferences.setDefault("preserve-state", true);
+preferences.setDefault("auto-binding-layout", true);
 preferences.setInform("preserve-state", ".unloadable");
 
 (function($) {
@@ -150,6 +151,11 @@ preferences.setInform("preserve-state", ".unloadable");
 	  preference: "emacs-keybinding",
 	  type: "checkbox",
 	  value: "false"
+	},
+	"Smart binding layout": {
+	  preference: "auto-binding-layout",
+	  type: "checkbox",
+	  value: "true"
 	},
 	"Open document in new tab": {
 	  preference: "new-tab",
