@@ -124,7 +124,7 @@
 	if ( el.hasClass("pl-binding") )
 	  el = el.children(".pl-binding-value");
 
-	if ( options.propagated &&
+	if ( options.propagated && !options.no_ellipsis &&
 	     el[pluginName]('getLayout') == "ellipsis" )
 	  return;
 
@@ -200,7 +200,10 @@
 	  var action = $(ev.target).data('action');
 	  if ( action == "copy" ) {
 	    // Avoid ellipsis and possible change in vertical layout
-	    var text = el.clone(false)[pluginName]('layout', 'horizontal').text();
+	    var text = el.clone(false)[pluginName]('layout',
+						   { layout: 'horizontal',
+						     no_ellipsis:true,
+						     propagate:true }).text();
 
 	    navigator.clipboard.writeText(text);
 	  } else {
