@@ -199,7 +199,8 @@
 	if ( $(ev.target).closest(".pl-compound-menu").length ) {
 	  var action = $(ev.target).data('action');
 	  if ( action == "copy" ) {
-	    var text = el.text();
+	    // Avoid ellipsis and possible change in vertical layout
+	    var text = el.clone(false)[pluginName]('layout', 'horizontal').text();
 
 	    navigator.clipboard.writeText(text);
 	  } else {
