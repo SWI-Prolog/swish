@@ -243,7 +243,7 @@ classification of tokens.
 		     "string": "string",
 		     "code": "number",
 		     "neg-number": "number",
-		     "pos-number": "number",
+		     "rational": "number",
 		     "list_open": "list_open",
 		     "list_close": "list_close",
 		     "qq_open": "qq_open",
@@ -477,6 +477,7 @@ classification of tokens.
     function matchToken(token, state) {
       if ( token ) {
 	if ( syncOnType[type] ) {
+
 	  if ( token.text && content ) {
 	    if ( matchTokenText(token.text) ) {
 	      state.curToken++;
@@ -488,6 +489,9 @@ classification of tokens.
 	    if ( type == "fullstop" ) {
 	      state.curTerm++;
 	      state.curToken = 0;
+	    } else if ( type == "rational" && token.type == "int" )
+	    { token.type = "rational";
+	      state.curToken++;
 	    } else if ( !isQuoted(state.nesting) ) {
 	      state.curToken++;
 	    }
@@ -508,13 +512,6 @@ classification of tokens.
 	  } else if ( type == "neg-number" &&
 		      token.text && token.text == "-" ) {
 		/* HACK: A-1 is tokenised as "var" "neg-number" */
-		/* But the server says "var" "atom" "number" */
-		/* Needs operator logic to fix at the client */
-	    state.curToken += 2;
-	    return "number";
-	  } else if ( type == "pos-number" &&
-		      token.text && token.text == "+" ) {
-		/* HACK: A+1 is tokenised as "var" "pos-number" */
 		/* But the server says "var" "atom" "number" */
 		/* Needs operator logic to fix at the client */
 	    state.curToken += 2;

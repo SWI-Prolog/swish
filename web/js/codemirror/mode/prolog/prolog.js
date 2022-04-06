@@ -26,7 +26,8 @@
 	         dicts: true,			/* tag{k:v, ...} */
 		 unicodeEscape: true,		/* \uXXXX and \UXXXXXXXX */
 		 multiLineQuoted: true,		/* "...\n..." */
-		 groupedIntegers: true		/* 10 000 or 10_000 */
+		 groupedIntegers: true,		/* 10 000 or 10_000 */
+		 rationals: true		/* 1r3 */
 	       };
 
   var quoteType = { '"': "string",
@@ -305,21 +306,23 @@
       }
     }
 
-    if ( /\d/.test(ch) || /[+-]/.test(ch) && stream.eat(/\d/)) {
+    if ( /\d/.test(ch) || /-/.test(ch) && stream.eat(/\d/)) {
       var tp = ch == "-" ? "neg-number" :
-	       ch == "+" ? "pos-number" :
 		           "number";
+
+      if ( config.rationals &&
+	   stream.match(/^\d*[rR]\d+/) )
+      { var text = stream.current();
+	tp = "rational";
+	return ret(tp, tp, text);
+      }
 
       if ( config.groupedIntegers )
 	stream.match(/^\d*((_|\s+)\d+)*(?:\.\d+)?(?:[eE][+\-]?\d+)?/);
       else
 	stream.match(/^\d*(?:\.\d+)?(?:[eE][+\-]?\d+)?/);
-      if ( stream.match(/[/R]/, false) ) {
-	var text = stream.current();
-	return ret(tp, tp, text);
-      } else {
-	return ret(tp, tp);
-      }
+
+      return ret(tp, tp);
     }
 
     if ( ctype.symbol(ch) ) {
