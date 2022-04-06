@@ -34,6 +34,18 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
+/**
+ * @fileOverview
+ * Make Prolog terms responsive
+ *
+ * @version 0.5.0
+ * @author Jan Wielemaker, jan@swi-prolog.org
+ * @requires jquery
+ */
+
+define([ "jquery" ],
+       function($) {
+
 (function($) {
   var pluginName = 'pl_term';
 
@@ -324,9 +336,5 @@
   };
 }(jQuery));
 
-$(function() {
   $(document).pl_term();
-  $(".pl-compound.pl-level-0")
-      .pl_term('layout', 'auto')
-      .pl_term('fit');
 });
