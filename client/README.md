@@ -61,6 +61,10 @@ Check out [RubyPengines](https://github.com/simularity/RubyPengine)
 
 Check out [erl_pengine](https://github.com/Limmen/erl_pengine)
 
+## Extracting results using Go
+
+Check out [guregu/pengine](https://github.com/guregu/pengine)
+
 ---
 If you write or find another client, please make a pull request for this
 page!
