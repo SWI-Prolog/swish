@@ -223,7 +223,7 @@ strip_stack(Error, Error).
 %	allows passing more information than just the query answers.
 %
 %	The binding `_residuals = '$residuals'(Residuals)`   is added to
-%	the   residual   goals   by     pengines:event_to_json/4    from
+%	the   residual   goals   by     pengines:event_to_json/3    from
 %	pengines_io.pl.
 
 :- meta_predicate swish_call(0).
