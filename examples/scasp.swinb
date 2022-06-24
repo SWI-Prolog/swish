@@ -6,24 +6,13 @@
 s(CASP) is related to ASP. Unlike ASP, which is traditionally solved using _grounding_ and a SAT solver, s(CASP) is solved using top-down goal directed search without grounding. This allows s(CASP) to solve problems that cannot be grounded, while the generated proof tree is a good basis for giving a justification for the answer. s(CASP) supports both negation as failure (NAF) and classical negation. These features make s(CASP) particularly suitable for commonsense reasoning tasks that require a
 justification of the answer.
 
-For more information we refer to [Gopal Gupta's home page](https://personal.utdallas.edu/~gupta/) which provides many pointers to related resources.   The original source by Joaquin Arias is at [here](https://gitlab.software.imdea.org/ciao-lang/sCASP)
+For more information we refer to [Gopal Gupta's home page](https://personal.utdallas.edu/~gupta/) which provides many pointers to related resources.   The original source by Joaquin Arias is [here](https://gitlab.software.imdea.org/ciao-lang/sCASP)
 
 ## S(CASP) and SWI-Prolog
 
-s(CASP) traditionally comes as an executable `scasp` which takes an s(CASP) program, usually with an embedded query, and prints the result at different levels of detail.   The SWI-Prolo port primarily aims at __embedding s(CASP) into Prolog__.   It provides two ways for embedding.  One embeds the s(CASP) program as a _block_ and makes some of its predicates available as normal Prolog predicates, e.g.,
-
-```
-:- begin_scasp(pq, [p/0]).
-p(X) :- not q(X).
-q(X) :- not p(X).
-:- end_scasp.
-```
-
-After which we can execute e.g.,
-
-   ?- p(X).
-   
-Alternatively, we can evaluate normal Prolog code using s(CASP) semantics using the predicate scasp/1 or its shorthand ?/1.  This collects the reachable call tree, all _global constraints_ whose call tree _overlaps_ with the reachable call tree, prepares this program for execution usig the s(CASP) solver and solves the query.  Note that unlike default s(CASP) this implies that global constraints that are completely unrelated from the query are not considered.  This is the implementation currently embedded into SWISH.
+s(CASP) traditionally comes as an executable `scasp` which takes an s(CASP) program, usually with an embedded query, and prints the result at different levels of detail.   The SWI-Prolog port primarily aims at __embedding s(CASP) into Prolog__.   Because s(CASP) programs are close to Prolog predicates, embedded s(CASP) does a few program transformations while loading Prolog code (deal with classical notation and
+global constraints) and provides a _meta_ goal scasp/2 to evaluate the program under s(CASP) semantics.
+The scasp/2 predicate collects the reachable call tree, all _global constraints_ whose call tree _overlaps_ with the reachable call tree, prepares this program for execution usig the s(CASP) solver and solves the query.  Note that unlike default s(CASP) this implies that global constraints that are completely unrelated from the query are not considered.  This is the implementation currently embedded into SWISH.
 
 ### Differences from Prolog
 
@@ -69,7 +58,7 @@ baby(tuesday).
 </div>
 
 <div class="nb-cell query" name="q4">
-scasp(opera(D)).
+scasp(opera(D), []).
 </div>
 
 <div class="nb-cell markdown" name="md4">
