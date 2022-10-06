@@ -21,5 +21,4 @@
 	url = https://github.com/JanWielemaker/chat80.git
 [submodule "pack/sCASP"]
 	path = pack/sCASP
-	url = https://github.com/JanWielemaker/sCASP.git
-	branch = swipl
+	url = https://github.com/SWI-Prolog/sCASP.git
