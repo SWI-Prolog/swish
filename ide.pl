@@ -60,7 +60,8 @@ Open SWISH as an IDE for developing a local application.
 	swish_config:verify_write_access/3,	% Request, File, Options
 	pengines:authentication_hook/3,		% Request, Application, User
 	pengines:not_sandboxed/2,		% User, Application
-	user:file_search_path/2.		% Alias, Path
+	user:file_search_path/2,		% Alias, Path
+        http:location/3.			% Alias, Path, Options
 
 user:file_search_path(project, '.').
 
@@ -84,6 +85,8 @@ current_user(User) :- !,
 :- endif.
 current_user(default).
 
+http:location(swish, root(swish), [priority(100)]).
+:- create_prolog_flag(swish_ide, true, []).
 
 :- use_module(swish).
 
@@ -129,7 +132,7 @@ save_port(Port) :-
 open_browser(Address) :-
 	host_port(Address, Host, Port),
 	http_server_property(Port, scheme(Scheme)),
-	http_absolute_location(root(.), Path, []),
+	http_absolute_location(swish(.), Path, []),
 	format(atom(URL), '~w://~w:~w~w', [Scheme, Host, Port, Path]),
 	www_open_url(URL).
 
