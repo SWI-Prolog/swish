@@ -107,7 +107,14 @@ as follows:
 
 term_rendering(Data, Vars, Options) -->
 	{ debug(graphviz(vars), 'Data: ~q, vars: ~p', [Data, Vars]),
-	  data_to_graphviz_string(Data, DOTString, Program)
+	  data_to_graphviz_string(Data, DOTString, Program),
+	  (   debugging(graphviz(save_dot(File)))
+	  ->  setup_call_cleanup(
+		  open(File, write, Out, [encoding(utf8)]),
+		  write(Out, DOTString),
+		  close(Out))
+	  ;   true
+	  )
 	},
 	render_dot(DOTString, Program, Options).
 
