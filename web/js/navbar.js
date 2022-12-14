@@ -126,11 +126,17 @@ define([ "jquery", "preferences", "form", "laconic" ],
 
     /**
      * @param {String} name is the name of the dropdown to clear
+     * @param {String} [item] Remove only the items that contain `item`.  When
+     * omitted, remove all items.
      */
-    clearDropdown: function(name) {
+    clearDropdown: function(name, item) {
       var ul = dropDownUL(this, name);
 
-      ul.html("");
+      if ( item == undefined ) {
+	ul.html("");
+      } else {
+	dropDownLI(ul, item).remove();
+      }
       return this;
     },
 
@@ -146,6 +152,10 @@ define([ "jquery", "preferences", "form", "laconic" ],
       var ul = dropDownUL(this, name);
 
       appendDropdown(ul, label, onclick);
+    },
+
+    insertMenu: function(dropdown, menu, action) {
+      return this;
     }
   }; // methods
 
@@ -167,6 +177,10 @@ define([ "jquery", "preferences", "form", "laconic" ],
    *	   value as argument.
    *   - An object with `.type == "submenu" creates a submenu.
    *   - An object with `.typeIcon` gets an icon indicating the type
+   *   - An object with `.after` is placed after a menu item containing
+   *     the specified string or as first if `.after = null`
+   *   - An object with `.before` is placed belore a menu item containing
+   *     the specified string.
    */
   function appendDropdown(dropdown, label, options) {
     function glyph(name) {
@@ -198,12 +212,24 @@ define([ "jquery", "preferences", "form", "laconic" ],
       } else {
 	a = $.el.a(label);
       }
-
       $(a).data('navbar-action', options);
       if ( options.name )
 	$(a).attr("id", options.name);
 
-      dropdown.append($.el.li(a));
+      const li = $.el.li(a);
+      if ( options.after !== undefined ) {
+	if ( options.after == null ) {
+	  dropdown.prepend(li);
+	} else {
+	  const after = dropDownLI(dropdown, options.after);
+	  $(li).insertAfter(after);
+	}
+      } else if ( options.before ) {
+	const before = dropDownLI(dropdown, options.before);
+	$(li).insertBefore(before);
+      } else {
+	dropdown.append(li);
+      }
     } else {						/* Checkbox item */
       if ( options.type == "checkbox" ) {
 	var cb = $($.el.input({type:"checkbox"}));
@@ -259,6 +285,10 @@ define([ "jquery", "preferences", "form", "laconic" ],
     return nb.find(".dropdown-menu").filter(function() {
       return $(this).attr("name") == name;
     });
+  }
+
+  function dropDownLI(ul, label) {
+    return ul.find(`a:contains(${label})`).closest("li");
   }
 
   function runMenu(a, ev) {
@@ -347,4 +377,3 @@ define([ "jquery", "preferences", "form", "laconic" ],
 }(jQuery));
 
 });
-
