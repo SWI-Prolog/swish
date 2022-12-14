@@ -966,6 +966,7 @@ tabbed.tabTypes.permalink = {
       $.error('Method ' + method + ' does not exist on jQuery.' + pluginName);
     }
   };
+  $.fn.tabbed.methods = methods;
 }(jQuery));
 
   return tabbed;

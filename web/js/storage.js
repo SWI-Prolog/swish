@@ -99,6 +99,10 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  ev.stopPropagation();
 	}
 
+	elem.on("storage", function(ev, action, ...args) {
+	  args.unshift(ev, action);
+	  onStorage.apply(this, args);
+	});
 	elem.on("save", function(ev, data) {
 	  onStorage(ev, 'save', data);
 	});
@@ -1416,6 +1420,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       $.error('Method ' + method + ' does not exist on jQuery.' + pluginName);
     }
   };
+  $.fn.storage.methods = methods;
 }(jQuery));
 
   function filebase(file) {

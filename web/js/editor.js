@@ -286,6 +286,10 @@ define([ "cm/lib/codemirror",
 
 	elem.addClass("swish-event-receiver");
 	elem.addClass("prolog-editor");
+	elem.on("editor", function(ev, action, ...args) {
+	  args.unshift(ev, action);
+	  elem.prologEditor.apply(this, args);
+	});
 	elem.on("preference", function(ev, pref) {
 	  elem.prologEditor('preference', pref);
 	});
@@ -1611,6 +1615,7 @@ define([ "cm/lib/codemirror",
       $.error('Method ' + method + ' does not exist on jQuery.' + pluginName);
     }
   };
+  $.fn.prologEditor.methods = methods;
 }(jQuery));
 
 		 /*******************************
