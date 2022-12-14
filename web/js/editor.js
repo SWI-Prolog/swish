@@ -481,8 +481,8 @@ define([ "cm/lib/codemirror",
 
 	  if ( file )
 	    result.push({ file: file,
-		          breakpoints: breakpoints
-		        });
+			  breakpoints: breakpoints
+			});
 	}
       });
 
@@ -969,11 +969,11 @@ define([ "cm/lib/codemirror",
 	    switch ( cmploc(s.anchor, s.head) )
 	    { case -1:
 		sr.from = cppos(s.anchor);
-	        sr.to   = cppos(s.head);
+		sr.to   = cppos(s.head);
 		break;
 	      case 1:
 		sr.to   = cppos(s.anchor);
-	        sr.from = cppos(s.head);
+		sr.from = cppos(s.head);
 		break;
 	      case 0:
 		continue;
@@ -1208,7 +1208,7 @@ define([ "cm/lib/codemirror",
 	var line   = cm.getLine(lineno);
 
 	cm.replaceRange("\n\n/** <examples>\n" +
-		        "?- "+query+"\n" +
+			"?- "+query+"\n" +
 			"*/\n", {line:lineno, ch:line.length});
       }
 
@@ -1580,7 +1580,7 @@ define([ "cm/lib/codemirror",
 
 	tabType.create = function(dom) {
 	  $(dom).addClass("prolog-editor")
-	        .prologEditor(options);
+		.prologEditor(options);
 	};
 
 	tabbed.tabTypes[tabType.typeName] = tabType;

@@ -229,7 +229,7 @@ tabbed.tabTypes.permalink = {
 	  $(dom).append(this.tabbed('profileForm'),
 			$.el.hr(),
 			//this.tabbed('searchForm'),
-		        sl = $.el.div({class:"sourcelist"}));
+			sl = $.el.div({class:"sourcelist"}));
 	  $(sl).sourcelist();
 	}
       }
@@ -295,7 +295,7 @@ tabbed.tabTypes.permalink = {
 	var select = this.find("div.tabbed-select");
 	var newtab;
 	var restoring = '<div class="restore-tab">Restoring ' +
-	                   (data.file||data.url) + " ..." +
+			   (data.file||data.url) + " ..." +
 			'</div>';
 
 	if ( select.length > 0 )  {
@@ -480,7 +480,7 @@ tabbed.tabTypes.permalink = {
 
 	  if ( !editors ) {
 	    this.closest(".swish")
-	        .swish('playFile',
+		.swish('playFile',
 		       { file: store,
 			 newTab: true,
 			 noHistory: true,
@@ -617,7 +617,7 @@ tabbed.tabTypes.permalink = {
       var a1 = $.el.a({class:"compact", href:"#"+id, "data-id":id},
 		      $.el.span({class:"tab-icon type-icon "+type}),
 		      $.el.span({class:"tab-dirty",
-		                 title:"Tab is modified. "+
+				 title:"Tab is modified. "+
 				       "See File/Save and Edit/View changes"}),
 	       chat = $.el.a({class:'tab-chat'}),
 		      $.el.span({class:"tab-title"}, label),

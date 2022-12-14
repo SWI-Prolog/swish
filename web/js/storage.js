@@ -260,7 +260,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	    title = filebase(utils.basename(file));
 	    if ( data.meta &&
 		 data.meta.symbolic != "HEAD" &&
-	         data.meta.commit ) {
+		 data.meta.commit ) {
 	      title += "@" + data.meta.commit.substring(0,7);
 	    }
 	  } else {
@@ -290,7 +290,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 		   that.storage('setSource',
 				{ data: data,
 				  meta: { name:file
-				        }
+					}
 				});
 		 },
 		 error: function(jqXHDR) {
@@ -440,7 +440,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 		   data.markClean(true);
 		   modal.feedback({ html: "Saved",
 				    owner: elem
-		                  });
+				  });
 
 		   if ( method == "POST" )
 		     data.chats = {		/* forked file has no chats */
@@ -537,7 +537,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       form.showDialog({ title: options.title ? options.title :
 			       fork   ? "Fork from "+meta.commit.substring(0,7) :
 			       update ? "Save new version" :
-			                "Save "+type.label+" as",
+					"Save "+type.label+" as",
 			body:  saveAsBody
 		      });
 
@@ -574,7 +574,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 		   options.markClean(true);
 		   modal.feedback({ html: "Saved",
 				    owner: elem
-		                  });
+				  });
 		 }
 	       },
 	       error: function(jqXHR) {
@@ -809,7 +809,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
       var type    = tabbed.tabTypes[options.typeName];
       var data    = options.getValue();
       var href    = "data:text/plain;charset=UTF-8,"
-	          + encodeURIComponent(data);
+		  + encodeURIComponent(data);
 
       var a = $.el.a({ href:href,
 		       download:options.file||("swish."+type.dataType)
@@ -992,16 +992,16 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	} else {
 	  var rb;
 	  var buttons = $.el.div({ class:"btn-group diff",
-			           role:"group"
+				   role:"group"
 				 },
 				 $.el.button({ name:"close",
 					       'data-dismiss':"modal",
-				               class:"btn btn-primary"
+					       class:"btn btn-primary"
 					     },
 					     "Close"),
 				 rb=
 				 $.el.button({ name:"revert",
-				               class:"btn btn-danger",
+					       class:"btn btn-danger",
 					       'data-dismiss':"modal"
 					     },
 					     "Revert changes"));
@@ -1304,7 +1304,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	   data.cleanData != data.getValue() ) {
 	if ( why == "beforeunload" ) {
 	  var message = "The source editor has unsaved changes.\n"+
-	                "These will be lost if you leave the page";
+			"These will be lost if you leave the page";
 
 	  ev = ev||window.event;
 	  if ( ev )
@@ -1313,7 +1313,7 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	  return message;
 	} else {
 	  var message = "The source editor has unsaved changes.\n"+
-	                "These will be lost"+
+			"These will be lost"+
 			( why == "setSource" ? " if you load a new program" :
 			  why == "closetab"  ? " close this tab" : ""
 			);
