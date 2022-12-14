@@ -73,6 +73,9 @@ multifile predicate stream/2.
     thread/1.                           % Listener thread.
 
 init_redis(_Port) :-
+    \+ swish_config:config(redis, _),
+    !.
+init_redis(_Port) :-
     catch(thread_property(redis_listener, id(_)), error(_,_), fail),
     !.
 init_redis(Port) :-
@@ -207,4 +210,3 @@ prolog:message(swish(left(Consumer))) -->
     ->  []
     ;   [ 'Redis: ~w left the cluster'-[Consumer] ]
     ).
-
