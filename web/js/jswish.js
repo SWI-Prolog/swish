@@ -262,6 +262,7 @@ preferences.setInform("preserve-state", ".unloadable");
 	delete data.restoring;
 	elem[pluginName]('runDelayedRestore');
 	$().version('checkForUpdates');
+	elem.trigger("post-config");
       });
     },
 
@@ -859,6 +860,14 @@ preferences.setInform("preserve-state", ".unloadable");
       $.error('Method ' + method + ' does not exist on jQuery.' + pluginName);
     }
   };
+  $.fn.swish.methods = methods;
 }(jQuery));
+
+	 return {
+	   swish: $("body"),
+	   trigger: function(name, data) {
+	     this.swish.swish('trigger', name, data);
+	   }
+	 };
 
 }); // define()
