@@ -141,7 +141,6 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	  },
 	  error: function(jqXHDR) {
 	    pending.pop();
-	    modal.ajaxError(jqXHDR);
 	  }
 	});
       }
@@ -358,11 +357,11 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	var ul;
 	var div = $.el.div({class:"btn-group"},
 		    $.el.button({ type:"button",
-			          class:"btn btn-default dropdown-toggle",
-			          'data-toggle':"dropdown",
-			          'aria-haspopup': true,
-			          'aria-expanded': false
-			        },
+				  class:"btn btn-default dropdown-toggle",
+				  'data-toggle':"dropdown",
+				  'aria-haspopup': true,
+				  'aria-expanded': false
+				},
 				title, " ",
 				$.el.span({class:"caret"})),
 		    ul=$.el.ul({class:"dropdown-menu"}));
