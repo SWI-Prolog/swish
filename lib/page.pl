@@ -100,7 +100,9 @@ http:location(pldoc, swish(pldoc), [priority(100)]).
 %
 %	  - code(Code)
 %	  Use Code as initial code. Code is either an HTTP url or
-%	  concrete source code.
+%	  - url(URL)
+%	  Download code from URL.  As code(URL), but makes the browser
+%	  download the source rather than the server.
 %	  - background(Code)
 %	  Similar to Code, but not displayed in the editor.
 %	  - examples(Code)
@@ -131,6 +133,8 @@ swish_reply2(Options, Request) :-
 	swish_reply_config(Request, Options), !.
 swish_reply2(SwishOptions, Request) :-
 	Params = [ code(_,	  [optional(true)]),
+		   url(_,	  [optional(true)]),
+		   label(_,	  [optional(true)]),
 		   show_beware(_, [optional(true)]),
 		   background(_,  [optional(true)]),
 		   examples(_,    [optional(true)]),
@@ -222,6 +226,10 @@ source_option(_Request, Options0, Options) :-
 	->  Options = [url(Code),st_type(external)|Options0]
 	;   Options = Options0
 	).
+source_option(_Request, Options0, Options) :-
+	option(url(_), Options0),
+	option(format(swish), Options0), !,
+	Options = [st_type(external),download(browser)|Options0].
 source_option(Request, Options0, Options) :-
 	source_file(Request, File, Options0), !,
 	option(path(Path), Request),
@@ -543,12 +551,16 @@ swish_option(_, _) -->
 %	  Defines the title used for the tab.
 
 source(pl, Options) -->
-	{ option(code(Spec), Options), !,
-	  download_source(Spec, Source, Options),
-	  phrase(source_data_attrs(Options), Extra)
+	{ (   option(code(Spec), Options)
+	  ;   option(download(browser), Options)
+          ),
+          !,
+          download_source(Spec, Source, Options),
+	  phrase(source_data_attrs(Options), Extra),
+          option(label(Label), Options, 'Program')
 	},
 	html(div([ class(['prolog-editor']),
-		   'data-label'('Program')
+		   'data-label'(Label)
 		 ],
 		 [ textarea([ class([source,prolog]),
 			      style('display:none')
@@ -561,6 +573,7 @@ source(_, _) --> [].
 source_data_attrs(Options) -->
 	(source_file_data(Options) -> [] ; []),
 	(source_url_data(Options) -> [] ; []),
+	(source_download_data(Options) -> [] ; []),
 	(source_title_data(Options) -> [] ; []),
 	(source_meta_data(Options) -> [] ; []),
 	(source_st_type_data(Options) -> [] ; []),
@@ -572,6 +585,9 @@ source_file_data(Options) -->
 source_url_data(Options) -->
 	{ option(url(URL), Options) },
 	['data-url'(URL)].
+source_download_data(Options) -->
+	{ option(download(Who), Options) },
+	['data-download'(Who)].
 source_title_data(Options) -->
 	{ option(title(File), Options) },
 	['data-title'(File)].
@@ -661,8 +677,23 @@ notebooks(_, _) --> [].
 %	@bug: Should try to interpret the encoding from the HTTP
 %	      header.
 
+download_source(_HREF, Source, Options) :-
+	option(download(browser), Options),
+	!,
+        Source = "".
 download_source(HREF, Source, Options) :-
 	uri_is_global(HREF), !,
+	download_href(HREF, Source, Options).
+download_source(Source0, Source, Options) :-
+	option(max_length(MaxLen), Options, 1_000_000),
+	string_length(Source0, Len),
+	(   Len =< MaxLen
+	->  Source = Source0
+	;   format(string(Source),
+		   '% ERROR: Content too long (max ~D)~n', [MaxLen])
+	).
+
+download_href(HREF, Source, Options) :-
 	option(timeout(TMO), Options, 10),
 	option(max_length(MaxLen), Options, 1_000_000),
 	catch(call_with_time_limit(
@@ -674,14 +705,6 @@ download_source(HREF, Source, Options) :-
 		      read_source(In, MaxLen, Source, Options),
 		      close(In))),
 	      E, load_error(E, Source)).
-download_source(Source0, Source, Options) :-
-	option(max_length(MaxLen), Options, 1_000_000),
-	string_length(Source0, Len),
-	(   Len =< MaxLen
-	->  Source = Source0
-	;   format(string(Source),
-		   '% ERROR: Content too long (max ~D)~n', [MaxLen])
-	).
 
 read_source(In, MaxLen, Source, Options) :-
 	option(encoding(Enc), Options, utf8),

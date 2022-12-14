@@ -253,7 +253,28 @@ define([ "cm/lib/codemirror",
 	  copyData("st_type");
 	  copyData("chats");
 
-	  data.cm = CodeMirror.fromTextArea(ta, options);
+	  if ( $(ta).data("download") == "browser" &&
+	       storage.url ) {
+	    options.placeHolder = "Downloading data ...";
+	    data.cm = CodeMirror.fromTextArea(ta, options);
+
+	    $.ajax({ url: storage.url,
+		     dataType: "text",
+		     success: function(data) {
+		       elem.prologEditor('setSource', {
+			 data:data,
+			 url:storage.url,
+			 noHistory:true
+		       }, false);
+		       elem.storage('update_tab_title')
+		     },
+		     error: function(jqXHDR) {
+		       modal.ajaxError(jqXHDR);
+		     }
+		   });
+	  } else {
+	    data.cm = CodeMirror.fromTextArea(ta, options);
+	  }
 	} else {
 	  if ( !options.value )
 	    options.value = elem.text();
