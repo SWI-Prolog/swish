@@ -536,13 +536,16 @@ tabbed.tabTypes.permalink = {
      * tabbed environment becomes empty, add a virgin tab.
      *
      * @param {String} id is the id of the tab to destroy
+     * @param {Boolean} force  It `true`, do not check the content for
+     * being modified.
      */
-    removeTab: function(id) {
+    removeTab: function(id, force) {
       var li  = this.tabbed('navTabs').find("a[data-id='"+id+"']").parent();
       var tab = $("#"+id);
       var new_active;
 
-      if ( tab.find(".storage").storage('unload', "closetab") == false )
+      if ( force !== true &&
+	   tab.find(".storage").storage('unload', "closetab") == false )
 	return;
 
       if ( tab.is(":visible") )

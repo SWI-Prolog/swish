@@ -901,12 +901,29 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	tabbed.tabbed('show', tab.attr('id'));
 	if ( reason )
 	  modal.feedback({ html: reason,
-	                   owner: this
-	                 });
+			   owner: this
+			 });
 
 	return this;
       }
     },
+
+    /**
+     * Kill the storage object and close the associated tab
+     * @param {Boolean} force If `true`, to not check the content
+     * for being modified.
+     */
+
+     kill: function(force) {
+       return this.each(function() {
+	 var elem = $(this);
+	 var tab = elem.closest(".tab-pane");
+	 if ( tab.length == 1 ) {
+	   var tabbed = tab.closest(".tabbed");
+	   tabbed.tabbed('removeTab', tab.attr('id'), force);
+	 }
+       });
+     },
 
     /**
      * Provide information about the current source in a modal
