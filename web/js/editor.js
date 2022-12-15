@@ -754,11 +754,14 @@ define([ "cm/lib/codemirror",
      * string)
      * @param {Object} error.location contains the location, providing
      * `line` and `ch` attributes.
+     * @param {Boolean} [force] when `true`, report the error on this editor.
      */
-    highlightError: function(error) {
-      if ( error.location.file &&
-	   (error.location.file == true ||
-	    this.prologEditor('isMyFile', error.location.file)) ) {
+    highlightError: function(error, force) {
+      if ( force == true ||
+	   ( error.location.file &&
+	     (error.location.file == true ||
+	      this.prologEditor('isMyFile', error.location.file))
+	   )) {
 	var data = this.data(pluginName);
 	var chmark;
 
