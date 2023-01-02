@@ -597,8 +597,11 @@ storage_file(File) :-
     storage_file_extension(File, _).
 
 storage_file_extension(File, Ext) :-
+    storage_file_extension_head(File, Ext, _).
+
+storage_file_extension_head(File, Ext, Head) :-
     open_gittystore(Dir),
-    gitty_file(Dir, File, Ext, _Head).
+    gitty_file(Dir, File, Ext, Head).
 
 storage_file(File, Data, Meta) :-
     open_gittystore(Dir),
@@ -1002,8 +1005,8 @@ source_q(Query, Auth, Source) :-
     type_constraint(Query, Query1, Type),
     partition(content_query, Query1,
               ContentConstraints, MetaConstraints),
-    storage_file_extension(File, Type),
-    source_data(File, Meta, Source),
+    storage_file_extension_head(File, Type, Head),
+    source_data(File, Head, Meta, Source),
     visible(Meta, Auth, MetaConstraints),
     maplist(matches_meta(Source, Auth), MetaConstraints),
     matches_content(ContentConstraints, File).
@@ -1011,8 +1014,9 @@ source_q(Query, Auth, Source) :-
 content_query(string(_)).
 content_query(regex(_)).
 
-source_data(File, Meta, Source) :-
-    storage_meta_data(File, Meta),
+source_data(File, Head, Meta, Source) :-
+    open_gittystore(Dir),
+    gitty_plain_commit(Dir, Head, Meta),
     file_name_extension(_, Type, File),
     Info = _{time:_, tags:_, author:_, avatar:_, name:_},
     Info >:< Meta,
