@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2020, VU University Amsterdam
+    Copyright (c)  2014-2022, VU University Amsterdam
                               SWI-Prolog Solutions b.v.
     All rights reserved.
 
@@ -43,6 +43,7 @@
             gitty_create/5,             % +Store, +Name, +Data, +Meta, -Commit
             gitty_update/5,             % +Store, +Name, +Data, +Meta, -Commit
             gitty_commit/3,             % +Store, +Name, -Meta
+            gitty_plain_commit/3,       % +Store, +Name, -Meta
             gitty_data/4,               % +Store, +Name, -Data, -Meta
             gitty_history/4,            % +Store, +Name, -History, +Options
             gitty_hash/2,               % +Store, ?Hash
@@ -295,28 +296,33 @@ gitty_data(Store, Name, Data, Meta) :-
 
 %!  gitty_commit(+Store, +NameOrHash, -Meta) is semidet.
 %
-%   True if Meta holds the commit data of NameOrHash. A key =commit=
-%   is added to the meta-data to specify the commit hash.
+%   True if Meta holds the commit data  of NameOrHash. A key `commit` is
+%   added to the meta-data to specify the commit hash.
 
+gitty_commit(Store, Hash, Meta) :-
+    is_gitty_hash(Hash),
+    !,
+    load_commit(Store, Hash, Meta).
 gitty_commit(Store, Name, Meta) :-
     must_be(atom, Name),
     gitty_file(Store, Name, Head),
-    !,
     load_commit(Store, Head, Meta).
-gitty_commit(Store, Hash, Meta) :-
-    load_commit(Store, Hash, Meta).
 
 load_commit(Store, Hash, Meta) :-
-    load_plain_commit(Store, Hash, Meta0),
-    Meta1 = Meta0.put(commit, Hash),
+    gitty_plain_commit(Store, Hash, Meta0),
     (   gitty_file(Store, Meta0.name, Hash)
-    ->  Meta = Meta1.put(symbolic, "HEAD")
-    ;   Meta = Meta1
+    ->  Meta = Meta0.put(symbolic, "HEAD")
+    ;   Meta = Meta0
     ).
 
-load_plain_commit(Store, Hash, Meta) :-
+%!  gitty_plain_commit(+Store, +Hash, -Meta) is semidet.
+%
+%   Load the commit object with Hash.
+
+gitty_plain_commit(Store, Hash, Meta) :-
     store_driver_module(Store, Module),
-    Module:load_plain_commit(Store, Hash, Meta).
+    Module:load_plain_commit(Store, Hash, Meta0),
+    Meta = Meta0.put(commit, Hash).
 
 %!  gitty_history(+Store, +NameOrHash, -History, +Options) is det.
 %
