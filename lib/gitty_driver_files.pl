@@ -1378,11 +1378,11 @@ replicate(Data) :-
 %   Update Hash.Key to New provided the current value is Old.
 
 redis_hcas(DB, Hash, Key, Old, New) :-
-    redis(DB, eval("if redis.call('HGET', KEYS[1], KEYS[2]) == ARGV[1] then \c
-                      redis.call('HSET', KEYS[1], KEYS[2], ARGV[2]); \c
+    redis(DB, eval("if redis.call('HGET', KEYS[1], ARGV[1]) == ARGV[2] then \c
+                      redis.call('HSET', KEYS[1],  ARGV[1], ARGV[3]); \c
                       return 1; \c
                       end; \c
                     return 0\c
                    ",
-                   2, Hash, Key, Old, New),
+                   1, Hash, Key, Old, New),
           1).
