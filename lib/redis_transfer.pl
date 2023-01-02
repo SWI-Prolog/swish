@@ -45,6 +45,7 @@
 
 :- use_module(library(user_profile)).
 :- use_module(chatstore).
+:- use_module(config).
 :- use_module(plugin/notify).
 
 /** <module> Transfer file based data to Redis
@@ -134,3 +135,20 @@ redis_transfer_notifications :-
     swish_notify:notify_open_db,
     forall(swish_notify:follower(DocID, ProfileID, Options),
            follow(DocID, ProfileID, Options)).
+
+
+		 /*******************************
+		 *           CLEANUP		*
+		 *******************************/
+
+redis_destroy_all :-
+    swish_config(redis, Server),
+    swish_config(redis_prefix, Prefix),
+    atom_concat(Prefix, *, Pattern),
+    redis(Server, keys(Pattern), Keys),
+    (   Keys == []
+    ->  true
+    ;   DEL =.. [del|Keys],
+        redis(Server, DEL, N),
+        format(user_error, 'Deleted ~D keys~n', [N])
+    ).
