@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2020, VU University Amsterdam
+    Copyright (c)  2014-2022, VU University Amsterdam
                               CWI, Amsterdam
 			      SWI-Prolog Solutions b.v.
     All rights reserved.
@@ -37,9 +37,11 @@
 :- module(web_storage,
           [ storage_file/1,                     % ?File
             storage_file_extension/2,           % ?File, ?Extension
+            storage_file_extension_head/3,      % ?File, ?Extension, -Head
             storage_file/3,                     % +File, -Data, -Meta
             storage_meta_data/2,                % +File, -Meta
             storage_meta_property/2,            % +Meta, ?Property
+            storage_commit/2,                   % +Hash, -Meta
 
             storage_fsck/0,
             storage_repack/0,
@@ -585,6 +587,7 @@ swish_show(Options, Request) :-
 
 %!  storage_file(?File) is nondet.
 %!  storage_file_extension(?File, ?Extension) is nondet.
+%!  storage_file_extension_head(?File, ?Extension, -Head) is nondet.
 %!  storage_file(+File, -Data, -Meta) is semidet.
 %!  storage_meta_data(+File, -Meta) is semidet.
 %
@@ -618,6 +621,15 @@ storage_meta_data(File, Meta) :-
     ;   true
     ),
     gitty_commit(Dir, File, Meta).
+
+%!  storage_commit(+Hash, -Meta) is semidet.
+%
+%   Load the commit data for Hash.  This   version  does __not__ tell us
+%   whether Hash is the ``HEAD`` or not.
+
+storage_commit(Hash, Meta) :-
+    open_gittystore(Dir),
+    gitty_plain_commit(Dir, Hash, Meta).
 
 %!  storage_meta_property(+Meta, -Property)
 %
@@ -1015,8 +1027,7 @@ content_query(string(_)).
 content_query(regex(_)).
 
 source_data(File, Head, Meta, Source) :-
-    open_gittystore(Dir),
-    gitty_plain_commit(Dir, Head, Meta),
+    storage_commit(Head, Meta),
     file_name_extension(_, Type, File),
     Info = _{time:_, tags:_, author:_, avatar:_, name:_},
     Info >:< Meta,

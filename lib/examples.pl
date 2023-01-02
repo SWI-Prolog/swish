@@ -323,8 +323,8 @@ community_examples(json{menu:[json{group:community, rank:50000}],
 community_examples(json{}).
 
 community_example(json{title:Title, file:File, group:community, type:store}) :-
-	storage_file(File),
-	storage_meta_data(File, Meta),
+	storage_file_extension_head(File, _Type, Head),
+	storage_commit(Head, Meta),
 	Meta.get(example) == true,
 	(   Title = Meta.get(title), Title \== ""
 	->  true

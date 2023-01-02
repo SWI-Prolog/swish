@@ -227,7 +227,7 @@ gitty_update(Store, Name, Data, Meta, CommitRet) :-
     ->  true
     ;   throw(error(gitty(commit_version(Name, OldHead, Meta.previous)), _))
     ),
-    load_plain_commit(Store, OldHead, OldMeta0),
+    gitty_plain_commit(Store, OldHead, OldMeta0),
     filter_identity(OldMeta0, OldMeta),
     get_time(Now),
     save_object(Store, Data, blob, Hash),
