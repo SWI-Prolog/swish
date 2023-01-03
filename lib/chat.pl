@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        jan@swi-prolog.org
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2016-2020, VU University Amsterdam
+    Copyright (C): 2016-2022, VU University Amsterdam
                               CWI Amsterdam
+                              SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -98,6 +99,7 @@ browsers which in turn may have multiple SWISH windows opened.
 
 swish_config:config(hangout, 'Hangout.swinb').
 swish_config:config(avatars, svg).              % or 'noble'
+swish_config:config(session_lost_timeout, 60).
 
 
                  /*******************************
@@ -671,32 +673,34 @@ destroy_reason(_, close).
 
 %!  gc_visitors
 %
-%   Reclaim all visitors with whom we   have lost the connection and
-%   the browser did not reclaim the selection within 5 minutes.
+%   Reclaim all visitors with whom we have   lost the connection and the
+%   browser did not reclaim the   session  within `session_lost_timeout`
+%   seconds.
 
 :- dynamic last_gc/1.
 
 gc_visitors :-
-    last_gc(Last),
-    get_time(Now),
-    Now-Last < 300,
-    !.
-gc_visitors :-
-    with_mutex(gc_visitors, gc_visitors_sync).
+    swish_config(session_lost_timeout, TMO),
+    (   last_gc(Last),
+        get_time(Now),
+        Now-Last < TMO
+    ->  true
+    ;   with_mutex(gc_visitors, gc_visitors_sync(TMO))
+    ).
 
-gc_visitors_sync :-
+gc_visitors_sync(TMO) :-
     get_time(Now),
     (   last_gc(Last),
-        Now-Last < 300
+        Now-Last < TMO
     ->  true
     ;   retractall(last_gc(_)),
         asserta(last_gc(Now)),
-        do_gc_visitors
+        do_gc_visitors(TMO)
     ).
 
-do_gc_visitors :-
+do_gc_visitors(TMO) :-
     forall(( visitor_session(WSID, _Session, _Token),
-             pending_visitor(WSID, 5*60)
+             pending_visitor(WSID, TMO)
            ),
            reclaim_visitor(WSID)).
 
