@@ -308,7 +308,7 @@ after(After, Message) :-
 chat_message_count(DocID, Count) :-
     redis_docid_key(DocID, Server, Key),
     !,
-    redis(Server, zcount(Key, 0, -1), Count).
+    redis(Server, zcount(Key, 0, +inf), Count).
 chat_message_count(DocID, Count) :-
     message_count(DocID, Count),
     !.
