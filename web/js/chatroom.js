@@ -81,7 +81,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 				    }, "Send"),
 			$.el.button({ type:"button",
 				      class:"btn btn-info btn-xs "+
-				            "dropdown-toggle",
+					    "dropdown-toggle",
 				      'data-toggle':"dropdown",
 				      'aria-haspopup':true,
 				      'aria-expanded':false
@@ -401,7 +401,8 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       var elem = $(this);
 
       $.get(config.http.locations.chat_messages,
-	    { docid: data.docid
+	    { docid: data.docid,
+	      max: 100
 	    },
 	    function(messages) {
 	      if ( messages.length == 0 ) {
@@ -466,7 +467,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	      }
 
 	      form.showDialog({
-	        title: "Update differences",
+		title: "Update differences",
 		body:  diffBody
 	      });
 	    },
@@ -541,7 +542,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 			      form.widgets.glyphIcon("eye-open")));
       btn.on("click", function(ev) {
 	$(ev.target).chatroom('storage')
-	            .storage('restoreSelection', selection.selection);
+		    .storage('restoreSelection', selection.selection);
       });
 
       this.append(" ", btn, " ");
@@ -617,15 +618,15 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       { regex: /[a-z][a-zA-Z0-9_]*\/[0-9]/g,
         func:  function(match) {
 	  return '<a class="builtin" href="/pldoc/man?predicate='+match+'">'
-	         +match+'</a>';
+		 +match+'</a>';
 	}
       },
       { regex: /[a-zA-Z0-9_-]+\.(pl|swinb)\b/g,
         func:  function(match) {
 	  return '<a class="builtin" href="'+
 		 config.http.locations.web_storage+
-	         match+'">'
-	         +match+'</a>';
+		 match+'">'
+		 +match+'</a>';
 	}
       },
       { regex: /`(.)`/g,
