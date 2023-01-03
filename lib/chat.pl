@@ -1230,7 +1230,9 @@ swish_chat_event(Room) :-
 
 %!  handle_message(+Message, +Room)
 %
-%   Handle incoming messages
+%   Handle incoming messages. This handles   messages from our websocket
+%   connections, i.e., this does  not  see   messages  on  other (Redis)
+%   instances.
 
 handle_message(Message, _Room) :-
     websocket{opcode:text} :< Message,
