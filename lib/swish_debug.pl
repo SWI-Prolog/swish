@@ -41,7 +41,8 @@
             start_swish_stat_collector/0,
             swish_stats/2,              % ?Period, ?Dicts
             swish_save_stats/1,         % ?File
-            swish_died_thread/2         % ?Thread, ?State
+            swish_died_thread/2,        % ?Thread, ?State
+            redis_consumer_status/2     % +Consumer, -Status
           ]).
 :- use_module(library(pengines)).
 :- use_module(library(broadcast)).
@@ -64,15 +65,18 @@
 :- setting(stats_interval, integer, 300,        % 5 minutes
            "Save stats every N seconds").
 
-redis_key(Server, Key) :-
+redis_key(What, Server, Key) :-
+    redis_consumer(Consumer),
+    redis_key(Consumer, What, Server, Key).
+
+redis_key(Consumer, What, Server, Key) :-
     swish_config(redis, Server),
     swish_config(redis_prefix, Prefix),
-    redis_consumer(Consumer),
-    atomic_list_concat([Prefix,stat,Consumer], :, Key).
+    atomic_list_concat([Prefix,What,Consumer], :, Key).
 
 wait_redis_key(Server, Key) :-
     between(1, 10, X),
-    (   redis_key(Server, Key)
+    (   redis_key(stat, Server, Key)
     ->  !
     ;   Wait is (1<<X)*0.1,
         sleep(Wait),
@@ -82,6 +86,22 @@ wait_redis_key(Server, Key) :-
 use_redis :-
     swish_config(redis, _).
 
+redis_publish_stats(Time, Stat) :-
+    Time mod 10 =:= 0,
+    use_redis,
+    redis_key(status, Server, Key),
+    !,
+    redis(Server, set(Key, Stat.put(time,Time) as prolog)).
+redis_publish_stats(_, _).
+
+%!  redis_consumer_status(+Consumer, -Status) is semidet.
+%
+%   True when Status  is  a  dict   describing  the  current  status for
+%   Consumer.
+
+redis_consumer_status(Consumer, Stat) :-
+    redis_key(Consumer, status, Server, Key),
+    redis(Server, get(Key), Stat).
 
 %!  stale_pengine(-Pengine) is nondet.
 %
@@ -239,7 +259,7 @@ persistent_stats(save(Path, Interval)) :-
     setting(stats_interval, Interval),
     Interval > 0,
     (   use_redis
-    ->  redis_key(Server, Key),
+    ->  redis_key(stat, Server, Key),
         Path = redis(Server, Key)
     ;   setting(stats_file, File),
         (   absolute_file_name(File, Path,
@@ -331,6 +351,7 @@ stat_loop(SlidingStat, Stat0, StatTime, Interval, Persists, Wrap) :-
         stat_loop(SlidingStat, Stat0, StatTime, Interval, Persists, Wrap)
     ;   get_stats(Wrap, Stat1),
         dif_stat(Stat1, Stat0, Stat),
+        redis_publish_stats(StatTime, Stat),
         push_sliding_stats(SlidingStat, Stat, Wrap1),
         NextTime is StatTime+Interval,
         save_stats(Persists, SlidingStat),
@@ -401,7 +422,7 @@ get_stats(Wrap, Stats) :-
 :- if(current_predicate(malloc_property/1)).
 add_heap(Stats0, Stats) :-
     malloc_property('generic.current_allocated_bytes'(Heap)),
-    Stats = Stats0.put(heep, Heap).
+    Stats = Stats0.put(heap, Heap).
 :- else.
 add_heap(Stats, Stats).
 :- endif.
@@ -574,14 +595,9 @@ save_stats(save(File, Interval), Stats) :-
     !.
 save_stats(_, _).
 
-save_stats_file(_, Stats) :-
-    use_redis,
-    !,
-    (   redis_key(Server, Key)
-    ->  redis(Server, set(Key, Stats as prolog))
-    ;   true
-    ).
-save_stats_file(File, Stats) :-
+save_stats_file(redis(Server, Key), Stats) =>
+    redis(Server, set(Key, Stats as prolog)).
+save_stats_file(File, Stats) =>
     setup_call_cleanup(
         open(File, write, Out),
         save_stats_stream(Stats, Out),
