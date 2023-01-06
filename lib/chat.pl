@@ -1258,6 +1258,9 @@ active_wsid_count(Count) :-
     !.
 active_wsid_count(0).
 
+active_wsid_count(Consumer, Count) :-
+    aggregate(count, WSID^active_wsid(WSID, Consumer), Count).
+
 
                  /*******************************
                  *           CHAT ROOM          *
@@ -1602,6 +1605,16 @@ chat_event(logout(_ProfileID)) :-
     update_visitor_data(User, _, logout).
 chat_event(visitor_count(Count)) :-             % request
     visitor_count(Count).
+chat_event(visitor_count(Cluster, Local)) :-             % request
+    visitor_count(Cluster),
+    (   use_redis,
+        redis_consumer(Consumer)
+    ->  (   active_wsid_count(Consumer, Local)
+        ->  true
+        ;   Local = 0
+        )
+    ;   Local = Cluster
+    ).
 
 :- if(current_predicate(current_profile/2)).
 
