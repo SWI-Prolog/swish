@@ -198,13 +198,14 @@ accept_chat_(Session, Options, WebSocket) :-
     gc_visitors,
     visitor_count(Visitors),
     option(check_login(CheckLogin), Options, true),
-    Msg = _{ type:welcome,
-             uid:TmpUser,
-             wsid:WSID,
-             reconnect:Token,
-             visitors:Visitors,
-             check_login:CheckLogin
-           },
+    Msg0 = _{ type:welcome,
+	      uid:TmpUser,
+	      wsid:WSID,
+	      reconnect:Token,
+	      visitors:Visitors,
+	      check_login:CheckLogin
+	    },
+    add_redis_consumer(Msg0, Msg),
     hub_send(WSID, json(UserData.put(Msg))),
     must_succeed(chat_broadcast(UserData.put(_{type:Reason,
                                                visitors:Visitors,
@@ -212,6 +213,11 @@ accept_chat_(Session, Options, WebSocket) :-
     debug(chat(websocket), '~w (session ~p, wsid ~p)',
           [Reason, Session, WSID]).
 
+add_redis_consumer(Msg0, Msg) :-
+    use_redis,
+    redis_consumer(Consumer),
+    Msg = Msg0.put(consumer, Consumer).
+add_redis_consumer(Msg, Msg).
 
 reconnect_token(WSID, Token, Options) :-
     option(reconnect(Token), Options),
@@ -540,6 +546,9 @@ unsubscribe(WSID, Channel, SubChannel) :-
 %   True when WSID should be considered an active visitor.
 
 visitor(WSID) :-
+    visitor(WSID, _).
+
+visitor(WSID, Consumer) :-
     visitor_session(WSID, _Session, _Token, Consumer),
     (   pending_visitor(WSID, 30)
     ->  fail
@@ -1211,20 +1220,20 @@ chat_message(send_friends(WSID, Message)) :-
 
 :- dynamic
        (   last_wsid_sync/1,
-	   active_wsid/1
+	   active_wsid/2
        ) as volatile.
 
 update_visitors(Msg),
   _{type:removeUser, wsid:WSID} :< Msg =>
-    retractall(active_wsid(WSID)).
+    retractall(active_wsid(WSID, _)).
 update_visitors(Msg),
   _{type:joined, wsid:WSID} :< Msg,
-  \+ active_wsid(WSID) =>
-    asserta(active_wsid(WSID)).
+  \+ active_wsid(WSID, _) =>
+    asserta(active_wsid(WSID, Msg.get(consumer, -))).
 update_visitors(Msg),
   _{type:rejoined, wsid:WSID} :< Msg,
-  \+ active_wsid(WSID) =>
-    asserta(active_wsid(WSID)).
+  \+ active_wsid(WSID, _) =>
+    asserta(active_wsid(WSID, Msg.get(consumer, -))).
 update_visitors(_) =>
     true.
 
@@ -1238,14 +1247,14 @@ sync_active_wsid :-
     transaction(
 	(   retractall(last_wsid_sync(_)),
 	    asserta(last_wsid_sync(Now)))),
-    findall(WSID, visitor(WSID), WSIDs),
+    findall(WSID-Consumer, visitor(WSID, Consumer), Pairs),
     transaction(
-	(   retractall(active_wsid(_)),
-	    forall(member(WSID, WSIDs),
-		   assertz(active_wsid(WSID))))).
+	(   retractall(active_wsid(_,_)),
+	    forall(member(WSID-Consumer, Pairs),
+		   assertz(active_wsid(WSID, Consumer))))).
 
 active_wsid_count(Count) :-
-    predicate_property(last_wsid_sync(_), number_of_clauses(Count)),
+    predicate_property(last_wsid_sync(_,_), number_of_clauses(Count)),
     !.
 active_wsid_count(0).
 
