@@ -580,7 +580,7 @@ average_dicts(Dicts, Avg) :-
 avg_key(Dicts, Len, Key, Key-Avg) :-
     maplist(get_dict(Key), Dicts, Values),
     sum_list(Values, Sum),
-    Avg is Sum/Len.
+    Avg is float(Sum)/Len.
 
 %!  save_stats(+StaveSpec, +Stats) is det.
 %
