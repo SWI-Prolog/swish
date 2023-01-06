@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015-2020, VU University Amsterdam
+    Copyright (c)  2015-2022, VU University Amsterdam
                               CWI, Amsterdam
+                              SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,7 +43,8 @@
             swish_stats/2,              % ?Period, ?Dicts
             swish_save_stats/1,         % ?File
             swish_died_thread/2,        % ?Thread, ?State
-            redis_consumer_status/2     % +Consumer, -Status
+            redis_consumer_status/2,    % +Consumer, -Status
+            swish_cluster_member/2
           ]).
 :- use_module(library(pengines)).
 :- use_module(library(broadcast)).
@@ -102,6 +104,15 @@ redis_publish_stats(_, _).
 redis_consumer_status(Consumer, Stat) :-
     redis_key(Consumer, status, Server, Key),
     redis(Server, get(Key), Stat).
+
+%!  swish_cluster_member(?Consumer, -Status) is nondet.
+
+swish_cluster_member(Consumer, Status) :-
+    swish_cluster(Pairs),
+    member(Consumer-URL, Pairs),
+    redis_consumer_status(Consumer, Status0),
+    Status = Status0.put(url, URL).
+
 
 %!  stale_pengine(-Pengine) is nondet.
 %
@@ -701,6 +712,7 @@ sandbox:safe_primitive(swish_debug:stale_pengine(_)).
 sandbox:safe_primitive(swish_debug:swish_statistics(_)).
 sandbox:safe_primitive(swish_debug:swish_stats(_, _)).
 sandbox:safe_primitive(swish_debug:swish_died_thread(_, _)).
+sandbox:safe_primitive(swish_debug:swish_cluster_member(_,_)).
 :- if(current_predicate(malloc_info:malloc_info/1)).
 sandbox:safe_primitive(malloc_info:malloc_info(_)).
 :- endif.
