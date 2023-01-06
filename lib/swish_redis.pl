@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2020, VU University Amsterdam
+    Copyright (C): 2022, VU University Amsterdam
 			 CWI Amsterdam
+                         SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -36,7 +37,8 @@
 :- module(swish_redis,
           [ reinit_redis/0,
             redis_swish_stream/2,       % +Name, -Key
-            redis_consumer/1            % -Consumer
+            redis_consumer/1,           % -Consumer
+            swish_cluster/1             % -Pairs
           ]).
 :- use_module(library(redis)).
 :- use_module(library(redis_streams)).
@@ -45,6 +47,7 @@
 :- use_module(library(socket)).
 :- use_module(library(apply)).
 :- use_module(library(pairs)).
+:- use_module(library(http/http_path)).
 
 :- use_module(config).
 
@@ -87,12 +90,7 @@ init_redis(Port) :-
     group_pairs_by_key(Sorted, Grouped),
     consumer(Port, Consumer),
     maplist(create_listener(Consumer), Grouped),
-    redis(swish, publish(swish:swish, joined(Consumer) as prolog), Count),
-    print_message(informational, swish(redis_peers(Count))),
-    at_halt(publish_halt(Consumer)).
-
-publish_halt(Consumer) :-
-    redis(swish, publish(swish:swish, left(Consumer) as prolog), _Count).
+    publish_consumer(Consumer).
 
 create_listener(_, (-)-Streams) :-
     !,
@@ -176,6 +174,42 @@ address_consumer(Port, Consumer) :-
 redis_consumer(Consumer) :-
     consumer(Consumer).
 
+publish_consumer(Consumer) :-
+    http_absolute_uri(swish(.), URL),
+    consumer_key(Server, Key),
+    redis(Server, hset(Key:url, Consumer, URL)),
+    redis(Server, publish(swish:swish, joined(Consumer, URL) as prolog), Count),
+    print_message(informational, swish(redis_peers(Count))),
+    at_halt(publish_halt).
+
+% More reliable than at_halt/1.
+:- listen(http(shutdown), publish_halt).
+
+publish_halt :-
+    redis_consumer(Consumer),
+    consumer_key(Server, Key),
+    (   redis(Server, hdel(Key:url, Consumer), 0)
+    ->  true
+    ;   redis(Server, publish(swish:swish, left(Consumer) as prolog), _Count)
+    ).
+
+consumer_key(swish, Key) :-
+    swish_config(redis_prefix, Prefix),
+    atomic_list_concat([Prefix, consumer], :, Key).
+
+%!  swish_cluster(-Pairs) is det.
+%
+%   True when Pairs is a list Consumer-URL of peer SWISH servers in this
+%   cluster.
+
+swish_cluster(Pairs) :-
+    consumer_key(Server, Key),
+    redis(Server, hgetall(Key:url), Pairs).
+
+%!  init_pubsub is det.
+%
+%   Prepare to listen to the SWISH pubsub channels.
+
 init_pubsub :-
     redis_current_subscription(redis_pubsub, _),
     !.
@@ -200,10 +234,10 @@ swish_message(Message) :-
 
 prolog:message(swish(redis_peers(Count))) -->
     [ 'Redis: the are ~d peers in the cluster'-[Count] ].
-prolog:message(swish(joined(Consumer))) -->
+prolog:message(swish(joined(Consumer, URL))) -->
     (   { redis_consumer(Consumer) }
     ->  []
-    ;   [ 'Redis: ~w joined the cluster'-[Consumer] ]
+    ;   [ 'Redis: ~w joined the cluster, at ~w'-[Consumer, URL] ]
     ).
 prolog:message(swish(left(Consumer))) -->
     (   { redis_consumer(Consumer) }
