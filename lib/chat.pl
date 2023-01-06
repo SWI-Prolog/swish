@@ -565,6 +565,11 @@ reap(WSID, _Consumer) :-            % non-redis setup
     fail.
 
 visitor_count(Count) :-
+    use_redis,
+    !,
+    sync_active_wsid,
+    active_wsid_count(Count).
+visitor_count(Count) :-
     aggregate_all(count, visitor(_), Count).
 
 %!  pending_visitor(+WSID, +Timeout) is semidet.
@@ -1181,16 +1186,68 @@ viewing_same_file(WSID, Friend) :-
     subscription(Friend, gitty, File),
     Friend \== WSID.
 
+
+		 /*******************************
+		 *      REDIS CONNNECTION       *
+		 *******************************/
+
 :- initialization
     listen(redis(_, 'swish:chat', Message),
            chat_message(Message)).
 
 chat_message(chat(Message)) :-
+    update_visitors(Message),
     chat_broadcast_local(Message).
 chat_message(chat(Message, Channel)) :-
     chat_broadcast_local(Message, Channel).
 chat_message(send_friends(WSID, Message)) :-
     send_friends_local(WSID, Message).
+
+%!  update_visitors(+Msg) is det.
+%
+%   Maintain notion of active users  based on broadcasted (re)join and
+%   left messages.  We sync every 5 minutes to compensate for possible
+%   missed users.
+
+:- dynamic
+       (   last_wsid_sync/1,
+	   active_wsid/1
+       ) as volatile.
+
+update_visitors(Msg),
+  _{type:removeUser, wsid:WSID} :< Msg =>
+    retractall(active_wsid(WSID)).
+update_visitors(Msg),
+  _{type:joined, wsid:WSID} :< Msg,
+  \+ active_wsid(WSID) =>
+    asserta(active_wsid(WSID)).
+update_visitors(Msg),
+  _{type:rejoined, wsid:WSID} :< Msg,
+  \+ active_wsid(WSID) =>
+    asserta(active_wsid(WSID)).
+update_visitors(_) =>
+    true.
+
+sync_active_wsid :-
+    last_wsid_sync(Last),
+    get_time(Now),
+    Now-Last < 300,
+    !.
+sync_active_wsid :-
+    get_time(Now),
+    transaction(
+	(   retractall(last_wsid_sync(_)),
+	    asserta(last_wsid_sync(Now)))),
+    findall(WSID, visitor(WSID), WSIDs),
+    transaction(
+	(   retractall(active_wsid(_)),
+	    forall(member(WSID, WSIDs),
+		   assertz(active_wsid(WSID))))).
+
+active_wsid_count(Count) :-
+    predicate_property(last_wsid_sync(_), number_of_clauses(Count)),
+    !.
+active_wsid_count(0).
 
 
                  /*******************************
