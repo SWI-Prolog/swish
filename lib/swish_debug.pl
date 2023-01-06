@@ -480,6 +480,11 @@ add_fordblks(Wrap, Stats0, Stats) :-
 add_fordblks(_, Stats, Stats).
 
 add_visitors(Stats0, Stats) :-
+    use_redis,
+    broadcast_request(swish(visitor_count(Cluster, Local))),
+    !,
+    Stats = Stats0.put(_{visitors:Cluster, local_visitors:Local}).
+add_visitors(Stats0, Stats) :-
     broadcast_request(swish(visitor_count(C))),
     !,
     Stats = Stats0.put(visitors, C).
