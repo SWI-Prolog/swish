@@ -238,25 +238,29 @@ swish_stat_collector(Thread, Dims, Interval, Persists) :-
 persistent_stats(save(Path, Interval)) :-
     setting(stats_interval, Interval),
     Interval > 0,
-    setting(stats_file, File),
-    (   absolute_file_name(File, Path,
-                           [ access(write),
-                             file_errors(fail)
-                           ])
-    ->  true
-    ;   File =.. [Alias,_],
-        DirSpec =.. [Alias, '.'],
-        absolute_file_name(DirSpec, Dir,
-                       [ solutions(all)
-                       ]),
-        \+ exists_directory(Dir),
-        catch(make_directory(Dir),
-              error(permission_error(create, directory, Dir), _),
-              fail),
-        absolute_file_name(File, Path,
-                           [ access(write),
-                             file_errors(fail)
-                           ])
+    (   use_redis
+    ->  redis_key(Server, Key),
+        Path = redis(Server, Key)
+    ;   setting(stats_file, File),
+        (   absolute_file_name(File, Path,
+                               [ access(write),
+                                 file_errors(fail)
+                               ])
+        ->  true
+        ;   File =.. [Alias,_],
+            DirSpec =.. [Alias, '.'],
+            absolute_file_name(DirSpec, Dir,
+                               [ solutions(all)
+                               ]),
+            \+ exists_directory(Dir),
+            catch(make_directory(Dir),
+                  error(permission_error(create, directory, Dir), _),
+                  fail),
+            absolute_file_name(File, Path,
+                               [ access(write),
+                                 file_errors(fail)
+                               ])
+        )
     ),
     !.
 persistent_stats(save(-, 0)).
@@ -632,11 +636,12 @@ compatible_window(ring(_,Avg,Data1), ring(_,Avg,Data2)) :-
 %
 %   Save statistcs to File or the default file.
 
+:- listen(http(shutdown), swish_save_stats(_)).
 swish_save_stats(File) :-
     thread_self(Me),
     catch(thread_send_message(swish_stats, Me-save_stats(File)), E,
           stats_died(swish_stats, E)),
-    thread_get_message(save_stats(Result)),
+    thread_get_message(Me, save_stats(Result), [timeout(1)]),
     (   Result = error(E)
     ->  throw(E)
     ;   File = Result
