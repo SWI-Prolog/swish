@@ -1254,7 +1254,7 @@ sync_active_wsid :-
 		   assertz(active_wsid(WSID, Consumer))))).
 
 active_wsid_count(Count) :-
-    predicate_property(last_wsid_sync(_,_), number_of_clauses(Count)),
+    predicate_property(active_wsid(_,_), number_of_clauses(Count)),
     !.
 active_wsid_count(0).
 
