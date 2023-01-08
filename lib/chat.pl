@@ -117,6 +117,13 @@ swish_config:config(session_lost_timeout, 60).
 %   user gets an avatar and optionally a name.
 
 start_chat(Request) :-
+    memberchk(method(options), Request),
+    !,
+    cors_enable(Request,
+                [ methods([get])
+                ]),
+    format('~n').
+start_chat(Request) :-
     cors_enable,
     authenticate(Request, Identity),
     start_chat(Request, [identity(Identity)]).
