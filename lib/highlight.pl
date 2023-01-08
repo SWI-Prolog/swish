@@ -101,6 +101,13 @@ tokens_.
 %	the editor is not known.
 
 codemirror_change(Request) :-
+	memberchk(method(options), Request),
+	!,
+	cors_enable(Request,
+		    [ methods([post])
+		    ]),
+	format('~n').
+codemirror_change(Request) :-
 	cors_enable,
 	call_cleanup(codemirror_change_(Request),
 		     check_unlocked).
@@ -415,6 +422,13 @@ prolog:xref_open_source(UUID, Stream) :-
 %	cross-reference information.
 
 codemirror_leave(Request) :-
+	memberchk(method(options), Request),
+	!,
+	cors_enable(Request,
+		    [ methods([post])
+		    ]),
+	format('~n').
+codemirror_leave(Request) :-
 	cors_enable,
 	call_cleanup(codemirror_leave_(Request),
 		     check_unlocked).
@@ -499,6 +513,13 @@ destroy_state_module(_).
 %	HTTP POST handler that returns an array of tokens for the given
 %	editor.
 
+codemirror_tokens(Request) :-
+	memberchk(method(options), Request),
+	!,
+	cors_enable(Request,
+		    [ methods([post])
+		    ]),
+	format('~n').
 codemirror_tokens(Request) :-
 	cors_enable,
 	setup_call_catcher_cleanup(
@@ -1066,6 +1087,13 @@ css_dict(Context, Selector, Style) :-
 %
 %	HTTP handler that provides information  about a token.
 
+token_info(Request) :-
+	memberchk(method(options), Request),
+	!,
+	cors_enable(Request,
+		    [ methods([get])
+		    ]),
+	format('~n').
 token_info(Request) :-
 	cors_enable,
 	http_parameters(Request, [], [form_data(Form)]),
