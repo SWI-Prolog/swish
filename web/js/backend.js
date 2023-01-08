@@ -43,12 +43,32 @@
  * @requires jquery
  */
 
-define([ "jquery" ],
-       function($) {
+define([ "jquery", "config", "form",
+	 "laconic"
+       ],
+       function($, config, form) {
 
   var backend = {
     ajax: function(options) {
       return $.ajax(options);
+    },
+
+    selectBackend: function() {
+      function backendBody() {
+	this.append($.el.table(
+	  { class: "table table-striped table-condensed",
+	    'data-click-to-select': true,
+	    'data-single-select': true
+	  },
+	  $.el.tr($.el.th("Backend"),
+		  $.el.th("URL")),
+	  $.el.tbody()));
+      }
+
+      form.showDialog(
+	{ title: "SWISH backends",
+	  body: backendBody
+	});
     }
   }
 
