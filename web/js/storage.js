@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2018, VU University Amsterdam
+    Copyright (C): 2014-2023, VU University Amsterdam
 			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -44,10 +45,10 @@
  */
 
 define([ "jquery", "config", "modal", "form", "gitty",
-	 "history", "tabbed", "utils",
+	 "history", "tabbed", "utils", "backend",
 	 "laconic", "diff"
        ],
-       function($, config, modal, form, gitty, history, tabbed, utils) {
+       function($, config, modal, form, gitty, history, tabbed, utils, backend) {
 
 (function($) {
   var pluginName = 'storage';
@@ -284,19 +285,20 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	var that = this;
 	var options = this.data(pluginName);
 
-	$.ajax({ url: config.http.locations.web_storage + file,
-		 dataType: "text",
-		 success: function(data) {
-		   that.storage('setSource',
-				{ data: data,
-				  meta: { name:file
-					}
-				});
-		 },
-		 error: function(jqXHDR) {
-		   modal.ajaxError(jqXHR);
-		 }
-	       });
+	backend.ajax(
+	  { url: config.http.locations.web_storage + file,
+	    dataType: "text",
+	    success: function(data) {
+	      that.storage('setSource',
+			   { data: data,
+			     meta: { name:file
+				   }
+			   });
+	    },
+	    error: function(jqXHDR) {
+	      modal.ajaxError(jqXHR);
+	    }
+	  });
       }
       return this;
     },
@@ -325,24 +327,25 @@ define([ "jquery", "config", "modal", "form", "gitty",
       var url  = config.http.locations.web_storage +
 		 encodeURI(file);
 
-      $.ajax({ url: url,
-	       type: "GET",
-	       data: { format: "json" },
-	       success: function(reply) {
-		 reply.url = url;
-		 reply.st_type = "gitty";
-		 reply.noHistory = true;
-		 elem.storage('setSource', reply);
-		 $("#chat").trigger('send',
-				    { type:'reloaded',
-				      file:file,
-				      commit:reply.meta.commit
-				    });
-	       },
-	       error: function(jqXHR) {
-		 modal.ajaxError(jqXHR);
-	       }
-	     });
+      backend.ajax(
+	{ url: url,
+	  type: "GET",
+	  data: { format: "json" },
+	  success: function(reply) {
+	    reply.url = url;
+	    reply.st_type = "gitty";
+	    reply.noHistory = true;
+	    elem.storage('setSource', reply);
+	    $("#chat").trigger('send',
+			       { type:'reloaded',
+				 file:file,
+				 commit:reply.meta.commit
+			       });
+	  },
+	  error: function(jqXHR) {
+	    modal.ajaxError(jqXHR);
+	  }
+	});
 
       return this;
     },
@@ -418,54 +421,55 @@ define([ "jquery", "config", "modal", "form", "gitty",
       if ( data.meta )
 	post.previous = data.meta.commit;
 
-      $.ajax({ url: url,
-               dataType: "json",
-	       contentType: "application/json",
-	       type: method,
-	       data: JSON.stringify(post),
-	       success: function(reply) {
-		 if ( reply.error ) {
-		   modal.alert(errorString("Could not save", reply));
-		 } else {
-		   if ( data.meta &&
-			data.meta.example != reply.meta.example ) {
-		     elem.closest(".swish").trigger('examples-changed');
-		   }
-		   data.file = reply.file;
-		   data.meta = reply.meta;
-		   data.st_type = "gitty";
-		   data.cleanGeneration = data.changeGen();
-		   data.cleanData       = data.getValue();
-		   data.cleanCheckpoint = "save";
-		   data.markClean(true);
-		   modal.feedback({ html: "Saved",
-				    owner: elem
-				  });
+      backend.ajax(
+	{ url: url,
+          dataType: "json",
+	  contentType: "application/json",
+	  type: method,
+	  data: JSON.stringify(post),
+	  success: function(reply) {
+	    if ( reply.error ) {
+	      modal.alert(errorString("Could not save", reply));
+	    } else {
+	      if ( data.meta &&
+		   data.meta.example != reply.meta.example ) {
+		elem.closest(".swish").trigger('examples-changed');
+	      }
+	      data.file = reply.file;
+	      data.meta = reply.meta;
+	      data.st_type = "gitty";
+	      data.cleanGeneration = data.changeGen();
+	      data.cleanData       = data.getValue();
+	      data.cleanCheckpoint = "save";
+	      data.markClean(true);
+	      modal.feedback({ html: "Saved",
+			       owner: elem
+			     });
 
-		   if ( method == "POST" )
-		     data.chats = {		/* forked file has no chats */
-		       docid: elem.storage('docid'),
-		       total: 0
-		     };
-		   elem.storage('update_tab_title');
-		   elem.storage('chat', (data.meta||{}).chat||'update');
-		   elem.storage('load_messages', reply.messages||[]);
-		   $(".storage").storage('chat_status', true);
-		   history.push({url: reply.url, reason: "save"});
-		 }
-	       },
-	       error: function(jqXHR, textStatus, errorThrown) {
-		 if ( jqXHR.status == 409 ) {
-		   elem.storage('resolveEditConflict',
-				JSON.parse(jqXHR.responseText));
-		 } else if ( jqXHR.status == 403 ) {
-		   modal.alert("Permission denied.  Please try a different name");
-		 } else {
-		   alert('Save failed; click "ok" to try again');
-		   elem.storage('saveAs');
-		 }
-	       }
-	     });
+	      if ( method == "POST" )
+		data.chats = {		/* forked file has no chats */
+		  docid: elem.storage('docid'),
+		  total: 0
+		};
+	      elem.storage('update_tab_title');
+	      elem.storage('chat', (data.meta||{}).chat||'update');
+	      elem.storage('load_messages', reply.messages||[]);
+	      $(".storage").storage('chat_status', true);
+	      history.push({url: reply.url, reason: "save"});
+	    }
+	  },
+	  error: function(jqXHR, textStatus, errorThrown) {
+	    if ( jqXHR.status == 409 ) {
+	      elem.storage('resolveEditConflict',
+			   JSON.parse(jqXHR.responseText));
+	    } else if ( jqXHR.status == 403 ) {
+	      modal.alert("Permission denied.  Please try a different name");
+	    } else {
+	      alert('Save failed; click "ok" to try again');
+	      elem.storage('saveAs');
+	    }
+	  }
+	});
 
       return this;
     },
@@ -559,39 +563,40 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	return this;
       }
 
-      $.ajax({ url: options.url,
-               dataType: "json",
-	       contentType: type.contentType||"text/plain",
-	       type: "PUT",
-	       data: data,
-	       success: function(reply) {
-		 if ( reply.error ) {
-		   modal.alert(errorString("Could not save", reply));
-		 } else {
-		   options.cleanGeneration = options.changeGen();
-		   options.cleanData       = options.getValue();
-		   options.cleanCheckpoint = "save";
-		   options.markClean(true);
-		   modal.feedback({ html: "Saved",
-				    owner: elem
-				  });
-		 }
-	       },
-	       error: function(jqXHR) {
-		 if ( jqXHR.status == 403 ) {
-		   var url = options.url;
-		   delete(options.meta);
-		   delete(options.st_type);
-		   delete(options.url);
-		   elem.storage('saveAs', {
-		     title: "<div class='warning'>Could not save to "+url+
-			    "</div> Save a copy as"
-		   });
-		 } else
-		 { modal.ajaxError(jqXHR);
-		 }
-	       }
-	     });
+      backend.ajax(
+	{ url: options.url,
+          dataType: "json",
+	  contentType: type.contentType||"text/plain",
+	  type: "PUT",
+	  data: data,
+	  success: function(reply) {
+	    if ( reply.error ) {
+	      modal.alert(errorString("Could not save", reply));
+	    } else {
+	      options.cleanGeneration = options.changeGen();
+	      options.cleanData       = options.getValue();
+	      options.cleanCheckpoint = "save";
+	      options.markClean(true);
+	      modal.feedback({ html: "Saved",
+			       owner: elem
+			     });
+	    }
+	  },
+	  error: function(jqXHR) {
+	    if ( jqXHR.status == 403 ) {
+	      var url = options.url;
+	      delete(options.meta);
+	      delete(options.st_type);
+	      delete(options.url);
+	      elem.storage('saveAs', {
+		title: "<div class='warning'>Could not save to "+url+
+		  "</div> Save a copy as"
+	      });
+	    } else
+	    { modal.ajaxError(jqXHR);
+	    }
+	  }
+	});
 
       return this;
     },

@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2018, VU University Amsterdam
+    Copyright (C): 2014-2023, VU University Amsterdam
 			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -43,9 +44,9 @@
  * @requires jquery
  */
 
-define([ "jquery", "form", "config", "preferences", "modal",
+define([ "jquery", "form", "config", "preferences", "modal", "backend",
 	 "laconic", "search", "chatbell", "sourcelist" ],
-       function($, form, config, preferences, modal) {
+       function($, form, config, preferences, modal, backend) {
 var tabbed = {
   tabTypes: {},
   type: function(from) {
@@ -308,56 +309,58 @@ tabbed.tabTypes.permalink = {
 
 	if ( data.st_type == "gitty" ) {
 	  var url = config.http.locations.web_storage + data.file;
-	  $.ajax({ url: url,
-		   type: "GET",
-		   data: {format: "json"},
-		   success: function(reply) {
-		     reply.url = url;
-		     reply.st_type = "gitty";
-		     reply.noHistory = true;
-		     if ( !elem.tabbed('setSource', newtab, reply) ) {
-		       console.log("Failed to restore", data.file);
-		       elem.tabbed('removeTab', tab.attr("id"));
-		     }
-		     restoreData(newtab, data);
-		     if ( !fromURL && newtab.hasClass("active") )
-		       newtab.find(".storage").storage("activate");
-		   },
-		   error: function(jqXHR) {
-		     modal.ajaxError(jqXHR);
-		   }
+	  backend.ajax(
+	    { url: url,
+	      type: "GET",
+	      data: {format: "json"},
+	      success: function(reply) {
+		reply.url = url;
+		reply.st_type = "gitty";
+		reply.noHistory = true;
+		if ( !elem.tabbed('setSource', newtab, reply) ) {
+		  console.log("Failed to restore", data.file);
+		  elem.tabbed('removeTab', tab.attr("id"));
+		}
+		restoreData(newtab, data);
+		if ( !fromURL && newtab.hasClass("active") )
+		  newtab.find(".storage").storage("activate");
+	      },
+	      error: function(jqXHR) {
+		modal.ajaxError(jqXHR);
+	      }
 	  });
 	} else if ( data.url ) {
-	  $.ajax({ url: data.url,
-		   type: "GET",
-		   data: {format: "json"},
-		   success: function(source) {
-		     var msg;
+	  backend.ajax(
+	    { url: data.url,
+	      type: "GET",
+	      data: {format: "json"},
+	      success: function(source) {
+		var msg;
 
-		     if ( typeof(source) == "string" ) {
-		       msg = { data: source };
-		       msg.st_type = "external";
-		     } else if ( typeof(source) == "object" &&
-				 typeof(source.data) == "string" ) {
-		       msg = source;
-		       msg.st_type = "filesys";
-		     } else {
-		       alert("Invalid data");
-		       return;
-		     }
-		     msg.noHistory = true;
-		     msg.url = data.url;
-		     if ( !elem.tabbed('setSource', newtab, msg) ) {
-		       console.log("Failed to restore", data.url);
-		       elem.tabbed('removeTab', newtab.attr("id"));
-		     }
-		     restoreData(newtab, data);
-		     if ( !fromURL && newtab.hasClass("active") )
-		       newtab.find(".storage").storage("activate");
-		   },
-		   error: function(jqXHR) {
-		     modal.ajaxError(jqXHR);
-		   }
+		if ( typeof(source) == "string" ) {
+		  msg = { data: source };
+		  msg.st_type = "external";
+		} else if ( typeof(source) == "object" &&
+			    typeof(source.data) == "string" ) {
+		  msg = source;
+		  msg.st_type = "filesys";
+		} else {
+		  alert("Invalid data");
+		  return;
+		}
+		msg.noHistory = true;
+		msg.url = data.url;
+		if ( !elem.tabbed('setSource', newtab, msg) ) {
+		  console.log("Failed to restore", data.url);
+		  elem.tabbed('removeTab', newtab.attr("id"));
+		}
+		restoreData(newtab, data);
+		if ( !fromURL && newtab.hasClass("active") )
+		  newtab.find(".storage").storage("activate");
+	      },
+	      error: function(jqXHR) {
+		modal.ajaxError(jqXHR);
+	      }
 	  });
 	} else {
 	  console.log("Cannot restore ", data);
@@ -877,14 +880,15 @@ tabbed.tabTypes.permalink = {
 
     profileValue: function(name, ext) {
       var url = config.http.locations.swish + "profile/" + name + "." + ext;
-      return $.ajax({ url: url,
-		      type: "GET",
-		      data: {format: "raw"},
-		      async: false,
-		      error: function(jqXHR) {
-			modal.ajaxError(jqXHR);
-		      }
-      }).responseText;
+      return backend.ajax(
+	{ url: url,
+	  type: "GET",
+	  data: {format: "raw"},
+	  async: false,
+	  error: function(jqXHR) {
+	    modal.ajaxError(jqXHR);
+	  }
+	}).responseText;
     },
 
     /**

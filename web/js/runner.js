@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2019, VU University Amsterdam
+    Copyright (C): 2014-2023, VU University Amsterdam
 			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -45,11 +46,11 @@
  */
 
 define([ "jquery", "config", "preferences", "utils",
-	 "cm/lib/codemirror", "form", "prolog", "links", "modal",
+	 "cm/lib/codemirror", "form", "prolog", "links", "modal", "backend",
 	 "answer", "laconic", "sparkline", "download", "search"
        ],
        function($, config, preferences, utils,
-		CodeMirror, form, prolog, links, modal) {
+		CodeMirror, form, prolog, links, modal, backend) {
 
 		 /*******************************
 		 *	  THE COLLECTION	*
@@ -75,7 +76,7 @@ define([ "jquery", "config", "preferences", "utils",
 	  var actions =
 	      { "Collapse all": function() {
 		  this.find(".prolog-runner").prologRunner('toggleIconic', true);
-	        },
+		},
 		"Expand all": function() {
 		  this.find(".prolog-runner").prologRunner('toggleIconic', false);
 		},
@@ -192,43 +193,44 @@ define([ "jquery", "config", "preferences", "utils",
 	}
 
 	function refresh() {
-	  $.ajax({ url: config.http.locations.pengines + "/list?application=swish",
-		   type: "GET",
-		   success: function(reply) {
-		     content.empty();
-		     if ( reply.pengines && reply.pengines.length	> 0 ) {
-		       var table;
-		       content.append(table=$.el.table(
-			 {class: "table table-striped table-condensed task-list"}));
-		       $(table).append($.el.tr($.el.th("Query"),
-					       $.el.th("Started"),
-					       $.el.th("Detached"),
-					       $.el.th("CPU"),
-					       $.el.th("Events")));
+	  backend.ajax(
+	    { url: config.http.locations.pengines + "/list?application=swish",
+	      type: "GET",
+	      success: function(reply) {
+		content.empty();
+		if ( reply.pengines && reply.pengines.length	> 0 ) {
+		  var table;
+		  content.append(table=$.el.table(
+		    {class: "table table-striped table-condensed task-list"}));
+		  $(table).append($.el.tr($.el.th("Query"),
+					  $.el.th("Started"),
+					  $.el.th("Detached"),
+					  $.el.th("CPU"),
+					  $.el.th("Events")));
 
-		       for(var i=0; i<reply.pengines.length; i++) {
-			 addRow($(table), reply.pengines[i]);
-		       }
+		  for(var i=0; i<reply.pengines.length; i++) {
+		    addRow($(table), reply.pengines[i]);
+		  }
 
-		       var btn = form.widgets.glyphIconButton(
-				   "refresh",
-				   { title:"Refresh list",
-				     class:"btn-primary"
-				   });
+		  var btn = form.widgets.glyphIconButton(
+		    "refresh",
+		    { title:"Refresh list",
+		      class:"btn-primary"
+		    });
 
-		       content.append(btn);
-		       $(btn).on("click", function() {
-			 content.find("table").addClass("refreshing");
-			 refresh();
-		       });
-		     } else {
-		       content.append($.el.div("No detached tasks"));
-		     }
-		   },
-		   error: function(jqXHR) {
-		     modal.ajaxError(jqXHR);
-		   }
-		 });
+		  content.append(btn);
+		  $(btn).on("click", function() {
+		    content.find("table").addClass("refreshing");
+		    refresh();
+		  });
+		} else {
+		  content.append($.el.div("No detached tasks"));
+		}
+	      },
+	      error: function(jqXHR) {
+		modal.ajaxError(jqXHR);
+	      }
+	    });
 	}
 
 	refresh();
@@ -247,19 +249,20 @@ define([ "jquery", "config", "preferences", "utils",
     reattach: function() {
       var that = this;
 
-      $.ajax({ url: config.http.locations.pengines + "/list?application=swish",
-               type: "GET",
-	       success: function(reply) {
-		 if ( reply.pengines ) {
-		   for(var i=0; i<reply.pengines.length; i++) {
-		     that.prologRunners("attach", reply.pengines[i]);
-		   }
-		 }
-	       },
-	       error: function(jqXHR) {
-		 modal.ajaxError(jqXHR);
-	       }
-             });
+      backend.ajax(
+	{ url: config.http.locations.pengines + "/list?application=swish",
+          type: "GET",
+	  success: function(reply) {
+	    if ( reply.pengines ) {
+	      for(var i=0; i<reply.pengines.length; i++) {
+		that.prologRunners("attach", reply.pengines[i]);
+	      }
+	    }
+	  },
+	  error: function(jqXHR) {
+	    modal.ajaxError(jqXHR);
+	  }
+        });
     },
 
     /**
@@ -811,10 +814,10 @@ define([ "jquery", "config", "preferences", "utils",
       addAnswer(this,
 		$.el.div({class:"prolog-trace"},
 			 $.el.span({ class:"depth",
-			             style:"width:"+(prompt.depth*5-1)+"px"
+				     style:"width:"+(prompt.depth*5-1)+"px"
 				   }, "\u00A0"), /* &nbsp; */
 			 $.el.span({ class:"port "+prompt.port
-			           },
+				   },
 				   capitalizeFirstLetter(prompt.port),
 				   ":"),
 			 goal));
@@ -1152,28 +1155,29 @@ define([ "jquery", "config", "preferences", "utils",
 
       delete post.meta.link;
 
-      $.ajax({ url: config.http.locations.web_storage,
-               dataType: "json",
-	       contentType: "application/json",
-	       type: "POST",
-	       data: JSON.stringify(post),
-	       success: function(reply) {
-		 if ( reply.error ) {
-		   modal.alert(errorString("Could not save", reply));
-		 } else {
-		   modal.feedback({ html: "Saved",
-				    owner: runner
-		                  });
-		 }
-	       },
-	       error: function(jqXHR, textStatus, errorThrown) {
-		 if ( jqXHR.status == 403 ) {
-		   modal.alert("Permission denied.  Please try a different name");
-		 } else {
-		   alert('Save failed: '+textStatus);
-		 }
-	       }
-             });
+      backend.ajax(
+	{ url: config.http.locations.web_storage,
+          dataType: "json",
+	  contentType: "application/json",
+	  type: "POST",
+	  data: JSON.stringify(post),
+	  success: function(reply) {
+	    if ( reply.error ) {
+	      modal.alert(errorString("Could not save", reply));
+	    } else {
+	      modal.feedback({ html: "Saved",
+			       owner: runner
+			     });
+	    }
+	  },
+	  error: function(jqXHR, textStatus, errorThrown) {
+	    if ( jqXHR.status == 403 ) {
+	      modal.alert("Permission denied.  Please try a different name");
+	    } else {
+	      alert('Save failed: '+textStatus);
+	    }
+	  }
+        });
 
       return this;
     },

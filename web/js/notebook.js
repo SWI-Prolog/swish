@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2015-2019, VU University Amsterdam
+    Copyright (C): 2015-2023, VU University Amsterdam
 			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -47,12 +48,12 @@
 
 define([ "jquery", "config", "tabbed", "form",
 	 "preferences", "modal", "prolog", "links", "utils",
-	 "cm/lib/codemirror",
+	 "cm/lib/codemirror", "backend",
 	 "editor", "laconic", "runner", "storage", "sha1",
 	 "printThis"
        ],
        function($, config, tabbed, form, preferences, modal, prolog, links,
-	        utils, CodeMirror) {
+		utils, CodeMirror, backend) {
 
 var cellTypes = {
   "program":  { label:"Program",  prefix:"p"   },
@@ -726,7 +727,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
      * Set or get the state of this notebook as a string.
      * @param {Object} options
      * @param {Boolean} [options.skipEmpty=false] if `true`, do not save
-     *		        empty cells.
+     *			empty cells.
      * @param {Boolean} [options.fullscreen] if `true', go fullscreen.
      * Default is `true` if the toplevel `div.notebook` has a class
      * `fullscreen`.
@@ -1209,7 +1210,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	this.find("a[data-action='background']")
             .attr('title', this.hasClass("background") ?
 			     "Used for all queries in this notebook" :
-		             "Used for queries below this cell");
+			     "Used for queries below this cell");
 
       }
       return this;
@@ -1325,7 +1326,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
     program_cells: function() {
       var data = this.data(pluginName);
       var programs = this.closest(".notebook")
-	                 .find(".nb-cell.program.background");
+			 .find(".nb-cell.program.background");
       if ( this.hasClass("program") ) {
 	if ( !this.hasClass("background") )
 	  programs = programs.add(this);
@@ -1566,12 +1567,13 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
     }
 
     if ( markdownText.trim() != "" )
-    { $.ajax({ type: "POST",
-	       url: config.http.locations.markdown,
-	       data: markdownText,
-	       contentType: "text/plain; charset=UTF-8",
-	       success: setHTML
-	     });
+    { backend.ajax(
+      { type: "POST",
+	url: config.http.locations.markdown,
+	data: markdownText,
+	contentType: "text/plain; charset=UTF-8",
+	success: setHTML
+      });
     } else
     { setHTML("<div class='nb-empty-markdown'>"+
 	      "Empty markdown cell.  Double click to edit"+

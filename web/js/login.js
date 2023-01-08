@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2017, VU University Amsterdam
-			 CWI Amsterdam
+    Copyright (C): 2017-2023, VU University Amsterdam
+			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,8 +43,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "modal", "config", "form", "laconic" ],
-       function($, modal, config, form) {
+define([ "jquery", "modal", "config", "form", "backend", "laconic" ],
+       function($, modal, config, form, backend) {
 
 var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
 
@@ -244,14 +245,15 @@ var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
 
       if ( user ) {
 	if ( user.logout_url ) {
-	  $.ajax({ url: user.logout_url,
-	           success: function() {
-		     elem.login('update', "logout_by_url");
-		   },
-		   error: function(jqXHDR) {
-		     modal.ajaxError(jqXHDR);
-		   }
-	         });
+	  backend.ajax(
+	    { url: user.logout_url,
+	      success: function() {
+		elem.login('update', "logout_by_url");
+	      },
+	      error: function(jqXHDR) {
+		modal.ajaxError(jqXHDR);
+	      }
+	    });
 	} else if ( user.auth_method == "basic" ||
 		    user.auth_method == "digest" ) {
 	  clearAuthenticationCache(config.http.locations.http_logout,
