@@ -254,6 +254,20 @@ preferences.setInform("preserve-state", ".unloadable");
 	  }
 	});
 
+	if ( config.swish.redis ) {
+	  showBackends = function() {
+	    backend.selectBackend();
+	  };
+	  showBackends.glyph = "flash";
+	  showBackends.after = "Open recent";
+
+	  $("#navbar").
+	    navbar('populateDropdown',
+		   "File",
+		   { "Backends ...": showBackends
+		   });
+	}
+
 	setInterval(function(){
 	  $(".each-minute").trigger("minute");
 	}, 60000);
