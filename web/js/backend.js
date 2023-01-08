@@ -98,6 +98,7 @@ define([ "jquery", "config", "form", "modal",
 	      }
 	    }
 	  }
+	  $("#ajaxModal").modal('hide');
 	});
 
 	$(body).on("click", "tr", function(ev) {
