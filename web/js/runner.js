@@ -540,7 +540,7 @@ define([ "jquery", "config", "preferences", "utils",
 	require([config.http.locations.pengines+"/pengines.js"],
 		function() {
 	  var pdata = {
-	    server: config.http.locations.pengines,
+	    server: backend.url + config.http.locations.pengines,
 	    runner: elem,
 	    application: "swish",
 	    src: query.source,
