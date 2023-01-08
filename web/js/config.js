@@ -52,8 +52,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "backend" ],
-       function($, backend) {
+define([ "jquery" ],
+       function($) {
 var KEY = "SWISHCONFIG";
 
 /* Configuration of various server components.  We provide
@@ -86,7 +86,7 @@ function setCachedConfig(config) {
 
 if ( !config ) {
   if ( !(config = getCachedConfig()) ) {
-    backend.ajax(
+    $.ajax(
       { url: "swish_config.json",
 	dataType: "json",
 	async: false,
