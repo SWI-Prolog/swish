@@ -177,6 +177,13 @@ gitty_open_options([]).
 %   methods =GET=, =POST=, =PUT= and =DELETE=.
 
 web_storage(Request) :-
+    memberchk(method(options), Request),
+    !,
+    cors_enable(Request,
+                [ methods([get,post,put,delete])
+                ]),
+    format('~n').
+web_storage(Request) :-
     cors_enable,
     authenticate(Request, Auth),
     option(method(Method), Request),
@@ -960,6 +967,14 @@ search_file(File, Meta, Data, Query, FileInfo, Options) :-
 %   @tbd Search the content when searching a .lnk file?
 %   @tbd Speedup expensive searches.  Cache?  Use external DB?
 
+
+source_list(Request) :-
+	memberchk(method(options), Request),
+	!,
+	cors_enable(Request,
+		    [ methods([get,post])
+		    ]),
+	format('~n').
 source_list(Request) :-
     cors_enable,
     authenticate(Request, Auth),
@@ -1253,6 +1268,13 @@ tag_value("", empty) -->
 %   consistent. Need to think about a   better way to cache searches
 %   client and/or server side.
 
+source_modified(Request) :-
+    memberchk(method(options), Request),
+    !,
+    cors_enable(Request,
+                [ methods([get])
+                ]),
+    format('~n').
 source_modified(Request) :-
     cors_enable,
     authenticate(Request, _Auth),
