@@ -42,8 +42,9 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "form", "modal", "laconic" ],
-       function($, config, form, modal) {
+define([ "jquery", "config", "form", "modal", "backend",
+	 "laconic" ],
+       function($, config, form, modal, backend) {
 
 (function($) {
   var pluginName = 'gitty';
@@ -90,21 +91,21 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
 	/* meta-data tab */
 	tabs.append($.el.div({ class:"tab-pane fade in active gitty-meta-data",
-	                       id:"gitty-meta-data"}));
+			       id:"gitty-meta-data"}));
 	elem.find('[href="#gitty-meta-data"]').on("show.bs.tab", function(ev) {
 	  elem.gitty('showMetaData');
 	});
 
 	/* history tab */
 	tabs.append($.el.div({ class:"tab-pane fade gitty-history",
-	                       id:"gitty-history"}));
+			       id:"gitty-history"}));
 	elem.find('[href="#gitty-history"]').on("show.bs.tab", function(ev) {
 	  elem.gitty('showHistory');
 	});
 
 	/* diff/changes tab */
 	tabs.append($.el.div({ class:"tab-pane fade gitty-diff",
-	                       id:"gitty-diff"}));
+			       id:"gitty-diff"}));
 	elem.find('[href="#gitty-diff"]').on("show.bs.tab", function(ev) {
 	  elem.gitty('showDiff');
 	});
@@ -234,21 +235,22 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	var url  = config.http.locations.web_storage
 		 + encodeURI(meta.name);
 
-	$.ajax({ url: url,
-		 contentType: "application/json",
-		 type: "GET",
-		 data: { format: "history",
-		         depth: options.depth,	/* might skip last */
-		         to: data.commit
-		       },
-		 success: function(reply) {
-		   elem.gitty('fillHistoryTable', reply);
-		   data.history = data.commit;
-		 },
-		 error: function(jqXHDR) {
-		   modal.ajaxError(jqXHR);
-		 }
-	       });
+	backend.ajax(
+	  { url: url,
+	    contentType: "application/json",
+	    type: "GET",
+	    data: { format: "history",
+		    depth: options.depth,	/* might skip last */
+		    to: data.commit
+		  },
+	    success: function(reply) {
+	      elem.gitty('fillHistoryTable', reply);
+	      data.history = data.commit;
+	    },
+	    error: function(jqXHDR) {
+	      modal.ajaxError(jqXHR);
+	    }
+	  });
       });
     },
 
@@ -295,7 +297,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       if ( historyobj.skipped ) {
 	table.append($.el.tr(
 	  $.el.td({class:"skipped-commits",
-	           colspan:4},
+		   colspan:4},
 		  "(Skipped "+historyobj.skipped+" commits)")));
       }
 
@@ -376,19 +378,20 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	var url  = config.http.locations.web_storage
 		 + encodeURI(data.commit);
 
-	$.ajax({ url: url,
-		 contentType: "application/json",
-		 type: "GET",
-		 data: { format: "diff"
-		 },
-		 success: function(reply) {
-		   elem.gitty('fillDiff', reply);
-		   data.diff = data.commit;
-		 },
-		 error: function(jqXHR) {
-		   modal.ajaxError(jqXHR);
-		 }
-	       });
+	backend.ajax(
+	  { url: url,
+	    contentType: "application/json",
+	    type: "GET",
+	    data: { format: "diff"
+		  },
+	    success: function(reply) {
+	      elem.gitty('fillDiff', reply);
+	      data.diff = data.commit;
+	    },
+	    error: function(jqXHR) {
+	      modal.ajaxError(jqXHR);
+	    }
+	  });
       });
     },
 

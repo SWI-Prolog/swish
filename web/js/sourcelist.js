@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2018, VU University Amsterdam
+    Copyright (C): 2014-2023, VU University Amsterdam
 			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,8 +43,9 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "form", "modal", "laconic" ],
-       function($, config, form, modal) {
+define([ "jquery", "config", "form", "modal", "backend",
+	 "laconic" ],
+       function($, config, form, modal, backend) {
 
 (function($) {
   var pluginName = 'sourcelist';
@@ -100,21 +102,21 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       this[pluginName]('check_cache');
 
       if ( (reply = from_cache(query_cache, query)) ) {
-	$.ajax({
-	  url: config.http.locations.source_modified,
-	  dataType: "json",
-	  success: function(json) {
-	    if ( json.modified < reply.modified+10 ) {
-	      elem.sourcelist('fill', reply, query);
-	    } else {
-	      query_cache = [];
-	      elem[pluginName]('update', query);
+	backend.ajax(
+	  { url: config.http.locations.source_modified,
+	    dataType: "json",
+	    success: function(json) {
+	      if ( json.modified < reply.modified+10 ) {
+		elem.sourcelist('fill', reply, query);
+	      } else {
+		query_cache = [];
+		elem[pluginName]('update', query);
+	      }
+	    },
+	    error: function(jqXHDR) {
+	      modal.ajaxError(jqXHDR);
 	    }
-	  },
-	  error: function(jqXHDR) {
-	    modal.ajaxError(jqXHDR);
-	  }
-	});
+	  });
       } else {
 	query = query||{};
 
@@ -127,22 +129,22 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	pending.push(query);
 	elem[pluginName]('busy', true);
 
-	$.ajax({
-	  url: config.http.locations.source_list,
-	  data: query,
-	  dataType: "json",
-	  success: function(reply) {
-	    reply.query = query;
-	    pending.pop();		/* should match qid */
-	    if ( pending.length == 0 )
-	      elem[pluginName]('busy', false);
-	    add_to_cache(query_cache, reply);
-	    elem.sourcelist('fill', reply, query);
-	  },
-	  error: function(jqXHDR) {
-	    pending.pop();
-	  }
-	});
+	backend.ajax(
+	  { url: config.http.locations.source_list,
+	    data: query,
+	    dataType: "json",
+	    success: function(reply) {
+	      reply.query = query;
+	      pending.pop();		/* should match qid */
+	      if ( pending.length == 0 )
+		elem[pluginName]('busy', false);
+	      add_to_cache(query_cache, reply);
+	      elem.sourcelist('fill', reply, query);
+	    },
+	    error: function(jqXHDR) {
+	      pending.pop();
+	    }
+	  });
       }
     },
 
