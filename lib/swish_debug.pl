@@ -101,6 +101,9 @@ redis_publish_stats(_, _).
 %   True when Status  is  a  dict   describing  the  current  status for
 %   Consumer.
 
+:- listen(swish(backend_status(Consumer, Stat)),
+	  redis_consumer_status(Consumer, Stat)).
+
 redis_consumer_status(Consumer, Stat) :-
     redis_key(Consumer, status, Server, Key),
     redis(Server, get(Key), Stat).
