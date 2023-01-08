@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        jan@swi-prolog.org
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2016-2022, VU University Amsterdam
+    Copyright (C): 2016-2023, VU University Amsterdam
                               CWI Amsterdam
                               SWI-Prolog Solutions b.v.
     All rights reserved.
@@ -47,6 +47,7 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_session)).
 :- use_module(library(http/http_parameters)).
+:- use_module(library(http/http_cors)).
 :- use_module(library(http/websocket)).
 :- use_module(library(http/json)).
 :- use_module(library(error)).
@@ -116,6 +117,7 @@ swish_config:config(session_lost_timeout, 60).
 %   user gets an avatar and optionally a name.
 
 start_chat(Request) :-
+    cors_enable,
     authenticate(Request, Identity),
     start_chat(Request, [identity(Identity)]).
 
@@ -1087,6 +1089,7 @@ avatar_property(_Avatar, Source, avatar_source, Source).
 %   that? Current swish stats: 400K avatars, 3.2Gb data.
 
 reply_avatar(Request) :-
+    cors_enable,
     option(path_info(Local), Request),
     (   absolute_file_name(noble_avatar(Local), Path,
                            [ access(read),

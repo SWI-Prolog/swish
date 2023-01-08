@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2022, VU University Amsterdam
+    Copyright (c)  2014-2023, VU University Amsterdam
                               CWI, Amsterdam
 			      SWI-Prolog Solutions b.v.
     All rights reserved.
@@ -57,6 +57,7 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
+:- use_module(library(http/http_cors)).
 :- use_module(library(http/mimetype)).
 :- use_module(library(lists)).
 :- use_module(library(settings)).
@@ -176,6 +177,7 @@ gitty_open_options([]).
 %   methods =GET=, =POST=, =PUT= and =DELETE=.
 
 web_storage(Request) :-
+    cors_enable,
     authenticate(Request, Auth),
     option(method(Method), Request),
     open_gittystore(_),
@@ -959,6 +961,7 @@ search_file(File, Meta, Data, Query, FileInfo, Options) :-
 %   @tbd Speedup expensive searches.  Cache?  Use external DB?
 
 source_list(Request) :-
+    cors_enable,
     authenticate(Request, Auth),
     http_parameters(Request,
                     [ q(Q, [optional(true)]),
@@ -1251,6 +1254,7 @@ tag_value("", empty) -->
 %   client and/or server side.
 
 source_modified(Request) :-
+    cors_enable,
     authenticate(Request, _Auth),
     last_modified(Time),
     reply_json_dict(json{modified:Time}).
