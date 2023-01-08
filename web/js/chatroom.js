@@ -400,24 +400,27 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       var data = this.data(pluginName);
       var elem = $(this);
 
-      $.get(config.http.locations.chat_messages,
-	    { docid: data.docid,
-	      max: 100
-	    },
-	    function(messages) {
-	      if ( messages.length == 0 ) {
-		if ( ifempty )
-		  elem.chatroom('close');
-		else if ( data.docid != "gitty:"+config.swish.hangout )
-		  modal.help({file:"newchat.html", notagain:"newchat"});
-	      } else {
-		for(var i=0; i<messages.length; i++) {
-		  elem.chatroom('add', messages[i], i == messages.length-1 );
-		}
+      backend.ajax(
+	{ url: config.http.locations.chat_messages,
+	  data: { docid: data.docid,
+		  max: 100
+		},
+	  success: function(messages) {
+	    if ( messages.length == 0 ) {
+	      if ( ifempty )
+		elem.chatroom('close');
+	      else if ( data.docid != "gitty:"+config.swish.hangout )
+		modal.help({file:"newchat.html", notagain:"newchat"});
+	    } else {
+	      for(var i=0; i<messages.length; i++) {
+		elem.chatroom('add', messages[i], i == messages.length-1 );
 	      }
-	    }).fail(function(jqXHR, textStatus, errorThrown) {
-	      modal.ajaxError(jqXHR);
-	    });
+	    }
+	  },
+	  error: function(jqXHR) {
+	    modal.ajaxError(jqXHR);
+	  }
+	});
 
       return this;
     },

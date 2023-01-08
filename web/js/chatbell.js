@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2017, VU University Amsterdam
-			 CWI Amsterdam
+    Copyright (C): 2017-2023, VU University Amsterdam
+			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,10 +43,10 @@
  * @requires jquery
  */
 
-define([ "jquery", "form", "modal", "config", "preferences",
+define([ "jquery", "form", "modal", "config", "preferences", "backend",
 	 "laconic", "chatroom"
        ],
-       function($, form, modal, config, preferences) {
+       function($, form, modal, config, preferences, backend) {
 
 (function($) {
   var pluginName = 'chatbell';
@@ -167,13 +168,15 @@ define([ "jquery", "form", "modal", "config", "preferences",
 	if ( docid && (after || chats.total == undefined) ) {
 	  var elem = $(this);
 
-	  $.get(config.http.locations.chat_status,
-		{ docid: docid,
-		  after: after
-		},
-		function(chats) {
-		  elem.chatbell('chats', chats);
-		});
+	  backend.ajax(
+	    { url: config.http.locations.chat_status,
+	      data: { docid: docid,
+		      after: after
+		    },
+	      success: function(chats) {
+		elem.chatbell('chats', chats);
+	      }
+	    });
 	} else if ( chats.total != undefined ) {
 	  this.chatbell('chats', chats);
 	}
