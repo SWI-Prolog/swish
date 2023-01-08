@@ -43,26 +43,93 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "form",
+define([ "jquery", "config", "form", "modal",
 	 "laconic"
        ],
-       function($, config, form) {
+       function($, config, form, modal) {
 
   var backend = {
+    backend: config.swish.redis_consumer,
+    url: "",
+
     ajax: function(options) {
       return $.ajax(options);
     },
 
     selectBackend: function() {
+      let body;
+      if ( !form )		// cyclic dependency
+	form = require("form");
+      if ( !modal )		// cyclic dependency
+	modal = require("modal");
+
       function backendBody() {
-	this.append($.el.table(
+	let div;
+	this.append(div=$.el.div($.el.table(
 	  { class: "table table-striped table-condensed",
 	    'data-click-to-select': true,
 	    'data-single-select': true
 	  },
 	  $.el.tr($.el.th("Backend"),
-		  $.el.th("URL")),
-	  $.el.tbody()));
+		  $.el.th("URL"),
+		  $.el.th("Users"),
+		  $.el.th("Alive")),
+	  body=$.el.tbody())));
+
+	let btn;
+	div.append(btn=$.el.button({ name:"select-backend",
+				     class:"btn btn-primary disabled"
+				   },
+				   "Select backend"));
+	$(btn).on("click", function() {
+	  const sel = $(body).find("tr.success");
+	  if ( sel.length == 1 ) {
+	    const url = sel.data("url");
+	    alert(url);
+	  }
+	});
+
+	$(body).on("click", "tr", function(ev) {
+	  var tr = $(ev.target).parents("tr");
+	  $(body).find("tr.success").removeClass("success");
+	  tr.addClass("success");
+	  if ( tr.data("backend") != backend.backend )
+	    $(btn).removeClass("disabled");
+	  else
+	    $(btn).addClass("disabled");
+	});
+
+	function alive(stats) {
+	  const ago = new Date().getTime()/1000 - stats.time;
+	  if ( ago < 30 )
+	    return "\u2714";
+	  else if ( ago < 60 )
+	    return "\u2b55";
+	  else
+	    return "\u274c";
+	}
+
+	backend.ajax(
+	  { url: config.http.locations.backends,
+	    success: function(data) {
+	      for(let consumer in data)
+	      { const stats = data[consumer];
+		let row;
+		body.append(
+		  row = $.el.tr($.el.td(consumer),
+				$.el.td(stats.url ? $.el.a({href:stats.url}, stats.url) : "?"),
+				$.el.td(stats.local_visitors),
+				$.el.td(alive(stats))));
+		if ( consumer == backend )
+		  $(row).addClass("success");
+		$(row).data("backend", consumer);
+		$(row).data("url", stats.url);
+	      }
+	    },
+	    error: function(jqXHDR) {
+	      modal.ajaxError(jqXHR);
+	    }
+	  });
       }
 
       form.showDialog(
