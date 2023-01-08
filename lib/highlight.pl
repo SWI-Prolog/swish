@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2020, VU University Amsterdam
+    Copyright (c)  2014-2023, VU University Amsterdam
 			      CWI, Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -44,6 +45,7 @@
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_path), []).
 :- use_module(library(http/http_parameters)).
+:- use_module(library(http/http_cors)).
 :- use_module(library(pairs)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
@@ -99,6 +101,7 @@ tokens_.
 %	the editor is not known.
 
 codemirror_change(Request) :-
+	cors_enable,
 	call_cleanup(codemirror_change_(Request),
 		     check_unlocked).
 
@@ -412,6 +415,7 @@ prolog:xref_open_source(UUID, Stream) :-
 %	cross-reference information.
 
 codemirror_leave(Request) :-
+	cors_enable,
 	call_cleanup(codemirror_leave_(Request),
 		     check_unlocked).
 
@@ -496,6 +500,7 @@ destroy_state_module(_).
 %	editor.
 
 codemirror_tokens(Request) :-
+	cors_enable,
 	setup_call_catcher_cleanup(
 	    true,
 	    codemirror_tokens_(Request),
@@ -1062,6 +1067,7 @@ css_dict(Context, Selector, Style) :-
 %	HTTP handler that provides information  about a token.
 
 token_info(Request) :-
+	cors_enable,
 	http_parameters(Request, [], [form_data(Form)]),
 	maplist(type_convert, Form, Values),
 	dict_create(Token, token, Values),
