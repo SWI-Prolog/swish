@@ -48,6 +48,8 @@
 :- use_module(library(apply)).
 :- use_module(library(pairs)).
 :- use_module(library(http/http_path)).
+:- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_json)).
 
 :- use_module(config).
 
@@ -205,6 +207,21 @@ consumer_key(swish, Key) :-
 swish_cluster(Pairs) :-
     consumer_key(Server, Key),
     redis(Server, hgetall(Key:url), Pairs).
+
+:- http_handler(swish(backends), backends, [id(backends)]).
+
+backends(_Request) :-
+    swish_cluster(Pairs),
+    maplist(backend_stats, Pairs, Pairs1),
+    dict_pairs(Dict, json, Pairs1),
+    reply_json(Dict).
+
+backend_stats(Consumer-URL, Consumer-Stat) :-
+    broadcast_request(swish(backend_status(Consumer, Stat0))),
+    !,
+    Stat = Stat0.put(url, URL).
+backend_stats(Consumer-URL, Consumer-json{url:URL}).
+
 
 %!  init_pubsub is det.
 %
