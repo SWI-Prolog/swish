@@ -184,7 +184,9 @@ web_storage(Request) :-
                 ]),
     format('~n').
 web_storage(Request) :-
-    cors_enable,
+    cors_enable(Request,
+                [ methods([get,post,put,delete])
+                ]),
     authenticate(Request, Auth),
     option(method(Method), Request),
     open_gittystore(_),
