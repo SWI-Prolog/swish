@@ -53,6 +53,8 @@ define([ "jquery", "config", "form", "modal",
     url: "",
 
     ajax: function(options) {
+      options.url = backend.url + options.url;
+      console.log(options.url);
       return $.ajax(options);
     },
 
@@ -84,8 +86,17 @@ define([ "jquery", "config", "form", "modal",
 	$(btn).on("click", function() {
 	  const sel = $(body).find("tr.success");
 	  if ( sel.length == 1 ) {
-	    const url = sel.data("url");
-	    alert(url);
+	    if ( sel.consumer == config.swish.redis_consumer ) {
+	      backend.backend = sel.consumer;
+	      backend.url = ""
+	    } else {
+	      const url = (sel.data("url")||"").replace(/\/+$/, "");
+
+	      if ( url ) {
+		backend.backend = sel.consumer;
+		backend.url = url;
+	      }
+	    }
 	  }
 	});
 
