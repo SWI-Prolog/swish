@@ -511,6 +511,9 @@ subscription(WSID, Channel, SubChannel) :-
     ->  redis_key(channel(SubChannel), Server, ChKey),
         redis_sscan(Server, ChKey, List, []),
         member(WSID-Channel, List)
+    ;   nonvar(WSID), nonvar(Channel), nonvar(SubChannel)
+    ->  redis_key(subscription(WSID), Server, WsKey),
+        redis(Server, sismember(WsKey, Channel-SubChannel as prolog), 1)
     ;   current_wsid(WSID),
         redis_key(subscription(WSID), Server, WsKey),
         redis_sscan(Server, WsKey, List, []),
@@ -520,9 +523,10 @@ subscription(WSID, Channel, SubChannel) :-
     subscription_db(WSID, Channel, SubChannel).
 
 subscribe(WSID, Channel, SubChannel) :-
+    use_redis,
+    !,
     redis_key(channel(SubChannel), Server, ChKey),
     redis_key(subscription(WSID), Server, WsKey),
-    !,
     redis(Server, sadd(ChKey, WSID-Channel as prolog)),
     redis(Server, sadd(WsKey, Channel-SubChannel as prolog)).
 subscribe(WSID, Channel, SubChannel) :-
@@ -1131,8 +1135,10 @@ noble_avatar_url(HREF, _Options) :-
 %!  chat_broadcast(+Message) is det.
 %!  chat_broadcast(+Message, +Channel) is det.
 %
-%   Send Message to all known SWISH clients. Message is a valid JSON
-%   object, i.e., a dict or option list.
+%   Send Message to all known SWISH  clients.   Message  is a valid JSON
+%   object, i.e., a dict or option list.   When  using Redis we send the
+%   message to the  ``swish:chat``  pubsub   channel  and  listening for
+%   ``swish:chat`` calls chat_broadcast_local/1,2 in each instance.
 %
 %   @arg Channel is either an atom or a term Channel/SubChannel,
 %   where both Channel and SubChannel are atoms.
@@ -1169,6 +1175,12 @@ chat_broadcast_local(Message, Channel) :-
     debug(chat(broadcast), 'Broadcast on ~p: ~p', [Channel, Message]),
     hub_broadcast(swish_chat, json(Message),
                   subscribed(Channel)).
+
+%!  subscribed(+Channel, +WSID) is semidet.
+%!  subscribed(+Channel, +SubChannel, +WSID) is semidet.
+%
+%   Filter used by hub_broadcast/3. WSID is   always a locally known web
+%   and active socket.
 
 subscribed(Channel, WSID) :-
     subscription(WSID, Channel, _).
