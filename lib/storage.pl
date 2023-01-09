@@ -887,7 +887,7 @@ storage_unpack :-
 swish_search:typeahead(file, Query, FileInfo, _Options) :-
     open_gittystore(Dir),
     gitty_file(Dir, File, Head),
-    gitty_commit(Dir, Head, Meta),
+    gitty_plain_commit(Dir, Head, Meta),
     Meta.get(public) == true,
     (   sub_atom(File, 0, _, _, Query) % find only public
     ->  true
