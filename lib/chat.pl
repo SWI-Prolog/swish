@@ -507,13 +507,13 @@ visitor_data_del(Visitor, Data) :-
 subscription(WSID, Channel, SubChannel) :-
     use_redis,
     !,
-    (   nonvar(SubChannel)
+    (   nonvar(WSID), nonvar(Channel), nonvar(SubChannel)
+    ->  redis_key(subscription(WSID), Server, WsKey),
+        redis(Server, sismember(WsKey, Channel-SubChannel as prolog), 1)
+    ;   nonvar(SubChannel)
     ->  redis_key(channel(SubChannel), Server, ChKey),
         redis_sscan(Server, ChKey, List, []),
         member(WSID-Channel, List)
-    ;   nonvar(WSID), nonvar(Channel), nonvar(SubChannel)
-    ->  redis_key(subscription(WSID), Server, WsKey),
-        redis(Server, sismember(WsKey, Channel-SubChannel as prolog), 1)
     ;   current_wsid(WSID),
         redis_key(subscription(WSID), Server, WsKey),
         redis_sscan(Server, WsKey, List, []),
