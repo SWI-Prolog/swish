@@ -236,7 +236,7 @@ reconnect_token(WSID, Token, Options) :-
     !.
 
 must_succeed(Goal) :-
-    catch(Goal, E, print_message(warning, E)),
+    catch_with_backtrace(Goal, E, print_message(warning, E)),
     !.
 must_succeed(Goal) :-
     print_message(warning, goal_failed(Goal)).
