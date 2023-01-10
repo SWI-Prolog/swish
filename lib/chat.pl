@@ -934,9 +934,11 @@ inform_visitor_change(TmpUser, Reason) :-
     forall(visitor_session(WSID, Session),
            inform_friend_change(WSID, Data, Reason)).
 inform_visitor_change(TmpUser, Reason) :-
-    b_getval(wsid, WSID),
+    nb_current(wsid, WSID),
+    !,
     public_user_data(TmpUser, Data),
     inform_friend_change(WSID, Data, Reason).
+inform_visitor_change(_, _).
 
 inform_friend_change(WSID, Data, Reason) :-
     Message = json(_{ type:"profile",
