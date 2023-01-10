@@ -9,6 +9,7 @@
     "js-sha1": "emn178/js-sha1#*",
     "laconic": "joestelmach/laconic#*",
     "requirejs": "jrburke/requirejs-bower#*",
+    "uglify-js": "mishoo/UglifyJS#*",
     "sparkline": "gwatts/jquery.sparkline#*",
     "svg-pan-zoom": "ariutta/svg-pan-zoom#*",
     "tagmanager": "max-favilli/tagmanager#*",
