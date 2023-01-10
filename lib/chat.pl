@@ -204,8 +204,9 @@ accept_chat_(Session, Options, WebSocket) :-
                                     TmpUser, UserData, Options)),
         Reason = joined
     ),
-    gc_visitors,
-    visitor_count(Visitors),
+    must_succeed(gc_visitors),
+    must_succeed(visitor_count(Visitors)),
+    ignore(Visitors = 0),           % in case visitor_count/1 failed
     option(check_login(CheckLogin), Options, true),
     Msg0 = _{ type:welcome,
 	      uid:TmpUser,
@@ -225,6 +226,7 @@ accept_chat_(Session, Options, WebSocket) :-
 add_redis_consumer(Msg0, Msg) :-
     use_redis,
     redis_consumer(Consumer),
+    !,
     Msg = Msg0.put(consumer, Consumer).
 add_redis_consumer(Msg, Msg).
 
@@ -1304,7 +1306,7 @@ create_chat_room_sync :-
     thread_create(swish_chat(Room), _, [alias(swish_chat)]).
 
 swish_chat(Room) :-
-    (   catch(swish_chat_event(Room), E, chat_exception(E))
+    (   catch_with_backtrace(swish_chat_event(Room), E, chat_exception(E))
     ->  true
     ;   print_message(warning, goal_failed(swish_chat_event(Room)))
     ),
