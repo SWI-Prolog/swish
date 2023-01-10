@@ -21,7 +21,7 @@ min:	swish-min.js swish-min.js.gz
 
 swish-min.js:	build.js $(JS) $(CM)
 	$(RJS) -o build.js
-	uglifyjs swish-min-new.js -c -m --keep-fnames -o swish-min.js
+	uglifyjs swish-min-new.js -c --source-map --keep-fnames -o swish-min.js
 
 swish-min.js.gz: swish-min.js
 	gzip < $< > $@
