@@ -9,7 +9,8 @@
 
    generateSourceMaps: true,
    preserveLicenseComments: false,
+   optimize: "none",
 
    name: "swish",
-   out: "swish-min.js.new"
+   out: "swish-min-new.js"
 })
