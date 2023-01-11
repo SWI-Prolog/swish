@@ -1271,11 +1271,11 @@ sync_active_wsid :-
     !.
 sync_active_wsid :-
     get_time(Now),
-    transaction(
+    /*transaction*/(
 	(   retractall(last_wsid_sync(_)),
 	    asserta(last_wsid_sync(Now)))),
     findall(WSID-Consumer, visitor(WSID, Consumer), Pairs),
-    transaction(
+    /*transaction*/(
 	(   retractall(active_wsid(_,_)),
 	    forall(member(WSID-Consumer, Pairs),
 		   assertz(active_wsid(WSID, Consumer))))).
