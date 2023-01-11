@@ -982,8 +982,11 @@ add_gazing(WSID, Files) :-
     inform_existing_gazers_about_newby(WSID, Files).
 
 inform_me_about_existing_gazers(WSID, Files) :-
+    hub_member(swish_chat, WSID),
+    !,
     findall(Gazer, files_gazer(Files, Gazer), Gazers),
     ignore(hub_send(WSID, json(_{type:"gazers", gazers:Gazers}))).
+inform_me_about_existing_gazers(_, _).
 
 files_gazer(Files, Gazer) :-
     member(File, Files),
