@@ -193,13 +193,13 @@ accept_chat(Session, Options, WebSocket) :-
     must_succeed(accept_chat_(Session, Options, WebSocket)).
 
 accept_chat_(Session, Options, WebSocket) :-
-    create_chat_room,
+    must_succeed(create_chat_room),
     (   reconnect_token(WSID, Token, Options),
         visitor_status_del_lost(WSID),
         existing_visitor(WSID, Session, Token, TmpUser, UserData),
         hub_add(swish_chat, WebSocket, WSID)
     ->  Reason = rejoined
-    ;   hub_add(swish_chat, WebSocket, WSID),
+    ;   must_succeed(hub_add(swish_chat, WebSocket, WSID)),
         must_succeed(create_visitor(WSID, Session, Token,
                                     TmpUser, UserData, Options)),
         Reason = joined
@@ -216,7 +216,7 @@ accept_chat_(Session, Options, WebSocket) :-
 	      check_login:CheckLogin
 	    },
     add_redis_consumer(Msg0, Msg),
-    hub_send(WSID, json(UserData.put(Msg))),
+    must_succeed(hub_send(WSID, json(UserData.put(Msg)))),
     must_succeed(chat_broadcast(UserData.put(_{type:Reason,
                                                visitors:Visitors,
                                                wsid:WSID}))),
@@ -733,7 +733,14 @@ do_gc_visitors(TMO) :-
            ),
            reclaim_visitor(WSID)).
 
+% tmp wrapper to debug an infrequent exception here.
 reclaim_visitor(WSID) :-
+    setup_call_cleanup(
+	debug,
+	catch_with_backtrace(reclaim_visitor_(WSID), Error,
+			     print_message(error, Error)),
+	nodebug).
+reclaim_visitor_(WSID) :-
     debug(chat(gc), 'Reclaiming idle ~p', [WSID]),
     reclaim_visitor_session(WSID),
     visitor_status_del(WSID),
