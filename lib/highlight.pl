@@ -760,7 +760,7 @@ atomic_special(atom, Start, Len, TB, Type, Attrs) :-
 	;   Type = atom,
 	    (   Len =< 5			% solo characters, neck, etc.
 	    ->  memory_file_substring(TB, Start, Len, _, Text),
-	        Attrs = [text(Text)]
+	Attrs = [text(Text)]
 	    ;   Attrs = []
 	    )
 	).
@@ -856,9 +856,10 @@ style(identifier,	 identifier,			   [text]).
 style(module(_Module),   module,			   [text]).
 style(error,		 error,				   [text]).
 style(constraint(Set),   constraint,			   [text, set(Set)]).
-style(type_error(Expect), error,		      [text,expected(Expect)]).
+style(type_error(Expect), error,		      [text,expected(Msg)]) :-
+    type_error_msg(Expect, Msg).
 style(syntax_error(_Msg,_Pos), syntax_error,		   []).
-style(instantiation_error, instantiation_error,	           [text]).
+style(instantiation_error, instantiation_error,		   [text]).
 style(predicate_indicator, atom,			   [text]).
 style(predicate_indicator, atom,			   [text]).
 style(arity,		 int,				   []).
@@ -910,6 +911,13 @@ style(table_mode(_Mode), table_mode,			   [text]).
 style(table_option(_Mode), table_option,		   [text]).
 
 
+type_error_msg(declaration(Context), Msg) =>
+    format(string(Msg), '~w declaration', [Context]).
+type_error_msg(Atomic, Msg), atomic(Atomic) =>
+    Msg = Atomic.
+type_error_msg(Term, Msg) =>
+    term_string(Term, Msg).
+
 neck_text(clause,       (:-))  :- !.
 neck_text(grammar_rule, (-->)) :- !.
 neck_text(method(send), (:->)) :- !.
@@ -951,7 +959,7 @@ goal_type(foreign(_),	      goal_foreign,	 []).
 goal_type(local(Line),	      goal_local,	 [line(Line)]).
 goal_type(constraint(Line),   goal_constraint,	 [line(Line)]).
 goal_type(not_callable,	      goal_not_callable, []).
-goal_type(global(Type,_Loc),  Class,	         []) :-
+goal_type(global(Type,_Loc),  Class,		 []) :-
 	global_class(Type, Class).
 
 global_class(dynamic,   goal_dynamic) :- !.
