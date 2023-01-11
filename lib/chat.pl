@@ -406,10 +406,8 @@ visitor_session_reclaim(WSID, Session) :-
     redis_key(session(WSID), Server, SessionKey),
     redis_key(wsid, Server, SetKey),
     !,
-    (   redis(Server, get(SessionKey), at(_,Session,_Token))
-    ->  redis(Server, srem(SetKey, WSID))
-    ;   true
-    ).
+    redis(Server, get(SessionKey), at(_,Session,_Token)),
+    redis(Server, srem(SetKey, WSID)).
 visitor_session_reclaim(WSID, Session) :-
     retract(visitor_session_db(WSID, Session, _Token)).
 
@@ -733,14 +731,7 @@ do_gc_visitors(TMO) :-
            ),
            reclaim_visitor(WSID)).
 
-% tmp wrapper to debug an infrequent exception here.
 reclaim_visitor(WSID) :-
-    setup_call_cleanup(
-	debug,
-	catch_with_backtrace(reclaim_visitor_(WSID), Error,
-			     print_message(error, Error)),
-	nodebug).
-reclaim_visitor_(WSID) :-
     debug(chat(gc), 'Reclaiming idle ~p', [WSID]),
     reclaim_visitor_session(WSID),
     visitor_status_del(WSID),
