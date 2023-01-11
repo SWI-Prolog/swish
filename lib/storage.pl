@@ -620,10 +620,10 @@ storage_file_extension_head(File, Ext, Head) :-
 storage_file(File, Data, Meta) :-
     open_gittystore(Dir),
     (   var(File)
-    ->  gitty_file(Dir, File, _Head)
-    ;   true
-    ),
-    gitty_data(Dir, File, Data, Meta).
+    ->  gitty_file(Dir, File, Head),
+        gitty_data(Dir, Head, Data, Meta)
+    ;   gitty_data(Dir, File, Data, Meta)
+    ).
 
 storage_meta_data(File, Meta) :-
     open_gittystore(Dir),
@@ -1041,7 +1041,7 @@ source_q(Query, Auth, Source) :-
     source_data(File, Head, Meta, Source),
     visible(Meta, Auth, MetaConstraints),
     maplist(matches_meta(Source, Auth), MetaConstraints),
-    matches_content(ContentConstraints, File).
+    matches_content(ContentConstraints, Head).
 
 content_query(string(_)).
 content_query(regex(_)).
@@ -1133,8 +1133,8 @@ match_meta(String, Value) :-
     sub_atom_icasechk(Value, _, String).
 
 matches_content([], _) :- !.
-matches_content(Constraints, File) :-
-    storage_file(File, Data, _Meta),
+matches_content(Constraints, Hash) :-
+    storage_file(Hash, Data, _Meta),
     maplist(match_content(Data), Constraints).
 
 match_content(Data, string(S)) :-
