@@ -348,6 +348,12 @@ stats_died(Alias, E) :-
     fail.
 
 stat_collect(Dims, Interval, Persists) :-
+    E = error(_,_),
+    catch_with_backtrace(stat_collect_(Dims, Interval, Persists),
+                         E, print_message(error, E)),
+    stat_collect(Dims, Interval, Persists).
+
+stat_collect_(Dims, Interval, Persists) :-
     restart_sliding_stats(Persists, Dims, SlidingStat),
     get_time(Now),
     ITime is floor(Now),
