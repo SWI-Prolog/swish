@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015-2022, VU University Amsterdam
+    Copyright (c)  2015-2023, VU University Amsterdam
                               CWI, Amsterdam
                               SWI-Prolog Solutions b.v.
     All rights reserved.
@@ -67,6 +67,9 @@
 :- setting(stats_interval, integer, 300,        % 5 minutes
            "Save stats every N seconds").
 
+:- meta_predicate
+    must_succeed(0).
+
 redis_key(What, Server, Key) :-
     redis_consumer(Consumer),
     redis_key(Consumer, What, Server, Key).
@@ -93,7 +96,7 @@ redis_publish_stats(Time, Stat) :-
     use_redis,
     redis_key(status, Server, Key),
     !,
-    redis(Server, set(Key, Stat.put(time,Time) as prolog)).
+    must_succeed(redis(Server, set(Key, Stat.put(time,Time) as prolog))).
 redis_publish_stats(_, _).
 
 %!  redis_consumer_status(+Consumer, -Status) is semidet.
@@ -378,6 +381,7 @@ stat_loop(SlidingStat, Stat0, StatTime, Interval, Persists, Wrap) :-
         stat_loop(SlidingStat, Stat1, NextTime, Interval, Persists, Wrap1)
     ).
 
+:- det(dif_stat/3).
 dif_stat(Stat1, Stat0, Stat) :-
     maplist(dif_field(Stat1, Stat0),
             [ cpu - d_cpu,
@@ -414,6 +418,7 @@ reply_stats_request(Client-save_stats(File), SlidingStat) :-
 %
 %   Request elementary statistics.
 
+:- det(get_stats/2).
 get_stats(Wrap, Stats) :-
     Stats0 = stats{ cpu:CPU,
                     rss:RSS,
@@ -520,6 +525,7 @@ new_sliding_stats(Dims, Stats) :-
     maplist(new_ring, Dims, Rings),
     compound_name_arguments(Stats, sliding_stats, Rings).
 
+:- det(push_sliding_stats/3).
 push_sliding_stats(Stats, Values, Wrap) :-
     push_sliding_stats(1, Stats, Values, Wrap).
 
@@ -614,9 +620,7 @@ avg_key(Dicts, Len, Key, Key-Avg) :-
 save_stats(save(File, Interval), Stats) :-
     arg(1, Stats, ring(Here, _, _)),
     Here mod Interval =:= 0,
-    E = error(_,_),
-    catch(save_stats_file(File, Stats),
-          E, print_message(warning, E)),
+    must_succeed(save_stats_file(File, Stats)),
     !.
 save_stats(_, _).
 
@@ -706,6 +710,14 @@ status_message(exception(Ex), Message) :-
     message_to_string(Ex, Message0),
     string_concat('ERROR: ', Message0, Message).
 status_message(Status, Status).
+
+
+must_succeed(Goal) :-
+    E = error(_,_),
+    catch_with_backtrace(Goal, E, print_message(warning, E)),
+    !.
+must_succeed(Goal) :-
+    print_message(warning, goal_failed(Goal)).
 
 
                  /*******************************
