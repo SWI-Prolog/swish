@@ -850,6 +850,8 @@ style(meta(_Spec),	 meta,				   []).
 style(op_type(_Type),	 op_type,			   [text]).
 style(decl_option(_Name),decl_option,			   [text]).
 style(functor,		 functor,			   [text]).
+style(function,		 function,			   [text]).
+style(no_function,	 no_function,			   [text]).
 style(control,		 control,			   [text]).
 style(delimiter,	 delimiter,			   [text]).
 style(identifier,	 identifier,			   [text]).

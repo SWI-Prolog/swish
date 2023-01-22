@@ -318,6 +318,9 @@ classification of tokens.
 		     "goal_constraint": "atom",
 		     "goal_not_callable": "atom",
 
+		     "function": "atom",
+		     "no_function": "atom",
+
 		     "xpce_method": "functor",
 		     "xpce_class_builtin":"atom",
 		     "xpce_class_lib":"atom",

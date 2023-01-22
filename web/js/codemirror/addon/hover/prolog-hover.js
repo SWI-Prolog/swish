@@ -103,6 +103,8 @@ var tokenHelp = {
   "tag":       "Tag of a SWI7 dict",
   "ext_quant": "Existential quantification operator",
   "instantiation_error": "No variable allowed here",
+  "function":  "Arithmetic function",
+  "no_function": "Undefined arithmetic function",
 
   "string_terminal": "Terminal (DCG)",
   "format_string":   "Format string",
