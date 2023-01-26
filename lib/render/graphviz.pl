@@ -181,7 +181,8 @@ process_wait_0(PID) :-
 %	Include SVG as pan/zoom image. Must be  embedded in a <div> with
 %	class 'reactive-size'.
 
-svg(SVG, _Options) -->
+svg(SVG0, _Options) -->
+	{ fix_svg(SVG0, SVG) },
 	html([ \[SVG],
 	       \js_script({|javascript||
 (function() {
@@ -228,6 +229,24 @@ svg(SVG, _Options) -->
  })();
 		      |})
 	     ]).
+
+
+fix_svg(InS, OutS) :-
+	setup_call_cleanup(
+	    open_string(InS, In),
+	    load_xml(In, M,
+		     [ max_errors(-1),
+		       syntax_errors(quiet)
+		     ]),
+	    close(In)),
+	with_output_to(
+	    string(OutS),
+	    xml_write(current_output, M,
+		      [ layout(false),
+			doctype('svg'),
+			public('-//W3C//DTD SVG 1.1//EN'),
+			system('http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd')
+		      ])).
 
 
 %%	data_to_graphviz_string(+Data, -DOTString, -Program) is semidet.
