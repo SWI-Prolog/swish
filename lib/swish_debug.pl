@@ -618,6 +618,7 @@ avg_key(Dicts, Len, Key, Key-Avg) :-
 %   Save the statistics on each interval.
 
 save_stats(save(File, Interval), Stats) :-
+    Interval > 0,
     arg(1, Stats, ring(Here, _, _)),
     Here mod Interval =:= 0,
     must_succeed(save_stats_file(File, Stats)),
