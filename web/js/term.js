@@ -133,21 +133,13 @@ define([ "jquery" ],
       return this.each(function() {
 	var el = $(this);
 
-	if ( el.hasClass("pl-binding") )
-	  el = el.children(".pl-binding-value");
-
 	if ( options.propagated && !options.no_ellipsis &&
 	     el[pluginName]('getLayout') == "ellipsis" )
 	  return;
 
 	if ( options.layout == "vertical" )
 	{ el[pluginName]('unfold');
-	  if ( el.hasClass("pl-binding-value") ) {
-	    el = el.children(".pl-adaptive");
-	    el[pluginName]('layout', options);
-	  } else {
-	    el.addClass("vertical");
-	  }
+	  el.addClass("vertical");
 	} else if ( options.layout == "horizontal" )
 	{ el[pluginName]('unfold');
 	  el.removeClass("vertical");
@@ -155,7 +147,8 @@ define([ "jquery" ],
 	{ el[pluginName]('fold');
 	} else if ( options.layout == "auto" )
 	{ el[pluginName]('layout', 'horizontal');
-	  autoLayout(el, options);
+	  if ( autoLayout(el, options) )
+	    el.addClass("vertical");
 	}
 
 	if ( options.propagate ) {
@@ -249,7 +242,7 @@ define([ "jquery" ],
     fit: function() {
       var el = $(this);
       var paren = el.closest(".pl-compound.pl-level-0")
-	            .find(".pl-embrace");
+		    .find(".pl-embrace");
 
       paren[pluginName]('fit_parenthesis');
     },
@@ -266,12 +259,9 @@ define([ "jquery" ],
 
 	if ( em.find(".vertical").length ) {
 	  el.addClass("vertical");
-	  paren.css("font-size", em.height()*0.58+"px");
 	} else {
 	  el.removeClass("vertical");
-	  paren.css("font-size", "100%");
 	}
-
       });
     }
 
@@ -297,20 +287,28 @@ define([ "jquery" ],
   }
 
   function autoLayout(el, options) {
+    let rc = false;
+
     el.children().each(function() {
-      autoLayout($(this), options);
+      rc = rc && autoLayout($(this), options);
     });
 
     if ( el.is(".pl-adaptive") )
-    { var layout;
+    { let layout;
 
       if ( (layout=el.data('layout')) ) {
 	el[pluginName]('layout', layout);
       } else {
 	if ( el.width() > (options.width||400) )
-	  el[pluginName]('layout', 'vertical');
+	{ el[pluginName]('layout', 'vertical');
+	  layout = "vertical";
+	}
       }
+
+      return layout == "vertical";
     }
+
+    return false;
   }
 
   /**
