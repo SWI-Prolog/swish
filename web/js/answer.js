@@ -111,7 +111,11 @@ define([ "jquery", "preferences", "laconic" ],
 	    evalScripts(elem);
 	    elem.find(".render-multi").renderMulti();
 	    if ( preferences.getVal("auto-binding-layout") )
-	      elem.find(".pl-binding").pl_term('layout', 'auto');
+	    { console.log(elem.find(".pl-adaptive"));
+	      elem.find(".pl-adaptive.pl-level-0")
+	      .pl_term('layout', {layout: 'auto', propagate:true})
+	      .find(".pl-embrace").pl_term('fit_parenthesis');
+	    }
 	  }
 	} else
 	  elem.append($.el.span({class: "prolog-true"}, "true"));
@@ -164,7 +168,7 @@ define([ "jquery", "preferences", "laconic" ],
 		vars[vars.length - 1],
 		"</span> = <span class='pl-binding-value'>",
 		bindings[i].value,
-	        "</span></span>");
+		"</span></span>");
       if (bindings[i].substitutions) {
 	renderSubstitutions(bindings[i].substitutions, html);
       }
@@ -530,7 +534,7 @@ define([ "jquery", "preferences", "laconic" ],
       var span = $.el.div({class:"download"},
 			  btn = $.el.button({ type:"button", class:"close" }),
 			  a = $.el.a({ href:href,
-			               target:"_blank",
+				       target:"_blank",
 				       download:filename
 				     },
 				     "Right click me to download as "),
@@ -566,7 +570,7 @@ define([ "jquery", "preferences", "laconic" ],
     if ( !menu[0] ) {
       menu = $($.el.form({ id:"render-select",
                            style:"display:none"
-		         }));
+			 }));
 
       menu.on("click", "a", function(ev) {
 	var a = $(ev.target).closest("a");
