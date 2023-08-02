@@ -12,8 +12,8 @@
     "sparkline": "gwatts/jquery.sparkline#*",
     "svg-pan-zoom": "ariutta/svg-pan-zoom#*",
     "tagmanager": "max-favilli/tagmanager#*",
-    "typeahead.js": "git://github.com/twitter/typeahead.js.git#master",
-    "printthis": "git://github.com/jasonday/printThis.git#master"
+    "typeahead.js": "https://github.com/twitter/typeahead.js.git#master",
+    "printthis": "https://github.com/jasonday/printThis.git#master"
   },
   "engines": {
     "yarn": ">= 1.0.0"
