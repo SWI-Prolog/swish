@@ -196,10 +196,13 @@ exists_or_create(Path, Out) :-
         make_directory_path(Dir),
         open(Path, write, Out, [encoding(utf8), lock(write)]).
 
+:- if(\+current_predicate(ensure_directory/1)).
+% in Library as of SWI-Prolog 9.1.20
 ensure_directory(Dir) :-
 	exists_directory(Dir), !.
 ensure_directory(Dir) :-
 	make_directory(Dir).
+:- endif.
 
 %%	load_object(+Store, +Hash, -Data, -Type, -Size) is det.
 %
