@@ -149,7 +149,7 @@ span.pl-binding-value.fold:after
 /* Embraced (...) items */
 
 span.pl-embrace.vertical
-{ display: flex;
+{ display: inline-flex;
   flex-direction: row;
 }
 
