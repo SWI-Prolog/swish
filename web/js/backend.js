@@ -54,7 +54,6 @@ define([ "jquery", "config", "form", "modal",
 
     ajax: function(options) {
       options.url = backend.url + options.url;
-      console.log(options.url);
       return $.ajax(options);
     },
 
