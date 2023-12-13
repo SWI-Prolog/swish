@@ -202,18 +202,31 @@ define([ "jquery" ],
       function clickHandler(ev) {
 	ev.stopPropagation();
 	if ( $(ev.target).closest(".pl-compound-menu").length ) {
-	  var action = $(ev.target).data('action');
+	  const action = $(ev.target).data('action');
+	  let on = el;
+	  if ( on.hasClass("pl-binding") )
+	  { on = on.children(".pl-binding-value");
+
+	    if ( action == "ellipsis" )
+	      on.addClass("fold");
+	    else
+	      on.removeClass("fold");
+
+	    if ( action != "copy" )
+	      on = on.find(".pl-adaptive.pl-level-0");
+	  }
+
 	  if ( action == "copy" ) {
 	    // Avoid ellipsis and possible change in vertical layout
-	    var text = el.clone(false)[pluginName]('layout',
+	    var text = on.clone(false)[pluginName]('layout',
 						   { layout: 'horizontal',
 						     no_ellipsis:true,
 						     propagate:true }).text();
 
 	    navigator.clipboard.writeText(text);
 	  } else {
-	    el[pluginName]('layout', action);
-	    el[pluginName]('fit');
+	    on[pluginName]('layout', action);
+	    on[pluginName]('fit');
 	  }
 	}
 
