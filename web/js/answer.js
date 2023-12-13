@@ -111,10 +111,9 @@ define([ "jquery", "preferences", "laconic" ],
 	    evalScripts(elem);
 	    elem.find(".render-multi").renderMulti();
 	    if ( preferences.getVal("auto-binding-layout") )
-	    { console.log(elem.find(".pl-adaptive"));
-	      elem.find(".pl-adaptive.pl-level-0")
+	    { elem.find(".pl-adaptive.pl-level-0")
 	      .pl_term('layout', {layout: 'auto', propagate:true})
-	      .find(".pl-embrace").pl_term('fit_parenthesis');
+	      .closest(".pl-embrace").pl_term('fit_parenthesis');
 	    }
 	  }
 	} else

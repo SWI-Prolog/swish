@@ -240,9 +240,9 @@ define([ "jquery" ],
     },
 
     fit: function() {
-      var el = $(this);
-      var paren = el.closest(".pl-compound.pl-level-0")
-		    .find(".pl-embrace");
+      const el = $(this);
+      const adapt = el.closest(".pl-adaptive.pl-level-0");
+      const paren = adapt.closest(".pl-embrace");
 
       paren[pluginName]('fit_parenthesis');
     },
