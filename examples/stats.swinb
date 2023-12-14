@@ -3,7 +3,7 @@
 <div class="nb-cell markdown" name="md1">
 # Display SWISH server statistics
 
-This page examines the performance and health of the SWISH server.  Most of the statistics are gathered by `lib/swish_debug`, which is by default loaded into http://swish.swi-prolog.org but must be explicitly loaded into your own SWISH server.  Part of the statistics are based on reading the Linux =|/proc|= file system and thus only function on Linux.
+This page examines the performance and health of the SWISH server.  Most of the statistics are gathered by `lib/swish_diagnostics`, which is by default loaded into http://swish.swi-prolog.org but must be explicitly loaded into your own SWISH server.  Part of the statistics are based on reading the Linux =|/proc|= file system and thus only function on Linux.
 
 The first step is easy, showing the overall statistics of the server.
 </div>
@@ -184,7 +184,7 @@ chart(Period, [pengines,threads,visitors], Chart).
     as <code>fordblks</code>.  Note that <code>fordblks</code> is a 32-bit value.  The implementation heuristically
     guesses how many times the value wrapped around and corrects for this.
   </p>
-  
+
   <div class="panel-body"><i><i>
     <div class="form-group row" style="margin-bottom:0px">
       <label class="col-sm-2">Period:</label>

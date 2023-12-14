@@ -34,7 +34,7 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-:- module(swish_debug,
+:- module(swish_diagnostics,
           [ pengine_stale_module/1,     % -Module
             pengine_stale_module/2,     % -Module, -State
             stale_pengine/1,            % -Pengine
@@ -728,13 +728,13 @@ must_succeed(Goal) :-
 :- multifile
     sandbox:safe_primitive/1.
 
-sandbox:safe_primitive(swish_debug:pengine_stale_module(_)).
-sandbox:safe_primitive(swish_debug:pengine_stale_module(_,_)).
-sandbox:safe_primitive(swish_debug:stale_pengine(_)).
-sandbox:safe_primitive(swish_debug:swish_statistics(_)).
-sandbox:safe_primitive(swish_debug:swish_stats(_, _)).
-sandbox:safe_primitive(swish_debug:swish_died_thread(_, _)).
-sandbox:safe_primitive(swish_debug:swish_cluster_member(_,_)).
+sandbox:safe_primitive(swish_diagnostics:pengine_stale_module(_)).
+sandbox:safe_primitive(swish_diagnostics:pengine_stale_module(_,_)).
+sandbox:safe_primitive(swish_diagnostics:stale_pengine(_)).
+sandbox:safe_primitive(swish_diagnostics:swish_statistics(_)).
+sandbox:safe_primitive(swish_diagnostics:swish_stats(_, _)).
+sandbox:safe_primitive(swish_diagnostics:swish_died_thread(_, _)).
+sandbox:safe_primitive(swish_diagnostics:swish_cluster_member(_,_)).
 :- if(current_predicate(malloc_info:malloc_info/1)).
 sandbox:safe_primitive(malloc_info:malloc_info(_)).
 :- endif.

@@ -232,7 +232,7 @@ swish_config:config(default_query,	'').
 :- use_module(swish:lib/dashboard).
 :- use_module(swish:lib/md_eval).
 :- use_module(swish:lib/html_output).
-:- use_module(swish:lib/swish_debug).
+:- use_module(swish:lib/swish_diagnostics).
 :- use_module(swish:library(pengines_io)).
 :- use_module(swish:library(solution_sequences)).
 :- use_module(swish:library(aggregate)).
