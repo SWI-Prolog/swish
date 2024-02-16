@@ -100,7 +100,7 @@ browsers which in turn may have multiple SWISH windows opened.
 
 swish_config:config(hangout, 'Hangout.swinb').
 swish_config:config(avatars, svg).              % or 'noble'
-swish_config:config(session_lost_timeout, 60).
+swish_config:config(session_lost_timeout, 300).
 
 
                  /*******************************
@@ -704,32 +704,40 @@ destroy_reason(_, close).
 %   browser did not reclaim the   session  within `session_lost_timeout`
 %   seconds.
 
-:- dynamic last_gc/1.
+:- dynamic gc_status/1.
 
 gc_visitors :-
     swish_config(session_lost_timeout, TMO),
-    (   last_gc(Last),
-        get_time(Now),
-        Now-Last < TMO
-    ->  true
-    ;   with_mutex(gc_visitors, gc_visitors_sync(TMO))
+    (   gc_status(Status),
+        (   Status == running
+        ->  true
+        ;   Status = completed(When),
+            get_time(Now),
+            Now-When > TMO
+        ->  fail
+        ;   retractall(gc_status(completed(When)))
+        )
+    ;   catch(thread_create(gc_visitors_sync(TMO), _Id,
+                            [ alias('swish_chat_gc_visitors'),
+                              detached(true)
+                            ]),
+              error(permission_error(create, thread, _), _),
+              true)
     ).
 
 gc_visitors_sync(TMO) :-
-    get_time(Now),
-    (   last_gc(Last),
-        Now-Last < TMO
-    ->  true
-    ;   retractall(last_gc(_)),
-        asserta(last_gc(Now)),
-        do_gc_visitors(TMO)
-    ).
+    setup_call_cleanup(
+        asserta(gc_status(running), Ref),
+        do_gc_visitors(TMO),
+        erase(Ref)).
 
 do_gc_visitors(TMO) :-
     forall(( visitor_session(WSID, _Session, _Token),
              pending_visitor(WSID, TMO)
            ),
-           reclaim_visitor(WSID)).
+           reclaim_visitor(WSID)),
+    get_time(Now),
+    asserta(gc_status(completed(Now))).
 
 reclaim_visitor(WSID) :-
     debug(chat(gc), 'Reclaiming idle ~p', [WSID]),
