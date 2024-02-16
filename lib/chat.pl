@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        jan@swi-prolog.org
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2016-2023, VU University Amsterdam
+    Copyright (C): 2016-2024, VU University Amsterdam
                               CWI Amsterdam
                               SWI-Prolog Solutions b.v.
     All rights reserved.
@@ -292,12 +292,26 @@ must_succeed(Goal) :-
 
 
 %!  redis_key(+Which, -Server, -Key) is semidet.
+%!  redis_key_ro(+Which, -Server, -Key) is semidet.
+%
+%   Find the Redis server  and  key   for  a  query.  The redis_key_ro/3
+%   variant returns the nearby Redis replica if it exists. This can only
+%   be used with read-only keys.
 
 redis_key(Which, Server, Key) :-
     swish_config(redis, Server),
     swish_config(redis_prefix, Prefix),
     Which =.. List,
     atomic_list_concat([Prefix, chat | List], :, Key).
+
+redis_key_ro(Which, Server, Key) :-
+    swish_config(redis_ro, Server),
+    !,
+    swish_config(redis_prefix, Prefix),
+    Which =.. List,
+    atomic_list_concat([Prefix, chat | List], :, Key).
+redis_key_ro(Which, Server, Key) :-
+    redis_key(Which, Server, Key).
 
 use_redis :-
     swish_config(redis, _).
@@ -395,7 +409,7 @@ visitor_session(WSID, Session, Token, Consumer) :-
     use_redis,
     !,
     current_wsid(WSID),
-    redis_key(session(WSID), Server, SessionKey),
+    redis_key_ro(session(WSID), Server, SessionKey),
     redis(Server, get(SessionKey), at(Consumer,Session,Token)).
 visitor_session(WSID, Session, Token, single) :-
     visitor_session_db(WSID, Session, Token).
@@ -403,7 +417,7 @@ visitor_session(WSID, Session, Token, single) :-
 %!  visitor_session_reclaim(+WSID, -Session) is semidet.
 
 visitor_session_reclaim(WSID, Session) :-
-    redis_key(session(WSID), Server, SessionKey),
+    redis_key_ro(session(WSID), Server, SessionKey),
     redis_key(wsid, Server, SetKey),
     !,
     redis(Server, get(SessionKey), at(_,Session,_Token)),
@@ -440,10 +454,10 @@ visiton_session_del_session(Session) :-
 current_wsid(WSID) :-
     nonvar(WSID),
     !,
-    redis_key(wsid, Server, SetKey),
+    redis_key_ro(wsid, Server, SetKey),
     redis(Server, sismember(SetKey, WSID), 1).
 current_wsid(WSID) :-
-    redis_key(wsid, Server, SetKey),
+    redis_key_ro(wsid, Server, SetKey),
     redis_sscan(Server, SetKey, List, []),
     member(WSID, List).
 
@@ -508,14 +522,14 @@ subscription(WSID, Channel, SubChannel) :-
     use_redis,
     !,
     (   nonvar(WSID), nonvar(Channel), nonvar(SubChannel)
-    ->  redis_key(subscription(WSID), Server, WsKey),
+    ->  redis_key_ro(subscription(WSID), Server, WsKey),
         redis(Server, sismember(WsKey, Channel-SubChannel as prolog), 1)
     ;   nonvar(SubChannel)
-    ->  redis_key(channel(SubChannel), Server, ChKey),
+    ->  redis_key_ro(channel(SubChannel), Server, ChKey),
         redis_sscan(Server, ChKey, List, []),
         member(WSID-Channel, List)
     ;   current_wsid(WSID),
-        redis_key(subscription(WSID), Server, WsKey),
+        redis_key_ro(subscription(WSID), Server, WsKey),
         redis_sscan(Server, WsKey, List, []),
         member(Channel-SubChannel, List)
     ).
@@ -715,7 +729,7 @@ gc_visitors :-
             get_time(Now),
             Now-When > TMO
         ->  fail
-        ;   retractall(gc_status(completed(When)))
+        ;   retractall(gc_status(completed(_)))
         )
     ;   catch(thread_create(gc_visitors_sync(TMO), _Id,
                             [ alias('swish_chat_gc_visitors'),
