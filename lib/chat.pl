@@ -461,11 +461,11 @@ visitor_session(WSID, Session, Token, single) :-
 %   True when WSID was connected to Session and now no longer is.
 
 visitor_session_reclaim(WSID, Session) :-
-    redis_key_ro(session(WSID), Server, SessionKey),
-    redis_key(wsid, Server, SetKey),
+    redis_key_ro(session(WSID), ROServer, SessionKey),
+    redis_key(wsid, WRServer, SetKey),
     !,
-    redis(Server, get(SessionKey), at(_Consumer,Session,_Token)),
-    redis(Server, srem(SetKey, WSID)).
+    redis(ROServer, get(SessionKey), at(_Consumer,Session,_Token)),
+    redis(WRServer, srem(SetKey, WSID)).
 visitor_session_reclaim(WSID, Session) :-
     retract(visitor_session_db(WSID, Session, _Token)).
 
