@@ -629,28 +629,7 @@ visitor(WSID) :-
 
 visitor(WSID, Consumer) :-
     visitor_session(WSID, _Session, _Token, Consumer),
-    (   pending_visitor(WSID, 30)
-    ->  fail
-    ;   reap(WSID, Consumer)
-    ).
-
-reap(WSID, _) :-
-    hub_member(swish_chat, WSID),
-    !.
-reap(WSID, Consumer) :-
-    use_redis,
-    !,
-    (   redis_consumer(Me)
-    ->  (   Me == Consumer
-        ->  reclaim_visitor(WSID),
-            fail
-        ;   true
-        )
-    ;   true
-    ).
-reap(WSID, _Consumer) :-            % non-redis setup
-    reclaim_visitor(WSID),
-    fail.
+    \+ pending_visitor(WSID, 30).
 
 visitor_count(Count) :-
     use_redis,
@@ -803,17 +782,33 @@ gc_visitors_sync(TMO) :-
 
 do_gc_visitors(TMO) :-
     findall(WSID-Consumer,
-            ( visitor_session(WSID, _Session, _Token, Consumer),
-              \+ gc_visitor(WSID, TMO)
-            ), Pairs),
+            active_visitor(TMO, WSID, Consumer),
+            Pairs),
     transaction(
         ( retractall(active_wsid(_,_)),
           forall(member(WSID-Consumer, Pairs),
                  assertz(active_wsid(WSID, Consumer))))).
 
-gc_visitor(WSID, TMO) :-
-    pending_visitor(WSID, TMO),     % lost connection > TMO ago
-    reclaim_visitor(WSID).
+active_visitor(TMO, WSID, Consumer) :-
+    visitor_session(WSID, _Session, _Token, Consumer),
+    (   valid_visitor(WSID, TMO, Consumer)
+    ->  true
+    ;   reclaim_visitor(WSID),
+        fail
+    ).
+
+valid_visitor(WSID, _TMO, _Consumer) :-
+    hub_member(swish_chat, WSID),
+    !.
+valid_visitor(WSID, TMO, _Consumer) :-
+    visitor_status(WSID, lost(Lost)),
+    !,
+    get_time(Now),
+    Now - Lost < TMO.
+valid_visitor(_WSID, _TMO, Consumer) :-
+    use_redis,
+    !,
+    \+ redis_consumer(Consumer).
 
 reclaim_visitor(WSID) :-
     debug(chat(gc), 'Reclaiming idle ~p', [WSID]),
