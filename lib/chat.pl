@@ -611,7 +611,6 @@ reap(WSID, _Consumer) :-            % non-redis setup
 visitor_count(Count) :-
     use_redis,
     !,
-    sync_active_wsid,
     active_wsid_count(Count).
 visitor_count(Count) :-
     aggregate_all(count, visitor(_), Count).
@@ -725,6 +724,8 @@ destroy_reason(_, close).
 %   Reclaim all visitors with whom we have   lost the connection and the
 %   browser did not reclaim the   session  within `session_lost_timeout`
 %   seconds.
+%
+%   This also updates active_wsid/2 to reflect the current status.
 
 :- dynamic gc_status/1.
 
@@ -750,16 +751,25 @@ gc_visitors :-
 gc_visitors_sync(TMO) :-
     setup_call_cleanup(
         asserta(gc_status(running), Ref),
-        do_gc_visitors(TMO),
+        ( do_gc_visitors(TMO),
+          get_time(Now),
+          asserta(gc_status(completed(Now)))
+        ),
         erase(Ref)).
 
 do_gc_visitors(TMO) :-
-    forall(( visitor_session(WSID, _Session, _Token),
-             pending_visitor(WSID, TMO)
-           ),
-           reclaim_visitor(WSID)),
-    get_time(Now),
-    asserta(gc_status(completed(Now))).
+    findall(WSID-Consumer,
+            ( visitor_session(WSID, _Session, _Token, Consumer),
+              \+ gc_visitor(WSID, TMO)
+            ), Pairs),
+    transaction(
+        ( retractall(active_wsid(_,_)),
+          forall(member(WSID-Consumer, Pairs),
+                 assertz(active_wsid(WSID, Consumer))))).
+
+gc_visitor(WSID, TMO) :-
+    pending_visitor(WSID, TMO),     % lost connection > TMO ago
+    reclaim_visitor(WSID).
 
 reclaim_visitor(WSID) :-
     debug(chat(gc), 'Reclaiming idle ~p', [WSID]),
@@ -1293,22 +1303,6 @@ update_visitors(Msg),
     asserta(active_wsid(WSID, Msg.get(consumer, -))).
 update_visitors(_) =>
     true.
-
-sync_active_wsid :-
-    last_wsid_sync(Last),
-    get_time(Now),
-    Now-Last < 300,
-    !.
-sync_active_wsid :-
-    get_time(Now),
-    transaction(
-	(   retractall(last_wsid_sync(_)),
-	    asserta(last_wsid_sync(Now)))),
-    findall(WSID-Consumer, visitor(WSID, Consumer), Pairs),
-    transaction(
-	(   retractall(active_wsid(_,_)),
-	    forall(member(WSID-Consumer, Pairs),
-		   assertz(active_wsid(WSID, Consumer))))).
 
 active_wsid_count(Count) :-
     predicate_property(active_wsid(_,_), number_of_clauses(Count)),
