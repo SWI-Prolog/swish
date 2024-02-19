@@ -377,12 +377,20 @@ visitor_status_set_unload(WSID) :-
 visitor_status_set_unload(WSID) :-
     assertz(visitor_status_db(WSID, unload)).
 
+%!  visitor_status_del_unload(+WSID) is semidet.
+%
+%   True when WSID has status `unload` and this status is removed.
+
 visitor_status_del_unload(WSID) :-
-    redis_key(unload(WSID), Server, Key),
+    redis_key_ro(unload(WSID), ROServer, Key),
     !,
-    redis(Server, del(Key)).
+    (   redis(ROServer, get(Key), true)
+    ->  redis_key(unload(WSID), RWServer, Key),
+        redis(RWServer, del(Key))
+    ).
 visitor_status_del_unload(WSID) :-
-    retract(visitor_status_db(WSID, unload)).
+    retract(visitor_status_db(WSID, unload)),
+    !.
 
 %!  visitor_session(?WSID, ?Session, ?Token).
 %!  visitor_session(?WSID, ?Session, ?Token, ?Consumer).
