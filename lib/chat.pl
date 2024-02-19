@@ -436,7 +436,7 @@ visitor_session_reclaim_all(WSID, _Session, _Token) :-
 visitor_session_reclaim_all(WSID, Session, Token) :-
     retractall(visitor_session_db(WSID, Session, Token)).
 
-visiton_session_del_session(Session) :-
+visitor_session_del_session(Session) :-
     use_redis,
     !,
     (   current_wsid(WSID),
@@ -444,7 +444,7 @@ visiton_session_del_session(Session) :-
         fail
     ;   true
     ).
-visiton_session_del_session(Session) :-
+visitor_session_del_session(Session) :-
     retractall(visitor_session_db(_, Session, _)).
 
 %!  current_wsid(?WSID) is nondet.
@@ -786,7 +786,7 @@ create_session_user(Session, TmpUser, UserData, Options) :-
 destroy_session_user(Session) :-
     forall(visitor_session(WSID, Session, _Token),
            inform_session_closed(WSID, Session)),
-    visiton_session_del_session(Session),
+    visitor_session_del_session(Session),
     forall(session_user_del(Session, TmpUser),
            destroy_visitor_data(TmpUser)).
 
