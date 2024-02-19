@@ -246,6 +246,33 @@ must_succeed(Goal) :-
                  *              DATA            *
                  *******************************/
 
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Redis DB organization
+
+  - swish:chat:wsid
+    Redis set of known WSID
+  - swish:chat:session:WSID -> at(Consumer,Session,Token)
+    Expresses that WSID belongs to the SWISH server identified by
+    Consumer, the given HTTP session and if if it is lost it can
+    be reastablished using Token.
+  - swish:chat:lost:WSID -> Time
+    We lost connection to WSID at Time (e.g., websocket disconnect)
+  - swish:chat:unload:WSID -> boolean
+    If `true`, the page was gracefully unloaded.
+  - swish:chat:visitor:Visitor -> UserData
+    Visitor is a UUID reflecting a visitor with properties for
+    identification.
+
+In addition, we store data on the session:
+
+  - websocket(Score, Time)
+    Keeps a score based on attempts to establish the websocket.  Used
+    to deny a connection request with a 503 error
+  - swish_user(Visitor)
+    Connect the session to the given visitor UUID.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
 %!  visitor_status(?WSID, ?Status).
 %!  visitor_session(?WSID, ?SessionId, ?Token).
 %!  session_user(?Session, ?TmpUser).
@@ -410,6 +437,13 @@ visitor_session_create(WSID, Session, Token) :-
 visitor_session_create(WSID, Session, Token) :-
     assertz(visitor_session_db(WSID, Session, Token)).
 
+%!  visitor_session(?WSID, -Session, -Token) is nondet.
+%!  visitor_session(?WSID, -Session, -Token, -Consumer) is nondet.
+%
+%   True when there is a known visitor  WSID that is associated with the
+%   HTTP Session, uses  Token  for  reconnecting   and  runs  on  a node
+%   identified by the Redis Consumer.
+
 visitor_session(WSID, Session, Token) :-
     visitor_session(WSID, Session, Token, _Consumer).
 
@@ -423,12 +457,14 @@ visitor_session(WSID, Session, Token, single) :-
     visitor_session_db(WSID, Session, Token).
 
 %!  visitor_session_reclaim(+WSID, -Session) is semidet.
+%
+%   True when WSID was connected to Session and now no longer is.
 
 visitor_session_reclaim(WSID, Session) :-
     redis_key_ro(session(WSID), Server, SessionKey),
     redis_key(wsid, Server, SetKey),
     !,
-    redis(Server, get(SessionKey), at(_,Session,_Token)),
+    redis(Server, get(SessionKey), at(_Consumer,Session,_Token)),
     redis(Server, srem(SetKey, WSID)).
 visitor_session_reclaim(WSID, Session) :-
     retract(visitor_session_db(WSID, Session, _Token)).
@@ -576,9 +612,17 @@ unsubscribe(WSID, Channel, SubChannel) :-
 		 *        HIGH LEVEL DB		*
 		 *******************************/
 
-%!  visitor(?WSID) is nondet
+%!  visitor(?WSID) is nondet.
+%!  visitor(?WSID, -Consumer) is nondet.
 %
-%   True when WSID should be considered an active visitor.
+%   True when WSID should  be  considered   an  active  visitor  that is
+%   connected to the SWISH node identified   by the Redis Consumer. This
+%   means
+%
+%      - If we lost the visitor for less than 30 sec, we consider it
+%        still active.
+%      - If it is connected to our websocket hub, it is active.
+%      - Otherwise, if it runs on our node, we destroy the visitor.
 
 visitor(WSID) :-
     visitor(WSID, _).
@@ -665,11 +709,11 @@ existing_visitor(WSID, Session, Token, _, _) :-
 %   Options provides information we have about the user:
 %
 %     - current_user_info(+Info)
-%     Already logged in user with given information
+%       Already logged in user with given information
 %     - avatar(Avatar)
-%     Avatar remembered in the browser for this user.
+%       Avatar remembered in the browser for this user.
 %     - nick_name(NickName)
-%     Nick name remembered in the browser for this user.
+%       Nick name remembered in the browser for this user.
 
 create_visitor(WSID, Session, Token, TmpUser, UserData, Options) :-
     generate_key(Token),
