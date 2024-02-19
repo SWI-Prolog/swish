@@ -330,9 +330,9 @@ use_redis :-
 %     - lost:WSID = time
 
 visitor_status(WSID, Status) :-
-    redis_key(unload(WSID), Server, UnloadKey),
+    redis_key_ro(unload(WSID), Server, UnloadKey),
     !,
-    redis_key(lost(WSID), Server, LostKey),
+    redis_key_ro(lost(WSID), Server, LostKey),
     redis(Server,
           [ get(UnloadKey) -> Unload,
             get(LostKey) -> Lost
