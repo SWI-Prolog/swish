@@ -157,17 +157,19 @@ create_store(Dir) :-
     !.
 
 gitty_open_options(Options) :-
+    findall(Opt, gitty_open_option(Opt), Options).
+
+gitty_open_option(Option) :-
     swish_config(redis, DB),
     !,
-    (   swish_config(redis_prefix, Prefix)
-    ->  Options = [ redis(DB),
-                    redis_prefix(Prefix)
-                  ]
-    ;   Options = [ redis(DB)
-                  ]
+    (   Option = redis(DB)
+    ;   gitty_redis_option(Option)
     ).
-gitty_open_options([]).
 
+gitty_redis_option(redis_prefix(Prefix)) :-
+    swish_config(redis_prefix, Prefix).
+gitty_redis_option(redis_ro(Server)) :-
+    swish_config(redis_ro, Server).
 
 %!  web_storage(+Request) is det.
 %
