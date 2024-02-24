@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2023, VU University Amsterdam
+    Copyright (c)  2014-2024, VU University Amsterdam
                               CWI, Amsterdam
 			      SWI-Prolog Solutions b.v.
     All rights reserved.
@@ -83,6 +83,10 @@
 :- meta_predicate
     use_gitty_file(:),
     use_gitty_file(:, +).
+
+:- multifile
+    search_sources_hook/2,                      % +Query, -Result
+    typeahead_hooked/1.                         % +Set
 
 /** <module> Store files on behalve of web clients
 
@@ -887,6 +891,8 @@ storage_unpack :-
 %   @tbd We should only demand public on public servers.
 
 swish_search:typeahead(file, Query, FileInfo, _Options) :-
+    \+ typeahead_hooked(file),
+    !,
     open_gittystore(Dir),
     gitty_file(Dir, File, Head),
     gitty_plain_commit(Dir, Head, Meta),
@@ -914,6 +920,7 @@ meta_match_query(Query, Meta) :-
     ).
 
 swish_search:typeahead(store_content, Query, FileInfo, Options) :-
+    \+ typeahead_hooked(store_content),
     limit(25, search_store_content(Query, FileInfo, Options)).
 
 search_store_content(Query, FileInfo, Options) :-
@@ -973,38 +980,126 @@ search_file(File, Meta, Data, Query, FileInfo, Options) :-
 
 
 source_list(Request) :-
-	memberchk(method(options), Request),
-	!,
-	cors_enable(Request,
-		    [ methods([get,post])
-		    ]),
-	format('~n').
+    memberchk(method(options), Request),
+    !,
+    cors_enable(Request,
+                [ methods([get,post])
+                ]),
+    format('~n').
 source_list(Request) :-
     cors_enable,
     authenticate(Request, Auth),
     http_parameters(Request,
                     [ q(Q, [optional(true)]),
                       o(Order, [ oneof([time,name,author,type]),
-                                 default(time)
+                                 optional(true)
                                ]),
+                      d(Dir, [ oneof([asc, desc]),
+                               optional(true)
+                             ]),
                       offset(Offset, [integer, default(0)]),
                       limit(Limit, [integer, default(10)]),
                       display_name(DisplayName, [optional(true), string]),
                       avatar(Avatar, [optional(true), string])
                     ]),
     bound(Auth.put(_{display_name:DisplayName, avatar:Avatar}), AuthEx),
-    order(Order, Field, Cmp),
     last_modified(Modified),
+    parse_query(Q, Query),
+    ESQuery0 = #{ query_string:Q,
+                  query:Query,
+                  auth:AuthEx,
+                  limit:Limit, offset:Offset
+                },
+    add_ordering(Order, Dir, ESQuery0, ESQuery),
+    search_sources(ESQuery, Result),
+    (   _ = Result.get(error)
+    ->  reply_json_dict(Result, [status(500)])
+    ;   reply_json_dict(Result.put(#{offset:Offset, modified:Modified}))
+    ).
+
+add_ordering(Order, _Dir, Q, Q) :-
+    var(Order),
+    !.
+add_ordering(Order, Dir, Q0, Q) :-
+    var(Dir),
+    !,
+    order(Order, Field, Dir),
+    Q = Q0.put(_{order_by: Field, order: Dir}).
+add_ordering(Order, Dir, Q0, Q) :-
+    order(Order, Field, _),
+    Q = Q0.put(_{order_by: Field, order: Dir}).
+
+order(type,  ext,   asc) :- !.
+order(time,  time,  desc) :- !.
+order(Field, Field, asc).
+
+%!  search_sources(+Query, -Results) is det.
+%
+%   Search the available sources.  Query is a dict holding
+%
+%     - query.query_string
+%       The original query string.
+%     - Query.query
+%       Parsed query string. This is a list of Tag(Value), word(Word),
+%       regex(String, Flags) or string(String) (quoted search). The
+%       `Value` is either a string or regex(String, Flags).
+%     - Query.auth
+%       Authentication information for the current session
+%     - Query.order_by
+%       Field to order on
+%     - Query.order
+%       Ordering (one of `desc` (@>=) or `asc` (@=<))
+%     - Query.limit
+%       Number of results to return
+%     - Query.offset
+%       Number of results to skip
+%
+%   Result is a dict holding
+%
+%     - Result.matches
+%       The actual hits.  The matches are dicts holding these keys
+%       - Match.time
+%         Time stamp (seconds since 1970)
+%       - Match.tags
+%         Tags of the document
+%       - Match.author
+%         Author of the document
+%       - Match.avatar
+%         Known avatar
+%       - Match.name
+%         File name
+%     - Result.total
+%       Total number of answers
+%     - cpu:CPU time.
+%
+%   This predicate can be hooked   using search_sources_hook/2 that uses
+%   the same signature. If the hook   fails,  naive search is performed.
+%   The naive algorithm is fine for local installations with a couple of
+%   hundreds of files. Public installations need  to hook this predicate
+%   using a proper full text database.
+
+search_sources(Query, Result) :-
+    search_sources_hook(Query, Result),
+    !.
+search_sources(Q,
+               #{ matches:Sources,
+                  total:Count,
+                  cpu:CPU
+                }) :-
     statistics(cputime, CPU0),
-    findall(Source, source(Q, AuthEx, Source), AllSources),
+    findall(Source, source(Q.query, Q.auth, Source), AllSources),
     statistics(cputime, CPU1),
     length(AllSources, Count),
     CPU is CPU1 - CPU0,
-    sort(Field, Cmp, AllSources, Ordered),
-    list_offset_limit(Ordered, Offset, Limit, Sources),
-    reply_json_dict(json{total:Count, offset:Offset,
-                         cpu:CPU, modified:Modified,
-                         matches:Sources}).
+    (   _{order_by:Field, order:Dir} :< Q
+    ->  order_cmp(Dir, Cmp),
+        sort(Field, Cmp, AllSources, Ordered)
+    ;   sort(time, @>=, AllSources, Ordered)
+    ),
+    list_offset_limit(Ordered, Q.offset, Q.limit, Sources).
+
+order_cmp(asc, @=<).
+order_cmp(desc, @>=).
 
 list_offset_limit(List0, Offset, Limit, List) :-
     list_offset(List0, Offset, List1),
@@ -1022,12 +1117,7 @@ list_limit([H|T0], Limit, [H|T]) :-
     list_limit(T0, L1, T).
 list_limit(_, _, []).
 
-order(type,  ext,   @=<) :- !.
-order(time,  time,  @>=) :- !.
-order(Field, Field, @=<).
-
-source(Q, Auth, Source) :-
-    parse_query(Q, Query),
+source(Query, Auth, Source) :-
     source_q(Query, Auth, Source).
 
 source_q([user("me")], Auth, _Source) :-
@@ -1035,7 +1125,8 @@ source_q([user("me")], Auth, _Source) :-
     \+ user_property(Auth, identity(_Id)),
     !,
     fail.
-source_q(Query, Auth, Source) :-
+source_q(Query0, Auth, Source) :-
+    maplist(compile_query_element, Query0, Query),
     type_constraint(Query, Query1, Type),
     partition(content_query, Query1,
               ContentConstraints, MetaConstraints),
@@ -1044,6 +1135,30 @@ source_q(Query, Auth, Source) :-
     visible(Meta, Auth, MetaConstraints),
     maplist(matches_meta(Source, Auth), MetaConstraints),
     matches_content(ContentConstraints, Head).
+
+compile_query_element(regex(String, Flags), Regex) =>
+    maplist(re_flag_option, Flags, Options),
+    re_compile(String, Regex, Options).
+compile_query_element(word(String), Regex) =>
+    re_compile(String, Regex,
+               [ extended(true),
+                 caseless(true)
+               ]).
+compile_query_element(type(String), Type) =>
+    Type = type(Atom),
+    atom_string(Atom, String).
+compile_query_element(TaggedRegex, QE),
+    TaggedRegex =.. [Tag,regex(String,Flags)] =>
+    maplist(re_flag_option, Flags, Options),
+    re_compile(String, Regex, Options),
+    QE =.. [Tag,Regex].
+compile_query_element(Any, QE) =>
+    QE = Any.
+
+re_flag_option(i, [caseless(true)]).
+re_flag_option(x, [extended(true)]).
+re_flag_option(m, [multiline(true)]).
+re_flag_option(s, [dotall(true)]).
 
 content_query(string(_)).
 content_query(regex(_)).
@@ -1164,10 +1279,10 @@ is_type(type(_)).
 
 %!  parse_query(+String, -Query) is det.
 %
-%   Parse a query, resulting in a list of Name(Value) pairs. Name is
-%   one of `tag`, `user`, `type`, `string` or `regex`.
-%
-%   @tbd: Should we allow for logical combinations?
+%   Parse a query, resulting in a list of Name(Value) pairs. Name is one
+%   of `tag`, `user`, `type`, `string` or  `regex`.   Value  is one of a
+%   string,   string(String)   (quoted),   regex(String,     Flags)   or
+%   word(String).
 
 parse_query(Q, Query) :-
     var(Q),
@@ -1195,21 +1310,14 @@ query1(Q) -->
     { string_codes(String, Codes),
       Q = string(String)
     }.
-query1(Q) -->
+query1(regex(String, Flags)) -->
     "/", string(Codes), "/", re_flags(Flags),
     !,
-    { string_codes(String, Codes),
-      re_compile(String, RE, Flags),
-      Q = regex(RE)
+    { string_codes(String, Codes)
     }.
-query1(Q) -->
+query1(word(String)) -->
     next_word(String),
-    { String \== "",
-      re_compile(String, RE,
-                 [ extended(true),
-                   caseless(true)
-                 ]),
-      Q = regex(RE)
+    { String \== ""
     }.
 
 re_flags([H|T]) -->
@@ -1221,42 +1329,41 @@ re_flags([]) -->
 re_flags([]) -->
     eos.
 
-re_flag(caseless(true))  --> "i".
-re_flag(extended(true))  --> "x".
-re_flag(multiline(true)) --> "m".
-re_flag(dotall(true))    --> "s".
+re_flag(i) --> "i".
+re_flag(x) --> "x".
+re_flag(m) --> "m".
+re_flag(s) --> "s".
 
 next_word(String) -->
     blanks, nonblank(H), string(Codes), ( blank ; eos ),
     !,
     { string_codes(String, [H|Codes]) }.
 
-tag(name, Value) --> "name:", tag_value(Value, _).
-tag(tag,  Value) --> "tag:",  tag_value(Value, _).
-tag(user, Value) --> "user:", tag_value(Value, _).
-tag(type, Value) --> "type:", tag_value(String, string(_)), { atom_string(Value, String) }.
+tag(name, Value) --> "name:", tag_value(Value).
+tag(tag,  Value) --> "tag:",  tag_value(Value).
+tag(user, Value) --> "user:", tag_value(Value).
+tag(type, Value) --> "type:", tag_value(Value).
 
-tag_value(String, string(quoted)) -->
+tag_value(String) -->
     blanks, "\"", !, string(Codes), "\"",
     !,
     { string_codes(String, Codes) }.
-tag_value(Q, regex) -->
+tag_value(Q) -->
     blanks, "/", string(Codes), "/", re_flags(Flags),
     !,
     {   Codes == []
     ->  Q = ""
     ;   string_codes(String, Codes),
-        re_compile(String, RE, Flags),
-        Q = regex(RE)
+        Q = regex(String, Flags)
     }.
-tag_value(String, string(nonquoted)) -->
+tag_value(String) -->
     nonblank(H),
     !,
     string(Codes),
     ( blank ; eos ),
     !,
     { string_codes(String, [H|Codes]) }.
-tag_value("", empty) -->
+tag_value("") -->
     "".
 
                  /*******************************

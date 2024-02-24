@@ -14,8 +14,16 @@ The file overview allows you to find and open files.  The <b>Filter</b>
 and <b>Type</b> menus can be used to pre-fill the query input field.
 The input field itself uses the following syntax:
 
+<p>
+This version of SWISH uses <i>Elastic Search</i> (ES) to find documents.
+Descriptions below that mention <b><i>Pattern</i></b> use ES
+<i>wildchards</i>, i.e., <b>*</b> matches any sequence.  Matching is case
+insensitive.
+
+<p>
 File search covers all <b>public</b> files and, for logged in users,
-private files owned by the current user.
+private files owned by the current user.   If you (no longer) want your
+file to be visible, login and save the program as <i>private</i>.
 
   <dl class="help-sourcelist">
     <dt><code>type:</code><var>pl | swinb | lnk</var>
@@ -39,14 +47,15 @@ private files owned by the current user.
     insensitive.
     </dd>
     <dt>/Regex/[flags]
-    <dd>Search for files whose content matches <var>Regex</var>.  Flags
-    is a sequence of the following flags: <b>i</b> (ignore case), <b>x</b>
-    (Perl extended regular expressions), <b>m</b> (multiple lines)
-    <b>s</b> (Perl <i>dotall</i> mode).
-    </dd>
+      <dd>Search for files whose content matches <var>Regex</var>.  The
+	only flag supported is <b>i</b> (ignore case).  Note that Elastic
+	Search regular expressions do not support the _anchor_ syntax
+	(<b>^</b> or <b>$</b>).
+      </dd>
     <dt><i>Word</i>
-    <dd>Search for files containing <var>Word</var>.  Match is case
-    insensitive.
+    <dd>Other content is passed to Elastic Search <code>match</code>,
+      performing full text search on the most recent version of all
+      files.
     </dd>
   </dl>
 
