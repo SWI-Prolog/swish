@@ -578,7 +578,8 @@ var MAX_RECONNECT_DELAY = 300000;
 	  user.name = name;
       }
       if ( !fields || fields.indexOf('avatar') >= 0 ) {
-	user.avatar = li.find("img.avatar").attr("src");
+	user.avatar = ( li.find("img.avatar").attr("src") ||
+			li.find("span.avatar.svg").data("avatar") );
       }
 
       return user;
@@ -614,7 +615,7 @@ var MAX_RECONNECT_DELAY = 300000;
      * Get info on the _self_ user.
      */
     self: function(fields) {
-      var li = this.find("li.user.myself[id]");
+      const li = this.find("li.user.myself[id]");
 
       return li.chat('user_info', fields);
     },
@@ -803,6 +804,7 @@ var MAX_RECONNECT_DELAY = 300000;
 			 }
 		       });
 	}
+	$(img).data("avatar", options.avatar);
       } else {
 	img = $.el.img({class:"avatar", src:options.avatar });
       }
