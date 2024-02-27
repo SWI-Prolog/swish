@@ -78,36 +78,40 @@ define([ "jquery", "config", "form", "modal",
 	  body=$.el.tbody())));
 
 	let btn;
-	div.append(btn=$.el.button({ name:"select-backend",
-				     class:"btn btn-primary disabled"
-				   },
-				   "Select backend"));
-	$(btn).on("click", function() {
-	  const sel = $(body).find("tr.success");
-	  if ( sel.length == 1 ) {
-	    if ( sel.consumer == config.swish.redis_consumer ) {
-	      backend.backend = sel.consumer;
-	      backend.url = ""
-	    } else {
-	      const url = (sel.data("url")||"").replace(/\/+$/, "");
-
-	      if ( url ) {
+	if ( false )		// currently we do not support backend selection
+	{ div.append(btn=$.el.button({ name:"select-backend",
+				       class:"btn btn-primary disabled"
+				     },
+				     "Select backend"));
+	  $(btn).on("click", function() {
+	    const sel = $(body).find("tr.success");
+	    if ( sel.length == 1 ) {
+	      if ( sel.consumer == config.swish.redis_consumer ) {
 		backend.backend = sel.consumer;
-		backend.url = url;
+		backend.url = ""
+	      } else {
+		const url = (sel.data("url")||"").replace(/\/+$/, "");
+
+		if ( url ) {
+		  backend.backend = sel.consumer;
+		  backend.url = url;
+		}
 	      }
 	    }
-	  }
-	  $("#ajaxModal").modal('hide');
-	});
+	    $("#ajaxModal").modal('hide');
+	  });
+	}
 
 	$(body).on("click", "tr", function(ev) {
 	  var tr = $(ev.target).parents("tr");
 	  $(body).find("tr.success").removeClass("success");
 	  tr.addClass("success");
-	  if ( tr.data("backend") != backend.backend )
-	    $(btn).removeClass("disabled");
-	  else
-	    $(btn).addClass("disabled");
+	  if ( btn )
+	  { if ( tr.data("backend") != backend.backend )
+	      $(btn).removeClass("disabled");
+	    else
+	      $(btn).addClass("disabled");
+	  }
 	});
 
 	function alive(stats) {
