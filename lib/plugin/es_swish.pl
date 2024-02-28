@@ -49,6 +49,7 @@
 :- use_module(library(pprint)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
+:- use_module(library(http/http_server)).
 
 /** <module> SWISH integration of Elastic Search
 
@@ -425,17 +426,20 @@ swish_search:typeahead(file, For, FileInfo, _Options) :-
     FileInfo = Hit.put(_{type:"store", file:File}).
 
 swish_search:typeahead(store_content, Text, FileInfo, Options) :-
-    limit(25, se_typeahead(store_content, Text, FileInfo, Options)).
+    http_current_request(Request),
+    authenticate(Request, Auth),
+    limit(25, se_typeahead(store_content, Text, FileInfo,
+                           Options.put(auth,Auth))).
 
-se_typeahead(store_content, Text, FileInfo, _Options) :-
+se_typeahead(store_content, Text, FileInfo, Options) :-
+    option(auth(Auth), Options),
+    phrase(es_owner_filter(#{auth:Auth.put(Options)}, [user("me")]), Filter),
     Query = #{query:
               #{bool:
                 #{ must:
                    [ #{match: #{content: Text}}
                    ],
-                   filter:
-                   [ #{term: #{public: true}}
-                   ]
+                   filter: Filter
                  }
                },
               '_source': false,        % do not include source
@@ -449,18 +453,28 @@ se_typeahead(store_content, Text, FileInfo, _Options) :-
               track_total_hits: true,  % default
               highlight:
               #{ fields:
-                 #{ content: #{} }
+                 #{ content:
+                    #{ number_of_fragments: 1
+                     }
+                  },
+                 encoder: html,
+                 boundary_chars: '\n'
                },
               sort:[#{time: #{order:desc}}],
               from:0, size:10
              },
+    (   debugging(elastic)
+    ->  print_term(Query, [nl(true)])
+    ;   true
+    ),
     es_query(Query, Matches),
     es_to_swish(Matches, Result),
     member(Hit, Result.matches),
     File = Hit.name,
     member(Line, Hit.highlight),
     FileInfo = Hit.put(_{type:"store", file:File,
-                         line: 0, text:Line, query:Text
+                         line: 0, text:Line, query:Text,
+                         encoder: html
                         }).
 
 

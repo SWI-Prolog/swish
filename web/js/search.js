@@ -136,7 +136,7 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead", "chat" ],
 			     remote: {
 			       url: config.http.locations.swish_typeahead +
 				     "?set=store_content&q=%QUERY",
-			       replace:bloodHoundURL
+			       replace:bloodHoundURLAuth
 			     },
 			     datumTokenizer: sourceLineTokenizer,
 			     queryTokenizer: Bloodhound.tokenizers.whitespace
@@ -521,6 +521,23 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead", "chat" ],
     var match = $("label.active > input[name=smatch]").val();
     if ( match )
       url += "&match="+match;
+
+    return url;
+  }
+
+  function bloodHoundURLAuth(url, query) {
+    var url = url.replace('%QUERY',
+			  encodeURIComponent(query));
+    var match = $("label.active > input[name=smatch]").val();
+    if ( match )
+      url += "&match="+match;
+    const profile = $("#login").login('get_profile',
+				      [ "display_name", "avatar"
+				      ]);
+    if ( profile.avatar )
+      url += "&avatar="+encodeURIComponent(profile.avatar);
+    if ( profile.display_name )
+      url += "&display_name="+encodeURIComponent(profile.display_name);
 
     return url;
   }
