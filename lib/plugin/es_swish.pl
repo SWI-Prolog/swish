@@ -35,7 +35,7 @@
 :- module(es_swish,
           [ es_create_index/0,
             es_add_file/1,                        % +File
-            es_add/2,                             % +Offset, +Limit +Count
+            es_add/2,                             % +Offset, +Limit
             es_add_since/1,                       % +Time
             es_query/2
           ]).
