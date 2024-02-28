@@ -61,7 +61,7 @@ $(YARN_ARCHIVE)::
 upload::
 	rm -f $(YARN_ARCHIVE)
 	zip -r $(YARN_ARCHIVE) web/node_modules
-	rsync $(YARN_ARCHIVE) ops:/home/swipl/web/download/swish/$(YARN_ARCHIVE)
+	rsync $(YARN_ARCHIVE) plweb@oehoe:srv/plweb/data/download/swish/$(YARN_ARCHIVE)
 
 
 ################
