@@ -4,13 +4,12 @@
 # Display SWISH server statistics
 
 ```eval
-:- (   current_predicate(swish_node/1)
-   -&gt;  swish_node(Node),
-       aggregate_all(count, swish_cluster_member(_,_), Count),
-       format('&gt; This SWISH instance is part of a _cluster_ with ~d members. \c
-               You are now connected to the SWISH backend: __~w__', [Count, Node])
-   ;   true
-   ).
+:- if(current_predicate(swish_node/1)).
+:- swish_node(Node),
+   aggregate_all(count, swish_cluster_member(_,_), Count),
+   format('&gt; This SWISH instance is part of a _cluster_ with ~d members. \c
+   	      You are now connected to the SWISH backend: __~w__', [Count, Node]).
+:- endif.
 ```
 
 This page examines the performance and health of the SWISH server.  Most of the statistics are gathered by `lib/swish_diagnostics`, which is by default loaded into https://swish.swi-prolog.org but must be explicitly loaded into your own SWISH server.  Part of the statistics are based on reading the Linux =|/proc|= file system and thus only function on Linux.
