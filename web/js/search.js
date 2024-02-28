@@ -418,7 +418,11 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead", "chat" ],
 	}
 
 	/**
-	 * Assemble the sources
+	 * Assemble the sources.  This defines which of the above
+	 * defined things that may be searched are actually tried.
+	 * This is assembled from the data element `search-in`,
+	 * which is set in `lib/search.pl`.  The default is to
+	 * search `source`, `files` and `predicates`
 	 */
 
 	function ttSources(from) {
