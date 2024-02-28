@@ -5,14 +5,17 @@
 
 ```eval
 :- (   current_predicate(swish_node/1)
-   -&gt;  swish_node(Node), format('SWISH backend: __~w__', [Node])
+   -&gt;  swish_node(Node),
+       aggregate_all(count, swish_cluster_member(_,_), Count),
+       format('&gt; This SWISH instance is part of a _cluster_ with ~d members. \c
+               You are now connected to the SWISH backend: __~w__', [Count, Node])
    ;   true
    ).
 ```
 
-This page examines the performance and health of the SWISH server.  Most of the statistics are gathered by `lib/swish_diagnostics`, which is by default loaded into http://swish.swi-prolog.org but must be explicitly loaded into your own SWISH server.  Part of the statistics are based on reading the Linux =|/proc|= file system and thus only function on Linux.
+This page examines the performance and health of the SWISH server.  Most of the statistics are gathered by `lib/swish_diagnostics`, which is by default loaded into https://swish.swi-prolog.org but must be explicitly loaded into your own SWISH server.  Part of the statistics are based on reading the Linux =|/proc|= file system and thus only function on Linux.
 
-The first step is easy, showing the overall statistics of the server.
+The first step is easy, showing the overall statistics of this server.
 </div>
 
 <div class="nb-cell query" name="q3">
@@ -147,11 +150,12 @@ chart(Period, [pengines,d_cpu], Chart).
 <div class="nb-cell html" name="htm2">
 <div class="panel panel-default">
   <div class="panel-heading">
-    <label>Number of threads and visitors</label>
+    <label>Number of threads and local visitors</label>
   </div>
   <p>Threads are used as HTTP workers, pengines and some adminstrative tasks.
-     Visitors is the number of open websockets, which reflects the number of browser
-     windows watching this page.
+     Local visitors are the number of open websockets connected to this node
+     of the cluster, which reflects the number of browser windows watching
+     this SWISH instance.
   </p><div class="panel-body">
     <div class="form-group row" style="margin-bottom:0px">
       <label class="col-sm-2">Period:</label>
@@ -174,7 +178,38 @@ chart(Period, [pengines,d_cpu], Chart).
 
 <div class="nb-cell query" name="visitors">
 projection([Chart]),
-chart(Period, [pengines,threads,visitors], Chart).
+chart(Period, [pengines,threads,local_visitors], Chart).
+</div>
+
+<div class="nb-cell html" name="htm4">
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <label>Total cluster visitors</label>
+  </div>
+  <p>Cluster visitors aggregates the <em>local visitors</em> over all members of the cluster.
+  </p><div class="panel-body">
+    <div class="form-group row" style="margin-bottom:0px">
+      <label class="col-sm-2">Period:</label>
+      <div class="col-sm-10">
+        <label class="radio-inline"><input name="period2" value="week" type="radio">Week</label>
+        <label class="radio-inline"><input name="period2" value="day" type="radio">Day</label>
+        <label class="radio-inline"><input name="period2" value="hour" checked="" type="radio">Hour</label>
+        <label class="radio-inline"><input name="period2" value="minute" type="radio">Minute</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  notebook.bindQuery(function(q) {
+    q.run({ Period: notebook.$('input[type=radio]:checked').val() });
+  });
+</script>
+</div>
+
+<div class="nb-cell query" name="q4">
+projection([Chart]),
+chart(Period, [visitors], Chart).
 </div>
 
 <div class="nb-cell html" name="htm3">
