@@ -293,6 +293,17 @@ load_object_file(Store, Hash, Data, Type, Size) :-
         read_object(In, Data, Type, Size),
         close(In)).
 
+%!  has_object(+Store, +Hash) is det.
+%
+%   True when Hash exists in store.
+
+has_object(Store, Hash) :-
+    pack_object(Hash, _Type, _Size, _Offset, Store, _Pack),
+    !.
+has_object(Store, Hash) :-
+    gitty_object_file(Store, Hash, Path),
+    exists_file(Path).
+
 %!  load_object_raw(+Store, +Hash, -Data)
 %
 %   Load the compressed data for an object. Intended for replication.
@@ -1332,13 +1343,48 @@ gitty_message(object(Hash, Data)) :-
     ;   true
     ).
 
-redis_replicate_get(_Store, Hash) :-
+%!  redis_replicate_get(+Store, +Hash) is semidet.
+%
+%   True to get Hash if we do  not   have  it  locally. This initiates a
+%   Redis `discover` request for the hash. The  replies are picked up by
+%   gitty_message/1 above.
+%
+%   The code may be subject to  various race conditions, but fortunately
+%   objects are immutable. It also seems  possible that the Redis stream
+%   gets lost. Not sure when and how. For   now, we restart if we get no
+%   reply, but nore more than once per minute.
+
+redis_replicate_get(Store, Hash) :-
     is_gitty_hash(Hash),
     redis(swish, publish(swish:gitty, discover(Hash) as prolog), Count),
-    Count > 1,                          % If I'm alone it won't help :(
-    thread_get_message(gitty_queue, Hash,
-                       [ timeout(10)
-                       ]).
+    Count > 1,                          % If I'm alone it won't help ...
+    between(1, 100, _),
+    (   thread_get_message(gitty_queue, Hash,
+                           [ timeout(0.1)
+                           ])
+    ->  !
+    ;   has_object(Store, Hash)
+    ->  !
+    ;   restart_pubsub,
+        fail
+    ).
+
+:- dynamic
+    restarted/1.
+
+restart_pubsub :-
+    (   restarted(When)
+    ->  get_time(Now),
+        Now-When < 60,
+        !
+    ).
+restart_pubsub :-
+    get_time(Now),
+    transaction(( retractall(restarted(_)),
+                  asserta(restarted(Now)))),
+    thread_signal(redis_pubsub, throw(error(io_error(read, _),_))),
+    sleep(0.05).
+
 
 
 %!  publish_objects(+Store, +Hashes)
