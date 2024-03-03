@@ -465,7 +465,8 @@ visitor_session_reclaim(WSID, Session) :-
     redis_key(wsid, WRServer, SetKey),
     !,
     redis(ROServer, get(SessionKey), at(_Consumer,Session,_Token)),
-    redis(WRServer, srem(SetKey, WSID)).
+    redis(WRServer, srem(SetKey, WSID)),
+    redis(WRServer, del(SessionKey)).
 visitor_session_reclaim(WSID, Session) :-
     retract(visitor_session_db(WSID, Session, _Token)).
 
