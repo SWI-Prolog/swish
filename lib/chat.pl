@@ -247,6 +247,16 @@ must_succeed(Goal) :-
                  *******************************/
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+We have three user identifications:
+
+  - The WSID (Web Socket ID).  This uniquely identifies an open SWISH
+    window.
+  - The HTTP session id.   A single browser may have multiple SWISH
+    windows open and thus be associated with multiple WSIDs.
+  - A Visitor ID.  This captures elementary knowledge of the user
+    associated with the session.  Each session has exactly on Visitor
+    id.
+
 Redis DB organization
 
   - swish:chat:wsid
@@ -689,8 +699,12 @@ existing_visitor(WSID, Session, Token, _, _) :-
 %       Already logged in user with given information
 %     - avatar(Avatar)
 %       Avatar remembered in the browser for this user.
-%     - nick_name(NickName)
+%     - anonymous_name(NickName)
 %       Nick name remembered in the browser for this user.
+%     - anonymous_avatar(URL)
+%       Avatar remembered in the browser for this user.  Using the SVG
+%       avatars, this is `/icons/avatar.svg#NNN`, which `NNN` is a
+%       bitmask on the SVG to change its appearance,
 
 create_visitor(WSID, Session, Token, TmpUser, UserData, Options) :-
     generate_key(Token),
