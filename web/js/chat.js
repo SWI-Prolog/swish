@@ -214,7 +214,7 @@ var MAX_RECONNECT_DELAY = 300000;
 	if ( data.connection.readyState != 1 ) {
 	  if ( !data.queue )
 	    data.queue = [str];
-	  else
+	  else if ( !data.queue.includes(str) )
 	    data.queue.push(str);
 	  this.chat('connect');
 	} else {
