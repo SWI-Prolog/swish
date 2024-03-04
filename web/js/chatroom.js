@@ -105,17 +105,20 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 					$.el.tr($.el.td({class:"chat-text"}, text),
 						$.el.td({class:"chat-send"}, btn)))));
 
-	function enable_btn()
-	{ $(send).prop('disabled', $(text).val().trim() == "" ? true : false);
+	function enable_btn() {
+	  $(send).prop('disabled', $(text).val().trim() == "" ? true : false);
 	}
 	enable_btn();
 
-	$(send).on("click", function() {
+	function send_chat() {
 	  $(send).prop('disabled', true);
 	  elem.chatroom('send');
 	  $(text).val("");
-	});
+	}
+
+	$(send).on("click", send_chat);
 	$(text).on("change", enable_btn);
+
 					/* event handling */
 	form.widgets.populateMenu($(btn), elem, {
 	  "Include my query": function() {
@@ -140,15 +143,14 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	$(close).on("click", function() {
 	  elem.tile('close');
 	});
-	if ( options.oneline ) {
-	  $(text).keypress(function(ev) {
-	    if ( ev.which == 13 ) {
-	      elem.chatroom('send');
-	      ev.preventDefault();
-	      return false;
-	    }
-	  });
-	} else {
+	$(text).keypress(function(ev) {
+	  if ( ev.key == "Enter" &&
+	       options.oneline || ev.ctrlKey || ev.metaKey ) {
+	    send_chat();
+	    return false;
+	  }
+	});
+	if ( !options.oneline) {
 	  $(text).on('keyup', function() {
 	    var that = $(this);
 	    var h;
