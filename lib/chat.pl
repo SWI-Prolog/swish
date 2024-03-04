@@ -437,12 +437,16 @@ visitor_session_create(WSID, Session, Token) :-
 visitor_session_create(WSID, Session, Token) :-
     assertz(visitor_session_db(WSID, Session, Token)).
 
-%!  visitor_session(?WSID, -Session, -Token) is nondet.
-%!  visitor_session(?WSID, -Session, -Token, -Consumer) is nondet.
+%!  visitor_session(?WSID, ?Session) is nondet.
+%!  visitor_session(?WSID, ?Session, -Token) is nondet.
+%!  visitor_session(?WSID, ?Session, -Token, -Consumer) is nondet.
 %
 %   True when there is a known visitor  WSID that is associated with the
 %   HTTP Session, uses  Token  for  reconnecting   and  runs  on  a node
 %   identified by the Redis Consumer.
+
+visitor_session(WSID, Session) :-
+    visitor_session(WSID, Session, _Token).
 
 visitor_session(WSID, Session, Token) :-
     visitor_session(WSID, Session, Token, _Consumer).
@@ -648,13 +652,6 @@ pending_visitor(WSID, Timeout) :-
     visitor_status(WSID, lost(Lost)),
     get_time(Now),
     Now - Lost > Timeout.
-
-%!  visitor_session(?WSID, ?Session) is nondet.
-%
-%   True if websocket WSID is associated with Session.
-
-visitor_session(WSID, Session) :-
-    visitor_session(WSID, Session, _Token).
 
 %!  wsid_visitor(?WSID, ?Visitor)
 %
