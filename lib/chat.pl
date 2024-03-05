@@ -588,6 +588,10 @@ subscription(WSID, Channel, SubChannel) :-
 subscription(WSID, Channel, SubChannel) :-
     subscription_db(WSID, Channel, SubChannel).
 
+%!  subscribe(+WSID, +Channel, +SubChannel) is det.
+%
+%   Subscript WSID to listen to messages on Channel/SubChannel.
+
 subscribe(WSID, Channel, SubChannel) :-
     use_redis,
     !,
@@ -600,6 +604,10 @@ subscribe(WSID, Channel, SubChannel) :-
     ->  true
     ;   assertz(subscription_db(WSID, Channel, SubChannel))
     ).
+
+%!  unsubscribe(?WSID, ?Channel, ?SubChannel) is det.
+%
+%   Remove all matching subscriptions.
 
 unsubscribe(WSID, Channel, SubChannel) :-
     use_redis,
