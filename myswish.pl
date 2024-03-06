@@ -1,10 +1,11 @@
 /*  Part of SWISH
 
     Author:        Jan Wielemaker
-    E-mail:        J.Wielemaker@cs.vu.nl
-    WWW:           http://www.swi-prolog.org
-    Copyright (C): 2019, VU University Amsterdam
-			 CWI Amsterdam
+    E-mail:        jan@swi-prolog.org
+    WWW:           https://www.swi-prolog.org
+    Copyright (C): 2019-2024, VU University Amsterdam
+			      CWI Amsterdam
+                              SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -48,11 +49,19 @@ and both enjoy swish and keep your local development environment.
 
 ## Installation
 
-    mkdir -p ~/lib/prolog
-    cp myswish.pl ~/lib/prolog
-    edit ~/lib/prolog/myswish.pl	# fix path below
+This file must be installed in your   personal library. The location can
+be found using the command below
+
+    ?- absolute_file_name(app_config(lib), Dir, [solutions(all)]).
+
+The default on non-Windows systems   is ``~/.config/swi-prolog/lib`` and
+`myswish.pl` can be installed using these commands:
+
+    mkdir -p ~/.config/swi-prolog/lib
+    cp myswish.pl ~/.config/swi-prolog/lib
+    edit ~/.config/swi-prolog/lib/myswish.pl	# fix path below
     swipl
-    ?- make_library_index('~/lib/prolog').
+    ?- make_library_index('~/.config/swi-prolog/lib').
     ?- halt.
 
 And test the result by starting Prolog   in a __writable directory__ and
