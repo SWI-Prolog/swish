@@ -195,12 +195,12 @@ accept_chat(Session, Options, WebSocket) :-
     must_succeed(accept_chat_(Session, Options, WebSocket)).
 
 accept_chat_(Session, Options, WebSocket) :-
-    must_succeed(create_chat_room),
+    create_chat_room,
     (   option(reconnect(Token), Options),
         http_session_data(wsid(WSID, Token), Session),
         wsid_status_del_lost(WSID),
         existing_visitor(WSID, Session, TmpUser, UserData),
-        hub_add(swish_chat, WebSocket, WSID)
+        must_succeed(hub_add(swish_chat, WebSocket, WSID))
     ->  Reason = rejoined
     ;   must_succeed(hub_add(swish_chat, WebSocket, WSID)),
         random_key(16, Token),
@@ -208,9 +208,8 @@ accept_chat_(Session, Options, WebSocket) :-
         must_succeed(create_visitor(WSID, Session, TmpUser, UserData, Options)),
         Reason = joined
     ),
-    must_succeed(gc_visitors),
-    must_succeed(visitor_count(Visitors)),
-    ignore(Visitors = 0),           % in case visitor_count/1 failed
+    gc_visitors,
+    visitor_count(Visitors),
     option(check_login(CheckLogin), Options, true),
     Msg0 = _{ type:welcome,
 	      uid:TmpUser,
@@ -220,12 +219,23 @@ accept_chat_(Session, Options, WebSocket) :-
 	      check_login:CheckLogin
 	    },
     add_redis_consumer(Msg0, Msg),
-    must_succeed(hub_send(WSID, json(UserData.put(Msg)))),
-    must_succeed(chat_broadcast(UserData.put(_{type:Reason,
-                                               visitors:Visitors,
-                                               wsid:WSID}))),
-    debug(chat(websocket), '~w (session ~p, wsid ~p)',
-          [Reason, Session, WSID]).
+    AckMsg = UserData.put(Msg),
+    (   hub_send(WSID, json(AckMsg))
+    ->  must_succeed(chat_broadcast(UserData.put(_{type:Reason,
+                                                   visitors:Visitors,
+                                                   wsid:WSID}))),
+        debug(chat(websocket), '~w (session ~p, wsid ~p)',
+              [Reason, Session, WSID])
+    ;   Reason = joined
+    ->  debug(chat(websocket), 'Failed to acknowledge join for ~p in ~p',
+              [WSID, Session]),
+        http_session_retractall(wsid(WSID, Token), Session),
+        reclaim_visitor(WSID),
+        fail
+    ;   debug(chat(websocket), 'Failed to acknowledge rejoin for ~p in ~p',
+              [WSID, Session]),
+        fail
+    ).
 
 add_redis_consumer(Msg0, Msg) :-
     use_redis,
@@ -235,10 +245,11 @@ add_redis_consumer(Msg0, Msg) :-
 add_redis_consumer(Msg, Msg).
 
 must_succeed(Goal) :-
-    catch_with_backtrace(Goal, E, print_message(warning, E)),
+    catch_with_backtrace(Goal, E, (print_message(warning, E), fail)),
     !.
 must_succeed(Goal) :-
-    print_message(warning, goal_failed(Goal)).
+    print_message(warning, goal_failed(Goal)),
+    fail.
 
 
                  /*******************************
