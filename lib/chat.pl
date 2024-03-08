@@ -766,22 +766,24 @@ destroy_reason(_, close).
 
 gc_visitors :-
     swish_config(session_lost_timeout, TMO),
-    (   gc_status(Status),
-        (   Status == running
-        ->  true
-        ;   Status = completed(When),
-            get_time(Now),
-            Now-When > TMO
-        ->  fail
-        ;   retractall(gc_status(completed(_)))
-        )
-    ;   catch(thread_create(gc_visitors_sync(TMO), _Id,
-                            [ alias('swish_chat_gc_visitors'),
-                              detached(true)
-                            ]),
-              error(permission_error(create, thread, _), _),
-              true)
-    ).
+    gc_status(Status),
+    (   Status == running
+    ->  true
+    ;   Status = completed(When),
+        get_time(Now),
+        Now-When > TMO
+    ->  fail
+    ;   retractall(gc_status(completed(_)))
+    ),
+    !.
+gc_visitors :-
+    swish_config(session_lost_timeout, TMO),
+    catch(thread_create(gc_visitors_sync(TMO), _Id,
+                        [ alias('swish_chat_gc_visitors'),
+                          detached(true)
+                        ]),
+          error(permission_error(create, thread, _), _),
+          true).
 
 gc_visitors_sync(TMO) :-
     setup_call_cleanup(
