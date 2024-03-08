@@ -612,7 +612,10 @@ subscribe(WSID, Channel, SubChannel) :-
 unsubscribe(WSID, Channel, SubChannel) :-
     use_redis,
     !,
-    (   subscription(WSID, Channel, SubChannel),
+    (   (   nonvar(WSID), nonvar(Channel), nonvar(SubChannel)
+        ->  true
+        ;   subscription(WSID, Channel, SubChannel)
+        ),
         redis_key(channel(SubChannel), Server, ChKey),
         redis_key(subscription(WSID), Server, WsKey),
         redis(Server, srem(ChKey, WSID-Channel as prolog)),
