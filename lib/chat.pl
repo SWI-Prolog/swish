@@ -512,7 +512,7 @@ wsid_session_reclaim_all(WSID, Session) :-
 wsid_session_del_session(Session) :-
     use_redis,
     !,
-    (   current_wsid(WSID),
+    (   wsid_session(WSID, Session),
         wsid_session_reclaim(WSID, Session),
         fail
     ;   true
