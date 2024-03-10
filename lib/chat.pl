@@ -189,10 +189,16 @@ check_flooding(Session) :-
 
 %!  accept_chat(+Session, +Options, +WebSocket)
 %
-%   Create the websocket for the chat session.
+%   Create the websocket for the chat session. If the websocket was lost
+%   due to a network failure, the client   will  try to reconnect with a
+%   reconnect token. If this is successful   we restore the old identity
+%   and WSID. If not, we add the  websocket   to  the "hub" and send a a
+%   welcome message over the established websocket.
 
 accept_chat(Session, Options, WebSocket) :-
-    must_succeed(accept_chat_(Session, Options, WebSocket)).
+    must_succeed(accept_chat_(Session, Options, WebSocket)),
+    Long is 100*24*3600,                        % see update_session_timeout/1
+    http_set_session(Session, timeout(Long)).
 
 accept_chat_(Session, Options, WebSocket) :-
     create_chat_room,
@@ -735,7 +741,7 @@ random_key(Len, Key) :-
     phrase(base64url(Codes), Encoded),
     atom_codes(Key, Encoded).
 
-%!  destroy_visitor(+WSID)
+%!  destroy_visitor(+WSID) is det.
 %
 %   The web socket WSID has been   closed. We should not immediately
 %   destroy the temporary user as the browser may soon reconnect due
@@ -748,6 +754,7 @@ random_key(Len, Key) :-
 
 destroy_visitor(WSID) :-
     must_be(atom, WSID),
+    update_session_timeout(WSID),
     destroy_reason(WSID, Reason),
     (   Reason == unload
     ->  reclaim_visitor(WSID)
@@ -767,6 +774,25 @@ destroy_reason(WSID, Reason) :-
     !,
     Reason = unload.
 destroy_reason(_, close).
+
+%!  update_session_timeout(+WSID) is det.
+%
+%   WSID was lost. If this is  the   only  websocket  on this session we
+%   reduce the session timeout  to  15   minutes.  This  cooperates with
+%   accept_chat/3, which sets the session  timeout   to  100 days for as
+%   long as we have an active websocket connection.
+
+update_session_timeout(WSID) :-
+    wsid_session(WSID, Session),
+    !,
+    (   wsid_session(WSID2, Session),
+        WSID2 \== WSID
+    ->  true
+    ;   debug(chat(websocket), 'Websocket ~p was last in session ~p',
+              [ WSID, Session]),
+        http_set_session(Session, timeout(900))
+    ).
+update_session_timeout(_).
 
 %!  gc_visitors
 %
