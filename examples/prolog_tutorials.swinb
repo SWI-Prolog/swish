@@ -3,16 +3,23 @@
 <div class="nb-cell markdown" name="md1">
 # Prolog tutorials
 
-This notebook collects Prolog tutorials provided as SWISH notebooks.
+This notebook collects Prolog tutorials provided as SWISH notebooks. Note that you can find other Prolog tutorials from the *Tutorials* menu at
+the [SWI-Prolog home page](https://www.swi-prolog.org).
+
+## Core SWI-Prolog tutorials
 
   - [Using SWI-Prolog version 7 dicts](example/dict.swinb)
   - [Using tabling in SWI-Prolog](example/tabling.swinb)
   - [Rational number (ℚ) support](example/rational.swinb)
   - [IEEE-754 Floating point support](example/IEEE754.swinb)
-  
-Note that you can find other tutorials from the *Tutorials* menu at
-the [SWI-Prolog home page](http://www.swi-prolog.org).
-  
+
+## Extensions and packages
+```eval
+:- if(exists_source(library(clpBNR))).
+:- format('  - [clpBNR: Constraint Logic Programming over Booleans, Integers and Reals](example/clpBNR_quickstart.swinb)~n').
+:- endif.
+```
+
 ---
 ## Submitting a tutorial
 
