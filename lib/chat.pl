@@ -605,9 +605,13 @@ subscription(WSID, Channel, SubChannel) :-
 subscription(WSID, Channel, SubChannel) :-
     subscription_db(WSID, Channel, SubChannel).
 
+%!  subscribe(+WSID, +Channel) is det.
 %!  subscribe(+WSID, +Channel, +SubChannel) is det.
 %
 %   Subscript WSID to listen to messages on Channel/SubChannel.
+
+subscribe(WSID, Channel) :-
+    subscribe(WSID, Channel, _SubChannel).
 
 subscribe(WSID, Channel, SubChannel) :-
     use_redis,
@@ -622,9 +626,13 @@ subscribe(WSID, Channel, SubChannel) :-
     ;   assertz(subscription_db(WSID, Channel, SubChannel))
     ).
 
+%!  unsubscribe(?WSID, ?Channel) is det.
 %!  unsubscribe(?WSID, ?Channel, ?SubChannel) is det.
 %
 %   Remove all matching subscriptions.
+
+unsubscribe(WSID, Channel) :-
+    unsubscribe(WSID, Channel, _SubChannel).
 
 unsubscribe(WSID, Channel, SubChannel) :-
     use_redis,
@@ -633,15 +641,18 @@ unsubscribe(WSID, Channel, SubChannel) :-
         ->  true
         ;   subscription(WSID, Channel, SubChannel)
         ),
-        redis_key(channel(SubChannel), Server, ChKey),
-        redis_key(subscription(WSID), Server, WsKey),
-        redis(Server, srem(ChKey, WSID-Channel as prolog)),
-        redis(Server, srem(WsKey, Channel-SubChannel as prolog)),
+        redis_unsubscribe(WSID, Channel, SubChannel),
         fail
     ;   true
     ).
 unsubscribe(WSID, Channel, SubChannel) :-
     retractall(subscription_db(WSID, Channel, SubChannel)).
+
+redis_unsubscribe(WSID, Channel, SubChannel) :-
+    redis_key(channel(SubChannel), Server, ChKey),
+    redis_key(subscription(WSID), Server, WsKey),
+    redis(Server, srem(ChKey, WSID-Channel as prolog)),
+    redis(Server, srem(WsKey, Channel-SubChannel as prolog)).
 
 
 		 /*******************************
@@ -864,6 +875,12 @@ valid_visitor(_WSID, _TMO, Consumer) :-
     !,
     \+ redis_consumer(Consumer).
 
+%!  reclaim_visitor(+WSID) is det.
+%
+%   Reclaim a WSID connection. If  the   user  left  gracefully, this is
+%   called immediately. If we lost the connection   on an error, this is
+%   eventually called (indirectly) by do_gc_visitors/1.
+
 reclaim_visitor(WSID) :-
     debug(chat(gc), 'Reclaiming idle ~p', [WSID]),
     reclaim_wsid_session(WSID),
@@ -871,9 +888,10 @@ reclaim_visitor(WSID) :-
     unsubscribe(WSID, _).
 
 reclaim_wsid_session(WSID) :-
-    forall(wsid_session_reclaim(WSID, Session),
-           http_session_retractall(websocket(_, _), Session)).
-
+    (   wsid_session_reclaim(WSID, Session)
+    ->  http_session_retractall(websocket(_, _), Session)
+    ;   true
+    ).
 
 %!  create_session_user(+Session, -User, -UserData, +Options)
 %
@@ -1079,14 +1097,6 @@ inform_friend_change(WSID, Data, Reason) :-
                       reason:Reason
                     }.put(Data)),
     send_friends(WSID, Message).
-
-%!  subscribe(+WSID, +Channel) is det.
-
-subscribe(WSID, Channel) :-
-    subscribe(WSID, Channel, _SubChannel).
-
-unsubscribe(WSID, Channel) :-
-    unsubscribe(WSID, Channel, _SubChannel).
 
 %!  sync_gazers(+WSID, +Files:list(atom)) is det.
 %
