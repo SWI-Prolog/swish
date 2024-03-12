@@ -1466,10 +1466,13 @@ handle_message(Message, _Room) :-
     atom_json_dict(Message.data, JSON, []),
     debug(chat(received), 'Received from ~p: ~p', [Message.client, JSON]),
     WSID = Message.client,
-    setup_call_cleanup(
-        b_setval(wsid, WSID),
-        json_message(JSON, WSID),
-        nb_delete(wsid)).
+    (   current_wsid(WSID)
+    ->  setup_call_cleanup(
+            b_setval(wsid, WSID),
+            json_message(JSON, WSID),
+            nb_delete(wsid))
+    ;   debug(chat(visitor), 'Ignored ~p (WSID ~p unknown)', [Message, WSID])
+    ).
 handle_message(Message, _Room) :-
     hub{joined:WSID} :< Message,
     !,
