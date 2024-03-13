@@ -32,7 +32,6 @@ div.tab-content	{
   height: 100%;
 }
 
-
 div.tab-pane {
   position: relative;
   height: 100%;
@@ -81,10 +80,15 @@ a.tab-chat.chat-available {
   width: 22px;
 }
 
-.tabbed-select {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
+.tabbed-select {		/* Make scrollable.  See also .codeMirror above */
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
 }
 
 .tabbed-create {
