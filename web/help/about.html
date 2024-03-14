@@ -18,11 +18,16 @@
 			padding-top: 5px;
 			text-align: center;
 		      }
+  p.sponsor-request {
+      background: yellow;
+  }
   div.sponsors { text-align: center;
 		 width: 70%;
 		 margin: auto;
 		 color: #888;
 	       }
+  div.authors { margin-bottom: 3ex; }
+  span.author { color: black; font-style: italic; }
   div.acknowledgement img { margin: 0px 5px; }
   img.sponsor-logo.top { vertical-align: top;}
   img.commit { width: 30% }
@@ -33,52 +38,64 @@
   </style>  </head>
   <body>
 
+<div class="sponsors authors">
+<span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
+was originally written by <span class="author">Torbjörn Lager</span> as a homage to
+SWI-Prolog. <br>
+<span class="author">Jan Wielemaker</span> designed and implemented the present
+version. <br>
+The avatar graphics have been made available by <span class="author">Anne Ogborn</span>.
+</div>
+
 <p>
-<span style="color:darkblue">SWI</span><span
-style="color:maroon">SH</span> was originally written by Torbjörn Lager
-as a homage to SWI-Prolog. Jan Wielemaker designed and implemented the
-present version. The current <span
-style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
-application targets primarily at collaborative exploration of data. <span
-style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
-can be combined with e.g., <a
-href="http://www.swi-prolog.org/pldoc/package/cql">CQL</a> to explore
-relational (SQL) databases or <a
-href="http://www.swi-prolog.org/pack/list?p=sparkle">sparkle</a> to
-explore linked data. A <a
-href="http://cliopatria.swi-prolog.org/packs/swish">ClioPatria
-plugin</a> adds Prolog based exploration of RDF data to ClioPatria.
+<span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
+is a versatile tool.  It can be used privately as <b>IDE</b>, by a
+team of <b>data scientists</b> to explore a data loaded into Prolog or
+from one or more external databases connected to it.  Prolog can
+access relational as graph databases.  It provides support
+for <a href="https://www.rdfhdt.org/">HTDs</a> to access huge RDF
+graphs.  Through
+its <a href="https://github.com/SWI-Prolog/swish/tree/master/client">API</a>,
+<span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
+can also used as a shared <b>reasoning service</b>.  It is most widely
+known as an <b>educational service</b>.
 </p>
 
 <p>
-<span style="color:darkblue">SWI</span><span
-style="color:maroon">SH</span> is a great tool for teaching Prolog.
-We provide a <a href="http://lpn.swi-prolog.org">prototype of
-Learn Prolog Now!</a> where <span style="color:darkblue">SWI</span><span
-style="color:maroon">SH</span> is embedded to run examples and solve
-excercises from within your browser.  Peter Flach prepared his book
-<a href="http://book.simply-logical.space/">Simply Logical</a> for
+<span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
+is a great tool for teaching Prolog.  We provide
+a <a href="http://lpn.swi-prolog.org">prototype of Learn Prolog
+Now!</a>
+where <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
+is embedded to run examples and solve exercises from within your
+browser.  Peter Flach created an online version of his book
+<a href="http://book.simply-logical.space/">Simply Logical</a> to embed
 <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>.
 </p>
 
-<p>
-The <span style="color:darkblue">SWI</span><span
-style="color:maroon">SH</span> source is available from <a
-href="http://github.com/SWI-Prolog/swish.git">GitHub</a>. It is under
-heavy development and often requires SWI-Prolog 7 installed from the
-latest <a href="http://github.com/SWI-Prolog/swipl-devel.git">GIT</a>.
-We also provide a <a href="https://hub.docker.com/r/swipl/swish/">Docker image</a>.
-</p>
-
-<p>
-Avatar graphics created by <a href="http://www.noblemaster.com">Noble
-Master Games</a>, designed by
-<a href="http://liea.deviantart.com">Mei-Li Nieuwland</a>.
+<p class="sponsor-request">
+  Running the public <a href="https://swish.swi-prolog.org">SWISH</a>
+  instance involves hiring (currently) three servers in the cloud as
+  well as significant maintenance work.
+  Institutes that use <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>
+  for teaching Prolog are kindly requested to consider <b>sponsoring</b> SWI-Prolog
+  using the Github sponsor button below to help us maintaining and improving
+  <span style="color:darkblue">SWI</span><span style="color:maroon">SH</span>.
 </p>
 
 <div class="github">
-<iframe class="github-btn" src="https://ghbtns.com/github-btn.html?user=SWI-Prolog&amp;repo=swish&amp;type=watch&amp;count=true" width="100" height="20" title="Star on GitHub"></iframe>
-<iframe class="github-btn" src="https://ghbtns.com/github-btn.html?user=SWI-Prolog&amp;repo=swish&amp;type=fork&amp;count=true" width="102" height="20" title="Fork on GitHub"></iframe>
+  <a class="github-button" href="https://github.com/SWI-Prolog/swish"
+     data-color-scheme="no-preference: light; light: light; dark: dark;"
+     data-icon="octicon-star" data-size="large"
+     aria-label="Star SWI-Prolog/swish on GitHub">Star</a>
+  <a class="github-button" href="https://github.com/SWI-Prolog/swish/fork"
+     data-color-scheme="no-preference: light; light: light; dark: dark;"
+     data-icon="octicon-repo-forked" data-size="large"
+     aria-label="Fork SWI-Prolog/swish on GitHub">Fork</a>
+  <a class="github-button" href="https://github.com/sponsors/SWI-Prolog"
+     data-color-scheme="no-preference: light; light: light; dark: dark;"
+     data-icon="octicon-heart" data-size="large"
+     aria-label="Sponsor @SWI-Prolog on GitHub">Sponsor</a>
 </div>
 
 <div class="swish-versions v-compact"></div>
@@ -97,11 +114,12 @@ Master Games</a>, designed by
 </div>
 
 <div class="sponsors">
-The development of SWISH as a <em>DataLab</em> is sponsored by
+The development of SWISH as a <em>DataLab</em> has been made possible by
 the <a href="http://www.commit-nl.nl">COMMIT/ consortium</a> and
 <a href="http://www.vre4eic.eu">VRE4EIC</a>.
 </div>
 
+<script src="https://buttons.github.io/buttons.js" defer async></script>
 </body>
 </html>
 
