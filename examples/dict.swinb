@@ -67,8 +67,7 @@ _Feature terms_ are commonly used in NLP packages to unify sets of features.  Th
 
 <div class="nb-cell program" data-background="true" name="p5">
 attr_unify_hook(Dict1, Var) :-
-    (   get_attr(Var, Dict2),
-        writeln(Dict2)
+    (   get_attr(Var, Dict2)
     -&gt;  Dict1 &gt;:&lt; Dict2,
         Dict = Dict1.put(Dict2),
         put_attr(Var, Dict)
@@ -79,7 +78,7 @@ attribute_goals(Var) --&gt;
     [ ft(Var, Dict) ].
 
 ft(Var, Dict) :-
-    put_attr(Var, Dict).        
+    put_attr(Var, Dict).
 </div>
 
 <div class="nb-cell markdown" name="md12">
