@@ -76,6 +76,12 @@ var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
      */
     update: function(why) {
       var elem = $(this);
+
+      if ( !config.http.locations.user_info ) {
+	$(".sourcelist").trigger("login");
+	return;
+      }
+
       backend.ajax(
 	{ url: config.http.locations.user_info,
 	  data: {reason:why},
