@@ -59,10 +59,13 @@ Typically the configuration needs to be edited in two places:
 :- use_module(swish(lib/config), []).
 :- use_module(library(redis)).
 :- use_module(library(settings)).
+:- use_module(library(lists)).
 :- use_module(swish('config-available/user_profile')).
 :- use_module(library(profile/backend/profile_redis), []).
 :- use_module(library(http/http_session)).
 :- use_module(library(http/http_redis_plugin)).
+:- use_module(swish(lib/chat), []).
+:- use_module(swish(lib/cron)).
 
 :- initialization
     redis_servers.
@@ -95,7 +98,8 @@ redis_connect_options(
 
 redis_servers :-
     redis_master_server(swish),
-    redis_ro_server(swish, swish_ro).
+    redis_ro_server(swish, swish_ro),
+    http_schedule_maintenance(daily(02:40), clear_subscriptions_by_channel).
 
 redis_master_server(ServerId) :-
     redis_connect_options(Options),
@@ -129,5 +133,31 @@ swish_config:config(redis_consumer, Consumer) :-
 :- http_set_session_options([ redis_db(swish),
                               redis_prefix('swish:http:session')
                             ]).
+
+%!  clear_subscriptions_by_channel
+%
+%   Maintenance command to clear dangling  subscriptions. This should be
+%   executed by at least one  of   the  cluster  members, preferably the
+%   currrent master. For now, we just have all cluster members doing the
+%   job.
+
+clear_subscriptions_by_channel :-
+    (   dangling_subscription(WSID, Channel, SubChannel),
+        swish_chat:unsubscribe(WSID, Channel, SubChannel),
+        fail
+    ;   true
+    ).
+
+dangling_subscription(WSID, Channel, SubChannel) :-
+    (   ro_server(Server)
+    ->  true
+    ;   Server = swish
+    ),
+    redis(Server, keys('swish:chat:channel:*'), ChKeys),
+    member(ChKey, ChKeys),
+    atom_concat('swish:chat:channel:', SubChannel, ChKey),
+    redis_sscan(Server, ChKey, List, []),
+    member(WSID-Channel, List),
+    \+ swish_chat:current_wsid(WSID).
 
 :- endif. % \+swish_config:config(ide,true)
