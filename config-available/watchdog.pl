@@ -43,18 +43,25 @@ This module deals with regular  maintenance   tasks  for 24x7 instances.
 Infrequently Pengines escape their time limit.
 */
 
+% When to consider a thread a runaway?  CPU time in seconds.
+runaway_min_time(1800).
+
 :- initialization
     http_schedule_maintenance(daily(02:50), kill_runaway_threads).
 
 kill_runaway_threads :-
-    forall(runaway_thread(TID, Time),
+    runaway_min_time(MinTime),
+    forall(runaway_thread(TID, MinTime, Time),
            kill_thread(TID, Time)).
 
-runaway_thread(TID, CPU) :-
+runaway_thread(TID, MinTime, CPU) :-
     thread_property(TID, id(_)),
+    catch(anon_thread_cpu(TID, CPU), error(_,_), fail),
+    CPU > MinTime.
+
+anon_thread_cpu(TID, CPU) :-
     \+ thread_property(TID, alias(_)),
-    thread_statistics(TID, cputime, CPU),
-    CPU > 1800.
+    thread_statistics(TID, cputime, CPU).
 
 kill_thread(TID, Time) :-
     print_message(warning, kill_runaway(TID, Time)),
