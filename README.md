@@ -241,6 +241,7 @@ tools for that:
     % sudo npm install -g jsdoc
     % sudo npm install -g requirejs
     % sudo npm install -g clean-css-cli
+    % sudo npm install -g uglify-js
 
 You also need GNU make installed as   `make`  and SWI-Prolog as `swipl`.
 With all that in  place,  the   following  command  creates the minified
