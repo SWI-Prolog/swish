@@ -123,6 +123,37 @@ preferences.setInform("preserve-state", ".unloadable");
 	"Download": glyph("floppy-save", function() {
 	  menuBroadcast("download");
 	}),
+  //메뉴에 업로드 버튼 추가 
+  "Upload ...": glyph("upload", function() {
+        alert("Upload function triggered");
+        // Here you would typically open a file dialog and handle the upload
+        var input = $('<input type="file" style="display:none">');
+        input.appendTo('body').click().on('change', function() {
+          var file = this.files[0];
+          if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+              console.log(e.target.result); // Here you would send the file data to the server
+              // Implement the AJAX call to upload the file to the server
+              $.ajax({
+                url: '/upload', // Define the correct endpoint on your server
+                type: "POST",
+                data: e.target.result,
+                contentType: "application/octet-stream",
+                success: function(response) {
+                  console.log('File uploaded successfully');
+                  // Handle the server response here
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                  console.error('File upload failed:', textStatus, errorThrown);
+                  // Handle the error here
+                }
+              });
+            };
+            reader.readAsArrayBuffer(file);
+          }
+        });
+      }),
 	"Print ...": glyph("print", function() {
 	  menuBroadcast("print");
 	})
@@ -240,6 +271,7 @@ preferences.setInform("preserve-state", ".unloadable");
 		.chatbell({
 		  empty_title: "Click to open chat"
 		});
+
 	$("#chat-menu").on("click", "a", function(ev) {
 	  var a = $(ev.target).closest("a");
 	  switch ( a.data('action') ) {
