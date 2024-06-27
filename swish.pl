@@ -47,6 +47,7 @@
 :- use_module(lib/paths).
 :- use_module(lib/config, []).
 :- use_module(lib/page, []).
+:- use_module(lig/mypage).
 :- use_module(lib/storage).
 :- use_module(lib/include).
 :- use_module(lib/swish_csv).
