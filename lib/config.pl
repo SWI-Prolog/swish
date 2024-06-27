@@ -171,7 +171,6 @@ expand_paths(Name-Spec, Name-Path) :-
 	http_absolute_location(Spec, Path, []).
 expand_paths(Pair, Pair).
 
-
 %%	config(-Key, -Value) is nondet.
 %%	swish_config(-Key, -Value) is nondet.
 %
@@ -217,15 +216,15 @@ config(wfs_residual_program_var, '_wfs_residual_program').
 %	The Item is often  an  image.  The   image  must  have  a  class
 %	=login-with=. Below is an example to login with Google:
 %
-%	```
+% ```
 %	swish_config:login_item(Item) :-
-%	    http_absolute_location(icons('social_google_box.png'), Img, []),
-%	    Item = img([ src(Img),
-%	                 class('login-with'),
-%	                 'data-server'(google),
-%	                 title('Login with Google')
-%	               ]).
-%	```
+%		http_absolute_location(icons('social_google_box.png'), Img, []),
+%		Item = img([ src(Img),
+%	                	class('login-with'),
+%	                	'data-server'(google),
+%	                	title('Login with Google')
+%	            	]).
+% ```
 %
 %	@arg Item may be of the form  `Tag-Item`. In this case the items
 %	are ordered by Tag. The default tag is `0`.
