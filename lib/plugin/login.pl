@@ -73,8 +73,7 @@ using configuration hooks. The various login options are accompagnied by
 configuration files in =config-available=.
 */
 
-:- http_handler(swish(login),        swish_login,  [id(login)]).
-:- http_handler(swish(user_info),    user_info,    [id(user_info)]).
+:- http_handler(root(login), login_page_handler, []). % 로그인 페이지 핸들러 추가
 
 
 		 /*******************************
@@ -103,10 +102,8 @@ login_button(_Options) -->
     html(a([ href(Login), id(login), class(login) ],
            [ span(class(login),
                   \login_items(Items)),
-             span([ class(logout)
-                  ],
-                  [ span(class(value), 'Logout')
-                  ])
+             span([ class(logout) ],
+                  [ span(class(value), 'Logout') ])
            ])).
 login_button(_Options) -->              % config-available/auth_http_always.pl
     html(a([ id(login), class([login, 'no-logout']) ],
