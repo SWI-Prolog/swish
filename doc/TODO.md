@@ -26,7 +26,7 @@
 
 ## Rendering framework
 
-  - User provided rendering?
+  -  provided rendering?
     - Allow for rewriting answer terms?
     - Allow generating HTML?  How to deal with security?
 
