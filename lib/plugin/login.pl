@@ -40,18 +40,20 @@
             reply_logged_in_page/1,     % +Options
             reply_logged_out/1,         % +Options
             reply_logged_out_page/1,    % +Options
-            current_user_info/2         % +Request, -UserInfo
+            current_user_info/2,        % +Request, -UserInfo 
+            signup_handler/1
           ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/html_write)).
-:- use_module(library(http/js_write)).
+:- use_module(library(js_write)).
 :- use_module(library(option)).
 :- use_module(library(apply)).
 :- use_module(library(broadcast)).
 
 :- use_module('../config', []).
+:- use_module(user_management). % 모듈 추가
 
 :- multifile
     swish_config:login/2,
@@ -64,22 +66,53 @@
 
 /** <module> SWISH login support
 
-This module provides the generic  code   to  deal  with _optional_ login
-using multiple protocols. _Optional_ means that   SWISH may be used both
+This module provides the generic code to deal with _optional_ login
+using multiple protocols. _Optional_ means that SWISH may be used both
 anonymously and after login.
 
 This module cooperates with web/js/login.js. Login providers are defined
-using configuration hooks. The various login options are accompagnied by
+using configuration hooks. The various login options are accompanied by
 configuration files in =config-available=.
 */
 
-:- http_handler(swish(login),        swish_login,  [id(login)]).
-:- http_handler(swish(user_info),    user_info,    [id(user_info)]).
+:- http_handler('/login', swish_login, [id(login)]).
+:- http_handler('/user_info', user_management:user_info_handler, [id(user_info)]).
+:- http_handler('/signup', user_management:signup_handler, []).  % user_management 모듈의 signup_handler/1을 사용
+:- http_handler('/authenticate', user_management:login_handler, [method(post)]).  % 로그인 핸들러 추가
 
+login_form(_Request) -->
+    html(
+        div(class('login-form-container'), [
+            style('.login-form-container { max-width: 300px; margin: auto; } .login-form-container label { display: inline-block; width: 80px; } .login-form-container input[type="text"], .login-form-container input[type="password"] { width: calc(100% - 90px); }'),
+            form([ id('login-form'), action('/authenticate'), method('POST') ], [
+                div(class('form-group'), [
+                    label([for=id], 'ID: '),
+                    input([type=text, name=id, id=id, class('form-control')])
+                ]),
+                div(class('form-group'), [
+                    label([for=password], 'Password: '),
+                    input([type=password, name=password, id=password, class('form-control')])
+                ]),
+                div(class('form-group'), [
+                    input([type=submit, value='Login', class('btn btn-primary')])
+                ])
+            ])
+        ])
+    ).
 
-		 /*******************************
-		 *          UI ELEMENTS		*
-		 *******************************/
+swish_login(_Request) :-
+    reply_html_page(
+        title('Login'),
+        [ div([style('text-align: center; font-family: Arial, sans-serif; margin-bottom: 10px;')],
+              [ p('Please log in using your ID or sign up if you don\'t have an account.')
+              ]),
+          \login_form(_Request),
+          p(a([ href('#'), id('sign-up-button'), class('btn btn-secondary'), style('display: block; text-align: center; margin-top: 10px;')], 'Sign up')) 
+        ]).
+              
+/*******************************
+ *          UI ELEMENTS     *
+ *******************************/
 
 %!  swish_config:li_login_button(+Options)//
 %
@@ -103,17 +136,13 @@ login_button(_Options) -->
     html(a([ href(Login), id(login), class(login) ],
            [ span(class(login),
                   \login_items(Items)),
-             span([ class(logout)
-                  ],
-                  [ span(class(value), 'Logout')
-                  ])
+             span([ class(logout) ],
+                  [ span(class(value), 'Logout') ])
            ])).
 login_button(_Options) -->              % config-available/auth_http_always.pl
-    html(a([ id(login), class([login, 'no-logout']) ],
-           [ span([ class(logout)
-                  ],
-                  [ span(class(value), [])
-                  ])
+    html(a([ href('/login'), id(login), class([login, 'no-logout']) ],
+           [ span([ class(logout) ],
+                  [ span(class(value), 'Login') ])
            ])).
 
 login_item(item(Tag, Server, Item)) :-
@@ -126,7 +155,7 @@ login_item(item(Tag, Server, Item)) :-
 
 %!  login_items(+Items)
 %
-%   Show the login options. If there is only   one, we just show a login
+%   Show the login options. If there is only one, we just show a login
 %   field.
 
 login_items([item(_Tag, Server, Item)]) -->
@@ -145,18 +174,15 @@ login_items(Items) -->
 login_attr(Item, 'data-frame'(Frame)) :-
     sub_term('data-frame'(Frame), Item).
 
-
-
-
 %!  reply_logged_in(+Options) is det.
 %!  reply_logged_in_page(+Options) is det.
 %
-%   Reply with an HTML  document  that   the  login  succeeded.  This is
+%   Reply with an HTML document that the login succeeded. This is
 %   normally called from the protocol-specific login handler to indicate
-%   that the login succeeded.  Options:
+%   that the login succeeded. Options:
 %
 %     - identity_provider(+Provider)
-%     Indicate the identity provider that did the login.  Provider is
+%     Indicate the identity provider that did the login. Provider is
 %     a term for html//1.
 %     - user(+User)
 %     User id of the identified user.
@@ -167,8 +193,8 @@ login_attr(Item, 'data-frame'(Frame)) :-
 %
 %   At least one of user(User) or name(Name) must be present.
 %
-%   The     predicate     reply_logged_in/1     calls     the     _hook_
-%   swish_config:reply_logged_in/1.   This   hook   is    provided   for
+%   The predicate reply_logged_in/1 calls the hook
+%   swish_config:reply_logged_in/1. This hook is provided for
 %   interacting with a user profile manager.
 
 reply_logged_in(Options) :-
@@ -212,8 +238,8 @@ user(_) -->
 
 %!  login_continue_button//
 %
-%   The login page is opened either  inside   an  iframe  inside a SWISH
-%   modal dialog or inside a browser popup   window. This scripts adds a
+%   The login page is opened either inside an iframe inside a SWISH
+%   modal dialog or inside a browser popup window. This scripts adds a
 %   button to dismiss the browser popup window.
 
 login_continue_button -->
@@ -244,8 +270,6 @@ if ( !inIframe() ) {
 }
               |}).
 
-
-
 %!  reply_logged_out(+Options)
 %
 %   Perform pluggable logout
@@ -263,22 +287,15 @@ reply_logged_out_page(Options) :-
     ;   true
     ).
 
-
-		 /*******************************
-		 *          HTTP HANDLERS	*
-		 *******************************/
+/*******************************
+ *          HTTP HANDLERS   *
+ *******************************/
 
 %!  swish_login(+Request)
 %
 %   HTTP handler that deals with  login.   This  handler  is called from
 %   web/js/login.js which adds  the  selected   login  server  from  the
 %   =data-server= attribute.
-
-swish_login(Request) :-
-    http_parameters(Request,
-                    [ server(Server, [default(default)])
-                    ]),
-    swish_config:login(Server, Request).
 
 %!  user_info(+Request)
 %
