@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2017, VU University Amsterdam
+    Copyright (C): 2014-2024, VU University Amsterdam
 			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -49,8 +50,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
-       function($, config, utils, Bloodhound) {
+define([ "jquery", "config", "utils", "bloodhound", "typeahead", "chat" ],
+       function($, config, utils, Bloodhound, chat) {
 
 (function($) {
   var pluginName = 'search';
@@ -82,7 +83,7 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
 			},
 			datumTokenizer: fileTokenizer,
 			queryTokenizer: Bloodhound.tokenizers.whitespace
-	               });
+		       });
 	files.initialize();
 
 	function fileTokenizer(f) {
@@ -98,11 +99,11 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
 	  }
 
 	  var str = "<div class=\"tt-match file type-icon "
-	          + filetype(f.name)
-	          + "\">"
+		  + filetype(f.name)
+		  + "\">"
 		  + "<span class=\"tt-label\">"
 		  + utils.htmlEncode(filebase(f.name));
-	          + "</span>";
+		  + "</span>";
 
 	  if ( f.tags ) {
 	    str += "<span class=\"tt-tags\">";
@@ -135,11 +136,11 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
 			     remote: {
 			       url: config.http.locations.swish_typeahead +
 				     "?set=store_content&q=%QUERY",
-			       replace:bloodHoundURL
+			       replace:bloodHoundURLAuth
 			     },
 			     datumTokenizer: sourceLineTokenizer,
 			     queryTokenizer: Bloodhound.tokenizers.whitespace
-	                   });
+			   });
 	storeContent.initialize();
 
 	var currentFile  = null;
@@ -177,7 +178,7 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
 			},
 			datumTokenizer: sourceLineTokenizer,
 			queryTokenizer: Bloodhound.tokenizers.whitespace
-	               });
+		       });
 	sources.initialize();
 
 	function sourceLineTokenizer(hit) {
@@ -191,8 +192,8 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
 	    currentFile = hit.file;
 	    currentAlias = hit.alias;
 	    str = "<div class=\"tt-file-header type-icon "+hit.ext+"\">"
-	        + "<span class=\"tt-path-alias\">"
-	        + utils.htmlEncode(hit.alias)
+		+ "<span class=\"tt-path-alias\">"
+		+ utils.htmlEncode(hit.alias)
 		+ "</span>(<span class=\"tt-path-file\">"
 		+ utils.htmlEncode(hit.file)
 		+ ")</span>"
@@ -228,7 +229,7 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
 		  match=false;
 	      }
 	      if ( match )
-	        matches.push(templ);
+		matches.push(templ);
 	    }
 	  }
 
@@ -308,14 +309,14 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
 	    text = text.substring(0,80);
 
 	  var str = "<div class=\"tt-match source\">"
-	          + "<span class=\"tt-line\">"
+		  + "<span class=\"tt-line\">"
 		  + "<span class=\"tt-lineno\">"
 		  + hit.line
 		  + "</span>"
 		  + "<span class=\"tt-text\">"
 		  + utils.htmlEncode(text)
-	          + "</span>"
-	          + "</span>"
+		  + "</span>"
+		  + "</span>"
 		  + "</div>";
 
 	  return str;
@@ -337,10 +338,10 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
 			     },
 			     datumTokenizer: sourceLineTokenizer,
 			     queryTokenizer: Bloodhound.tokenizers.whitespace
-	                   });
+			   });
 	users.initialize();
 
-	function renderUser(hit) {
+	function renderUser(hit) { // TODO: Deal with SVG avatars.   chat.avatar() returns an object!
 	  function avatar(hit) {
 	    if ( hit.avatar ) {
 	      return '<img class="avatar" src="'+encodeURI(hit.avatar)+'">';
@@ -417,7 +418,11 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
 	}
 
 	/**
-	 * Assemble the sources
+	 * Assemble the sources.  This defines which of the above
+	 * defined things that may be searched are actually tried.
+	 * This is assembled from the data element `search-in`,
+	 * which is set in `lib/search.pl`.  The default is to
+	 * search `source`, `files` and `predicates`
 	 */
 
 	function ttSources(from) {
@@ -516,6 +521,23 @@ define([ "jquery", "config", "utils", "bloodhound", "typeahead" ],
     var match = $("label.active > input[name=smatch]").val();
     if ( match )
       url += "&match="+match;
+
+    return url;
+  }
+
+  function bloodHoundURLAuth(url, query) {
+    var url = url.replace('%QUERY',
+			  encodeURIComponent(query));
+    var match = $("label.active > input[name=smatch]").val();
+    if ( match )
+      url += "&match="+match;
+    const profile = $("#login").login('get_profile',
+				      [ "display_name", "avatar"
+				      ]);
+    if ( profile.avatar )
+      url += "&avatar="+encodeURIComponent(profile.avatar);
+    if ( profile.display_name )
+      url += "&display_name="+encodeURIComponent(profile.display_name);
 
     return url;
   }

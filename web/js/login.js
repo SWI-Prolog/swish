@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2017, VU University Amsterdam
-			 CWI Amsterdam
+    Copyright (C): 2017-2023, VU University Amsterdam
+			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,8 +43,8 @@
  * @requires jquery
  */
 
-define([ "jquery", "modal", "config", "form", "laconic" ],
-  function($, modal, config, form) {
+define([ "jquery", "modal", "config", "form", "backend", "laconic" ],
+       function($, modal, config, form, backend) {
 
 var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
 
@@ -70,60 +71,72 @@ elem.login('update', "startup");
  });
 },
 
-/**
-* Update the status of the login element
-*/
-update: function(why) {
- var elem = $(this);
- $.get(config.http.locations.user_info, {reason:why},
- function(obj) {
-   if ( obj ) {
-config.swish.user = obj;
-elem.removeClass("login").addClass("logout");
+    /**
+     * Update the status of the login element
+     */
+    update: function(why) {
+      var elem = $(this);
 
-var span = elem.find("span.logout span.value");
-var icon;
+      if ( !config.http.locations.user_info ) {
+	$(".sourcelist").trigger("login");
+	return;
+      }
 
-if ( obj.avatar ) {
- icon = $.el.img({ class: "profile-picture",
-       src: obj.avatar
-     });
-} else {
- icon = $.el.span({class:"glyphicon glyphicon-user"});
-}
-icon = $.el.span(icon, $.el.b({class: "caret"}));
-span.html("");
-span.append(form.widgets.dropdownButton(icon, {
- divClass:"user-menu btn-transparent",
- ulClass:"pull-right",
- client: elem,
- actions: {
-   "Logout":  elem.hasClass('no-logout') ? undefined :
-        function() {
-     this.login('logout');
-   },
-   "Profile": function() {
-     this.login('profile');
-   }
- }
-}));
+      backend.ajax(
+	{ url: config.http.locations.user_info,
+	  data: {reason:why},
+	  success: function(obj) {
+	    if ( obj ) {
+	      config.swish.user = obj;
+	      elem.removeClass("login").addClass("logout");
 
-if ( why == "logout_by_http" )
- modal.alert("Failed to logout from HTTP login.  Logout from HTTP "+
-       "is known not to work for Chrome.  For some browsers "+
-       "there is a plugin to logout.  Otherwise stopping your "+
-       "browser completely (all pages) and restarting is the "+
-       "only way to logout.  HTTP logout does work for FireFox "+
-       "and IE.");
+	      var span = elem.find("span.logout span.value");
+	      var icon;
 
-   } else
-   { delete config.swish.user;
-elem.removeClass("logout").addClass("login");
-   }
-   $(".sourcelist").trigger("login");
- },
- "json");
-},
+	      if ( obj.avatar ) {
+		icon = $.el.img({ class: "profile-picture",
+				  src: obj.avatar
+				});
+	      } else {
+		icon = $.el.span({class:"glyphicon glyphicon-user"});
+	      }
+	      icon = $.el.span(icon, $.el.b({class: "caret"}));
+	      span.html("");
+	      span.append(form.widgets.dropdownButton(icon, {
+		divClass:"user-menu btn-transparent",
+		ulClass:"pull-right",
+		client: elem,
+		actions: {
+		  "Logout":  elem.hasClass('no-logout') ? undefined :
+		    function() {
+		      this.login('logout');
+		    },
+		  "Profile": function() {
+		    this.login('profile');
+		  }
+		}
+	      }));
+
+	      if ( why == "logout_by_http" )
+		modal.alert("Failed to logout from HTTP login.  Logout from HTTP "+
+			    "is known not to work for Chrome.  For some browsers "+
+			    "there is a plugin to logout.  Otherwise stopping your "+
+			    "browser completely (all pages) and restarting is the "+
+			    "only way to logout.  HTTP logout does work for FireFox "+
+			    "and IE.");
+
+	    } else
+	    { delete config.swish.user;
+	      elem.removeClass("logout").addClass("login");
+	    }
+	    $(".sourcelist").trigger("login");
+	  },
+	  error: function(jqXHR) {
+	    modal.ajaxError(jqXHR);
+	  },
+	  dataType: "json"
+	});
+    },
 
 /**
 * Perform the login
@@ -242,29 +255,30 @@ logout: function() {
  var user = config.swish.user;
  var elem = $(this);
 
- if ( user ) {
-if ( user.logout_url ) {
-$.ajax({ url: user.logout_url,
-        success: function() {
-    elem.login('update', "logout_by_url");
-  },
-  error: function(jqXHDR) {
-    modal.ajaxError(jqXHDR);
-  }
-      });
-} else if ( user.auth_method == "basic" ||
-   user.auth_method == "digest" ) {
-clearAuthenticationCache(config.http.locations.http_logout,
-      config.swish.user.auth_method,
-      function() {
-        elem.login('update', "logout_by_http");
-      });
-} else {
-alert("Don't know how to logout");
-}
- }
-}
-}; // methods
+      if ( user ) {
+	if ( user.logout_url ) {
+	  backend.ajax(
+	    { url: user.logout_url,
+	      success: function() {
+		elem.login('update', "logout_by_url");
+	      },
+	      error: function(jqXHDR) {
+		modal.ajaxError(jqXHDR);
+	      }
+	    });
+	} else if ( user.auth_method == "basic" ||
+		    user.auth_method == "digest" ) {
+	  clearAuthenticationCache(config.http.locations.http_logout,
+				   config.swish.user.auth_method,
+				   function() {
+				     elem.login('update', "logout_by_http");
+				   });
+	} else {
+	  alert("Don't know how to logout");
+	}
+      }
+    }
+  }; // methods
 
 /**
 * @see https://trac-hacks.org/wiki/TrueHttpLogoutPatch

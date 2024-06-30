@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2018, VU University Amsterdam
+    Copyright (C): 2014-2023, VU University Amsterdam
 			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -47,6 +48,8 @@ define([ "jquery",
 	 "preferences",
 	 "history",
 	 "modal",
+	 "backend",
+
 	 "chat",
 	 "splitter",
 	 "bootstrap",
@@ -66,7 +69,7 @@ define([ "jquery",
 	 "d3",
 	 "c3",
 	 "svg-pan-zoom"
-       ], function($, config, preferences, history, modal) {
+       ], function($, config, preferences, history, modal, backend) {
 
 preferences.setDefault("semantic-highlighting", true);
 preferences.setDefault("emacs-keybinding", false);
@@ -268,6 +271,7 @@ preferences.setInform("preserve-state", ".unloadable");
 		.chatbell({
 		  empty_title: "Click to open chat"
 		});
+
 	$("#chat-menu").on("click", "a", function(ev) {
 	  var a = $(ev.target).closest("a");
 	  switch ( a.data('action') ) {
@@ -281,6 +285,20 @@ preferences.setInform("preserve-state", ".unloadable");
 	    menuBroadcast("chat-about-file");
 	  }
 	});
+
+	if ( config.swish.redis ) {
+	  showBackends = function() {
+	    backend.selectBackend();
+	  };
+	  showBackends.glyph = "flash";
+	  showBackends.after = "Open recent";
+
+	  $("#navbar").
+	    navbar('populateDropdown',
+		   "File",
+		   { "Backends ...": showBackends
+		   });
+	}
 
 	setInterval(function(){
 	  $(".each-minute").trigger("minute");
@@ -394,33 +412,34 @@ preferences.setInform("preserve-state", ".unloadable");
 	return this;				/* FIXME: go to line */
 
       var url = config.http.locations.web_storage + options.file;
-      $.ajax({ url: url,
-	       type: "GET",
-	       data: {format: "json"},
-	       success: function(reply) {
-		 reply.url = url;
-		 reply.st_type = "gitty";
+      backend.ajax(
+	{ url: url,
+	  type: "GET",
+	  data: {format: "json"},
+	  success: function(reply) {
+	    reply.url = url;
+	    reply.st_type = "gitty";
 
-		 function copyAttrs(names) {
-		   for(var i=0; i<names.length; i++) {
-		     var name = names[i];
-		     if ( options[name] )
-		       reply[name] = options[name];
-		   }
-		 }
+	    function copyAttrs(names) {
+	      for(var i=0; i<names.length; i++) {
+		var name = names[i];
+		if ( options[name] )
+		  reply[name] = options[name];
+	      }
+	    }
 
-		 copyAttrs([ "line",
-			     "regex", "showAllMatches",
-			     "newTab", "noHistory",
-			     "prompt", "chat"
-			   ]);
+	    copyAttrs([ "line",
+			"regex", "showAllMatches",
+			"newTab", "noHistory",
+			"prompt", "chat"
+		      ]);
 
-		 elem.swish('setSource', reply);
-	       },
-	       error: function(jqXHR) {
-		 modal.ajaxError(jqXHR);
-	       }
-	     });
+	    elem.swish('setSource', reply);
+	  },
+	  error: function(jqXHR) {
+	    modal.ajaxError(jqXHR);
+	  }
+	});
 
       return this;
     },
@@ -441,46 +460,47 @@ preferences.setInform("preserve-state", ".unloadable");
       if ( existing && existing.storage('expose', "Already open") )
 	return this;				/* FIXME: go to line */
 
-      $.ajax({ url: options.url,
-	       type: "GET",
-	       data: {format: "json"},
-	       success: function(source) {
-		 var msg;
+      backend.ajax(
+	{ url: options.url,
+	  type: "GET",
+	  data: {format: "json"},
+	  success: function(source) {
+	    var msg;
 
-		 if ( typeof(source) == "string" ) {
-		   msg = { data: source };
-		   msg.st_type = "external";
-		 } else if ( typeof(source) == "object" &&
-			     typeof(source.data) == "string" ) {
-		   msg = source;
-		   msg.st_type = "filesys";
-		 } else {
-		   alert("Invalid data");
-		   return;
-		 }
+	    if ( typeof(source) == "string" ) {
+	      msg = { data: source };
+	      msg.st_type = "external";
+	    } else if ( typeof(source) == "object" &&
+			typeof(source.data) == "string" ) {
+	      msg = source;
+	      msg.st_type = "filesys";
+	    } else {
+	      alert("Invalid data");
+	      return;
+	    }
 
-		 msg.url  = options.url;
+	    msg.url  = options.url;
 
-		 function copyAttrs(names) {
-		   for(var i=0; i<names.length; i++) {
-		     var name = names[i];
-		     if ( options[name] )
-		       msg[name] = options[name];
-		   }
-		 }
+	    function copyAttrs(names) {
+	      for(var i=0; i<names.length; i++) {
+		var name = names[i];
+		if ( options[name] )
+		  msg[name] = options[name];
+	      }
+	    }
 
-		 copyAttrs([ "line",
-			     "regex", "showAllMatches",
-			     "newTab", "noHistory",
-			     "prompt"
-			   ]);
+	    copyAttrs([ "line",
+			"regex", "showAllMatches",
+			"newTab", "noHistory",
+			"prompt"
+		      ]);
 
-		 elem.swish('setSource', msg);
-	       },
-	       error: function(jqXHR) {
-		 modal.ajaxError(jqXHR);
-	       }
-      });
+	    elem.swish('setSource', msg);
+	  },
+	  error: function(jqXHR) {
+	    modal.ajaxError(jqXHR);
+	  }
+	});
     },
 
     /**
@@ -539,33 +559,34 @@ preferences.setInform("preserve-state", ".unloadable");
 	     $("#navbar").navbar('clearDropdown', dropdown);
 	     that.swish('populateExamples', navbar, dropdown);
 	   });
-      $.ajax(config.http.locations.swish_examples,
-	     { dataType: "json",
-	       success: function(data) {
-		 for(var i=0; i<data.length; i++) {
-		   var ex = data[i];
-		   var title;
-		   var options;
+      backend.ajax(
+	{ url: config.http.locations.swish_examples,
+	  dataType: "json",
+	  success: function(data) {
+	    for(var i=0; i<data.length; i++) {
+	      var ex = data[i];
+	      var title;
+	      var options;
 
-		   if ( ex == "--" || ex.type == "divider" ) {
-		     title = "--";
-		     options = "--";
-		   } else {
-		     var name = ex.file || ex.href;
-		     title = ex.title;
-		     options = that.swish('openExampleFunction', ex);
-		     if ( name )
-		       options.typeIcon = name.split('.').pop();
-		   }
+	      if ( ex == "--" || ex.type == "divider" ) {
+		title = "--";
+		options = "--";
+	      } else {
+		var name = ex.file || ex.href;
+		title = ex.title;
+		options = that.swish('openExampleFunction', ex);
+		if ( name )
+		  options.typeIcon = name.split('.').pop();
+	      }
 
-		   $("#navbar").navbar('extendDropdown', dropdown,
-				       title, options);
-		 }
-	       },
-	       error: function(jqXHR) {
-		 modal.ajaxError(jqXHR);
-	       }
-	     });
+	      $("#navbar").navbar('extendDropdown', dropdown,
+				  title, options);
+	    }
+	  },
+	  error: function(jqXHR) {
+	    modal.ajaxError(jqXHR);
+	  }
+	});
       return this;
     },
 
@@ -584,31 +605,32 @@ preferences.setInform("preserve-state", ".unloadable");
 	};
       }
 
-      $.ajax(config.http.locations.swish_help_index,
-	     { dataType: "json",
-	       success: function(data) {
-		 for(var i=0; i<data.length; i++) {
-		   var help = data[i];
-		   var title;
-		   var options;
+      backend.ajax(
+	{ url: config.http.locations.swish_help_index,
+	  dataType: "json",
+	  success: function(data) {
+	    for(var i=0; i<data.length; i++) {
+	      var help = data[i];
+	      var title;
+	      var options;
 
-		   if ( help == "--" || help.type == "divider" ) {
-		     title = "--";
-		     options = "--";
-		   } else {
-		     var name = help.file;
-		     title = help.title;
-		     options = openHelpFunction(help);
-		   }
+	      if ( help == "--" || help.type == "divider" ) {
+		title = "--";
+		options = "--";
+	      } else {
+		var name = help.file;
+		title = help.title;
+		options = openHelpFunction(help);
+	      }
 
-		   $("#navbar").navbar('extendDropdown', dropdown,
-				       title, options);
-		 }
-	       },
-	       error: function(jqXHR) {
-		 modal.ajaxError(jqXHR);
-	       }
-	     });
+	      $("#navbar").navbar('extendDropdown', dropdown,
+				  title, options);
+	    }
+	  },
+	  error: function(jqXHR) {
+	    modal.ajaxError(jqXHR);
+	  }
+	});
       return this;
     },
 

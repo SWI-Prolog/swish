@@ -45,6 +45,8 @@
 :- use_module(library(option)).
 :- use_module(library(debug)).
 :- use_module(library(solution_sequences)).
+:- use_module(library(apply)).
+:- use_module(library(filesex)).
 
 :- use_module(config).
 
@@ -75,7 +77,7 @@ search_box(_Options) -->
 		      [ input([ type(text),
 				class(['form-control', typeahead]),
 				placeholder('Search'),
-				'data-search-in'([source,files,predicates]),
+				'data-search-in'([source,store_content,files,predicates]),
 				title('Searches code, documentation and files'),
 				id('search')
 			      ]),
@@ -95,11 +97,19 @@ search_box(_Options) -->
 
 typeahead(Request) :-
 	http_parameters(Request,
-			[ q(Query,     [default('')]),
-			  set(Set,     [default(predicates)]),
-			  match(Match, [default(sow)])
+			[ q(Query,           [default('')]),
+			  set(Set,           [default(predicates)]),
+			  match(Match,       [default(sow)]),
+			  avatar(Avatar,     [optional(true)]),
+			  display_name(Name, [optional(true)])
 			]),
-	findall(Result, typeahead(Set, Query, Result, _{match:Match}), Results),
+	include(ground,
+		[ match-Match,
+		  avatar-Avatar,
+		  display_name-Name
+		], OptPairs),
+	dict_pairs(Options, #, OptPairs),
+	findall(Result, typeahead(Set, Query, Result, Options), Results),
 	reply_json_dict(Results).
 
 %%	typeahead(+Type, +Query, -Match, +Options:dict) is nondet.

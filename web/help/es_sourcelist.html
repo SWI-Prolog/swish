@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+  <title>Finding files</title>
+  <style>
+  dl.help-sourcelist dd { margin-left: 2em; }
+  </style>
+  </head>
+<body>
+
+<p>
+The file overview allows you to find and open files.  The <b>Filter</b>
+and <b>Type</b> menus can be used to pre-fill the query input field.
+The input field itself uses the following syntax:
+
+<p>
+This version of SWISH uses <i>Elastic Search</i> (ES) to find documents.
+Descriptions below that mention <b><i>Pattern</i></b> use ES
+<i>wildchards</i>, i.e., <b>*</b> matches any sequence.  Matching is case
+insensitive.
+
+<p>
+File search covers all <b>public</b> files and, for logged in users,
+private files owned by the current user.   If you (no longer) want your
+file to be visible, login and save the program as <i>private</i>.
+
+  <dl class="help-sourcelist">
+    <dt><code>type:</code><var>pl | swinb | lnk</var>
+    <dd>Restrict the search to documents of the indicated type.
+    </dd>
+    <dt><code>user:</code><var>Pattern</var>
+    <dd>Restrict the search to documents attributed to a user matching
+    <var>Pattern</var>.  The <var>Pattern</var> <code>me</code> restricts
+    the search to your documents.  If you are logged in, these are documents
+    created when you were logged in.  Otherwise ownership is heuristically
+    determined based on the <i>avatar</i> and <i>nickname</i>
+    </dd>
+    <dt><code>name:</code><var>Pattern</var>
+    <dd>Restrict the search to files whose name match <var>Pattern</var>
+    </dd>
+    <dt><code>tag:</code><var>Pattern</var>
+    <dd>Restrict the search to files with a tag matching <var>Pattern</var>
+    </dd>
+    <dt>"String"
+    <dd>Search for files containing <var>String</var>.  Match is case
+    insensitive.
+    </dd>
+    <dt>/Regex/[flags]
+      <dd>Search for files whose content matches <var>Regex</var>.  The
+	only flag supported is <b>i</b> (ignore case).  Note that Elastic
+	Search regular expressions do not support the _anchor_ syntax
+	(<b>^</b> or <b>$</b>).
+      </dd>
+    <dt><i>Word</i>
+    <dd>Other content is passed to Elastic Search <code>match</code>,
+      performing full text search on the most recent version of all
+      files.
+    </dd>
+  </dl>
+
+<p>
+The <code>type:</code>, <code>user:</code>, <code>name:</code> and
+<code>tag:</code> syntax may be followed by a sequence of non-blanks, a
+double quoted string or a regular expression written as
+<b>/Regex/flags</b>.
+
+</body>
+</html>

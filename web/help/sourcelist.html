@@ -14,6 +14,9 @@ The file overview allows you to find and open files.  The <b>Filter</b>
 and <b>Type</b> menus can be used to pre-fill the query input field.
 The input field itself uses the following syntax:
 
+File search covers all <b>public</b> files and, for logged in users,
+private files owned by the current user.
+
   <dl class="help-sourcelist">
     <dt><code>type:</code><var>pl | swinb | lnk</var>
     <dd>Restrict the search to documents of the indicated type.
@@ -52,10 +55,6 @@ The <code>type:</code>, <code>user:</code>, <code>name:</code> and
 <code>tag:</code> syntax may be followed by a sequence of non-blanks, a
 double quoted string or a regular expression written as
 <b>/Regex/flags</b>.
-
-<p>
-Search is executed after 2 seconds after a modification of the search field,
-on hitting <b>RET</b> or clicking the search button.
 
 </body>
 </html>

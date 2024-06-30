@@ -51,6 +51,8 @@
 .cm-s-prolog span.cm-file_no_depends   {color: blue; text-decoration: underline; background: #fcd}
 .cm-s-prolog span.cm-file	       {color: blue; text-decoration: underline;}
 .cm-s-prolog span.cm-nofile	       {color: red;}
+.cm-s-prolog span.cm-function	       {color: blue;}
+.cm-s-prolog span.cm-no_function       {color: red;}
 .cm-s-prolog span.cm-option_name       {color: #3434ba;}
 .cm-s-prolog span.cm-no_option_name    {color: red;}
 .cm-s-prolog span.cm-flag_name         {color: blue;}

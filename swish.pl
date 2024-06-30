@@ -47,6 +47,7 @@
 :- use_module(lib/paths).
 :- use_module(lib/config, []).
 :- use_module(lib/page, []).
+:- use_module(lig/mypage).
 :- use_module(lib/storage).
 :- use_module(lib/include).
 :- use_module(lib/swish_csv).
@@ -232,13 +233,11 @@ swish_config:config(default_query,	'').
 :- use_module(swish:lib/dashboard).
 :- use_module(swish:lib/md_eval).
 :- use_module(swish:lib/html_output).
+:- use_module(swish:lib/swish_diagnostics).
 :- use_module(swish:lib/swish_debug).
 :- use_module(swish:library(pengines_io)).
 :- use_module(swish:library(solution_sequences)).
 :- use_module(swish:library(aggregate)).
-:- if((\+current_predicate((table)/1),exists_source(library(tabling)))).
-:- use_module(swish:library(tabling)).
-:- endif.
 
 pengines:prepare_module(Module, swish, _Options) :-
 	pengines_io:pengine_bind_io_to_html(Module).

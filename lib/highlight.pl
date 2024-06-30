@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2014-2020, VU University Amsterdam
+    Copyright (c)  2014-2023, VU University Amsterdam
 			      CWI, Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -44,6 +45,7 @@
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_path), []).
 :- use_module(library(http/http_parameters)).
+:- use_module(library(http/http_cors)).
 :- use_module(library(pairs)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
@@ -99,6 +101,14 @@ tokens_.
 %	the editor is not known.
 
 codemirror_change(Request) :-
+	memberchk(method(options), Request),
+	!,
+	cors_enable(Request,
+		    [ methods([post])
+		    ]),
+	format('~n').
+codemirror_change(Request) :-
+	cors_enable,
 	call_cleanup(codemirror_change_(Request),
 		     check_unlocked).
 
@@ -412,6 +422,14 @@ prolog:xref_open_source(UUID, Stream) :-
 %	cross-reference information.
 
 codemirror_leave(Request) :-
+	memberchk(method(options), Request),
+	!,
+	cors_enable(Request,
+		    [ methods([post])
+		    ]),
+	format('~n').
+codemirror_leave(Request) :-
+	cors_enable,
 	call_cleanup(codemirror_leave_(Request),
 		     check_unlocked).
 
@@ -496,6 +514,14 @@ destroy_state_module(_).
 %	editor.
 
 codemirror_tokens(Request) :-
+	memberchk(method(options), Request),
+	!,
+	cors_enable(Request,
+		    [ methods([post])
+		    ]),
+	format('~n').
+codemirror_tokens(Request) :-
+	cors_enable,
 	setup_call_catcher_cleanup(
 	    true,
 	    codemirror_tokens_(Request),
@@ -734,7 +760,7 @@ atomic_special(atom, Start, Len, TB, Type, Attrs) :-
 	;   Type = atom,
 	    (   Len =< 5			% solo characters, neck, etc.
 	    ->  memory_file_substring(TB, Start, Len, _, Text),
-	        Attrs = [text(Text)]
+	Attrs = [text(Text)]
 	    ;   Attrs = []
 	    )
 	).
@@ -824,15 +850,18 @@ style(meta(_Spec),	 meta,				   []).
 style(op_type(_Type),	 op_type,			   [text]).
 style(decl_option(_Name),decl_option,			   [text]).
 style(functor,		 functor,			   [text]).
+style(function,		 function,			   [text]).
+style(no_function,	 no_function,			   [text]).
 style(control,		 control,			   [text]).
 style(delimiter,	 delimiter,			   [text]).
 style(identifier,	 identifier,			   [text]).
 style(module(_Module),   module,			   [text]).
 style(error,		 error,				   [text]).
 style(constraint(Set),   constraint,			   [text, set(Set)]).
-style(type_error(Expect), error,		      [text,expected(Expect)]).
+style(type_error(Expect), error,		      [text,expected(Msg)]) :-
+    type_error_msg(Expect, Msg).
 style(syntax_error(_Msg,_Pos), syntax_error,		   []).
-style(instantiation_error, instantiation_error,	           [text]).
+style(instantiation_error, instantiation_error,		   [text]).
 style(predicate_indicator, atom,			   [text]).
 style(predicate_indicator, atom,			   [text]).
 style(arity,		 int,				   []).
@@ -884,6 +913,13 @@ style(table_mode(_Mode), table_mode,			   [text]).
 style(table_option(_Mode), table_option,		   [text]).
 
 
+type_error_msg(declaration(Context), Msg) =>
+    format(string(Msg), '~w declaration', [Context]).
+type_error_msg(Atomic, Msg), atomic(Atomic) =>
+    Msg = Atomic.
+type_error_msg(Term, Msg) =>
+    term_string(Term, Msg).
+
 neck_text(clause,       (:-))  :- !.
 neck_text(grammar_rule, (-->)) :- !.
 neck_text(method(send), (:->)) :- !.
@@ -925,7 +961,7 @@ goal_type(foreign(_),	      goal_foreign,	 []).
 goal_type(local(Line),	      goal_local,	 [line(Line)]).
 goal_type(constraint(Line),   goal_constraint,	 [line(Line)]).
 goal_type(not_callable,	      goal_not_callable, []).
-goal_type(global(Type,_Loc),  Class,	         []) :-
+goal_type(global(Type,_Loc),  Class,		 []) :-
 	global_class(Type, Class).
 
 global_class(dynamic,   goal_dynamic) :- !.
@@ -1062,6 +1098,14 @@ css_dict(Context, Selector, Style) :-
 %	HTTP handler that provides information  about a token.
 
 token_info(Request) :-
+	memberchk(method(options), Request),
+	!,
+	cors_enable(Request,
+		    [ methods([get])
+		    ]),
+	format('~n').
+token_info(Request) :-
+	cors_enable,
 	http_parameters(Request, [], [form_data(Form)]),
 	maplist(type_convert, Form, Values),
 	dict_create(Token, token, Values),

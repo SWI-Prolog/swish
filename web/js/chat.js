@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2016-2018, VU University Amsterdam
+    Copyright (C): 2016-2024, VU University Amsterdam
 			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,10 +43,10 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "preferences", "form", "modal", "utils",
+define([ "jquery", "config", "preferences", "form", "modal", "utils", "backend",
 	 "svgavatar"
        ],
-       function($, config, preferences, form, modal, utils) {
+       function($, config, preferences, form, modal, utils, backend) {
 
 var MIN_RECONNECT_DELAY =  10000;
 var MAX_RECONNECT_DELAY = 300000;
@@ -60,7 +61,9 @@ var MAX_RECONNECT_DELAY = 300000;
     _init: function(options) {
       return this.each(function() {
 	var elem = $(this);
-	var data = {};			/* private data */
+	var data = {
+	  status: "new"
+	};			/* private data */
 
 	elem.data(pluginName, data);	/* store with element */
 
@@ -135,13 +138,16 @@ var MAX_RECONNECT_DELAY = 300000;
 					['v1.chat.swish.swi-prolog.org']);
       } catch(err) {
 	elem.chat('userCount', undefined);
+	data.status = "error";
 	return;
       }
 
       data.connection.onerror = function(error) {
 	elem.chat('userCount', undefined);
+	data.status = "error";
       };
       data.connection.onclose = function(ev) {
+	data.status = "closed";
 	if ( last_open == null ) {
 	  reconnect_delay *= 2;
 	  if ( reconnect_delay > MAX_RECONNECT_DELAY )
@@ -168,10 +174,11 @@ var MAX_RECONNECT_DELAY = 300000;
 	  console.log(e);
       };
       data.connection.onopen = function() {
+	data.status = "open";
       };
     },
 
-    empty_queue: function() {
+    send_queued: function() {
       var data = this.data(pluginName);
 
       while( data.queue &&
@@ -210,14 +217,14 @@ var MAX_RECONNECT_DELAY = 300000;
       if ( data && data.connection ) {
 	var str = JSON.stringify(msg);
 
-	if ( data.connection.readyState != 1 ) {
+	if ( data.status == "ready" ) {
+	  data.connection.send(str);
+	} else {
 	  if ( !data.queue )
 	    data.queue = [str];
-	  else
+	  else if ( !data.queue.includes(str) )
 	    data.queue.push(str);
-	  this.chat('connect');
-	} else {
-	  data.connection.send(str);
+	  this.chat('connect');	// no-op unless closed
 	}
       }
 
@@ -275,7 +282,8 @@ var MAX_RECONNECT_DELAY = 300000;
       else
 	$(".sourcelist").trigger("login");
       $(".storage").storage('chat_status');
-      this.chat('empty_queue');
+      data.status = "ready";
+      this.chat('send_queued');
     },
 
     userCount: function(cnt) {
@@ -413,7 +421,7 @@ var MAX_RECONNECT_DELAY = 300000;
 
 
 		 /*******************************
-		 *	        UI		*
+		 *		UI		*
 		 *******************************/
 
     /**
@@ -577,7 +585,8 @@ var MAX_RECONNECT_DELAY = 300000;
 	  user.name = name;
       }
       if ( !fields || fields.indexOf('avatar') >= 0 ) {
-	user.avatar = li.find("img.avatar").attr("src");
+	user.avatar = ( li.find("img.avatar").attr("src") ||
+			li.find("span.avatar.svg").data("avatar") );
       }
 
       return user;
@@ -613,7 +622,7 @@ var MAX_RECONNECT_DELAY = 300000;
      * Get info on the _self_ user.
      */
     self: function(fields) {
-      var li = this.find("li.user.myself[id]");
+      const li = this.find("li.user.myself[id]");
 
       return li.chat('user_info', fields);
     },
@@ -787,21 +796,22 @@ var MAX_RECONNECT_DELAY = 300000;
 	img = $.el.span({class:"avatar svg"});
 	if ( svg_images[url] ) {
 	  $(img).html(svg_images[url])
-	        .svgavatar('setAVappearanceByUserID', id);
+		.svgavatar('setAVappearanceByUserID', id);
 	} else {
-	  $.ajax({ url: options.avatar,
-		   type: "GET",
-		   dataType: "text",
-		   success: function(reply) {
-		     svg_images[url] = reply;
-		     $(img).html(reply)
-		           .svgavatar('setAVappearanceByUserID', id);
-		   },
-		   error: function(jqXHR) {
-		     modal.ajaxError(jqXHR);
-		   }
-		 });
+	  backend.ajax({ url: options.avatar,
+			 type: "GET",
+			 dataType: "text",
+			 success: function(reply) {
+			   svg_images[url] = reply;
+			   $(img).html(reply)
+			     .svgavatar('setAVappearanceByUserID', id);
+			 },
+			 error: function(jqXHR) {
+			   modal.ajaxError(jqXHR);
+			 }
+		       });
 	}
+	$(img).data("avatar", options.avatar);
       } else {
 	img = $.el.img({class:"avatar", src:options.avatar });
       }

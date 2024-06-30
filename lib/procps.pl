@@ -1,9 +1,10 @@
 /*  Part of SWISH
 
     Author:        Jan Wielemaker
-    E-mail:        J.Wielemaker@vu.nl
+    E-mail:        jan@swi-prolog.org
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2015, VU University Amsterdam
+    Copyright (c)  2015-2024, VU University Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,22 +43,36 @@
 :- if(exists_source(library(unix))).
 :- use_module(library(unix)).
 :- endif.
+:- use_module(library(lists)).
+
+/** <module> Get process statistics from Linux /proc
+*/
 
 		 /*******************************
 		 *	  /proc/[pid]/stat	*
 		 *******************************/
 
+%!	procps_stat(-Stat:dict) is det.
+%!	procps_stat(+PID, -Stat:dict) is det.
+%!	procps_thread_stat(+Thread, -Stat:dict) is det.
+%
+%	Get data from the  `stat`  file   of  the  current  process, the
+%	process identified by `PID` or the   Prolog thread identified by
+%	`Thread`. In all cases, this returns   a dict tagged `stat` with
+%	the field values as defined by ``man 5 proc``.
+%
+%	@error existence_error(source_sink, _) if the system does not
+%	provide the ``/proc`` filesystem.
+
 procps_stat(Stat) :-
-	current_prolog_flag(pid, Pid),
-	procps_stat(Pid, Stat).
+	stat_file_dict('/proc/self/stat', Stat).
 procps_stat(Pid, Stat) :-
 	atomic_list_concat(['/proc/', Pid, '/stat'], StatFile),
 	stat_file_dict(StatFile, Stat).
 
 procps_thread_stat(Thread, Stat) :-
-	current_prolog_flag(pid, Pid),
 	thread_property(Thread, system_thread_id(TID)),
-	atomic_list_concat(['/proc/', Pid, '/task/', TID, '/stat'], StatFile),
+	atomic_list_concat(['/proc/self/task/', TID, '/stat'], StatFile),
 	stat_file_dict(StatFile, Stat).
 
 stat_file_dict(StatFile, Stat) :-
@@ -171,15 +186,29 @@ stat_field(policy,		  41).
 stat_field(delayacct_blkio_ticks, 42).
 stat_field(guest_time,		  43).
 stat_field(cguest_time,		  44).
+stat_field(start_data,		  45).
+stat_field(end_data,		  46).
+stat_field(start_brk,		  47).
+stat_field(arg_start,		  48).
+stat_field(arg_end,		  49).
+stat_field(env_start,		  50).
+stat_field(env_end,		  51).
+stat_field(exit_code,		  52).
 
 
 		 /*******************************
 		 *	/proc/[pid]/status	*
 		 *******************************/
 
+%!	procps_status(-Status:dict) is det.
+%!	procps_status(+PID, -Status:dict) is det.
+%
+%	Get the data from ``/proc/self/status`` as a Prolog dict.
+%
+%	@tbd Not all fields are currently translated.
+
 procps_status(Stat) :-
-	current_prolog_flag(pid, Pid),
-	procps_status(Pid, Stat).
+	status_file_dict('/proc/self/status', Stat).
 procps_status(Pid, Stat) :-
 	atomic_list_concat(['/proc/', Pid, '/status'], StatFile),
 	status_file_dict(StatFile, Stat).
@@ -211,3 +240,24 @@ status_value(Name, ValueS, Bytes) :-
 	split_string(ValueS, " ", " ", [Vs,"kB"]),
 	number_string(Kb, Vs),
 	Bytes is Kb*1024.
+status_value(Name, ValueS, Value) :-
+	status_field(Name, list(Type)),
+	!,
+	split_string(ValueS, " \t", " \t", Values),
+	maplist(to_type(Type), Values, Value).
+status_value(Name, ValueS, Value) :-
+	status_field(Name, Type),
+	to_type(Type, ValueS, Value).
+
+to_type(integer, String, Int) :-
+	number_string(Int, String).
+to_type(hex, String, Int) :-
+	string_concat('0x', String, Hex),
+	number_string(Int, Hex).
+
+status_field(uid, list(integer)).
+status_field(gid, list(integer)).
+status_field(groups, list(integer)).
+status_field(cpus_allowed, hex).
+status_field(fdsize, integer).
+status_field(threads, integer).

@@ -117,4 +117,3 @@ initialize_paths :-
 http:location(swish, root(.), [priority(-100)]).
 
 
-

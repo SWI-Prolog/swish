@@ -86,7 +86,8 @@ define([ "jquery", "jswish", "navbar", "storage", "config", "modal" ],
 	   $.fn.storage.methods.saveToApp = function() {
 	     var elem = this;
 	     var data = this.data("storage");
-	     var post = { data: data.getValue()
+	     var post = { data: data.getValue(),
+			  url: data.url
 			};
 
 	     $.ajax({ url: config.http.locations.save_to_app,
@@ -101,7 +102,10 @@ define([ "jquery", "jswish", "navbar", "storage", "config", "modal" ],
 			    window.location = data.url;
 			  }
 			} else {
-			  modal.alert(data.message);
+			  elem.prologEditor('highlightError', {
+			    data: $(`<span class="error">${data.message}</span>`),
+			    location: data.location || {line: 1, ch:0}
+			  }, true);
 			}
 		      },
 		      error: function(jqXHDR) {

@@ -77,6 +77,31 @@ a.download span.glyphicon
 { margin-left: 1ex;
 }
 
+		 /*******************************
+		 *	      DEBUG		*
+		 *******************************/
+
+div.debug-msg
+{ margin-left: 2em;
+  border: 1px solid #888;
+  border-radius: 5px;
+  background: #beb;
+}
+
+div.debug-msg span.topic
+{ padding-right: 1ex;
+  float: right;
+  font-size: 80%;
+  font-style: italic;
+}
+
+div.debug-msg pre
+{ border: 0;
+  background: initial;
+  padding: 2px 0px 0px 5px;
+  margin: 0;
+}
+
 
 		 /*******************************
 		 *	       WFS		*
