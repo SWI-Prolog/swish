@@ -44,32 +44,32 @@
  */
 
 define([ "jquery", "modal", "config", "form", "backend", "laconic" ],
-       function($, modal, config, form, backend) {
+  function($, modal, config, form, backend) {
 
 var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
 
 (function($) {
-  var pluginName = 'login';
+var pluginName = 'login';
 
-  /** @lends $.fn.login */
-  var methods = {
-    _init: function(options) {
-      return this.each(function() {
-	var elem = $(this);
-	var data = {};
+/** @lends $.fn.login */
+var methods = {
+_init: function(options) {
+ return this.each(function() {
+var elem = $(this);
+var data = {};
 
-	data.url = elem.attr("href");
-	elem.removeAttr("href");
+data.url = elem.attr("href");
+elem.removeAttr("href");
 
-	elem.on("click", function(ev) {
-	  if ( elem.hasClass("login") )
-	    elem.login('login', ev);
-	});
+elem.on("click", function(ev) {
+if ( elem.hasClass("login") )
+ elem.login('login', ev);
+});
 
-	elem.data(pluginName, data);
-	elem.login('update', "startup");
-      });
-    },
+elem.data(pluginName, data);
+elem.login('update', "startup");
+ });
+},
 
     /**
      * Update the status of the login element
@@ -138,122 +138,122 @@ var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
 	});
     },
 
-    /**
-     * Perform the login
-     */
-    login: function(ev) {
-      var elem   = $(this);
-      var data   = this.data(pluginName);
-      var target = $(ev.target);
-      var url    = data.url;
-      var server = target.closest("[data-server]").data("server");
-      var frame  = target.closest("[data-frame]").data("frame")||"iframe";
+/**
+* Perform the login
+*/
+login: function(ev) {
+ var elem   = $(this);
+ var data   = this.data(pluginName);
+ var target = $(ev.target);
+ var url    = data.url;
+ var server = target.closest("[data-server]").data("server");
+ var frame  = target.closest("[data-frame]").data("frame")||"iframe";
 
-      if ( server )
-	url += "?server="+encodeURIComponent(server);
+ if ( server )
+url += "?server="+encodeURIComponent(server);
 
-      if ( frame == "popup" ) {
-	openPopup(url, "_blank",
-		  'location=true,status=true,height=400,width=800',
-		  function() {
-		    elem.login('logged_in');
-		  });
-      } else {
-	modal.show({
-	  title: "Login",
-	  body: function() {
-	    var button = $.el.button({ name:"ok",
-				       class:"btn btn-primary login-cont",
-				       "data-dismiss":"modal"
-				     },
-				     "Continue");
-	    this.append($.el.iframe({class:"login", src:url}),
-			button);
-	  },
-	  onclose: function() {
-	    elem.login('logged_in');
-	  }
-	});
-      }
-    },
+ if ( frame == "popup" ) {
+openPopup(url, "_blank",
+ 'location=true,status=true,height=400,width=800',
+ function() {
+   elem.login('logged_in');
+ });
+ } else {
+modal.show({
+title: "Login",
+body: function() {
+ var button = $.el.button({ name:"ok",
+          class:"btn btn-primary login-cont",
+          "data-dismiss":"modal"
+        },
+        "Continue");
+ this.append($.el.iframe({class:"login", src:url}),
+ button);
+},
+onclose: function() {
+ elem.login('logged_in');
+}
+});
+ }
+},
 
-    /**
-     * User closed the login modal window.  Check the login.
-     */
-    logged_in: function() {
-      this.login('update', "login");
-    },
+/**
+* User closed the login modal window.  Check the login.
+*/
+logged_in: function() {
+ this.login('update', "login");
+},
 
-    /**
-     * Examine/edit the user profile.  Opens a modal window that is
-     * filled through an AJAX call on the server.
-     */
-    profile: function() {
-      var login = $(this);
+/**
+* Examine/edit the user profile.  Opens a modal window that is
+* filled through an AJAX call on the server.
+*/
+profile: function() {
+ var login = $(this);
 
-      modal.server_form({
-	title: "User profile",
-	url: config.swish.user.swish_profile_url ||
-	     config.http.locations.user_profile,
-	onreply: function() { login.login('update', "profile"); }
-      });
-    },
+ modal.server_form({
+title: "User profile",
+url: config.swish.user.swish_profile_url ||
+  config.http.locations.user_profile,
+onreply: function() { login.login('update', "profile"); }
+ });
+},
 
-    /**
-     * Get information about the current user. If possible we get this
-     * from the logged in user.  Else we get the name and avatar from
-     * #chat.
-     * @param [fields] is an array with fields we want to have
-     * @return {Object} info about current user
-     */
-    get_profile: function(fields) {
-      var info = {};
-      var obj = config.swish.user||{};
+/**
+* Get information about the current user. If possible we get this
+* from the logged in user.  Else we get the name and avatar from
+* #chat.
+* @param [fields] is an array with fields we want to have
+* @return {Object} info about current user
+*/
+get_profile: function(fields) {
+ var info = {};
+ var obj = config.swish.user||{};
 
-      function set_from_chat(key, chat_key) {
-	var chat = $("#chat");
-	if ( chat.length == 1 ) {
-	  var v = chat.chat('self', [chat_key]);
-	  if ( v[chat_key] ) info[key] = v[chat_key];
-	}
-      }
+ function set_from_chat(key, chat_key) {
+var chat = $("#chat");
+if ( chat.length == 1 ) {
+var v = chat.chat('self', [chat_key]);
+if ( v[chat_key] ) info[key] = v[chat_key];
+}
+ }
 
-      fields = fields||DEFAULT_USER_FIELDS;
-      for(var i=0; i<fields.length; i++) {
-	var key = fields[i];
+ fields = fields||DEFAULT_USER_FIELDS;
+ for(var i=0; i<fields.length; i++) {
+var key = fields[i];
 
-	if ( obj[key] ) {
-	  info[key] = obj[key];
-	} else if ( key == 'display_name' ) {
-	  if ( obj.name )
-	    info.display_name = obj.name;
-	  else if ( obj.given_name && obj.family_name )
-	    info.display_name = obj.given_name + " " + obj.family_name;
-	  else if ( obj.family_name )
-	    info.display_name = obj.family_name;
-	  else if ( obj.given_name )
-	    info.display_name = obj.given_name;
-	  else if ( obj.nick_name )
-	    info.display_name = obj.nick_name;
-	  else
-	    set_from_chat('display_name', 'name');
-	} else if ( key == 'identity' ) {
-	  if ( obj.external_identity && obj.identity_provider )
-	    info.identity = obj.identity_provider + ":" + obj.external_identity;
-	} else if ( key == 'avatar' ) {
-	  set_from_chat('avatar', 'avatar');
-	}
-      }
+if ( obj[key] ) {
+info[key] = obj[key];
+} else if ( key == 'display_name' ) {
+if ( obj.name )
+ info.display_name = obj.name;
+else if ( obj.given_name && obj.family_name )
+ info.display_name = obj.given_name + " " + obj.family_name;
+else if ( obj.family_name )
+ info.display_name = obj.family_name;
+else if ( obj.given_name )
+ info.display_name = obj.given_name;
+else if ( obj.nick_name )
+ info.display_name = obj.nick_name;
+else
+ set_from_chat('display_name', 'name');
+} else if ( key == 'identity' ) {
+if ( obj.external_identity && obj.identity_provider )
+ info.identity = obj.identity_provider + ":" + obj.external_identity;
+} else if ( key == 'avatar' ) {
+set_from_chat('avatar', 'avatar');
+}
+ }
 
-      return info;
-    },
+ return info;
+},
 
-    /**
-     * Logout the current user
-     */
-    logout: function() {
-      var user = config.swish.user;
-      var elem = $(this);
+/**
+* Logout the current user
+*/
+logout: function() {
+ var user = config.swish.user;
+ var elem = $(this);
 
       if ( user ) {
 	if ( user.logout_url ) {
@@ -280,109 +280,109 @@ var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
     }
   }; // methods
 
-  /**
-   * @see https://trac-hacks.org/wiki/TrueHttpLogoutPatch
-   * @see http://stackoverflow.com/questions/233507/how-to-log-out-user-from-web-site-using-basic-authentication
-   */
-  function clearAuthenticationCache(page, method, oncomplete) {
-    // Default to a non-existing page (give error 500).
-    // An empty page is better, here.
-    if (!page) page = '.force_logout';
-    try{
-      var agt=navigator.userAgent.toLowerCase();
+/**
+* @see https://trac-hacks.org/wiki/TrueHttpLogoutPatch
+* @see http://stackoverflow.com/questions/233507/how-to-log-out-user-from-web-site-using-basic-authentication
+*/
+function clearAuthenticationCache(page, method, oncomplete) {
+// Default to a non-existing page (give error 500).
+// An empty page is better, here.
+if (!page) page = '.force_logout';
+try{
+ var agt=navigator.userAgent.toLowerCase();
 
-      if ( agt.indexOf("msie") != -1 ) {
-	document.execCommand("ClearAuthenticationCache");
-      } else if ( agt.indexOf("webkit") != -1 && method == "basic" ) {
-	var xmlhttp = createXMLObject(oncomplete);
+ if ( agt.indexOf("msie") != -1 ) {
+document.execCommand("ClearAuthenticationCache");
+ } else if ( agt.indexOf("webkit") != -1 && method == "basic" ) {
+var xmlhttp = createXMLObject(oncomplete);
 
-	if ( xmlhttp ) {
-	  xmlhttp.open("GET", page, true);
-	  xmlhttp.setRequestHeader("Authorization", "Basic logout");
-	  xmlhttp.send();
-	}
-      } else {
-	var xmlhttp = createXMLObject(oncomplete);
+if ( xmlhttp ) {
+xmlhttp.open("GET", page, true);
+xmlhttp.setRequestHeader("Authorization", "Basic logout");
+xmlhttp.send();
+}
+ } else {
+var xmlhttp = createXMLObject(oncomplete);
 
-	if ( xmlhttp ) {
-	  xmlhttp.open("GET", page, true, "logout", "logout");
-	  xmlhttp.send("");
-	  xmlhttp.abort();
-	}
-      }
-    } catch(e) {
-      // There was an error
-      return;
-    }
-  }
+if ( xmlhttp ) {
+xmlhttp.open("GET", page, true, "logout", "logout");
+xmlhttp.send("");
+xmlhttp.abort();
+}
+ }
+} catch(e) {
+ // There was an error
+ return;
+}
+}
 
-  function createXMLObject(oncomplete) {
-    var xmlhttp;
+function createXMLObject(oncomplete) {
+var xmlhttp;
 
-    try {
-      if (window.XMLHttpRequest) {
-	xmlhttp = new XMLHttpRequest();
-      } else if (window.ActiveXObject) {
-	xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-      }
+try {
+ if (window.XMLHttpRequest) {
+xmlhttp = new XMLHttpRequest();
+ } else if (window.ActiveXObject) {
+xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+ }
 
-      if ( oncomplete ) {
-	xmlhttp.addEventListener("load",  oncomplete);
-	xmlhttp.addEventListener("error", oncomplete);
-	xmlhttp.addEventListener("abort", oncomplete);
-      }
-    } catch (e) {
-    }
+ if ( oncomplete ) {
+xmlhttp.addEventListener("load",  oncomplete);
+xmlhttp.addEventListener("error", oncomplete);
+xmlhttp.addEventListener("abort", oncomplete);
+ }
+} catch (e) {
+}
 
-    return xmlhttp;
-  }
+return xmlhttp;
+}
 
-  /**
-   * Open a popup window for dealing with the federated login.  We
-   * must check the login status after the user completes the popup.
-   * Unfortunately the code below does not always work as `win.closed`
-   * is not always set.  An example is FF 51.0 using Cinamon.
-   */
-  function openPopup(uri, name, options, closeCallback) {
-    var win = window.open(uri, name, options);
-    var interval = window.setInterval(function() {
-      try {
-	if (win == null || win.closed) {
-	  window.clearInterval(interval);
-	  closeCallback(win);
-	}
-      }
-      catch (e) {
-      }
-    }, 1000);
+/**
+* Open a popup window for dealing with the federated login.  We
+* must check the login status after the user completes the popup.
+* Unfortunately the code below does not always work as `win.closed`
+* is not always set.  An example is FF 51.0 using Cinamon.
+*/
+function openPopup(uri, name, options, closeCallback) {
+var win = window.open(uri, name, options);
+var interval = window.setInterval(function() {
+ try {
+if (win == null || win.closed) {
+window.clearInterval(interval);
+closeCallback(win);
+}
+ }
+ catch (e) {
+ }
+}, 1000);
 
-    if ( window.focus )
-      win.focus();
+if ( window.focus )
+ win.focus();
 
-    return win;
-  };
+return win;
+};
 
 
-  /**
-   * <Class description>
-   *
-   * @class login
-   * @tutorial jquery-doc
-   * @memberOf $.fn
-   * @param {String|Object} [method] Either a method name or the jQuery
-   * plugin initialization object.
-   * @param [...] Zero or more arguments passed to the jQuery `method`
-   */
+/**
+* <Class description>
+*
+* @class login
+* @tutorial jquery-doc
+* @memberOf $.fn
+* @param {String|Object} [method] Either a method name or the jQuery
+* plugin initialization object.
+* @param [...] Zero or more arguments passed to the jQuery `method`
+*/
 
-  $.fn.login = function(method) {
-    if ( methods[method] ) {
-      return methods[method]
-	.apply(this, Array.prototype.slice.call(arguments, 1));
-    } else if ( typeof method === 'object' || !method ) {
-      return methods._init.apply(this, arguments);
-    } else {
-      $.error('Method ' + method + ' does not exist on jQuery.' + pluginName);
-    }
-  };
+$.fn.login = function(method) {
+if ( methods[method] ) {
+ return methods[method]
+.apply(this, Array.prototype.slice.call(arguments, 1));
+} else if ( typeof method === 'object' || !method ) {
+ return methods._init.apply(this, arguments);
+} else {
+ $.error('Method ' + method + ' does not exist on jQuery.' + pluginName);
+}
+};
 }(jQuery));
 });
