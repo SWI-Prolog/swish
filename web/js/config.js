@@ -52,34 +52,37 @@
  * @requires jquery
  */
 
-define([ "jquery" ],
-       function($) {
+define([ "jquery" ], function($) {
 var KEY = "SWISHCONFIG";
+var config;
+
+// Ensure window.swish and config_hash are defined
+window.swish = window.swish || {};
+window.swish.config_hash = window.swish.config_hash || null;
 
 /* Configuration of various server components.  We provide
    defaults for the case that these files are served from
    a non-Prolog server.
 */
 
-var config;
-
 function getCachedConfig() {
   if ( typeof(Storage) !== "undefined" && window.swish.config_hash ) {
     var str;
 
     if ( (str = localStorage.getItem(KEY)) ) {
-      value = JSON.parse(str);
-      if ( value.hash == window.swish.config_hash )
-	return value.config;
+        value = JSON.parse(str);
+        if ( value.hash == window.swish.config_hash )
+	          return value.config;
     }
   }
+  return null;
 }
 
 function setCachedConfig(config) {
   if ( typeof(Storage) !== "undefined" && window.swish.config_hash ) {
-    localStorage.setItem(KEY, JSON.stringify(
-      { hash: window.swish.config_hash,
-        config: config
+      localStorage.setItem(KEY, JSON.stringify(
+        { hash: window.swish.config_hash,
+          config: config
       }));
   }
 }
@@ -88,16 +91,16 @@ if ( !config ) {
   if ( !(config = getCachedConfig()) ) {
     $.ajax(
       { url: "swish_config.json",
-	dataType: "json",
-	async: false,
-	success: function(data) {
-	  config = data;
-	  setCachedConfig(config);
-	},
-	error: function() {
-	  alert("Failed to fetch configuration from server");
-	}
-      });
+	      dataType: "json",
+	      async: false,
+	      success: function(data) {
+	        config = data;
+	        setCachedConfig(config);
+	      },
+	      error: function() {
+	        alert("Failed to fetch configuration from server");
+	      }
+    });
   }
 }
 

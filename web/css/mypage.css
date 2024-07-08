@@ -1,42 +1,67 @@
 #mypage{
-    display: flex;
-    justify-content: center;
-    align-items: center;
     background-color: #f8f8f8;
-    
+    line-height: 1.42857143;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    overflow-y: auto;
 }
 
-#my-content {
-    padding: 50px 20px;
+.container {
+    width: 30%;
+    padding: 50px 50px;
     background-color: white;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    justify-content: space-around;
-    align-items: center;
-}
-
-.profile-image img {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    margin-bottom: 20px;
-    background-color: #003580;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label{
+    font-size: 20px;
+    font-weight: bolder;
+}
+
+.password-group{
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.password-group label{
+    font-size: 15px;
+    font-weight: bolder;
+}
+
+.form-actions{
+    display: flex;
+    justify-content: end;
+    gap: 20px;
+}
+
+h1{
+    font-weight: bolder;
+    font-size: 50px;
 }
 
 input[type="text"], input[type="email"], input[type="password"] {
-    width: 100%;
-    padding: 8px;
+    width: 99%;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
     margin-top: 5px;
+    font-size: 15px;
 }
 
 button {
-    width: 100%;
     padding: 10px;
     background-color: #337AB7;
     color: white;
@@ -44,6 +69,10 @@ button {
     border-radius: 4px;
     cursor: pointer;
     margin-top: 10px;
+}
+
+#delete_button{
+    background-color: #dc3030;
 }
 
 button:hover {
