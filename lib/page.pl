@@ -86,7 +86,6 @@ swish or parts of swish easily into a page.
 http:location(pldoc, swish(pldoc), [priority(100)]).
 
 :- http_handler(swish(.), swish_reply([]), [id(swish), prefix]).
-:- http_handler(swish(my_page),   my_page,   [id(my_page)]).
 
 :- multifile
 	swish_config:logo//1,
@@ -378,50 +377,13 @@ swish_navbar(Options) -->
 		       ])
 		 ])).
 
-/* Disable Login Button
-li_login_button(Options) -->
-	swish_config:li_login_button(Options).
-li_login_button(_Options) -->
-	[].
-*/
+mypage_button -->
+    {
+      http_absolute_location(swish(mypage), HREF, [])
+    },
+    html(a([href(HREF), class('mypage-button')], 'MYPAGE')).
 
-my_page(_Request) :-
-    reply_html_page(
-        title('My Page'),
-        \mypage_content).
-
-mypage_content -->
-	swish_resources,
-    html([
-        body([id('mypage')], [
-            div([id('my-content')], [
-                div([class('profile-image')], [
-                    img([src(''), alt('Profile Image')])
-                ]),
-                div([class('form-group')], [
-                    label([for(username)], 'Username:'),
-                    input([type(text), id(username), name(username)]),
-                    button([onclick('updateUsername()')], 'Update Username')
-                ]),
-                div([class('form-group')], [
-                    label([for(email)], 'Email:'),
-                    input([type(email), id(email), name(email)]),
-                    button([onclick('updateEmail()')], 'Update Email')
-                ]),
-                div([class('form-group')], [
-                    label([for(password)], 'Password:'),
-                    input([type(password), id(password), name(password)]),
-                    button([onclick('updatePassword()')], 'Update Password')
-                ]),
-                button([onclick('deleteAccount()')], '계정 삭제')
-            ])
-        ])
-    ]).
-
-mypage_button --> 
-{ http_absolute_location(swish(my_page), HREF, [])
-	},
-	html(a([href(HREF), class('mypage-button')], 'MYPAGE')).
+mypage_button --> [].
 
 collapsed_button -->
 	html(button([type(button),

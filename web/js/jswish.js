@@ -229,6 +229,7 @@ preferences.setInform("preserve-state", ".unloadable");
       setupPanes();
       setupResize();
       setupUnload();
+      setMypageButton();
       $("#search").search();
 
       options = options||{};
