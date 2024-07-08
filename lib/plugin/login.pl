@@ -100,6 +100,12 @@ login_form(_Request) -->
         ])
     ).
 
+%!  swish_login(_Request)
+%
+%   HTTP handler that deals with  login.   This  handler  is called from
+%   web/js/login.js which adds  the  selected   login  server  from  the
+%   =data-server= attribute.
+
 swish_login(_Request) :-
     reply_html_page(
         title('Login'),
@@ -290,12 +296,6 @@ reply_logged_out_page(Options) :-
 /*******************************
  *          HTTP HANDLERS   *
  *******************************/
-
-%!  swish_login(+Request)
-%
-%   HTTP handler that deals with  login.   This  handler  is called from
-%   web/js/login.js which adds  the  selected   login  server  from  the
-%   =data-server= attribute.
 
 %!  user_info(+Request)
 %

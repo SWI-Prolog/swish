@@ -10,5 +10,11 @@
     "id":"kimdk9829test",
     "password": [67, 68, 70, 50, 52, 106, 48, 87, 53, 74, 70, 90, 115 ],
     "username":""
+  },
+  {
+    "email":"aaa@gmail.com",
+    "id":"aaaa",
+    "password": [81, 99, 86, 51, 116, 119, 84, 72, 121, 89, 69, 100, 85 ],
+    "username":"admin"
   }
 ]
