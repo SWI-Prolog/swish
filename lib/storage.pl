@@ -478,16 +478,35 @@ storage_get(Request, Format, Options) :-
     storage_get(Format, Dir, Type, FileOrHash, Request),
     broadcast(swish(download(Dir, FileOrHash, Format))).
 
+% 권한 확인 로직
+has_permission(Auth, Meta) :-
+    (   Meta.get(public) == true
+    ->  true
+    ;   % 로그인한 사용자와 파일의 author가 일치하는지 확인
+        (   Auth.get(user_id) == Meta.get(author)
+        ->  true
+        ;   fail
+        )
+    ).
 storage_get(swish, Dir, Type, FileOrHash, Request) :-
+    % 사용자 인증
+    authenticate(Request, Auth),
+    % 파일 메타데이터 및 내용 가져오기
     gitty_data_or_default(Dir, Type, FileOrHash, Code, Meta),
     chat_count(Meta, Count),
-    swish_show([ code(Code),
-                 file(FileOrHash),
-                 st_type(gitty),
-                 meta(Meta),
-                 chat_count(Count)
-               ],
-               Request).
+    % 권한 확인
+    (   has_permission(Auth, Meta)
+    ->  % 권한이 있으면 파일 내용 표시
+        swish_show([ code(Code),
+                     file(FileOrHash),
+                     st_type(gitty),
+                     meta(Meta),
+                     chat_count(Count)
+                   ],
+                   Request)
+    ;   % 권한이 없으면 접근 거부
+        throw(http_reply(forbidden(FileOrHash)))
+    ).
 storage_get(raw, Dir, Type, FileOrHash, _Request) :-
     gitty_data_or_default(Dir, Type, FileOrHash, Code, Meta),
     file_mime_type(Meta.name, MIME),
@@ -1183,7 +1202,7 @@ bound(_-V) :- nonvar(V).
 visible(Meta, Auth, Constraints) :-
     memberchk(user("me"), Constraints),
     !,
-    owns(Auth, Meta, user(_)).
+    owns(Auth, Meta, user(me)).
 visible(Meta, _Auth, _Constraints) :-
     Meta.get(public) == true,
     !.
@@ -1200,11 +1219,11 @@ visible(Meta, Auth, _Constraints) :-
 %   properties and/or IP properties.
 
 owns(Auth, Meta, user(me)) :-
-    storage_meta_property(Meta, identity(Id)),
-    !,
-    user_property(Auth, identity(Id)).
-owns(_Auth, Meta, _) :-                         % demand strong ownership for
-    \+ Meta.get(public) == true,           % non-public files.
+    % Auth에서 user_id를 가져와서 메타데이터의 author와 비교
+    Auth.get(user_id) == Meta.get(author),
+    !.
+owns(_Auth, Meta, _) :-
+    \+ Meta.get(public) == true,
     !,
     fail.
 owns(Auth, Meta, user(avatar)) :-
@@ -1214,7 +1233,7 @@ owns(Auth, Meta, user(avatar)) :-
 owns(Auth, Meta, user(nickname)) :-
     Auth.get(display_name) == Meta.get(author),
     !.
-owns(Auth, Meta, host(How)) :-          % trust same host and local host
+owns(Auth, Meta, host(How)) :-
     Peer = Auth.get(peer),
     (   Peer == Meta.get(peer)
     ->  How = same

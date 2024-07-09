@@ -159,6 +159,7 @@ function updateLoginStatus() {
                   if (logoutResponse.success) {
                       alert('Logout successful!');
                       updateLoginStatus(); // 로그아웃 후 상태 업데이트
+                      location.reload();
                   } else {
                       alert('Error: ' + logoutResponse.message);
                   }
@@ -196,6 +197,7 @@ $(document).on('submit', '#login-form', function(event) {
       alert('Login successful!');
       $('#ajaxModal').modal('hide');
       updateLoginStatus(); // 로그인 후 상태 업데이트
+      location.reload();
     } else {
       alert('Error: ' + data.message);
     }

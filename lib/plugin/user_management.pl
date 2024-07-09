@@ -96,6 +96,7 @@ login_handler(Request) :-
 logout_handler(_Request) :-
     http_session_retract(user(_)),
     reply_json_dict(_{success: true}).
+    http_redirect(moved, '/', Request).
 
 % 로그인 상태 확인 핸들러
 user_info_handler(_Request) :-
