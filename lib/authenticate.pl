@@ -38,9 +38,11 @@
             user_property/2                     % +Authentity, ?Property
           ]).
 :- use_module(library(http/http_wrapper)).
+:- use_module(library(http/http_open)).
+:- use_module(library(http/json)).
 :- use_module(library(debug)).
 :- use_module(library(broadcast)).
-
+:- use_module(library(http/http_session)).
 :- use_module(config).
 
 /** <module> Authentication access for SWISH
@@ -70,7 +72,12 @@ authenticate(Request, Auth) :-
     http_auth(Request, HTTPAuth),
     profile_auth(Request, ProfileAuth),
     Auth2 = HTTPAuth.put(ProfileAuth).put(peer, Peer),
-    identity(Request, Auth2, Auth),
+    % 세션에서 사용자 ID를 가져옴
+    (   catch(http_session_data(user(UserID)), _, fail)
+    ->  Auth3 = Auth2.put(user_id, UserID).put(id, UserID)
+    ;   Auth3 = Auth2.put(user_id, guest).put(id, guest)
+    ),
+    identity(Request, Auth3, Auth),
     debug(authenticate, 'Identity: ~p', [Auth]).
 
 :- multifile
@@ -113,7 +120,6 @@ identity(Request, Auth0, Auth) :-
     Auth = Auth0.put(_{identity:Identity, user_info:UserInfo}).
 identity(_, Auth, Auth).
 
-
 %!  user_property(+Identity, ?Property) is nondet.
 %
 %   True when Identity has Property. Defined properties are:
@@ -147,7 +153,6 @@ user_property_impl(Property, broadcast, Identity) :-
 user_property_impl(login(By), _, Identity) :-
     By = Identity.get(identity_provider).
 
-
 current_user_property(peer(_Atom),                dict).
 current_user_property(identity(_Atom),            dict).
 current_user_property(external_identity(_String), dict).
@@ -158,7 +163,6 @@ current_user_property(avatar(_String),            dict).
 current_user_property(login(_IdProvider),         derived).
 current_user_property(name(_Name),                broadcast).
 current_user_property(email(_Email),              broadcast).
-
 
 		 /*******************************
 		 *        PENGINE HOOKS		*
