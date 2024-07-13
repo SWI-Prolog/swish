@@ -321,34 +321,53 @@ define([ "jquery", "config", "modal", "form", "gitty",
      * reload the current `data.file`.
      */
     reload: function(file) {
-      var elem = this;
-      var data = elem.data(pluginName);
-          file = file||data.file;
-      var url  = config.http.locations.web_storage +
-		 encodeURI(file);
-
-      backend.ajax(
-	{ url: url,
-	  type: "GET",
-	  data: { format: "json" },
-	  success: function(reply) {
-	    reply.url = url;
-	    reply.st_type = "gitty";
-	    reply.noHistory = true;
-	    elem.storage('setSource', reply);
-	    $("#chat").trigger('send',
-			       { type:'reloaded',
-				 file:file,
-				 commit:reply.meta.commit
-			       });
+		var elem = this;
+		var data = elem.data(pluginName);
+		file = file||data.file;
+		var url  = config.http.locations.web_storage +
+				   encodeURI(file);
+	  
+		// 권한 확인 로직 추가
+		fetch('/user_info')
+		  .then(response => response.json())
+		  .then(userInfo => {
+			const userId = userInfo.user;
+	  
+			fetch(`/p/${file}/meta`)
+			  .then(response => response.json())
+			  .then(fileMeta => {
+				if (fileMeta.author === userId || fileMeta.public) {
+				  // 권한이 있는 경우 파일 로드
+				  backend.ajax(
+					{ url: url,
+					  type: "GET",
+					  data: { format: "json" },
+					  success: function(reply) {
+						reply.url = url;
+						reply.st_type = "gitty";
+						reply.noHistory = true;
+						elem.storage('setSource', reply);
+						$("#chat").trigger('send',
+										   { type:'reloaded',
+											 file:file,
+											 commit:reply.meta.commit
+										   });
+					  },
+					  error: function(jqXHR) {
+						modal.ajaxError(jqXHR);
+					  }
+					});
+				} else {
+				  alert('You do not have permission to access this file.');
+				}
+			  });
+		  })
+		  .catch(error => {
+			console.error('Error:', error);
+		  });
+	  
+		return this;
 	  },
-	  error: function(jqXHR) {
-	    modal.ajaxError(jqXHR);
-	  }
-	});
-
-      return this;
-    },
 
     /**
      * Save the current document to the server.  Depending on the
