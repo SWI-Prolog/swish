@@ -68,11 +68,11 @@ mypage_content -->
         body(id('mypage'), [
             h1([id(userid)], ''),
             div(class('container'), [
-                div(class('form-group'), [
+                div(class('mypage-form'), [
                     label([for(username)], 'Username'),
                     input([type(text), class('profile-input'), name(username), disabled])
                 ]),
-                div(class('form-group'), [
+                div(class('mypage-form'), [
                     label([for(email)], 'Email'),
                     input([type(email), class('profile-input'), name(email), disabled])
                 ]),
@@ -83,7 +83,7 @@ mypage_content -->
                 ])
             ]),
             div([class('container'), id('password_container')], [
-                div(class('form-group'), [
+                div(class('mypage-form'), [
                     label([for(password)], 'Password')
                 ]),
                 div([class('password-group'), style('display:none')], [
