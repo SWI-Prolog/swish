@@ -44,7 +44,7 @@
  */
 
 define([ "jquery", "modal", "config", "form", "backend", "laconic" ],
-       function($, modal, config, form, backend) {
+  function($, modal, config, form, backend) {
 
 var DEFAULT_USER_FIELDS = ["display_name", "email", "avatar"];
 

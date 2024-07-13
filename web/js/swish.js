@@ -159,6 +159,7 @@ function updateLoginStatus() {
                       alert('Logout successful!');
                       updateLoginStatus(); // 로그아웃 후 상태 업데이트
                       location.reload();
+
                   } else {
                       alert('Error: ' + logoutResponse.message);
                   }

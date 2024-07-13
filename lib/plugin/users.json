@@ -12,7 +12,6 @@
     "username":""
   },
   {
-Login-session
     "email":"test@gmail.com",
     "id":"test",
     "password": [87, 100, 88, 86, 108, 56, 56, 87, 108, 57, 46, 112, 81 ],
@@ -23,11 +22,17 @@ Login-session
     "id":"kdk",
     "password": [112, 122, 71, 49, 73, 87, 55, 106, 85, 120, 121, 83, 46 ],
     "username":""
-=======
+  },
+  {
     "email":"aaa@gmail.com",
     "id":"aaaa",
     "password": [81, 99, 86, 51, 116, 119, 84, 72, 121, 89, 69, 100, 85 ],
     "username":"admin"
-master
+  },
+  {
+    "email":"dks@naver.com",
+    "id":"abcd",
+    "password": [67, 104, 66, 84, 74, 66, 115, 50, 70, 72, 108, 111, 107 ],
+    "username":"admin"
   }
 ]
