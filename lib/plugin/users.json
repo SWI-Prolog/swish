@@ -16,5 +16,11 @@
     "id":"aaaa",
     "password": [81, 99, 86, 51, 116, 119, 84, 72, 121, 89, 69, 100, 85 ],
     "username":"admin"
+  },
+  {
+    "email":"dks@naver.com",
+    "id":"abcd",
+    "password": [67, 104, 66, 84, 74, 66, 115, 50, 70, 72, 108, 111, 107 ],
+    "username":"admin"
   }
 ]
