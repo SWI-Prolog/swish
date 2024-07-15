@@ -7,7 +7,10 @@
 :- use_module(library(http/html_write)).
 :- use_module(library(option)).
 :- use_module(library(debug)).
-:- use_module(web_storage).  % storage.pl 모듈을 임포트
+
+% 모듈을 상대 경로로 불러오기
+:- use_module('/swish/lib/plugin/user_management').  % 상대 경로 사용
+:- use_module(web_storage).  % 상대 경로 사용
 
 % 디버그 토픽 정의
 :- debug(upload).
@@ -20,9 +23,12 @@ handle_upload(Request) :-
     multipart_post_request(Request), !,
     http_read_data(Request, Parts, [on_filename(save_file)]),
     memberchk(file=file(FileName, TempFile), Parts),
-    save_file_to_storage(FileName, TempFile, SavedPath),
-    format('Content-type: application/json~n~n'),
-    format('{"status":"success","filename":"~w","saved":"~w"}', [FileName, SavedPath]).
+    (   get_user_id(UserID)
+    ->  save_file_to_storage(FileName, TempFile, UserID, SavedPath),
+        format('Content-type: application/json~n~n'),
+        format('{"status":"success","filename":"~w","saved":"~w"}', [FileName, SavedPath])
+    ;   throw(http_reply(bad_request('User not logged in')))
+    ).
 handle_upload(_Request) :-
     throw(http_reply(bad_request(bad_file_upload))).
 
@@ -45,14 +51,14 @@ save_file(In, file(FileName, TempFile), Options) :-
         close(Out)).
 
 % 파일을 storage.pl을 통해 저장하는 로직
-save_file_to_storage(FileName, TempFile, SavedPath) :-
+save_file_to_storage(FileName, TempFile, UserID, SavedPath) :-
     web_storage:open_gittystore(Dir),
     setup_call_cleanup(
         open(TempFile, read, In, [type(binary)]),
         read_string(In, _, Data),
         close(In)
     ),
-    Meta = _{author: 'user', public: true, tags: ["example"]},  % 메타데이터 설정
+    Meta = _{author: UserID, public: true},  % 메타데이터 설정
     web_storage:gitty_create(Dir, FileName, Data, Meta, _Commit),
     directory_file_path(Dir, FileName, SavedPath).
 
