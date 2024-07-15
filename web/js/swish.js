@@ -43,6 +43,12 @@
  * @requires jquery
  */
 
+window.globalSettings = { // 전역 변수 설정
+  user: null,
+  logged_in: false
+};
+
+
 require.config({
   urlArgs: "ts="+new Date().getTime(),  /* prevent caching during development */
   waitSeconds: 60,      /* swish-min.js is big */
@@ -150,6 +156,8 @@ function showLoginModal() {
 function updateLoginStatus() {
   $.get("/user_info", function(response) {
       if (response.logged_in) {
+          window.globalSettings.user = response.user;
+          window.globalSettings.logged_in = true;
           setMypageButton(true);
           $('#login').text('Logout').removeClass('login').addClass('logout');
           $('#login').off('click').on('click', function(event) {
@@ -166,6 +174,8 @@ function updateLoginStatus() {
               }, "json");
           });
       } else {
+          window.globalSettings.user = null;
+          window.globalSettings.logged_in = false;
           setMypageButton(false);
           $('#login').text('Login').removeClass('logout').addClass('login');
           $('#login').off('click').on('click', function(event) {
