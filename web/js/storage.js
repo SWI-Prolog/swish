@@ -389,106 +389,102 @@ define([ "jquery", "config", "modal", "form", "gitty",
      * is updated.
      */
     save: function(meta, what) {
-      var data   = this.data(pluginName);
-      var type   = tabbed.tabTypes[data.typeName];
-      var url    = config.http.locations.web_storage;
-      var method = "POST";
-      var elem   = this;
-      var post;
+		var data   = this.data(pluginName);
+		var type   = tabbed.tabTypes[data.typeName];
+		var url    = config.http.locations.web_storage;
+		var method = "POST";
+		var elem   = this;
+		var post;
 
-      if ( (data.st_type == "filesys" || data.st_type == "external") && data.url )
-	return this.storage('saveURL');
+		if ( (data.st_type == "filesys" || data.st_type == "external") && data.url )
+			return this.storage('saveURL');
 
-      if ( meta == "as" ) {
-	this.storage('saveAs');
-	return this;
-      }
+		if ( meta == "as" ) {
+			this.storage('saveAs');
+			return this;
+		}
 
-      if ( data.file &&
-	   ( what == "only-meta-data" ||
-	     ( !(meta && meta.default) &&
-	       (!meta || meta.name == data.file)
-	     )
-	   ) ) {
-	url += encodeURI(data.file);
-	method = "PUT";
-      }
+		if(meta == "fork"){
+			this.storage('fork');
+			return this;
+		}
 
-      if ( what == "only-meta-data" ) {
-	if ( $.isEmptyObject(gitty.reduceMeta(meta, data.meta)) ) {
-	  alert("No change");
-	  return;
-	}
-	post = { update: "meta-data" };
-      } else if ( method == "POST" ) {
-	post = { data: data.getValue(),
-		 type: type.dataType
-	       };
-      } else {
-	if ( !data.isClean(data.cleanGeneration) ) {
-	  post = { data: data.getValue(),
-		   type: type.dataType
-		 };
-	} else if ( gitty.diffTags(data.meta.tags, meta.tags) == null ) {
-	  alert("No change");
-	  return;
-	}
-      }
+		if ( data.file && ( what == "only-meta-data" || ( !(meta && meta.default) && (!meta || meta.name == data.file))) ) 
+		{
+			url += encodeURI(data.file);
+			method = "PUT";
+		}
 
-      if ( meta )
-	post.meta = meta;
-      if ( data.meta )
-	post.previous = data.meta.commit;
+		if ( what == "only-meta-data" ) {
+			if ( $.isEmptyObject(gitty.reduceMeta(meta, data.meta)) ) {
+				alert("No change");
+				return;
+			}
+			post = { update: "meta-data" };
+		} else if ( method == "POST" ) {
+			post = { data: data.getValue(), type: type.dataType};
+		} else {
+			if ( !data.isClean(data.cleanGeneration) ) {
+				post = { data: data.getValue(), type: type.dataType};
+			} else if ( gitty.diffTags(data.meta.tags, meta.tags) == null ) {
+				alert("No change");
+				return;
+			}
+		}
 
-      backend.ajax(
-	{ url: url,
-          dataType: "json",
-	  contentType: "application/json",
-	  type: method,
-	  data: JSON.stringify(post),
-	  success: function(reply) {
-	    if ( reply.error ) {
-	      modal.alert(errorString("Could not save", reply));
-	    } else {
-	      if ( data.meta &&
-		   data.meta.example != reply.meta.example ) {
-		elem.closest(".swish").trigger('examples-changed');
-	      }
-	      data.file = reply.file;
-	      data.meta = reply.meta;
-	      data.st_type = "gitty";
-	      data.cleanGeneration = data.changeGen();
-	      data.cleanData       = data.getValue();
-	      data.cleanCheckpoint = "save";
-	      data.markClean(true);
-	      modal.feedback({ html: "Saved",
-			       owner: elem
-			     });
+		if ( meta )
+			post.meta = meta;
+		if ( data.meta )
+			post.previous = data.meta.commit;
 
-	      if ( method == "POST" )
-		data.chats = {		/* forked file has no chats */
-		  docid: elem.storage('docid'),
-		  total: 0
-		};
-	      elem.storage('update_tab_title');
-	      elem.storage('chat', (data.meta||{}).chat||'update');
-	      elem.storage('load_messages', reply.messages||[]);
-	      $(".storage").storage('chat_status', true);
-	      history.push({url: reply.url, reason: "save"});
-	    }
-	  },
-	  error: function(jqXHR, textStatus, errorThrown) {
-	    if ( jqXHR.status == 409 ) {
-	      elem.storage('resolveEditConflict',
-			   JSON.parse(jqXHR.responseText));
-	    } else if ( jqXHR.status == 403 ) {
-	      modal.alert("Permission denied.  Please try a different name");
-	    } else {
-	      alert('Save failed; click "ok" to try again');
-	      elem.storage('saveAs');
-	    }
-	  }
-	});
+    	backend.ajax(
+		{ 	url: url,
+          	dataType: "json",
+	  		contentType: "application/json",
+	  		type: method,
+	  		data: JSON.stringify(post),
+	  		success: function(reply) {
+	    		if ( reply.error ) {
+	      			modal.alert(errorString("Could not save", reply));
+	    		} else {
+	      			if ( data.meta && data.meta.example != reply.meta.example ) {
+						elem.closest(".swish").trigger('examples-changed');
+	      			}
+	      			data.file = reply.file;
+					data.meta = reply.meta;
+					data.st_type = "gitty";
+					data.cleanGeneration = data.changeGen();
+					data.cleanData       = data.getValue();
+					data.cleanCheckpoint = "save";
+					data.markClean(true);
+					modal.feedback({ html: "Saved",
+							owner: elem
+							});
+
+	    			if ( method == "POST" )
+						data.chats = {		/* forked file has no chats */
+							docid: elem.storage('docid'),
+							total: 0
+						};
+					elem.storage('update_tab_title');
+					elem.storage('chat', (data.meta||{}).chat||'update');
+					elem.storage('load_messages', reply.messages||[]);
+					$(".storage").storage('chat_status', true);
+					history.push({url: reply.url, reason: "save"});
+				}
+	  		},
+	  		error: function(jqXHR, textStatus, errorThrown) {
+	    		if ( jqXHR.status == 409 ) {
+	      			elem.storage('resolveEditConflict',
+			   		JSON.parse(jqXHR.responseText));
+	    		} else if ( jqXHR.status == 403 ) {
+	      			modal.alert("Permission denied.  Please try a different name");
+	    		} else {
+	      			alert('Save failed; click "ok" to try again');
+	      			elem.storage('saveAs');
+	    		}
+	  		}
+		});
 
       return this;
     },
@@ -497,72 +493,54 @@ define([ "jquery", "config", "modal", "form", "gitty",
      * Provide a Save As dialog
      */
     saveAs: function(options) {
-      var data = this.data(pluginName);
-      var meta    = data.meta||{};
-      var editor  = this;
-      var update  = Boolean(data.file);
-      var fork    = data.meta && meta.symbolic != "HEAD" && !meta.default;
-      var type    = tabbed.tabTypes[data.typeName];
-      var profile = $("#login").login('get_profile',
-				      [ "display_name", "avatar", "email",
-					"identity"
-				      ]);
-      var author  = profile.display_name;
-      var modify  = meta.modify;
-      var canmodify;
+		var data = this.data(pluginName);
+		var meta    = data.meta||{};
+		var editor  = this;
+		var update  = Boolean(data.file); // data.file은 file 이름을 의미함
+		var type    = tabbed.tabTypes[data.typeName];
+		var logged_in = window.globalSettings.logged_in;
+		var author = window.globalSettings.user;
 
-      if ( meta.public === undefined )
-	meta.public = true;
+		console.log(update);
 
-      if ( profile.identity ) {
-	if ( !modify )
-	  modify = ["login", "owner"];
-      } else
-      { modify = ["any", "login", "owner"];
-      }
+		if ( !logged_in ) { // 로그인 되지 않았다면 
+			alert("You can save the file after logging in");
+			return this;
+		}
 
-      if ( profile.identity ) {
-	canmodify = (profile.identity == meta.identity ||
-		     !(meta.identity||meta.user));
-      } else {
-	canmodify = false;
-      }
+		if ( meta.author !== undefined && meta.author != author ) {  // 파일의 author가 아닌 경우
+			alert("You cannot save the file. If you want to update this file, you have to fork");
+			return this;
+		}
 
-      options = options||{};
+		if ( meta.public === undefined )
+			meta.public = true;
 
-      function saveAsBody() {
-	this.append($.el.form(
-          { class:"form-horizontal"},
-	    form.fields.hidden("identity", profile.identity),
-	    form.fields.hidden("default", meta.default),
-	    form.fields.hidden("chat", meta.chat),
-	    profile.identity ? undefined :
-			       form.fields.hidden("avatar", profile.avatar),
-	    form.fields.fileName(fork ? null: data.file,
-				 meta.public, meta.example),
-	    form.fields.title(meta.title),
-	    form.fields.author(author, profile.identity),
-	    update ? form.fields.commit_message() : undefined,
-	    form.fields.tags(meta.tags),
-	    form.fields.modify(modify, canmodify),
-	    form.fields.follow(profile.email),
-	    form.fields.buttons(
-	      { label: fork   ? "Fork "+type.label :
-		       update ? "Update "+type.label :
-				"Save "+type.label,
-		action: function(ev, as) {
-			  editor.storage('save', as);
-			  return false;
-			}
-	      })));
-      }
+		options = options||{};
 
-      form.showDialog({ title: options.title ? options.title :
-			       fork   ? "Fork from "+meta.commit.substring(0,7) :
-			       update ? "Save new version" :
+		function saveAsBody() {
+			this.append($.el.form(
+				{ class:"form-horizontal"},
+				form.fields.fileName(data.file, meta.example, false, false), // disabled, canfork
+				form.fields.public(meta.public, false),
+				form.fields.title(meta.title),
+				form.fields.author(author, disabled = true),
+				update ? form.fields.commit_message() : undefined,
+				form.fields.tags(meta.tags),
+				form.fields.buttons({ label: update ? "Update "+type.label : "Save "+type.label,
+					action: function(ev, as) {
+						editor.storage('save', as);
+						return false;
+					}
+				})
+			));
+		}
+
+		form.showDialog({ title: options.title ? options.title :
+					update ? "Save new version" :
 					"Save "+type.label+" as",
 			body:  saveAsBody
-		      });
+		});
 
       return this;
     },
@@ -616,6 +594,50 @@ define([ "jquery", "config", "modal", "form", "gitty",
 	    }
 	  }
 	});
+
+      return this;
+    },
+
+	/**
+     * Fork 
+     */
+
+	fork: function(options) {
+		var data = this.data(pluginName);
+		var meta    = data.meta||{};
+		var editor  = this;
+		//var fork    = data.meta && meta.symbolic != "HEAD" && !meta.default;
+		var type    = tabbed.tabTypes[data.typeName];
+		var logged_in = window.globalSettings.logged_in;
+		var author = window.globalSettings.user;
+
+		if ( !logged_in ) { // 로그인 되지 않았다면 
+			alert("You can fork the file after logging in");
+			return this;
+		}
+
+		options = options||{};
+
+		function forkAsBody() {
+			this.append($.el.form(
+				{ class:"form-horizontal"},
+				form.fields.fileName(null, meta.example, false, true), // file 이름은 비워두기 disabled, canfork
+				form.fields.public(meta.public, false),
+				form.fields.title(meta.title),
+				form.fields.author(author, disabled = true),
+				form.fields.tags(meta.tags),
+				form.fields.buttons({ label: "Fork "+type.label,
+					action: function(ev, as) {
+						editor.storage('save', as);
+						return false;
+					}
+				})
+			));
+		}
+
+		form.showDialog({ title: "Fork from "+meta.commit.substring(0,7),
+			body:  forkAsBody
+		});
 
       return this;
     },

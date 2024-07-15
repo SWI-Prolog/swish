@@ -100,6 +100,9 @@ preferences.setInform("preserve-state", ".unloadable");
 	"Info & history ...": glyph("info-sign", function() {
 	  menuBroadcast("fileInfo");
 	}),
+  "Fork ...": glyph("share", function() {
+	  menuBroadcast("save", "fork");
+	}),
 	"Reload": glyph("refresh", function() {
 	  menuBroadcast("reload");
 	}),
