@@ -8,7 +8,8 @@
             load_user_info/1,
             id_exists/2,
             email_exists/2,
-            username_exists/3
+            username_exists/3,
+            get_user_id/1
           ]).
 
 :- use_module(library(http/json)).
@@ -232,6 +233,10 @@ user_info_handler(_Request) :-
     ->  reply_json_dict(_{logged_in: true, user: UserID})
     ;   reply_json_dict(_{logged_in: false})
     ).
+
+    % 사용자 ID를 세션에서 가져오는 함수
+get_user_id(UserID) :-
+    catch(http_session_data(user(UserID)), _, fail).
 
 % HTTP 핸들러 등록
 :- http_handler('/signup', user_management:signup_handler, [method(post)]).

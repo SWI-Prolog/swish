@@ -208,7 +208,7 @@ preferences.setInform("preserve-state", ".unloadable");
                 contentType: false,
                 success: function(response) {
                     console.log('File uploaded successfully:', response);
-                    // 추가된 파일을 sourcelist에 반영하는 로직을 여기에 추가
+                    location.reload(); // 페이지 새로고침
                 },
                 error: function(error) {
                     console.error('File upload failed:', error);
@@ -216,7 +216,7 @@ preferences.setInform("preserve-state", ".unloadable");
             });
         }
     });
-});
+ });
 
   /** @lends $.fn.swish */
   var methods = {

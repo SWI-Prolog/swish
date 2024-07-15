@@ -119,6 +119,7 @@ require(["jquery", "config", "jswish", "plugin", "mypage"],
       $(function() {
         $("body").swish(config.swish || {});
         setupNavigationBar();
+        hideUploadButton();
       });
     });
   }
@@ -311,4 +312,25 @@ function showSignUpModal() {
       } else {
         $('.mypage-button').hide();
       }
+  }
+
+  
+  // 업로드 버튼 숨기기
+  function hideUploadButton() {
+    $.ajax({
+      url: '/user_info',
+      method: 'GET',
+      success: function(response) {
+        if (response.logged_in) {
+          $('#uploadButton').show();  // 로그인이 되어 있으면 업로드 버튼을 표시
+        } else {
+          $('#uploadButton').hide();  // 로그인이 되어 있지 않으면 업로드 버튼을 숨김
+        }
+      },
+      error: function() {
+        $('#uploadButton').hide();  // 오류가 발생하면 업로드 버튼을 숨김
+      }
+    });
+    // 업로드 버튼에 id를 추가
+    $('a:contains("Upload ...")').attr('id', 'uploadButton');
   }
