@@ -140,6 +140,13 @@ authorize(Action, Id) :-
 %!  approve(+Action, +Id)
 
 approve(gitty(update(_File,PrevMeta,_Meta)), Auth) :- !,
+    storage_meta_property(PrevMeta, author(Author)),
+    (   Author == Auth.get(user_id)
+    ->  true
+    ;   false
+    ).
+
+approve(gitty(update(_File,PrevMeta,_Meta)), Auth) :- !,
     storage_meta_property(PrevMeta, modify(Modify)),
     (   memberchk(any, Modify)
     ->  true
