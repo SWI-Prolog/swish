@@ -34,23 +34,26 @@
 */
 
 :- module(web_storage,
-	  [ storage_file/1,			% ?File
-	    storage_file_extension/2,		% ?File, ?Extension
-	    storage_file/3,			% +File, -Data, -Meta
-	    storage_meta_data/2,		% +File, -Meta
-	    storage_meta_property/2,	        % +Meta, ?Property
+          [ storage_file/1,                     % ?File
+            storage_file_extension/2,           % ?File, ?Extension
+            storage_file_extension_head/3,      % ?File, ?Extension, -Head
+            storage_file/3,                     % +File, -Data, -Meta
+            storage_meta_data/2,                % +File, -Meta
+            storage_meta_property/2,            % +Meta, ?Property
+            storage_commit/2,                   % +Hash, -Meta
 
-	    storage_fsck/0,
-	    storage_repack/0,
-	    storage_repack/1,			% +Options
-	    storage_unpack/0,
+            storage_fsck/0,
+            storage_repack/0,
+            storage_repack/1,                   % +Options
+            storage_unpack/0,
 
-	    storage_store_term/2,		% +Term, -Hash
-	    storage_load_term/2,		% +Hash, -Term
+            storage_store_term/2,               % +Term, -Hash
+            storage_load_term/2,                % +Hash, -Term
 
-	    use_gitty_file/1,			% +File
-	    use_gitty_file/2			% +File, +Options
-	  ]).
+            use_gitty_file/1,                   % +File
+            use_gitty_file/2,                    % +File, +Options
+            open_gittystore/1
+          ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_json)).
@@ -67,7 +70,7 @@
 :- use_module(library(dcg/basics)).
 :- use_module(library(pcre)).
 :- use_module(library(pengines_io)).
-
+:- use_module(upload).
 :- use_module(page).
 :- use_module(gitty).
 :- use_module(patch).

@@ -120,6 +120,9 @@ preferences.setInform("preserve-state", ".unloadable");
 	"Download": glyph("floppy-save", function() {
 	  menuBroadcast("download");
 	}),
+  "Upload ...": glyph("upload", function() {
+    $('#fileInput').trigger('click');
+  }),
 	"Print ...": glyph("print", function() {
 	  menuBroadcast("print");
 	})
@@ -177,6 +180,72 @@ preferences.setInform("preserve-state", ".unloadable");
     }
   }; // defaults;
 
+  $(() => {
+    if ($('#fileInput').length === 0) {
+        $('body').append('<input type="file" id="fileInput" multiple style="display: none;" />');
+    }
+
+    $(document).on('change', '#fileInput', function(event) {
+        var files = event.target.files;
+        if (files.length > 0) {
+            var allowedExtensions = ['.swib', '.pl'];
+
+            var uploadFile = function(file, callback) {
+                var formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: '/upload',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        console.log('File uploaded successfully:', response);
+                        callback(null, response.filename);  
+                    },
+                    error: function(error) {
+                        console.error('File upload failed:', error);
+                        callback(error);
+                    }
+                });
+            };
+
+            var lastUploadedFileName = null;
+
+            var uploadNextFile = function(index) {
+                if (index < files.length) {
+                    var file = files[index];
+                    var fileName = file.name;
+                    var fileExtension = fileName.slice(fileName.lastIndexOf('.')).toLowerCase();
+
+                    if (allowedExtensions.includes(fileExtension)) {
+                        uploadFile(file, function(err, fileName) {
+                            if (!err) {
+                                lastUploadedFileName = fileName; 
+                                uploadNextFile(index + 1);
+                            } else {
+                                alert('File upload failed for file: ' + fileName);
+                            }
+                        });
+                    } else {
+                        alert('Invalid file type: ' + fileName + '. Only .swib and .pl files are allowed.');
+                        uploadNextFile(index + 1);
+                    }
+                } else {
+                    // redirect to last file 
+                    if (lastUploadedFileName) {
+                        window.location.href = '/p/' + lastUploadedFileName;
+                    } else {
+                        location.reload();
+                    }
+                }
+            };
+
+            uploadNextFile(0); 
+        }
+    });
+});
 
   /** @lends $.fn.swish */
   var methods = {
