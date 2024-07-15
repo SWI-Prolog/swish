@@ -139,40 +139,50 @@ define([ "jquery", "config", "form", "modal", "backend",
      * allow updating the meta-data
      */
     showMetaData: function() {
-      return this.each(function() {
-	var elem = $(this);
-	var data = elem.data(pluginName);
-	var tab  = elem.find(".gitty-meta-data");
-	var formel;
-	var meta = data.commits[data.commit];
+      	return this.each(function() {
+			var elem = $(this);
+			var data = elem.data(pluginName);
+			var tab  = elem.find(".gitty-meta-data");
+			var formel;
+			var meta = data.commits[data.commit];
+			var canmodify;
 
-	if ( data.metaData == data.commit )
-	  return;
-	data.metaData = data.commit;
+			if ( data.metaData == data.commit )
+			return;
+			data.metaData = data.commit;
 
-	tab.html("");
-	formel = $.el.form({class:"form-horizontal"},
-		      form.fields.fileName(meta.name, meta.public, meta.example,
-					   true), // disabled
-		      form.fields.title(meta.title),
-		      form.fields.author(meta.author),
-		      form.fields.date(meta.time, "Date", "date"),
-		      form.fields.tags(meta.tags));
+			console.log(data);
 
-	if ( meta.symbolic == "HEAD" ) {
-	  $(formel).append(
-	      form.fields.buttons(
-		{ label: "Update meta data",
-		  action: function(ev, newMetaData) {
-		    data.editor.storage('save', newMetaData, "only-meta-data");
-		    return false;
-		  }
-		}));
-	}
+			if(window.globalSettings.logged_in){ // 로그인 된 경우
+				if(window.globalSettings.user == meta.author) canmodify = true;
+			}
+			else{ // 안 된 경우
+				canmodify = false;
+			}
 
-	tab.append(formel);
-      });
-    },
+			tab.html("");
+			formel = $.el.form({class:"form-horizontal"},
+						form.fields.fileName(meta.name, meta.example, true, false), // disabled, canfork
+						form.fields.public(meta.public, !canmodify),
+						form.fields.title(meta.title, !canmodify),
+						form.fields.author(meta.author, disabled = true),
+						form.fields.date(meta.time, "Date", "date"),
+						form.fields.tags(meta.tags, !canmodify));
+					
+			if ( meta.symbolic == "HEAD" && canmodify) {
+				$(formel).append(
+					form.fields.buttons(
+					{ label: "Update meta data",
+						action: function(ev, newMetaData) {
+						data.editor.storage('save', newMetaData, "only-meta-data");
+						return false;
+					}
+				}));
+			}
+
+			tab.append(formel);
+		});
+	},
 
 
 		 /*******************************

@@ -68,6 +68,7 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
       // get arrays of checkboxes
       form.find("div.checkboxes.array").each(function() {
 	var elem = $(this);
+	console.log(elem);
 	var set = [];
 
 	elem.find("input:checked").each(function() {
@@ -201,158 +202,168 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
     },
 
     fields: {
-      fileName: function(name, public, example, disabled) {
-	var labeltext;
-	var empty = "(leave empty for generated random name)"
-	var fork, input;
-	var community_examples = config.swish.community_examples && example != undefined;
+		fileName: function(name, example, disabled, canfork) {
+			var labeltext;
+			var empty = "(leave empty for generated random name)";
+			var fork, input;
+			var community_examples = config.swish.community_examples && example != undefined;
 
-	if ( community_examples )
-	  labeltext = "Public | Example | name";
-	else
-	  labeltext = "Public | name";
+			// 설정에 따라 라벨 텍스트 정의
+			if (community_examples) {
+				labeltext = "Example | name";
+			} else {
+				labeltext = "name";
+			}
 
-        var elem =
-	$.el.div({class:"form-group"},
-		 label("name", labeltext),
-		 $.el.div({class:valgridw()},
-			  $.el.div({class:"input-group"},
-				   $.el.span({class:"input-group-addon",
-				              title:"If checked, other users can find this program"
-				             },
-					     checkbox("public",
-						      { checked: public
-						      })),
-				   community_examples ?
-				   $.el.span({class:"input-group-addon",
-				              title:"If checked, add to examples menu"
-				             },
-					     checkbox("example",
-						      { checked: example
-						      })) : undefined,
-			   input = textInput("name",
-					     {placeholder:"Name " + empty,
-					      title:"Public name of your program",
-					      value:name,
-					      disabled:disabled}),
-			   name ?
-			     fork = $.el.span({class:"input-group-btn"
-					      },
-					      $.el.button({ class: "btn btn-success",
-							    type: "button"
-							  }, "Fork")) : undefined
-				  )));
+			// form-group div 생성
+			var elem = $.el.div({ class: "form-group" },
+				label("name", labeltext),
+				$.el.div({ class: valgridw() },
+					$.el.div({ class: "filename-group" },
+						community_examples ?
+							$.el.span({
+								class: "input-group-addon",
+								title: "If checked, add to examples menu"
+							},
+								checkbox("example", { checked: example, disabled: disabled })
+							) : undefined,
+						input = textInput("name", {
+							placeholder: "Name " + empty,
+							title: "Public name of your program",
+							value: name,
+							disabled: disabled
+						})
+					)
+				)
+			);
 
-	if ( fork ) {
-	  $(fork).on("click", function() {
-	    var btn = $(input).closest("form").find(".btn.btn-primary");
-	    $(input).attr("placeholder", "Fork as " + empty);
-	    $(input).val("");
-	    btn.text(btn.text().replace("Update", "Fork"));
-	  });
-	}
+			// Fork 버튼 클릭 이벤트 처리
+			if (canfork) {
+				$(fork).on("click", function() {
+					var btn = $(input).closest("form").find(".btn.btn-primary");
+					$(input).attr("placeholder", "Fork as " + empty);
+					$(input).val("");
+					btn.text(btn.text().replace("Update", "Fork"));
+				});
+			}
 
-	return elem;
-      },
+			return elem;
+		},
 
-      title: function(title) {
-	var elem =
-	$.el.div({class:"form-group"},
-		 label("title", "Title"),
-		 $.el.div({class:valgridw()},
-			  textInput("title",
-				    {placeholder:"Descriptive title",
-				     value:title})));
-	return elem;
+		public: function(public, disabled) {
+			return $.el.div({class:"form-group"},
+				label("public", "Public"),
+				$.el.div({class:valgridw()},
+					checkbox("public", { checked: public, disabled: disabled }) // 수정한 부분
+				));
+		},
+
+      title: function(title, disabled) {
+		disabled = disabled || false; // default value for disabled is false
+
+		var elem =
+		$.el.div({class:"form-group"},
+			label("title", "Title"),
+			$.el.div({class:valgridw()},
+				textInput("title",
+						{
+							placeholder:"Descriptive title",
+							value:title,
+							disabled : disabled
+						}))
+		);
+		return elem;
       },
 
       /**
        * @param {String} [identity] if provided, this indicates that the
        * author cannot be changed.
        */
-      author: function(author, identity) {
-	var options = { placeholder:"Your name", value:author };
+      author: function(author, identity, disabled) {
+		disabled = disabled || false; // default value for disabled is false
+		var options = { placeholder:"Your name", value:author, disabled: disabled };
 
-	if ( author && identity ) {
-	  options.readonly = true;
-	  options.title    = "Verified author name";
-	}
+		if ( author && identity ) {
+			options.readonly = true;
+			options.title    = "Verified author name";
+		}
 
-	var elem =
-	$.el.div({class:"form-group"},
-		 label("author", "Author"),
-		 $.el.div({class:valgridw()},
-			  textInput("author", options)));
-	return elem;
+		var elem =
+			$.el.div({class:"form-group"},
+		 	label("author", "Author"),
+		 	$.el.div({class:valgridw()},
+			  	textInput("author", options)));
+			return elem;
       },
 
       link: function(link) {
-	var options = {
-	  readonly: true,
-	  title: "Permalink",
-	  value: link
-	};
-	var elem =
-	$.el.div({class:"form-group"},
-		 label("link", "Link"),
-		 $.el.div({class:valgridw()},
-			  textInput("link", options)));
-	return elem;
+		var options = {
+		readonly: true,
+		title: "Permalink",
+		value: link
+		};
+		var elem =
+		$.el.div({class:"form-group"},
+			label("link", "Link"),
+			$.el.div({class:valgridw()},
+				textInput("link", options)));
+		return elem;
       },
 
       date: function(stamp, labels, name) {
-	name = name||label;
-	var elem =
-	$.el.div({class:"form-group"},
-		 label(name, labels),
-		 $.el.div({class:valgridw()},
-			  textInput(name,
-				    {disabled: true,
-				     value:new Date(stamp*1000).toLocaleString()
-				    })));
-	return elem;
+		name = name||label;
+		var elem =
+		$.el.div({class:"form-group"},
+			label(name, labels),
+			$.el.div({class:valgridw()},
+				textInput(name,
+						{disabled: true,
+						value:new Date(stamp*1000).toLocaleString()
+						})));
+		return elem;
       },
 
       description: function(description) {
-	var elem =
-	$.el.div({class:"form-group"},
-		 label("description", "Description"),
-		 $.el.div({class:valgridw()},
-			  textarea("description", {value:description})));
-	return elem;
+		var elem =
+		$.el.div({class:"form-group"},
+			label("description", "Description"),
+			$.el.div({class:valgridw()},
+				textarea("description", {value:description})));
+		return elem;
       },
 
       commit_message: function(msg) {
-	var elem =
-	$.el.div({class:"form-group"},
-		 label("commit_message", "Changes"),
-		 $.el.div({class:valgridw()},
-			  textarea("commit_message",
-				   { value:msg,
-				     placeholder:"Describe your changes here"
-				   })));
-	return elem;
+		var elem =
+		$.el.div({class:"form-group"},
+			label("commit_message", "Changes"),
+			$.el.div({class:valgridw()},
+				textarea("commit_message",
+					{ value:msg,
+						placeholder:"Describe your changes here"
+					})));
+		return elem;
       },
 
       description: function(msg) {
-	var elem =
-	$.el.div({class:"form-group"},
-		 label("description", "Description"),
-		 $.el.div({class:valgridw()},
-			  textarea("description",
-				   { value:msg,
-				     placeholder:"Description"
-				   })));
-	return elem;
+		var elem =
+		$.el.div({class:"form-group"},
+			label("description", "Description"),
+			$.el.div({class:valgridw()},
+				textarea("description",
+					{ value:msg,
+						placeholder:"Description"
+					})));
+		return elem;
       },
 
-      tags: function(tags) {
-	var elem =
-	$.el.div({class:"form-group"},
-		 label("tags", "Tags"),
-		 $.el.div({class:valgridw()},
-			  tagInput("tags", "Tags help finding this code", tags)));
-	return elem;
+      tags: function(tags, disabled) {
+		disabled = disabled || false; // default value for disabled is false
+		var elem =
+		$.el.div({class:"form-group"},
+			label("tags", "Tags"),
+			$.el.div({class:valgridw()},
+				tagInput("tags", "Tags help finding this code", tags, disabled)));
+		return elem;
       },
 
       /**
@@ -360,71 +371,71 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
        * of this file
        */
       modify: function(who, canmodify) {
-	var fields = [];
-	var opts = { name:"modify", label:"Can save new version",
-		     type:"array"
-		   };
+		var fields = [];
+		var opts = { name:"modify", label:"Can save new version",
+				type:"array"
+			};
 
-	function add(key, label) {
-	  fields.push({ name:key,
-			label:label,
-			value:who.indexOf(key) != -1,
-			readonly: !canmodify
-		      });
-	}
+		function add(key, label) {
+		fields.push({ name:key,
+				label:label,
+				value:who.indexOf(key) != -1,
+				readonly: !canmodify
+				});
+		}
 
-	add("any",   "Anyone");
-	add("login", "Logged in users");
-	add("owner", "Only me");
+		add("any",   "Anyone");
+		add("login", "Logged in users");
+		add("owner", "Only me");
 
-	if ( !canmodify )
-	  opts.title = "Only logged in users and owners can set permissions";
-	else
-	  opts.title = "Specify who can save an updated version of this file";
+		if ( !canmodify )
+		opts.title = "Only logged in users and owners can set permissions";
+		else
+		opts.title = "Specify who can save an updated version of this file";
 
-	return form.fields.checkboxes(fields, opts);
+		return form.fields.checkboxes(fields, opts);
       },
 
       follow: function(email) {
-	return form.fields.checkboxes(
-		 [ { name: "follow", label: "Follow this document",
-		     value:!!email, readonly:!email
-		   }
-		 ],
-		 { name:"options", label:"",
-		   title: "Notify about activity (updates, chat)\n"+
-			  "Requires being logged in with valid email"
-		 });
+		return form.fields.checkboxes(
+			[ { name: "follow", label: "Follow this document",
+				value:!!email, readonly:!email
+			}
+			],
+			{ name:"options", label:"",
+			title: "Notify about activity (updates, chat)\n"+
+				"Requires being logged in with valid email"
+			});
       },
 
       projection: function(projection) {
-	var elem =
-	$.el.div({class:"form-group"},
-		 label("projection", "Projection"),
-		 $.el.div({class:valgridw()},
-			  textInput("projection",
-				    {placeholder:"Columns", value:projection})));
-	return elem;
+		var elem =
+		$.el.div({class:"form-group"},
+			label("projection", "Projection"),
+			$.el.div({class:valgridw()},
+				textInput("projection",
+						{placeholder:"Columns", value:projection})));
+		return elem;
       },
 
       csvFormat: function(list, format) {
-	var elem;
+		var elem;
 
-	list = list||["prolog"];
-	format = format||list[0];
+		list = list||["prolog"];
+		format = format||list[0];
 
-	if ( list.length == 1 ) {
-	  elem = $.el.input({type:"hidden", name:"format", value:list[0]});
-	} else {
-	  elem = $.el.div({class:"form-group"},
-			  label("format", "Format"),
-			  $.el.div({class:valgridw()},
-				   select("format",
-					  list,
-					  {value:format})));
-	}
+		if ( list.length == 1 ) {
+		elem = $.el.input({type:"hidden", name:"format", value:list[0]});
+		} else {
+		elem = $.el.div({class:"form-group"},
+				label("format", "Format"),
+				$.el.div({class:valgridw()},
+					select("format",
+						list,
+						{value:format})));
+		}
 
-	return elem;
+		return elem;
       },
 
       /**
@@ -458,33 +469,30 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
        * Uses .name, .label, .value (Boolean) and .readonly
        */
       checkboxes: function(boxes, options) {
-	var boxel;
+			var boxel;
 
-	options = $.extend({name:"options", label:"Options", col:LABELWIDTH},
-			   options||{});
+			options = $.extend({name:"options", label:"Options", col:LABELWIDTH},options||{});
 
-	var dopts = { class: "checkboxes col-xs-"+(12-options.col),
-	              name:  options.name
-		    };
-	if ( options.title ) dopts.title = options.title;
-	if ( options.type  ) dopts.class += " "+options.type;
-	var elem =
-	$.el.div({class:"form-group"},
-		 label(options.name, options.label, options.col),
-		 boxel = $.el.div(dopts));
+			var dopts = { class: "checkboxes col-xs-"+(12-options.col), name:  options.name};
+			if ( options.title ) dopts.title = options.title;
+			if ( options.type  ) dopts.class += " "+options.type;
+			var elem =
+				$.el.div({class:"form-group"},
+				label(options.name, options.label, options.col),
+				boxel = $.el.div(dopts));
 
-	for(var k=0; k<boxes.length; k++) {
-	  var box = boxes[k];
-	  var opts = {type: "checkbox", name:box.name, autocomplete:"false"};
-	  if ( box.value )
-	    opts.checked = "checked";
-	  if ( box.readonly )
-	    opts.disabled = "disabled";
-	  $(boxel).append($.el.label({class:"checkbox-inline"},
-				     $.el.input(opts), box.label));
-	}
+			for(var k=0; k<boxes.length; k++) {
+				var box = boxes[k];
+				var opts = {type: "checkbox", name:box.name, autocomplete:"false"};
+				if ( box.value )
+					opts.checked = "checked";
+				if ( box.readonly )
+					opts.disabled = "disabled";
+				$(boxel).append($.el.label({class:"checkbox-inline"},
+							$.el.input(opts), box.label));
+			}
 
-	return elem;
+			return elem;
       },
 
       chunk: function(value) {
@@ -538,35 +546,37 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
        * @param {Number} options.offset determines the begin column in
        * the grid (default 2)
        */
-      buttons: function(options) {
-	options    = options||{};
-	var label  = options.label||"Save program";
-	var offset = options.offset||LABELWIDTH;
-	var button = $.el.button({ name:"save",
-				   class:"btn btn-primary"
-				 },
-				 label);
-
-	$(button).on("click", function(ev) {
-	  var elem = $(ev.target).parents("form")[0];
-	  var data = form.serializeAsObject($(elem));
-
-	  options.action(ev, data);
-	  $(ev.target).parents(".modal").modal('hide');
-	  ev.preventDefault();
-	  return false;
-	});
-
-	var elem =
-	$.el.div({class:"form-group"},
-		 $.el.div({class:"col-xs-offset-"+offset+" col-xs-"+(12-offset)},
-			  button,
-			  $.el.button({name:"cancel",
-				       class:"btn btn-danger",
-				       'data-dismiss':"modal"},
-				      "Cancel")));
-	return elem;
-      },
+    buttons: function(options) {
+		options = options || {};
+		var label = options.label || "Save program";
+		var offset = options.offset || LABELWIDTH;
+		var button = $.el.button({ 
+			name: "save",
+			class: "btn btn-primary"
+		}, label);
+	
+		$(button).on("click", function(ev) {
+			var elem = $(ev.target).parents("form")[0];
+			var data = form.serializeAsObject($(elem));
+	
+			options.action(ev, data);
+			$(ev.target).parents(".modal").modal('hide');
+			ev.preventDefault();
+			return false;
+		});
+	
+		var elem = $.el.div({ class: "form-group" },
+			$.el.div({ class: "col-xs-offset-" + offset + " col-xs-" + (12 - offset) },
+				button,
+				$.el.button({
+					name: "cancel",
+					class: "btn btn-danger",
+					'data-dismiss': "modal"
+				}, "Cancel")
+			)
+		);
+		return elem;
+	},
 
       /**
        * Bootstrap radio button.  To get the value, use
@@ -714,8 +724,10 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
   function checkbox(name, options) {
     var attrs = {name:name, type:"checkbox"};
     options = options||{};
+	options.disabled = options.disabled || false; // default value for disabled is false
     if ( options.checked ) attrs.checked = "checked";
     if ( options.title   ) attrs.title	 = options.title;
+	if (options.disabled) attrs.disabled = options.disabled;
     return $.el.input(attrs);
   }
 
@@ -731,9 +743,10 @@ define([ "jquery", "config", "modal", "laconic", "tagmanager" ],
     return $.el.input(attrs);
   }
 
-  function tagInput(name, placeholder, tags) {
+  function tagInput(name, placeholder, tags, disabled) {
     var attrs = { name:name, type:"text",
-                  class:"tm-input tag-list"
+                  class:"tm-input tag-list",
+				  disabled: disabled
                 };
     if ( placeholder ) attrs.placeholder = placeholder;
     var elem = $.el.input(attrs);
