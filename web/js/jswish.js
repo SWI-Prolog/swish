@@ -190,33 +190,61 @@ preferences.setInform("preserve-state", ".unloadable");
   $(() => {
     // 파일 입력 요소 추가
     if ($('#fileInput').length === 0) {
-        $('body').append('<input type="file" id="fileInput" style="display: none;" />');
+        $('body').append('<input type="file" id="fileInput" multiple style="display: none;" />');
     }
 
     // 파일 입력 요소에 change 이벤트 핸들러 설정
     $(document).on('change', '#fileInput', function(event) {
-        var file = event.target.files[0];
-        if (file) {
-            var formData = new FormData();
-            formData.append('file', file);
+        var files = event.target.files;
+        if (files.length > 0) {
+            var uploadFile = function(file, callback) {
+                var formData = new FormData();
+                formData.append('file', file);
 
-            $.ajax({
-                url: '/upload',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    console.log('File uploaded successfully:', response);
-                    location.reload(); // 페이지 새로고침
-                },
-                error: function(error) {
-                    console.error('File upload failed:', error);
+                $.ajax({
+                    url: '/upload',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        console.log('File uploaded successfully:', response);
+                        callback(null, response.filename);  // 응답에서 filename을 전달
+                    },
+                    error: function(error) {
+                        console.error('File upload failed:', error);
+                        callback(error);
+                    }
+                });
+            };
+
+            var lastUploadedFileName = null;
+
+            var uploadNextFile = function(index) {
+                if (index < files.length) {
+                    uploadFile(files[index], function(err, fileName) {
+                        if (!err) {
+                            lastUploadedFileName = fileName;  // 마지막 업로드된 파일 이름 저장
+                            uploadNextFile(index + 1);
+                        } else {
+                            alert('File upload failed for file: ' + files[index].name);
+                        }
+                    });
+                } else {
+                    // 모든 파일 업로드가 완료되었을 때 마지막 파일로 리다이렉트
+                    if (lastUploadedFileName) {
+                        window.location.href = '/p/' + lastUploadedFileName;
+                    } else {
+                        // 파일이 하나도 업로드되지 않았을 경우 새로고침
+                        location.reload();
+                    }
                 }
-            });
+            };
+
+            uploadNextFile(0);  // 첫 번째 파일부터 업로드 시작
         }
     });
- });
+});
 
   /** @lends $.fn.swish */
   var methods = {
