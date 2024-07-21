@@ -77,7 +77,7 @@ configuration files in =config-available=.
 
 :- http_handler('/login', swish_login, [id(login)]).
 :- http_handler('/user_info', user_management:user_info_handler, [id(user_info)]).
-:- http_handler('/signup', user_management:signup_handler, []).  % user_management 모듈의 signup_handler/1을 사용
+:- http_handler('/signup', user_management:signup_handler, [method(post)]).  % user_management 모듈의 signup_handler/1을 사용
 :- http_handler('/authenticate', user_management:login_handler, [method(post)]).  % 로그인 핸들러 추가
 
 login_form(_Request) -->
