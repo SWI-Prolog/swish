@@ -141,24 +141,31 @@ signup_handler(Request) :-
         ;   email_exists(Email, Users)
         ->  reply_json_dict(_{success: false, message: "Email already exists"})
         ;   (   save_user_info(ID, Password, Username, Email)
-            ->  reply_json_dict(_{success: true})
+            ->  http_session_assert(user(ID)),  % 자동 로그인 처리
+                reply_json_dict(_{success: true})
             ;   reply_json_dict(_{success: false, message: "Failed to save user information"})
             )
         )
     ;   reply_json_dict(_{success: false, message: "Invalid request data"})
     ).
 
+
 % 로그인 요청을 처리하는 핸들러
 login_handler(Request) :-
     http_read_json_dict(Request, Dict),
     _{id: ID, password: Password} :< Dict,
+    login_user(ID, Password).
+
+% 로그인 유틸리티 함수
+login_user(ID, Password) :-
     load_user_info(Users),
     (   member(User, Users),
         User.id == ID,
         crypt(Password, User.password)  % 입력된 비밀번호를 해시하여 비교
     ->  http_session_assert(user(ID)),
         reply_json_dict(_{success: true})
-    ;   reply_json_dict(_{success: false, message: "Invalid ID or password"})
+    ;   debug(login, 'Login failed for ID: ~w', [ID]),  % 디버깅 정보 출력
+        reply_json_dict(_{success: false, message: "Invalid ID or password"})
     ).
 
 % user 정보 업데이트를 요청을 처리하는 핸들러
@@ -220,7 +227,7 @@ update_password_handler(Request) :-
         )
     ;   reply_json_dict(_{success: false, message: "User not logged in"})
     ).
-
+    
 % 로그아웃 요청을 처리하는 핸들러
 logout_handler(_Request) :-
     http_session_retract(user(_)),
@@ -234,7 +241,7 @@ user_info_handler(_Request) :-
     ;   reply_json_dict(_{logged_in: false})
     ).
 
-    % 사용자 ID를 세션에서 가져오는 함수
+% 사용자 ID를 세션에서 가져오는 함수
 get_user_id(UserID) :-
     catch(http_session_data(user(UserID)), _, fail).
 

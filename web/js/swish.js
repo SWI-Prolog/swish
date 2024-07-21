@@ -226,81 +226,81 @@ require(["jquery", "config", "jswish", "plugin", "mypage"],
 //     showSignUpModal();
 //   });
 
-
-// function showSignUpModal() {
-//   const modalContent = `
-//     <div class="modal fade" id="signupModal" tabindex="-1" role="dialog" aria-labelledby="signupModalLabel" aria-hidden="true">
-//       <div class="modal-dialog" role="document">
-//         <div class="modal-content">
-//           <div class="modal-header">
-//             <h5 class="modal-title" id="signupModalLabel">Sign Up</h5>
-//             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-//               <span aria-hidden="true">&times;</span>
-//             </button>
-//           </div>
-//           <div class="modal-body">
-//             <form id="signup-form">
-//               <div class="form-group">
-//                 <label for="signup-id">ID</label>
-//                 <input type="text" class="form-control" id="signup-id" name="id" required>
-//               </div>
-//               <div class="form-group">
-//                 <label for="signup-password">Password</label>
-//                 <input type="password" class="form-control" id="signup-password" name="password" required>
-//               </div>
-//               <div class="form-group">
-//                 <label for="signup-username">Username (Optional)</label>
-//                 <input type="text" class="form-control" id="signup-username" name="username">
-//               </div>
-//               <div class="form-group">
-//                 <label for="signup-email">Email</label>
-//                 <input type="email" class="form-control" id="signup-email" name="email" required>
-//               </div>
-//               <button type="submit" class="btn btn-primary">Sign up</button>
-//             </form>
-//           </div>
-//         </div>
-//       </div>
-//     </div>`;
-
-//   $('body').append(modalContent);
-//   $('#signupModal').modal('show');
-
-//   $('#signup-form').on('submit', function(event) {
-//     event.preventDefault();
-//     const formData = {
-//       id: $('#signup-id').val(),
-//       password: $('#signup-password').val(),
-//       username: $('#signup-username').val() || '',  // Optional field
-//       email: $('#signup-email').val()
-//     };
-
-//     $.ajax({
-//       type: 'POST',
-//       url: '/signup',
-//       data: JSON.stringify(formData),
-//       contentType: 'application/json',
-//       success: function(response) {
-//         if (response.success) {
-//           alert('Sign up successful!');
-//           $('#signupModal').modal('hide');
-//           $('#signupModal').on('hidden.bs.modal', function () {
-//             $('.modal-backdrop').remove();
-//             $('#signupModal').remove(); // 모달 제거
-//           });
-//         } else {
-//           alert(response.message);
-//         }
-//       }
-//     });
-//   });
-
-//   $('#signupModal').on('hidden.bs.modal', function () {
-//     $('.modal-backdrop').remove();
-//     $('#signupModal').remove(); // 모달 제거
-//   });
-// }
-
+function showSignUpModal() {
+  const modalContent = `
+    <div class="modal fade" id="signupModal" tabindex="-1" role="dialog" aria-labelledby="signupModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="signupModalLabel">Sign Up</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="signup-form">
+              <div class="form-group">
+                <label for="signup-id">ID</label>
+                <input type="text" class="form-control" id="signup-id" name="id" required>
+              </div>
+              <div class="form-group">
+                <label for="signup-password">Password</label>
+                <input type="password" class="form-control" id="signup-password" name="password" required>
+              </div>
+              <div class="form-group">
+                <label for="signup-username">Username (Optional)</label>
+                <input type="text" class="form-control" id="signup-username" name="username">
+              </div>
+              <div class="form-group">
+                <label for="signup-email">Email</label>
+                <input type="email" class="form-control" id="signup-email" name="email" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Sign up</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  
+  $('body').append(modalContent);
+  $('#signupModal').modal('show');
+  
+  $('#signup-form').on('submit', function(event) {
+    event.preventDefault();
+    const formData = {
+      id: $('#signup-id').val(),
+      password: $('#signup-password').val(),
+      username: $('#signup-username').val() || '',  // 선택적 필드
+      email: $('#signup-email').val()
+    };
+  
+    $.ajax({
+      type: 'POST',
+      url: '/signup',
+      data: JSON.stringify(formData),
+      contentType: 'application/json',
+      success: function(response) {
+        if (response.success) {
+          alert('Sign up successful!');
+          $('#signupModal').modal('hide');
+          $('#signupModal').on('hidden.bs.modal', function () {
+            $('.modal-backdrop').remove();
+            $('#signupModal').remove(); // 모달 제거
+          });
+          updateLoginStatus();  // 로그인 상태 업데이트
+          location.reload();    // 페이지 새로고침
+        } else {
+          alert(response.message);
+        }
+      }
+    });
+  });
+  
+  $('#signupModal').on('hidden.bs.modal', function () {
+    $('.modal-backdrop').remove();
+    $('#signupModal').remove(); // 모달 제거
+  });
+}
 
   // /**
   //    * Login시에만 mypage 버튼이 보이도록 조절 - 임시
