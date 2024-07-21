@@ -49,7 +49,6 @@ define([ "jquery",
 	 "history",
 	 "modal",
 	 "backend",
-
 	 "chat",
 	 "splitter",
 	 "bootstrap",
@@ -57,6 +56,7 @@ define([ "jquery",
 	 "tabbed",
 	 "notebook",
 	 "navbar",
+   "newLogin",
 	 "search",
 	 "editor",
 	 "query",
@@ -182,7 +182,7 @@ preferences.setInform("preserve-state", ".unloadable");
 	$("body").swish('populateExamples', navbar, dropdown);
       },
       "Help": function(navbar, dropdown) {
-	$("body").swish('populateHelp', navbar, dropdown);
+	        $("body").swish('populateHelp', navbar, dropdown);
       }
     }
   }; // defaults;
@@ -263,7 +263,6 @@ preferences.setInform("preserve-state", ".unloadable");
       setupPanes();
       setupResize();
       setupUnload();
-      setMypageButton();
       $("#search").search();
 
       options = options||{};
@@ -274,7 +273,9 @@ preferences.setInform("preserve-state", ".unloadable");
 	var data = {};			/* private data */
 
 	$("#navbar").navbar(defaults.menu);
-	$("#login").login();
+  setupLoginButton();
+  $("#login").newLogin(); // 새로운 로그인 함수 호출
+	//$("#login").login();
 
 	var  editor = $(".prolog-editor").prologEditor({save:true});
 	data.runner = $(".prolog-runners").prologRunners();
@@ -925,6 +926,18 @@ preferences.setInform("preserve-state", ".unloadable");
 
       return rc;
     });
+  }
+
+  /* Login 버튼 추가 */
+  function setupLoginButton() {
+    // 네비게이션 바에 Login 메뉴 항목을 한 번만 추가
+    if ($('#login-menu').length === 0) {
+      $('#navbar > ul.nav.navbar-nav.menubar').append(`
+        <li class="dropdown" id="login-menu">
+          <a href="#" id="login" class="dropdown-toggle" data-toggle="dropdown">Login</a>
+        </li>
+      `);
+    }
   }
 
   /**

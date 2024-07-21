@@ -363,17 +363,16 @@ swish_navbar(Options) -->
 		       [ \collapsed_button,
 			 \swish_logos(Options)
 		       ]),
-		   div([ class([collapse, 'navbar-collapse']),
-			 id(navbar)
-		       ],
-		       [ ul([class([nav, 'navbar-nav', menubar])], []),
-			 ul([class([nav, 'navbar-nav', 'navbar-right'])],
-			    [ li(\notifications(Options)),
-			      li(\search_box(Options)),
-				  li(\mypage_button),
-			      li(\broadcast_bell(Options)),
-			      li(\updates(Options))
-			    ])
+		   div([ class([collapse, 'navbar-collapse']), id(navbar)],
+		       [ 
+				ul([class([nav, 'navbar-nav', menubar])], []),
+			 	ul([class([nav, 'navbar-nav', 'navbar-right'])],
+					[ li(\notifications(Options)),
+					li(\search_box(Options)),
+					li(\mypage_button),
+					li(\broadcast_bell(Options)),
+					li(\updates(Options))
+					])
 		       ])
 		 ])).
 
