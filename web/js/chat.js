@@ -277,13 +277,13 @@ var MAX_RECONNECT_DELAY = 300000;
       this.chat('userCount', e.visitors);
       last_open = getTime();
 
-      if ( e.check_login )
-	$("#login").login('update', "check");
-      else
-	$(".sourcelist").trigger("login");
-      $(".storage").storage('chat_status');
-      data.status = "ready";
-      this.chat('send_queued');
+      // if ( e.check_login )
+	    //   //$("#login").login('update', "check");
+      // else
+      //   $(".sourcelist").trigger("login");
+      //   $(".storage").storage('chat_status');
+      //   data.status = "ready";
+      //   this.chat('send_queued');
     },
 
     userCount: function(cnt) {
