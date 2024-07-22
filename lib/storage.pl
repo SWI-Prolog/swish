@@ -481,14 +481,16 @@ storage_get(Request, Format, Options) :-
 
 % 권한 확인 로직
 has_permission(Auth, Meta) :-
-    (   Meta.get(public) == true
-    ->  true
-    ;   % 로그인한 사용자와 파일의 author가 일치하는지 확인
-        (   Auth.get(user_id) == Meta.get(author)
-        ->  true
-        ;   fail
-        )
+    (   Auth.get(user_role) == "admin"
+    ->  !, true
+    ;   fail
     ).
+has_permission(Auth, Meta) :-
+    Meta.get(public) == true, !.
+    
+has_permission(Auth, Meta) :-
+    Auth.get(user_id) == Meta.get(author).
+
 storage_get(swish, Dir, Type, FileOrHash, Request) :-
     % 사용자 인증
     authenticate(Request, Auth),
@@ -1200,13 +1202,17 @@ bound(_-V) :- nonvar(V).
 
 %!  visible(+FileMeta, +Auth, +MetaConstraints) is semidet.
 
+visible(Meta, Auth, _Constraints) :-
+    Auth.get(user_role) == "admin",
+    !,
+    true.
+visible(Meta, _Auth, _Constraints) :-
+    Meta.get(public) == true,
+    !.
 visible(Meta, Auth, Constraints) :-
     memberchk(user("me"), Constraints),
     !,
     owns(Auth, Meta, user(me)).
-visible(Meta, _Auth, _Constraints) :-
-    Meta.get(public) == true,
-    !.
 visible(Meta, Auth, _Constraints) :-
     owns(Auth, Meta, _).
 

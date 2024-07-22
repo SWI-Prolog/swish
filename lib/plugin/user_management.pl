@@ -42,7 +42,7 @@ save_user_info(ID, Password, Username, Email) :-
     \+ id_exists(ID, Users),  % 중복 ID 확인
     \+ email_exists(Email, Users),  % 중복 이메일 확인
     crypt(Password, Hash),  % 비밀번호 해싱
-    append(Users, [_{id: ID, password: Hash, username: Username, email: Email}], NewUsers),
+    append(Users, [_{id: ID, password: Hash, username: Username, email: Email, admin: false}], NewUsers),
     open(File, write, Stream),
     json_write_dict(Stream, NewUsers, []),
     close(Stream).
@@ -63,7 +63,7 @@ update_user_info(ID, NewUsername, NewEmail) :-
     (   select(User, Users, RestUsers),
         User.id == ID
     ->  (
-            append(RestUsers, [_{id: ID, password: User.password, email: NewEmail, username: NewUsername}], NewUsers)
+            append(RestUsers, [_{id: ID, password: User.password, email: NewEmail, username: NewUsername, admin: User.admin}], NewUsers)
         )
     ;   % 사용자를 찾지 못한 경우
         format('User with ID ~w not found.', [ID]),
@@ -94,7 +94,7 @@ update_user_password(ID, NewPassword, Users) :-
     crypt(NewPassword, Hash),
     (   select(User, Users, RestUsers),
         User.id == ID
-    ->  append(RestUsers, [_{id: ID, password: Hash, email: User.email, username: User.username}], NewUsers),
+    ->  append(RestUsers, [_{id: ID, password: Hash, email: User.email, username: User.username, admin: User.admin}], NewUsers),
         open(File, write, Stream),
         json_write_dict(Stream, NewUsers, []),
         close(Stream)
@@ -163,6 +163,11 @@ login_user(ID, Password) :-
         User.id == ID,
         crypt(Password, User.password)  % 입력된 비밀번호를 해시하여 비교
     ->  http_session_assert(user(ID)),
+        (
+            User.admin == true
+            -> http_session_assert(user_role("admin"))  % user_role 값 세션에 추가
+            ; http_session_assert(user_role("user"))
+        ),
         reply_json_dict(_{success: true})
     ;   debug(login, 'Login failed for ID: ~w', [ID]),  % 디버깅 정보 출력
         reply_json_dict(_{success: false, message: "Invalid ID or password"})
@@ -231,13 +236,17 @@ update_password_handler(Request) :-
 % 로그아웃 요청을 처리하는 핸들러
 logout_handler(_Request) :-
     http_session_retract(user(_)),
+    http_session_retract(user_role(_)),
     reply_json_dict(_{success: true}).
     http_redirect(moved, '/', Request).
 
 % 로그인 상태 확인 핸들러
 user_info_handler(_Request) :-
     (   catch(http_session_data(user(UserID)), _, fail)
-    ->  reply_json_dict(_{logged_in: true, user: UserID})
+    ->  (  catch(http_session_data(user_role(Role)), _, fail)
+            -> reply_json_dict(_{logged_in: true, user: UserID, role: Role})
+        ; reply_json_dict(_{logged_in: false, user: UserID})
+        )
     ;   reply_json_dict(_{logged_in: false})
     ).
 

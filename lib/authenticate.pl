@@ -74,7 +74,12 @@ authenticate(Request, Auth) :-
     Auth2 = HTTPAuth.put(ProfileAuth).put(peer, Peer),
     % 세션에서 사용자 ID를 가져옴
     (   catch(http_session_data(user(UserID)), _, fail)
-    ->  Auth3 = Auth2.put(user_id, UserID).put(id, UserID)
+        ->(
+            catch(http_session_data(user_role(Role)), _, fail)
+            ->  Auth3 = Auth2.put(user_id, UserID).put(id, UserID).put(user_role, Role)
+            ;   reply_json_dict(_{success: false, message: "Failed to retrieve admin information from session"}),
+                fail
+        )
     ;   Auth3 = Auth2.put(user_id, guest).put(id, guest)
     ),
     identity(Request, Auth3, Auth),
