@@ -14,14 +14,20 @@ define(["jquery", "modal"], function($) {
 
                     // set Login click event handler
                     elem.on('click', function(event) {
-                        event.preventDefault(); // 기본 동작 방지
-                        if(elem.hasClass('login')){
-                            showLoginModal(); // 모달 창 띄우기
-                            elem.newLogin('login');
+                        if(elem.text() ==='Login'){ // login일 때 
+                            event.preventDefault(); // 기본 동작 방지
+                            showLoginModal(); 
                         }
-                        else{ // Logout 일때
+                        if(elem.text() ==='Logout'){ // logout일 때 
                             elem.newLogin('logout');
                         }
+                    });
+
+                    // set Login submit event handler
+                    $(document).on('submit', '#login-form', function(event){
+                        event.preventDefault(); // 폼 제출 기본 동작 막기
+                        elem.newLogin('login');
+
                     });
 
                     // set Sign up event handdler
@@ -44,17 +50,17 @@ define(["jquery", "modal"], function($) {
                     url: '/user_info',
                     method: 'GET',
                     success: function(response) {
-                        if (response.logged_in) {
+                        if (response.logged_in) { // true
                             window.globalSettings.user = response.user;
                             window.globalSettings.logged_in = true;
                             setMypageButton(true);
-                            loginButton.text('Logout').removeClass('login').addClass('logout');
+                            loginButton.text('Logout');
                         
-                        } else {
+                        } else { // false
                             window.globalSettings.user = null;
                             window.globalSettings.logged_in = false;
                             setMypageButton(false);
-                            loginButton.text('Login').removeClass('logout').addClass('login');
+                            loginButton.text('Login');
                         }
                     },
                     error: function(xhr, status, error) {
@@ -64,32 +70,28 @@ define(["jquery", "modal"], function($) {
             },
 
             login: function(){
-                $(document).on('submit', '#login-form', function(event) {
-                    event.preventDefault(); // 폼 제출 기본 동작 막기
+                const formData = {
+                    id: $('#login-form #id').val(),
+                    password: $('#login-form #password').val()
+                };
 
-                    const formData = {
-                        id: $('#login-form #id').val(),
-                        password: $('#login-form #password').val()
-                    };
-
-                    $.ajax({
-                        url: '/authenticate',
-                        method: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify(formData),
-                        success: function(data) {
-                            if (data.success) {
-                                alert('Login successful!');
-                                $('#ajaxModal').modal('hide');
-                                location.reload();
-                            } else {
-                                alert('Error: ' + data.message);
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('Error:', error);
+                $.ajax({
+                    url: '/authenticate',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function(data) {
+                        if (data.success) {
+                            alert('Login successful!');
+                            $('#ajaxModal').modal('hide');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
                         }
-                    });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
                 });
             },
 
