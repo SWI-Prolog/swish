@@ -1,62 +1,72 @@
 [
   {
+    "admin":true,
     "email":"kimdk9829@gmail.com",
     "id":"kimdk9829",
     "password": [89, 97, 72, 72, 47, 51, 90, 72, 80, 104, 104, 49, 46 ],
     "username":""
   },
   {
+    "admin":false,
     "email":"kkkk@gmail.com",
     "id":"kimdk9829test",
     "password": [67, 68, 70, 50, 52, 106, 48, 87, 53, 74, 70, 90, 115 ],
     "username":""
   },
   {
+    "admin":false,
     "email":"test@gmail.com",
     "id":"test",
     "password": [87, 100, 88, 86, 108, 56, 56, 87, 108, 57, 46, 112, 81 ],
     "username":""
   },
   {
+    "admin":false,
     "email":"kdk@gmail.com",
     "id":"kdk",
     "password": [112, 122, 71, 49, 73, 87, 55, 106, 85, 120, 121, 83, 46 ],
     "username":""
   },
   {
-    "email":"aaa@gmail.com",
-    "id":"aaaa",
-    "password": [81, 99, 86, 51, 116, 119, 84, 72, 121, 89, 69, 100, 85 ],
-    "username":"admin"
-  },
-  {
-    "email":"dks@naver.com",
-    "id":"abcd",
-    "password": [67, 104, 66, 84, 74, 66, 115, 50, 70, 72, 108, 111, 107 ],
-    "username":"admin"
-  },
-  {
-    "email":"hi@naver.com",
-    "id":"hi",
-    "password": [88, 67, 65, 122, 65, 113, 66, 85, 55, 71, 89, 84, 111 ],
-    "username":"hi"
-  },
-  {
+    "admin":true,
     "email":"jindae.kim@seoultech.ac.kr",
     "id":"jindae",
     "password": [79, 118, 117, 51, 53, 47, 81, 48, 57, 106, 111, 121, 85 ],
     "username":"Jindae"
   },
   {
-    "email":"ccc@ccc",
-    "id":"ccc",
-    "password": [85, 100, 72, 110, 112, 75, 76, 47, 89, 101, 47, 108, 89 ],
-    "username":"ccc"
+    "admin":true,
+    "email":"qnddlek8324@g.seoultech.ac.kr",
+    "id":"uijeong",
+    "password": [73, 113, 113, 83, 51, 50, 68, 49, 48, 109, 86, 75, 73 ],
+    "username":"uijeong"
   },
   {
-    "email":"eee@eee",
-    "id":"eee",
-    "password": [115, 118, 97, 71, 102, 106, 89, 109, 120, 120, 78, 97, 103 ],
-    "username":"eee"
+    "admin":false,
+    "email":"mmmm@gmail.com",
+    "id":"mmmm",
+    "password": [113, 107, 73, 52, 51, 78, 75, 50, 102, 103, 110, 68, 50 ],
+    "username":""
+  },
+  {
+    "admin":false,
+    "email":"aaa@gmail.com",
+    "id":"aaa",
+    "password": [107, 110, 49, 112, 56, 119, 119, 85, 53, 115, 48, 81, 77 ],
+    "username":"aaabbb"
+  },
+  {
+    "admin":false,
+    "email":"bbb@gdfas",
+    "id":"bbb",
+    "password": [88, 86, 56, 78, 112, 72, 104, 119, 121, 52, 113, 66, 46 ],
+    "username":"bbb"
+  },
+  {
+    "admin":false,
+    "email":"ccc@vcc",
+    "id":"ccc",
+    "password": [76, 99, 84, 54, 119, 120, 117, 97, 120, 72, 83, 109, 85 ],
+    "username":"ccc"
   }
 ]
