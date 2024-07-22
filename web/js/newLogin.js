@@ -53,12 +53,14 @@ define(["jquery", "modal"], function($) {
                         if (response.logged_in) { // true
                             window.globalSettings.user = response.user;
                             window.globalSettings.logged_in = true;
+                            window.globalSettings.role = response.role;
                             setMypageButton(true);
                             loginButton.text('Logout');
                         
                         } else { // false
                             window.globalSettings.user = null;
                             window.globalSettings.logged_in = false;
+                            window.globalSettings.role = null;
                             setMypageButton(false);
                             loginButton.text('Login');
                         }

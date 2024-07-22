@@ -45,7 +45,8 @@
 
 window.globalSettings = { // 전역 변수 설정
   user: null,
-  logged_in: false
+  logged_in: false,
+  role : null
 };
 
 

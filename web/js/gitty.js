@@ -151,9 +151,8 @@ define([ "jquery", "config", "form", "modal", "backend",
 			return;
 			data.metaData = data.commit;
 
-			console.log(data);
-
 			if(window.globalSettings.logged_in){ // 로그인 된 경우
+				if(window.globalSettings.role == "admin") canmodify = true;
 				if(window.globalSettings.user == meta.author) canmodify = true;
 			}
 			else{ // 안 된 경우
