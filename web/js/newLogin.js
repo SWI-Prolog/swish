@@ -42,7 +42,7 @@ define(["jquery", "modal"], function($) {
                 const loginButton = $(this);
                 $.ajax({
                     url: '/user_info',
-                    method: 'GET',
+                    method: 'POST',
                     success: function(response) {
                         if (response.logged_in) {
                             window.globalSettings.user = response.user;
@@ -135,6 +135,7 @@ define(["jquery", "modal"], function($) {
                                 $('.modal-backdrop').remove();
                                 $('#signupModal').remove(); // 모달 제거
                             });
+                            location.reload();    // 페이지 새로고침
                             } else {
                             alert(response.message);
                             }

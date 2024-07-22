@@ -197,55 +197,73 @@ preferences.setInform("preserve-state", ".unloadable");
     $(document).on('change', '#fileInput', function(event) {
         var files = event.target.files;
         if (files.length > 0) {
-            var uploadFile = function(file, callback) {
-                var formData = new FormData();
-                formData.append('file', file);
+            // 현재 페이지가 특정 파일 화면인지 확인
+            var isFilePage = window.location.pathname.startsWith('/p/');
 
-                $.ajax({
-                    url: '/upload',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        console.log('File uploaded successfully:', response);
-                        callback(null, response.filename);  // 응답에서 filename을 전달
-                    },
-                    error: function(error) {
-                        console.error('File upload failed:', error);
-                        callback(error);
-                    }
-                });
-            };
+            if (isFilePage) {
+                // 파일 내용을 클라이언트 측에서 복사 붙여넣기
+                var fileReader = new FileReader();
 
-            var lastUploadedFileName = null;
+                fileReader.onload = function(e) {
+                    var fileContent = e.target.result;
+                    // 에디터 내용 변경
+                    const editor = $('.CodeMirror')[0].CodeMirror;
+                    editor.setValue(fileContent);
+                    
+                };
 
-            var uploadNextFile = function(index) {
-                if (index < files.length) {
-                    uploadFile(files[index], function(err, fileName) {
-                        if (!err) {
-                            lastUploadedFileName = fileName;  // 마지막 업로드된 파일 이름 저장
-                            uploadNextFile(index + 1);
-                        } else {
-                            alert('File upload failed for file: ' + files[index].name);
+                fileReader.readAsText(files[0]); // 첫 번째 파일 읽기
+            } else {
+                // 기존 파일 업로드 기능 유지
+                var uploadFile = function(file, callback) {
+                    var formData = new FormData();
+                    formData.append('file', file);
+
+                    $.ajax({
+                        url: '/upload',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+                            console.log('File uploaded successfully:', response);
+                            callback(null, response.filename);  // 응답에서 filename을 전달
+                        },
+                        error: function(error) {
+                            console.error('File upload failed:', error);
+                            callback(error);
                         }
                     });
-                } else {
-                    // 모든 파일 업로드가 완료되었을 때 마지막 파일로 리다이렉트
-                    if (lastUploadedFileName) {
-                        window.location.href = '/p/' + lastUploadedFileName;
-                    } else {
-                        // 파일이 하나도 업로드되지 않았을 경우 새로고침
-                        location.reload();
-                    }
-                }
-            };
+                };
 
-            uploadNextFile(0);  // 첫 번째 파일부터 업로드 시작
+                var lastUploadedFileName = null;
+
+                var uploadNextFile = function(index) {
+                    if (index < files.length) {
+                        uploadFile(files[index], function(err, fileName) {
+                            if (!err) {
+                                lastUploadedFileName = fileName;  // 마지막 업로드된 파일 이름 저장
+                                uploadNextFile(index + 1);
+                            } else {
+                                alert('File upload failed for file: ' + files[index].name);
+                            }
+                        });
+                    } else {
+                        // 모든 파일 업로드가 완료되었을 때 마지막 파일로 리다이렉트
+                        if (lastUploadedFileName) {
+                            window.location.href = '/p/' + lastUploadedFileName;
+                        } else {
+                            // 파일이 하나도 업로드되지 않았을 경우 새로고침
+                            location.reload();
+                        }
+                    }
+                };
+
+                uploadNextFile(0);  // 첫 번째 파일부터 업로드 시작
+            }
         }
     });
-});
-
+  });
   /** @lends $.fn.swish */
   var methods = {
     /**
