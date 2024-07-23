@@ -140,10 +140,9 @@ signup_handler(Request) :-
         ->  reply_json_dict(_{success: false, message: "ID already exists"})
         ;   email_exists(Email, Users)
         ->  reply_json_dict(_{success: false, message: "Email already exists"})
-        ;   (   save_user_info(ID, Password, Username, Email)
-            ->  reply_json_dict(_{success: true})
-            ;   reply_json_dict(_{success: false, message: "Failed to save user information"})
-            )
+        ;   save_user_info(ID, Password, Username, Email)
+        ->  login_user(ID, Password) % auto login
+        ;   reply_json_dict(_{success: false, message: "Failed to save user information"})
         )
     ;   reply_json_dict(_{success: false, message: "Invalid request data"})
     ).
@@ -255,7 +254,6 @@ get_user_id(UserID) :-
 
 % HTTP 핸들러 등록
 :- http_handler('/signup', user_management:signup_handler, [method(post)]).
-:- http_handler('/login', user_management:login_handler, [method(post)]).
 :- http_handler('/logout', user_management:logout_handler, [method(get)]).
 :- http_handler('/user_info', user_management:user_info_handler, [method(get)]).
 :- http_handler('/update_info', user_management:update_user_handler, [method(post)]).

@@ -48,7 +48,7 @@ define(["jquery", "modal"], function($) {
                 const loginButton = $(this);
                 $.ajax({
                     url: '/user_info',
-                    method: 'POST',
+                    method: 'GET',
                     success: function(response) {
                         if (response.logged_in) { // true
                             window.globalSettings.user = response.user;
@@ -125,6 +125,8 @@ define(["jquery", "modal"], function($) {
                         username: $('#signup-username').val() || '',  // Optional field
                         email: $('#signup-email').val()
                     };
+
+                    console.log(formData);
                 
                     $.ajax({
                         url: '/signup',
