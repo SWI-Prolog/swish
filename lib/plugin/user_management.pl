@@ -141,8 +141,7 @@ signup_handler(Request) :-
         ;   email_exists(Email, Users)
         ->  reply_json_dict(_{success: false, message: "Email already exists"})
         ;   (   save_user_info(ID, Password, Username, Email)
-            ->  http_session_assert(user(ID)),  % 자동 로그인 처리
-                reply_json_dict(_{success: true})
+            ->  reply_json_dict(_{success: true})
             ;   reply_json_dict(_{success: false, message: "Failed to save user information"})
             )
         )
@@ -245,7 +244,7 @@ user_info_handler(_Request) :-
     (   catch(http_session_data(user(UserID)), _, fail)
     ->  (  catch(http_session_data(user_role(Role)), _, fail)
             -> reply_json_dict(_{logged_in: true, user: UserID, role: Role})
-        ; reply_json_dict(_{logged_in: false, user: UserID})
+            ; reply_json_dict(_{logged_in: false, user: UserID})
         )
     ;   reply_json_dict(_{logged_in: false})
     ).
@@ -257,7 +256,7 @@ get_user_id(UserID) :-
 % HTTP 핸들러 등록
 :- http_handler('/signup', user_management:signup_handler, [method(post)]).
 :- http_handler('/login', user_management:login_handler, [method(post)]).
-:- http_handler('/logout', user_management:logout_handler, [method(post)]).
+:- http_handler('/logout', user_management:logout_handler, [method(get)]).
 :- http_handler('/user_info', user_management:user_info_handler, [method(get)]).
 :- http_handler('/update_info', user_management:update_user_handler, [method(post)]).
 :- http_handler('/delete_info', user_management:delete_user_handler, [method(post)]).

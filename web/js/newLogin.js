@@ -100,7 +100,7 @@ define(["jquery", "modal"], function($) {
             logout: function(){
                 $.ajax({
                     url: '/logout',
-                    method: 'POST',
+                    method: 'GET',
                     success: function(response){
                         if (response.success) {
                             alert('Logout successful!');
