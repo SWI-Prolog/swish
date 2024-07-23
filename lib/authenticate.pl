@@ -77,8 +77,7 @@ authenticate(Request, Auth) :-
         ->(
             catch(http_session_data(user_role(Role)), _, fail)
             ->  Auth3 = Auth2.put(user_id, UserID).put(id, UserID).put(user_role, Role)
-            ;   reply_json_dict(_{success: false, message: "Failed to retrieve admin information from session"}),
-                fail
+            ;   Auth3 = Auth2.put(user_id, guest).put(id, guest)
         )
     ;   Auth3 = Auth2.put(user_id, guest).put(id, guest)
     ),
