@@ -428,6 +428,7 @@ meta_allowed(tags,           _,     list(string)).
 meta_allowed(description,    _,     string).
 meta_allowed(commit_message, _,     string).
 meta_allowed(modify,         _,     list(atom)).
+meta_allowed(delete,         _,     boolean). % delete 필드 추가
 
 filter_type(Type, V, V) :-
     is_of_type(Type, V),
@@ -1205,17 +1206,27 @@ bound(_-V) :- nonvar(V).
 visible(Meta, Auth, _Constraints) :-
     Auth.get(user_role) == "admin",
     !,
-    true.
+    \+ is_deleted(Meta).
 visible(Meta, _Auth, _Constraints) :-
     Meta.get(public) == true,
-    !.
+    !,
+    \+ is_deleted(Meta).
 visible(Meta, Auth, Constraints) :-
     memberchk(user("me"), Constraints),
     !,
-    owns(Auth, Meta, user(me)).
+    owns(Auth, Meta, user(me)),
+    \+ is_deleted(Meta).
 visible(Meta, Auth, _Constraints) :-
-    owns(Auth, Meta, _).
+    owns(Auth, Meta, _),
+    \+ is_deleted(Meta).
 
+%!  is_deleted(+Meta) is semidet.
+%
+%   True if Meta indicates the file is marked as deleted.
+
+is_deleted(Meta) :-
+    Meta.get(delete, false) == true.
+    
 %!  owns(+Auth, +Meta, ?How) is semidet.
 %
 %   True if the file represented  by  Meta   is  owned  by  the user

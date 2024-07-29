@@ -119,7 +119,7 @@ require(["jquery", "config", "jswish", "plugin", "mypage"],
     require(deps, function() {
       $(function() {
         $("body").swish(config.swish || {});
-        hideUploadButton();
+        hideButtons();
       });
     });
   }
@@ -127,22 +127,25 @@ require(["jquery", "config", "jswish", "plugin", "mypage"],
 
 
   
-  // 업로드 버튼 숨기기
-  function hideUploadButton() {
-    $.ajax({
-      url: '/user_info',
-      method: 'GET',
-      success: function(response) {
-        if (response.logged_in) {
-          $('#uploadButton').show();  // 로그인이 되어 있으면 업로드 버튼을 표시
-        } else {
-          $('#uploadButton').hide();  // 로그인이 되어 있지 않으면 업로드 버튼을 숨김
-        }
-      },
-      error: function() {
-        $('#uploadButton').hide();  // 오류가 발생하면 업로드 버튼을 숨김
+function hideButtons() {
+  $.ajax({
+    url: '/user_info',
+    method: 'GET',
+    success: function(response) {
+      if (response.logged_in) {
+        $('#uploadButton').show();  // 로그인이 되어 있으면 업로드 버튼을 표시
+        $('#deleteButton').show();  // 로그인이 되어 있으면 삭제 버튼을 표시
+      } else {
+        $('#uploadButton').hide();  // 로그인이 되어 있지 않으면 업로드 버튼을 숨김
+        $('#deleteButton').hide();  // 로그인이 되어 있지 않으면 삭제 버튼을 숨김
       }
-    });
-    // 업로드 버튼에 id를 추가
-    $('a:contains("Upload ...")').attr('id', 'uploadButton');
-  }
+    },
+    error: function() {
+      $('#uploadButton').hide();  // 오류가 발생하면 업로드 버튼을 숨김
+      $('#deleteButton').hide();  // 오류가 발생하면 삭제 버튼을 숨김
+    }
+  });
+  // 업로드 및 삭제 버튼에 id를 추가
+  $('a:contains("Upload ...")').attr('id', 'uploadButton');
+  $('a:contains("Delete ...")').attr('id', 'deleteButton');
+}

@@ -130,6 +130,13 @@ preferences.setInform("preserve-state", ".unloadable");
   "Upload ...": glyph("upload", function() {
     $('#fileInput').trigger('click');
   }),
+  // 메뉴에 삭제 버튼 추가
+  "Delete ...": glyph("trash", function() {
+    var fileName = prompt("Enter the name of the file to delete:");
+    if (fileName) {
+        deleteFile(fileName);
+    }
+  }),
 	"Print ...": glyph("print", function() {
 	  menuBroadcast("print");
 	})
@@ -264,6 +271,27 @@ preferences.setInform("preserve-state", ".unloadable");
         }
     });
   });
+  
+// 파일 삭제 함수
+function deleteFile(fileName) {
+  $.ajax({
+      url: '/delete',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ filename: fileName }),
+      success: function(response) {
+          if (response.status === "success") {
+              alert("File deleted successfully.");
+              location.reload();
+          } else {
+              alert("Failed to delete file: " + response.message);
+          }
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+          alert("Failed to delete the file. Server error: " + textStatus + " - " + errorThrown);
+      }
+  });
+}
   /** @lends $.fn.swish */
   var methods = {
     /**
