@@ -14,11 +14,12 @@
 :- use_module('/swish/lib/plugin/user_management').  % 상대 경로 사용
 :- use_module(gitty).  % gitty 모듈 사용
 
+
 % 디버그 토픽 정의
 :- debug(upload).
 
 % HTTP 핸들러 설정
-:- http_handler(root(upload), handle_upload, [method(post)]).
+:- http_handler(root(upload), handle_upload, [methods([get,post])]).
 :- http_handler(root(delete), handle_delete, [method(post)]).
 
 % 파일 업로드 요청 처리
@@ -40,6 +41,7 @@ handle_delete(Request) :-
     (   get_user_id(UserID)
     ->  http_read_json_dict(Request, Dict),
         atom_string(FileAtom, Dict.get(filename)),
+        web_storage:open_gittystore(Dir),
         delete_file(FileAtom, UserID, Response),
         reply_json_dict(Response)
     ;   reply_json_dict(_{status: "failure", message: "User not logged in"})
@@ -47,21 +49,61 @@ handle_delete(Request) :-
 
 delete_file(FileName, UserID, Response) :-
     web_storage:open_gittystore(Dir),
-    format(string(DebugMsg1), 'Gitty store directory: ~w', [Dir]),
     (   gitty:gitty_file(Dir, FileName, Head) % 파일 이름을 사용하여 최신 커밋 해시 찾기
-    ->  format(string(DebugMsg2), 'Found head: ~w for file: ~w', [Head, FileName]),
-        gitty:gitty_commit(Dir, Head, Meta), % 해시를 사용하여 메타데이터 가져오기
-        format(string(DebugMsg3), 'Found metadata: ~w', [Meta]),
+    ->  gitty:gitty_commit(Dir, Head, Meta), % 해시를 사용하여 메타데이터 가져오기
         (   web_storage:owns(_{user_id: UserID}, Meta, user(me))
-        ->  UpdatedMeta = Meta.put(delete, true), % delete 필드를 true로 설정
-            gitty:gitty_update(Dir, FileName, "", UpdatedMeta, _Commit), % 데이터는 빈 문자열로 설정
-            Response = _{status: "success", message: "File deleted successfully", debug: [DebugMsg1, DebugMsg2, DebugMsg3]}
-        ;   Response = _{status: "failure", message: "Permission denied: You do not own this file", debug: [DebugMsg1, DebugMsg2, DebugMsg3]}
+        ->  delete_commit_chain(Dir, FileName), % 파일 커밋 삭제
+            delete_from_head(Dir, FileName), % HEAD 파일에서 파일 이름 삭제
+            Response = _{status: "success", message: "File deleted successfully"}
+        ;   Response = _{status: "failure", message: "Permission denied: You do not own this file"}
         )
-    ;   format(string(DebugMsg4), 'File not found: ~w', [FileName]),
-        Response = _{status: "failure", message: "File not found", debug: [DebugMsg1, DebugMsg4]}
+    ;   Response = _{status: "failure", message: "File not found"}
     ).
 
+delete_commit_chain(Store, Name) :-
+    (   gitty_file(Store, Name, Head)
+    ->  delete_commit(Store, Head),
+        delete_head(Store, Name)  % 파일 참조 제거
+    ;   true
+    ).
+
+delete_commit(Store, Hash) :-
+    (   gitty_commit(Store, Hash, Meta),
+        Meta.get(previous) = PrevHash
+    ->  (   gitty_driver_files:delete_object(Store, Hash)
+        ->  delete_commit(Store, PrevHash)
+        ;   true
+        )
+    ;   (   gitty_driver_files:delete_object(Store, Hash)
+        ->  true
+        ;   true
+        )
+    ).
+
+delete_head(Store, Name) :-
+    gitty_driver_files:delete_head(Store, Name).
+
+% HEAD 파일에서 특정 파일 삭제
+delete_from_head(Store, FileName) :-
+    head_file_path(Store, HeadFile),
+    read_file_to_string(HeadFile, Content, []),
+    split_string(Content, "\n", "", Lines),
+    exclude(line_contains_file(FileName), Lines, NewLines),
+    atomic_list_concat(NewLines, '\n', NewContent),
+    setup_call_cleanup(
+        open(HeadFile, write, Out),
+        write(Out, NewContent),
+        close(Out)
+    ).
+
+% HEAD 파일 경로 설정
+head_file_path(Store, HeadFile) :-
+    format(atom(HeadFile), '~w/ref/head', [Store]).
+
+% 줄에 특정 파일명이 포함되어 있는지 확인
+line_contains_file(FileName, Line) :-
+    sub_string(Line, _, _, _, FileName).
+    
 % 멀티파트 폼 데이터 요청 확인
 multipart_post_request(Request) :-
     memberchk(method(post), Request),
@@ -89,7 +131,7 @@ save_file_to_storage(FileName, TempFile, UserID, SavedPath) :-
         close(In)
     ),
     Meta = _{author: UserID, public: false},  % 메타데이터 설정
-    web_storage:gitty_create(Dir, FileName, Data, Meta, _Commit),
+    gitty:gitty_create(Dir, FileName, Data, Meta, _Commit),
     directory_file_path(Dir, FileName, SavedPath).
 
 % 사용자 정의 에러 메시지 정의

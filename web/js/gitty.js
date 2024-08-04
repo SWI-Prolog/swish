@@ -139,49 +139,62 @@ define([ "jquery", "config", "form", "modal", "backend",
      * allow updating the meta-data
      */
     showMetaData: function() {
-      	return this.each(function() {
-			var elem = $(this);
-			var data = elem.data(pluginName);
-			var tab  = elem.find(".gitty-meta-data");
-			var formel;
-			var meta = data.commits[data.commit];
-			var canmodify;
-
-			if ( data.metaData == data.commit )
-			return;
-			data.metaData = data.commit;
-
-			if(window.globalSettings.logged_in){ // 로그인 된 경우
-				if(window.globalSettings.role == "admin") canmodify = true;
-				if(window.globalSettings.user == meta.author) canmodify = true;
-			}
-			else{ // 안 된 경우
-				canmodify = false;
-			}
-
-			tab.html("");
-			formel = $.el.form({class:"form-horizontal"},
-						form.fields.fileName(meta.name, meta.example, true, false), // disabled, canfork
-						form.fields.public(meta.public, !canmodify),
-						form.fields.title(meta.title, !canmodify),
-						form.fields.author(meta.author, disabled = true),
-						form.fields.date(meta.time, "Date", "date"),
-						form.fields.tags(meta.tags, !canmodify));
-					
-			if ( meta.symbolic == "HEAD" && canmodify) {
-				$(formel).append(
-					form.fields.buttons(
-					{ label: "Update meta data",
-						action: function(ev, newMetaData) {
-						data.editor.storage('save', newMetaData, "only-meta-data");
-						return false;
-					}
-				}));
-			}
-
-			tab.append(formel);
+		return this.each(function() {
+		  var elem = $(this);
+		  var data = elem.data(pluginName);
+		  var tab  = elem.find(".gitty-meta-data");
+		  var formel;
+		  var meta = data.commits[data.commit];
+		  var canmodify;
+	  
+		  if (data.metaData == data.commit) return;
+		  data.metaData = data.commit;
+	  
+		  if (window.globalSettings.logged_in) { // 로그인 된 경우
+			if (window.globalSettings.role == "admin") canmodify = true;
+			if (window.globalSettings.user == meta.author) canmodify = true;
+		  } else { // 안 된 경우
+			canmodify = false;
+		  }
+	  
+		  tab.html("");
+		  formel = $.el.form({class: "form-horizontal"},
+			form.fields.fileName(meta.name, meta.example, true, false), // disabled, canfork
+			form.fields.public(meta.public, !canmodify),
+			form.fields.title(meta.title, !canmodify),
+			form.fields.author(meta.author, disabled = true),
+			form.fields.date(meta.time, "Date", "date"),
+			form.fields.tags(meta.tags, !canmodify)
+		  );
+	  
+		  if (meta.symbolic == "HEAD" && canmodify) {
+			$(formel).append(
+			  form.fields.buttons({
+				label: "Update meta data",
+				action: function(ev, newMetaData) {
+				  data.editor.storage('save', newMetaData, "only-meta-data");
+				  return false;
+				}
+			  })
+			);
+		  }
+	  
+		  // 삭제 버튼 추가
+		  $(formel).append(
+			$('<button>', {
+			  text: 'Delete',
+			  class: 'btn btn-danger',
+			  click: function() {
+				if (confirm('Are you sure you want to delete this item?')) {
+				  deleteFile(meta.name);
+				}
+			  }
+			})
+		  );
+	  
+		  tab.append(formel);
 		});
-	},
+	  },
 
 
 		 /*******************************
@@ -566,3 +579,58 @@ define([ "jquery", "config", "form", "modal", "backend",
     diffTags:   diffTags
   };
 });
+
+// 파일 삭제 함수
+function deleteFile(fileName) {
+    console.log("Closing tab for file: " + fileName); // 디버그 메시지 추가
+    closeCurrentTab(function() {
+        console.log("Deleting file: " + fileName); // 디버그 메시지 추가
+        $.ajax({
+            url: '/delete',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ filename: fileName }),
+            success: function(response) {
+                if (response.status === "success") {
+					$('.modal').modal('hide');
+                    alert("File deleted successfully.");
+					window.location.href = "/"; // 모달 닫기 및 홈페이지로 이동
+                } else {
+                    alert("Failed to delete file: " + response.message);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("Server error: ", textStatus, errorThrown); // 디버그 메시지 추가
+                console.log("Response: ", jqXHR.responseText); // 서버 응답 내용 확인
+                alert("Failed to delete the file. Server error: " + textStatus + " - " + errorThrown);
+            }
+        });
+    });
+}
+
+// 현재 탭을 닫는 함수 추가
+function closeCurrentTab(callback) {
+    var activeTab = $(".tab-pane.active");
+    if (activeTab.length > 0) {
+        var tabId = activeTab.attr("id");
+        var tabLink = $("a[data-id='" + tabId + "']");
+        var tabElement = tabLink.closest("li");
+
+        tabLink.tab('show');
+        tabElement.remove();
+
+        activeTab.removeClass("active");
+        activeTab.remove();
+
+        console.log("Tab closed: " + tabId); // 디버그 메시지 추가
+
+        if (typeof callback === "function") {
+            callback();
+        }
+    } else {
+        console.log("No active tab found."); // 디버그 메시지 추가
+        if (typeof callback === "function") {
+            callback();
+        }
+    }
+}
