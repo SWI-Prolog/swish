@@ -326,13 +326,22 @@ eval_condition(loaded, Path) :-
 
 %%	swish_reply_resource(+Request) is semidet.
 %
-%	Serve /swish/Resource files.
+%	Serve /swish/Resource files. In recent   Bootstrap versions, the
+%	path  to  `fonts/`   is   generated    that   should   refer  to
+%	`node_modules/bootstrap/dist/fonts`. This could  be   a  bug  in
+%	Bootstrap or in teh CSS cleaning. For   now,  we hack around the
+%	issue here.
 
 swish_reply_resource(Request) :-
 	option(path_info(Info), Request),
 	resource_prefix(Prefix),
 	sub_atom(Info, 0, _, _, Prefix), !,
 	http_reply_file(swish_web(Info), [], Request).
+swish_reply_resource(Request) :-	% see above
+	option(path_info(Info), Request),
+	sub_atom(Info, 0, _, _, 'fonts/'), !,
+	atom_concat('node_modules/bootstrap/dist/', Info, Path),
+	http_reply_file(swish_web(Path), [], Request).
 
 resource_prefix('css/').
 resource_prefix('help/').
