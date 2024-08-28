@@ -1,10 +1,11 @@
 /*  Part of SWISH
 
     Author:        Jan Wielemaker
-    E-mail:        J.Wielemaker@cs.vu.nl
+    E-mail:        jan@swi-prolog.org
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2018, VU University Amsterdam
+    Copyright (C): 2014-2024, VU University Amsterdam
 			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,8 +43,9 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "form", "modal", "laconic" ],
-       function($, config, form, modal) {
+define([ "jquery", "config", "form", "modal", "backend",
+	 "laconic" ],
+       function($, config, form, modal, backend) {
 
 (function($) {
   var pluginName = 'sourcelist';
@@ -100,21 +102,21 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
       this[pluginName]('check_cache');
 
       if ( (reply = from_cache(query_cache, query)) ) {
-	$.ajax({
-	  url: config.http.locations.source_modified,
-	  dataType: "json",
-	  success: function(json) {
-	    if ( json.modified < reply.modified+10 ) {
-	      elem.sourcelist('fill', reply, query);
-	    } else {
-	      query_cache = [];
-	      elem[pluginName]('update', query);
+	backend.ajax(
+	  { url: config.http.locations.source_modified,
+	    dataType: "json",
+	    success: function(json) {
+	      if ( json.modified < reply.modified+10 ) {
+		elem.sourcelist('fill', reply, query);
+	      } else {
+		query_cache = [];
+		elem[pluginName]('update', query);
+	      }
+	    },
+	    error: function(jqXHDR) {
+	      modal.ajaxError(jqXHDR);
 	    }
-	  },
-	  error: function(jqXHDR) {
-	    modal.ajaxError(jqXHDR);
-	  }
-	});
+	  });
       } else {
 	query = query||{};
 
@@ -124,25 +126,34 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	query.limit  = query.limit||10;
 	query.qid    = qid++;
 
+	if ( query.q == 'user:"me"' &&
+	     !(query.avatar || query.display_name) )
+	{ elem.sourcelist('fill', null, query);
+	  return;
+	}
+
 	pending.push(query);
 	elem[pluginName]('busy', true);
 
-	$.ajax({
-	  url: config.http.locations.source_list,
-	  data: query,
-	  dataType: "json",
-	  success: function(reply) {
-	    reply.query = query;
-	    pending.pop();		/* should match qid */
-	    if ( pending.length == 0 )
-	      elem[pluginName]('busy', false);
-	    add_to_cache(query_cache, reply);
-	    elem.sourcelist('fill', reply, query);
-	  },
-	  error: function(jqXHDR) {
-	    pending.pop();
-	  }
-	});
+	backend.ajax(
+	  { url: config.http.locations.source_list,
+	    data: query,
+	    dataType: "json",
+	    success: function(reply) {
+	      reply.query = query;
+	      pending.pop();		/* should match qid */
+	      if ( pending.length == 0 )
+		elem[pluginName]('busy', false);
+	      add_to_cache(query_cache, reply);
+	      elem.sourcelist('fill', reply, query);
+	    },
+	    error: function(jqXHDR) {
+	      pending.pop();
+	      if ( pending.length == 0 )
+		elem[pluginName]('busy', false);
+	      modal.ajaxError(jqXHDR);
+	    }
+	  });
       }
     },
 
@@ -292,7 +303,10 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 				  $.el.label("from"),
 				  $.el.span({class: "f-total"})),
 		      btn("next", "forward", "step-forward"),
-		      btn("last", "forward", "fast-forward"));
+		      btn("last", "forward", "fast-forward"),
+		      $.el.br(),
+		      $.el.span({class:"f-time"}),
+		      $.el.span({class:"f-time-label"}, " sec"));
 
 	footer.on("click", "button", function(ev) {
 	  var b   = $(ev.target).closest("button");
@@ -316,9 +330,12 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 		     $.el.ul($.el.li("Use the Examples menu from the navigation bar"),
 			     $.el.li("Use the Program or Notebook button above")),
 		     $.el.div(a=$.el.a({href:"#"}, "help on search"))));
+
+	  const helpfile = (config.swish.sourcelist||{}).help ||
+			   "sourcelist.html";
+
 	  $(a).on("click", function() {
-	    console.log("help");
-	    modal.help({file:"sourcelist.html"});
+	    modal.help({file: helpfile});
 	  });
 	}
 	noresults.show();
@@ -341,6 +358,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	  footer.find(".f-from") .text(""+query.offset);
 	  footer.find(".f-to")   .text(""+end);
 	  footer.find(".f-total").text(""+results.total);
+	  footer.find(".f-time") .text(""+results.cpu);
 	} else {
 	  footer.hide();
 	}
@@ -390,21 +408,10 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	return div;
       }
 
-      function resettimeout(set) {
-	if ( data.tmo ) {
-	  clearTimeout(data.tmo);
-	  data.tmo = undefined;
-	}
-	if ( set == true )
-	  set = 1000;
-	if ( set )
-	  data.tmo = setTimeout(submit, set);
-      }
-
       function submit(ev) {
+	$(btnsubmit).prop('disabled', true);
 	if ( ev )
 	  ev.preventDefault();
-	resettimeout();
 	var q = elem.find("input").val();
 	elem[pluginName]('update', {q:q});
 	return false;
@@ -434,7 +441,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 				{t:"type", l:"Permalink", i:"lnk",   v:"lnk",   q:""}
 			       ]),
 		 btnsubmit=
-		 $.el.button({class:"btn btn-default", type:"submit"},
+		 $.el.button({class:"btn btn-primary", type:"submit"},
 			     $.el.i({class:"glyphicon glyphicon-search"}))));
 
       form.dyn_clear(div, submit);
@@ -475,10 +482,7 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 	  return submit(ev);
       }).on("input propertychange", function(ev, propagate) {
 	if ( propagate != false ) {
-	  if ( from_cache(query_cache, inputel.val()) ) {
-	    resettimeout(200);
-	  } else
-	    resettimeout(true);
+	  $(btnsubmit).prop('disabled', false);
 	}
       });
     },
@@ -523,6 +527,9 @@ define([ "jquery", "config", "form", "modal", "laconic" ],
 
   function add_to_cache(cache, result) {
     var qr = result.query;
+
+    if ( result.cache == false )
+      return;
 
     qr.offset = qr.offset || 0;
     qr.limit  = qr.limit  || 10;

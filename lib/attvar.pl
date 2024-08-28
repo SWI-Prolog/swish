@@ -34,10 +34,12 @@
 */
 
 :- module(swish_attvar,
-          [ put_attr/2                  % +Var, :Attr.
+          [ put_attr/2,                 % +Var, :Attr.
+            get_attr/2                  % +Var, -Value
           ]).
 :- meta_predicate
-    put_attr(-, :).
+    put_attr(-, :),
+    get_attr(:, -).
 
 %!  put_attr(+Var, :Value) is det.
 %
@@ -46,6 +48,13 @@
 
 put_attr(Var, M:Value) :-
     put_attr(Var, M, Value).
+
+%!  get_attr(:Var, -Value) is det.
+%
+%   Get the attribute on the current module.
+
+get_attr(M:Name, Value) :-
+    get_attr(Name, M, Value).
 
 :- multifile sandbox:safe_meta/3.
 
@@ -56,7 +65,8 @@ sandbox:safe_meta(swish_attvar:put_attr(Var,Value), Context, Called) :-
                            attribute_goals(Var,_,_),
                            project_attributes(_,_)
                          ], Context, Called).
-
+sandbox:safe_meta(swish_attvar:get_attr(Var,_Value), _Context, []) :-
+    Var \= _:_.
 
 attr_hook_predicates([], _, []).
 attr_hook_predicates([H|T], M, Called) :-

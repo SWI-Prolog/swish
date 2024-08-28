@@ -23,7 +23,7 @@
 		 *******************************/
 
   var config = { quasiQuotations: true,		/* {|Syntax||Quotation|} */
-	         dicts: true,			/* tag{k:v, ...} */
+		 dicts: true,			/* tag{k:v, ...} */
 		 unicodeEscape: true,		/* \uXXXX and \UXXXXXXXX */
 		 multiLineQuoted: true,		/* "...\n..." */
 		 groupedIntegers: true,		/* 10 000 or 10_000 */
@@ -252,12 +252,12 @@
 	case "{":
 	  if ( config.quasiQuotations && stream.eat("|") ) {
 	    state.nesting.push({ type: "quasi-quotation",
-			         alignment: stream.column()+1
+				 alignment: stream.column()+1
 			       });
 	    return ret("qq_open", "qq_open");
 	  } else {
 	    state.nesting.push({ type: "curly",
-			         closeColumn: stream.column(),
+				 closeColumn: stream.column(),
 				 alignment: stream.column()+2
 			       });
 	    return ret("brace_term_open", null);
@@ -308,7 +308,7 @@
 
     if ( /\d/.test(ch) || /-/.test(ch) && stream.eat(/\d/)) {
       var tp = ch == "-" ? "neg-number" :
-		           "number";
+			   "number";
 
       if ( config.rationals &&
 	   stream.match(/^\d*[rR]\d+/) )
@@ -328,7 +328,11 @@
     if ( ctype.symbol(ch) ) {
       stream.eatWhile(ctype.symbol);
       var atom = stream.current();
-      if ( atom == "." && peekSpace(stream) ) {
+      if ( stream.peek() == "{" && config.dicts ) {
+	state.tagName = atom;			/* tmp state extension */
+	state.tagColumn = stream.column();
+	return ret("tag", "tag", atom);
+      } else if ( atom == "." && peekSpace(stream) ) {
 	if ( nesting(state) ) {
 	  return ret("fullstop", "error", atom);
 	} else {

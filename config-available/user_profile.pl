@@ -42,7 +42,7 @@
 :- use_module(swish(lib/plugin/profile)).
 
 :- set_setting(user_profile:backend, impl_profile_prolog).
-:- initialization profile_open_db([]).
+:- listen(http(pre_server_start), profile_open_db([])).
 
 /** <module> User profile configuration
 

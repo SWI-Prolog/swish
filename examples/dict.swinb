@@ -1,6 +1,6 @@
 <div class="notebook">
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md1">
 # Using dicts
 
 SWI-Prolog version 7 introduces the _dict_ data type as a principle type that is supported by a dedicated syntax and low level operations.  This notebook illustrates some of the properties of the dict type.
@@ -8,65 +8,99 @@ SWI-Prolog version 7 introduces the _dict_ data type as a principle type that is
 A dict consists of a _tag_ and set of _key_ - _value_ associations.  Here is an example.
 </div>
 
-<div class="nb-cell query">
-A = tag{name:'Bob', age:31}.
+<div class="nb-cell query" name="q1">
+A = person{name:'Bob', age:31}.
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md2">
 ## Unifying dicts
 
 The _tag_ and the values of a dict may be unbound, but the keys must be bound to atoms or small integers.  Dicts unify if the tag unifies, they have the same set of keys and each value associated with a key unifies with the corresponding value of the other dict.  After unification, both dicts are equal (==/2).
 </div>
 
-<div class="nb-cell query">
-tag{name:'Bob', age:Age} = Tag{age:31, name:Name}.
+<div class="nb-cell query" name="q2">
+person{name:'Bob', age:Age} = Tag{age:31, name:Name}.
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md3">
 Dicts define two operators for _partial_ unification: :&lt;/2 and &gt;:&lt;/2.  The first (`A :&lt; B`) demands that the tags unify and for each key in `A` there is a key in `B` whose value unifies.  This construct is typically used to select a clause based on information in a
 dict.  Consider this program:
 </div>
 
-<div class="nb-cell program">
+<div class="nb-cell program" name="p1">
 process(Dict) :-
     person{name:Name, age:Age} :&lt; Dict, !,
     format('~w is ~w years old~n', [Name, Age]).
 </div>
 
-<div class="nb-cell query">
-process(person{name:'Bob', age:31}).
+<div class="nb-cell query" name="q3">
+process(person{name:'Bob', age:31, sex:male}).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md4">
 The `A &gt;:&lt; B` operator says that the two dicts do not contradict.  This implies their tags unify and all values from the _intersection_ of their key-sets unify.  This can be used to combine two dicts if they do not contradict:
 </div>
 
-<div class="nb-cell program">
+<div class="nb-cell program" name="p2">
 join_dicts(D1, D2, D3) :-
     D1 &gt;:&lt; D2,
     put_dict(D1, D2, D3).
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q4">
 join_dicts(person{name:'Bob', age:31}, _{gender:male}, D).
 </div>
 
-<div class="nb-cell markdown">
-but
+<div class="nb-cell markdown" name="md5">
+but, this _fails_ because the values for `age` cannot be unified.
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q5">
 join_dicts(person{name:'Bob', age:31}, _{age:32, gender:male}, D).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md11">
+## Feature terms
+
+_Feature terms_ are commonly used in NLP packages to unify sets of features.  The feature term is normally represented as a compound term where each argument represents a feature in the domain.   These terms tend to be sparsely filled compounds with huge (many thousands) arguments.   If we use dicts for feature terms, `join_dicts/2` above does the unification.   But, this produces a third term and thus we cannot use this with simple unification.   _Attributed variables_ resolve this issue.  Below is a simple SWISH compliant implementation of feature terms for SWI-Prolog.  Note that a real application creates a module for this and uses get_attr/3 and put_attr/3.
+</div>
+
+<div class="nb-cell program" data-background="true" name="p5">
+attr_unify_hook(Dict1, Var) :-
+    (   get_attr(Var, Dict2)
+    -&gt;  Dict1 &gt;:&lt; Dict2,
+        Dict = Dict1.put(Dict2),
+        put_attr(Var, Dict)
+    ;   Dict1 = Var
+    ).
+attribute_goals(Var) --&gt;
+    { get_attr(Var, Dict) },
+    [ ft(Var, Dict) ].
+
+ft(Var, Dict) :-
+    put_attr(Var, Dict).
+</div>
+
+<div class="nb-cell markdown" name="md12">
+First we create a simple feature term.  In the second query we create two of them and unify them.
+</div>
+
+<div class="nb-cell query" name="q12">
+ft(X, ft{x:1, y:2}).
+</div>
+
+<div class="nb-cell query" name="q13">
+ft(X, ft{x:1, y:2}), ft(Y, ft{y:2, z:3}), X = Y.
+</div>
+
+<div class="nb-cell markdown" name="md6">
 ## Getting values from a dict
 
 SWI-Prolog version 7 offers a limited form of _functional notation_, which allows fetching information from a dict without using an explicit goal and without inventing a new variable.  If we wish to know in what year Bob was born, we can write the code below.
 Note that the date/time API does not yet support dicts.
 </div>
 
-<div class="nb-cell program">
+<div class="nb-cell program" name="p3">
 born(Person, Year) :-
     get_time(Now),
     stamp_date_time(Now, DateTime, local),
@@ -74,54 +108,76 @@ born(Person, Year) :-
     Year is YearNow - Person.age.
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q6">
 born(person{name:'Bob', age:31}, Year).
 </div>
 
-<div class="nb-cell markdown">
-Unlike the :&lt;/2 and &gt;:&lt;/2, the functional notation raises an error if the requested key is not present, which can ge avoided by using the `get` function.  Consider the two queries below.
+<div class="nb-cell markdown" name="md7">
+Unlike the :&lt;/2 and &gt;:&lt;/2, the functional notation raises an error if the requested key is not present, which can be avoided by using the `get` function.  The `get` function can also provide a _default_ value.  Consider the queries below.
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q7">
 writeln(person{name:'Bob', age:31}.gender).
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q8">
 writeln(person{name:'Bob', age:31}.get(gender)).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell query" name="q14">
+writeln(person{name:'Bob', age:31}.get(nationality, 'Dutch')).
+</div>
+
+<div class="nb-cell markdown" name="md8">
 ## Setting values in a dict
 
 Prolog dicts are _not_ destructive objects.  They must be compared with compound terms such as `person('Bob', 31)`.  This also implies you cannot modify the value associated with a key, add new keys or delete keys without creating a new dict.  As demonstrated above, there are predicates that create a modified dict, such as put_dict/3.  In addition, one can use the functional notation using the built in functions put(Key,Value) and put(Dict).  The two queries below are the same.
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q9">
 A = person{name:'Bob', age:31}.put(gender, male).
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q10">
 A = person{name:'Bob', age:31}.put(_{gender:male}).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md13">
+## (De)composing a dict
+
+Where compound terms can be (de)composed using `=../2` (_univ_), dicts can be (de)composed using `dict_pairs/3`.  In mode (+,-,-), the third argument is unified to a list of pairs where the keys follow the _standard order of terms_.   In mode (-,?,+), the keys of the pairs need not be ordered, but each key must be a valid ground key and __duplicates are not allowed.__  For example:
+</div>
+
+<div class="nb-cell query" name="q15">
+dict_pairs(person{name:'Bob', age:31}, Tag, Pairs).
+</div>
+
+<div class="nb-cell query" name="q16">
+dict_pairs(Dict, person, [name-'Bob', age-31]).
+</div>
+
+<div class="nb-cell query" name="q17">
+dict_pairs(Dict, person, [age-31, name-'Bob', age-33]).
+</div>
+
+<div class="nb-cell markdown" name="md9">
 ## Sorting dicts
 
 The predicate sort/4 can be used to sort dicts on a key.  We illustrate this using a simple database.
 </div>
 
-<div class="nb-cell program">
+<div class="nb-cell program" name="p4">
 person(1, person{name:'Bob', age:31}).
 person(2, person{name:'Jane', age:30, gender:female}).
 person(3, person{name:'Mary', age:25}).
 </div>
 
-<div class="nb-cell query">
+<div class="nb-cell query" name="q11">
 findall(Person, person(_Id, Person), Persons),
 sort(age, =&lt;, Persons, ByAge).
 </div>
 
-<div class="nb-cell markdown">
+<div class="nb-cell markdown" name="md10">
 # Concluding
 
 The dict type provides a natural mechanism to deal with key-value associations for which the set of keys is not a-priory known.  Dicts are easily created, compactly stored and comfortably as well as efficiently queried for a single key or multiple keys with a single statement.

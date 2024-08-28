@@ -149,7 +149,7 @@ span.pl-binding-value.fold:after
 /* Embraced (...) items */
 
 span.pl-embrace.vertical
-{ display: flex;
+{ display: inline-flex;
   flex-direction: row;
 }
 
@@ -160,12 +160,38 @@ span.pl-embrace:not(.vertical)
 
 span.pl-embrace.vertical span.pl-embraced
 { display: flex;
+  position: relative;
+  left: 20px;
+}
+
+span.pl-embrace.vertical span.pl-embraced:before
+{ content: "";
+  position: absolute;
+  top: 0;
+  width: 20px;
+  height: 100%;
+  left: -20px;
+  background-image: url("left-parenthesis.svg");
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+span.pl-embrace.vertical span.pl-embraced:after
+{ content: "";
+  position: absolute;
+  top: 0;
+  width: 20px;
+  height: 100%;
+  left: 100%;
+  background-image: url("right-parenthesis.svg");
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
 }
 
 span.pl-embrace.vertical span.pl-parenthesis
-{ display: flex;
-  line-height: 50%;
-  align-items: center;
+{ display: none;
 }
 
 /* Mode switching menu.  A bit inspired by Bootstrap, but independent thereof. */

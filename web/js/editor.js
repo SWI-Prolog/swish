@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2019, VU University Amsterdam
+    Copyright (C): 2014-2023, VU University Amsterdam
 			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -51,6 +52,7 @@ define([ "cm/lib/codemirror",
 	 "modal",
 	 "tabbed",
 	 "prolog",
+	 "backend",
 
 	 "storage",
 
@@ -84,7 +86,7 @@ define([ "cm/lib/codemirror",
 	 "cm/keymap/emacs",
        ],
        function(CodeMirror, config, preferences, form, templateHint,
-		modal, tabbed, prolog) {
+		modal, tabbed, prolog, backend) {
 
 (function($) {
   var pluginName = 'prologEditor';
@@ -258,20 +260,21 @@ define([ "cm/lib/codemirror",
 	    options.placeHolder = "Downloading data ...";
 	    data.cm = CodeMirror.fromTextArea(ta, options);
 
-	    $.ajax({ url: storage.url,
-		     dataType: "text",
-		     success: function(data) {
-		       elem.prologEditor('setSource', {
-			 data:data,
-			 url:storage.url,
-			 noHistory:true
-		       }, false);
-		       elem.storage('update_tab_title')
-		     },
-		     error: function(jqXHDR) {
-		       modal.ajaxError(jqXHDR);
-		     }
-		   });
+	    backend.ajax(
+	      { url: storage.url,
+		dataType: "text",
+		success: function(data) {
+		  elem.prologEditor('setSource', {
+		    data:data,
+		    url:storage.url,
+		    noHistory:true
+		  }, false);
+		  elem.storage('update_tab_title')
+		},
+		error: function(jqXHDR) {
+		  modal.ajaxError(jqXHDR);
+		}
+	      });
 	  } else {
 	    data.cm = CodeMirror.fromTextArea(ta, options);
 	  }
@@ -705,16 +708,17 @@ define([ "cm/lib/codemirror",
 	iframe.contentWindow.print();
       }
 
-      $.ajax({ url: config.http.locations.swish+"js/codemirror/theme/prolog.css",
-	       dataType: "text",
-	       success: function(data) {
-		 printWithIframe($.el.div($.el.style(data),
-					  pre));
-	       },
-	       error: function(jqXHDR) {
-		 modal.ajaxError(jqXHDR);
-	       }
-             });
+      backend.ajax(
+	{ url: config.http.locations.swish+"js/codemirror/theme/prolog.css",
+	  dataType: "text",
+	  success: function(data) {
+	    printWithIframe($.el.div($.el.style(data),
+				     pre));
+	  },
+	  error: function(jqXHDR) {
+	    modal.ajaxError(jqXHDR);
+	  }
+        });
 
       return this;
     },
@@ -754,11 +758,14 @@ define([ "cm/lib/codemirror",
      * string)
      * @param {Object} error.location contains the location, providing
      * `line` and `ch` attributes.
+     * @param {Boolean} [force] when `true`, report the error on this editor.
      */
-    highlightError: function(error) {
-      if ( error.location.file &&
-	   (error.location.file == true ||
-	    this.prologEditor('isMyFile', error.location.file)) ) {
+    highlightError: function(error, force) {
+      if ( force == true ||
+	   ( error.location.file &&
+	     (error.location.file == true ||
+	      this.prologEditor('isMyFile', error.location.file))
+	   )) {
 	var data = this.data(pluginName);
 	var chmark;
 

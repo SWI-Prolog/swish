@@ -75,9 +75,15 @@ Allow tracing pengine execution under SWISH.
 :- multifile
 	user:prolog_trace_interception/4,
 	user:message_hook/3.
+:- dynamic
+	user:message_hook/3.
 
-user:message_hook(trace_mode(_), _, _) :-
-	pengine_self(_), !.
+intercept_trace_mode_switch :-
+	asserta((user:message_hook(trace_mode(_), _, _) :-
+		    pengine_self(_), !)).
+
+:- initialization
+	intercept_trace_mode_switch.
 
 %!	trace_pengines
 %
@@ -95,10 +101,14 @@ trace_pengines.
 
 user:prolog_trace_interception(Port, Frame, CHP, Action) :-
 	trace_pengines,
-	catch(trace_interception(Port, Frame, CHP, Action), E, true),
-	(   var(E)
-	->  true
-	;   abort			% tracer ignores non-abort exceptions.
+	State = state(0),
+	(   catch(trace_interception(Port, Frame, CHP, Action), E, true),
+	    (   var(E)
+	    ->  nb_setarg(1, State, Action)
+	    ;   abort			% tracer ignores non-abort exceptions.
+	    ),
+	    fail
+	;   arg(1, State, Action)
 	).
 
 trace_interception(Port, Frame, _CHP, Action) :-

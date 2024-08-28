@@ -43,7 +43,7 @@
  * (typically) AJAX calls:
  *
  * ```
- *   $.ajax({ url: config.http.locations.swish_examples,
+ *   backend.ajax({ url: config.http.locations.swish_examples,
  *            ...
  * ```
  *
@@ -86,22 +86,20 @@ function setCachedConfig(config) {
 
 if ( !config ) {
   if ( !(config = getCachedConfig()) ) {
-    $.ajax("swish_config.json",
-	   { dataType: "json",
-	     async: false,
-	     success: function(data) {
-	       config = data;
-	       setCachedConfig(config);
-	     },
-	     error: function() {
-	       alert("Failed to fetch configuration from server");
-	     }
-	   });
+    $.ajax(
+      { url: "swish_config.json",
+	dataType: "json",
+	async: false,
+	success: function(data) {
+	  config = data;
+	  setCachedConfig(config);
+	},
+	error: function() {
+	  alert("Failed to fetch configuration from server");
+	}
+      });
   }
 }
 
 return config;
 });
-
-
-

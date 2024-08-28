@@ -1,3 +1,4 @@
+Keep
 node_modules
 node_modules
 swish-bower-components.zip
@@ -14,3 +15,7 @@ https
 web/icons/noble
 TAGS
 yarn.lock
+.yarn-senitel
+web/js/swish-min-new.js
+web/js/swish-min-new.js.map
+swish-node-modules.zip

@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2017, VU University Amsterdam
-			 CWI Amsterdam
+    Copyright (C): 2017-2024, VU University Amsterdam
+			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -43,10 +44,10 @@
  */
 
 define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
-	 "modal", "links", "chat",
+	 "modal", "links", "chat", "backend",
 	 "laconic"
        ],
-       function($, form, CodeMirror, utils, config, modal, links, chat) {
+       function($, form, CodeMirror, utils, config, modal, links, chat, backend) {
 
 (function($) {
   var pluginName = 'chatroom';
@@ -81,7 +82,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 				    }, "Send"),
 			$.el.button({ type:"button",
 				      class:"btn btn-info btn-xs "+
-				            "dropdown-toggle",
+					    "dropdown-toggle",
 				      'data-toggle':"dropdown",
 				      'aria-haspopup':true,
 				      'aria-expanded':false
@@ -104,9 +105,19 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 					$.el.tr($.el.td({class:"chat-text"}, text),
 						$.el.td({class:"chat-send"}, btn)))));
 
-	$(send).on("click", function() {
+	function enable_btn() {
+	  $(send).prop('disabled', $(text).val().trim() == "" ? true : false);
+	}
+	enable_btn();
+
+	function send_chat() {
+	  $(send).prop('disabled', true);
 	  elem.chatroom('send');
-	});
+	  $(text).val("");
+	}
+
+	$(send).on("click", send_chat);
+	$(text).on("change", enable_btn);
 
 					/* event handling */
 	form.widgets.populateMenu($(btn), elem, {
@@ -132,15 +143,14 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	$(close).on("click", function() {
 	  elem.tile('close');
 	});
-	if ( options.oneline ) {
-	  $(text).keypress(function(ev) {
-	    if ( ev.which == 13 ) {
-	      elem.chatroom('send');
-	      ev.preventDefault();
-	      return false;
-	    }
-	  });
-	} else {
+	$(text).keypress(function(ev) {
+	  if ( ev.key == "Enter" &&
+	       options.oneline || ev.ctrlKey || ev.metaKey ) {
+	    send_chat();
+	    return false;
+	  }
+	});
+	if ( !options.oneline) {
 	  $(text).on('keyup', function() {
 	    var that = $(this);
 	    var h;
@@ -151,6 +161,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	      that.animate({ height: h }, 200,
 			   function() { elem.chatroom('scrollToBottom'); });
 	    }
+	    enable_btn();
 	  });
 	}
 	if ( options.docid == hangout ) {
@@ -400,23 +411,27 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       var data = this.data(pluginName);
       var elem = $(this);
 
-      $.get(config.http.locations.chat_messages,
-	    { docid: data.docid
-	    },
-	    function(messages) {
-	      if ( messages.length == 0 ) {
-		if ( ifempty )
-		  elem.chatroom('close');
-		else if ( data.docid != "gitty:"+config.swish.hangout )
-		  modal.help({file:"newchat.html", notagain:"newchat"});
-	      } else {
-		for(var i=0; i<messages.length; i++) {
-		  elem.chatroom('add', messages[i], i == messages.length-1 );
-		}
+      backend.ajax(
+	{ url: config.http.locations.chat_messages,
+	  data: { docid: data.docid,
+		  max: 100
+		},
+	  success: function(messages) {
+	    if ( messages.length == 0 ) {
+	      if ( ifempty )
+		elem.chatroom('close');
+	      else if ( data.docid != "gitty:"+config.swish.hangout )
+		modal.help({file:"newchat.html", notagain:"newchat"});
+	    } else {
+	      for(var i=0; i<messages.length; i++) {
+		elem.chatroom('add', messages[i], i == messages.length-1 );
 	      }
-	    }).fail(function(jqXHR, textStatus, errorThrown) {
-	      modal.ajaxError(jqXHR);
-	    });
+	    }
+	  },
+	  error: function(jqXHR) {
+	    modal.ajaxError(jqXHR);
+	  }
+	});
 
       return this;
     },
@@ -443,11 +458,11 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	modal.ajaxError(jqXHR);
       }
 
-      $.ajax({
+      backend.ajax({
         url: config.http.locations.web_storage + options.from,
 	data: {format: "raw"},
 	success: function(from) {
-	  $.ajax({
+	  backend.ajax({
 	    url: config.http.locations.web_storage + options.to,
 	    data: {format: "raw"},
 	    success: function(to) {
@@ -466,7 +481,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 	      }
 
 	      form.showDialog({
-	        title: "Update differences",
+		title: "Update differences",
 		body:  diffBody
 	      });
 	    },
@@ -541,7 +556,7 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
 			      form.widgets.glyphIcon("eye-open")));
       btn.on("click", function(ev) {
 	$(ev.target).chatroom('storage')
-	            .storage('restoreSelection', selection.selection);
+		    .storage('restoreSelection', selection.selection);
       });
 
       this.append(" ", btn, " ");
@@ -617,15 +632,15 @@ define([ "jquery", "form", "cm/lib/codemirror", "utils", "config",
       { regex: /[a-z][a-zA-Z0-9_]*\/[0-9]/g,
         func:  function(match) {
 	  return '<a class="builtin" href="/pldoc/man?predicate='+match+'">'
-	         +match+'</a>';
+		 +match+'</a>';
 	}
       },
       { regex: /[a-zA-Z0-9_-]+\.(pl|swinb)\b/g,
         func:  function(match) {
 	  return '<a class="builtin" href="'+
 		 config.http.locations.web_storage+
-	         match+'">'
-	         +match+'</a>';
+		 match+'">'
+		 +match+'</a>';
 	}
       },
       { regex: /`(.)`/g,

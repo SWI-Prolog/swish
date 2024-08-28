@@ -32,6 +32,10 @@ swish_config:config(ping,		10).
 swish_config:config(chat,		true).
 swish_config:config(default_query,	'user:"me"').
 
+% Avoid huge numbers exhausting memory
+:- initialization
+    set_prolog_flag(max_integer_size, 10 000 000).
+
 % swish:slave_limit controls the max number of pengines per client
 % swish:thread_pool_size controls the max number of concurrent pengines
 % swish:thread_pool_stacks controls the pengine thread creation options

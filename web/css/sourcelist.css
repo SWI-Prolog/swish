@@ -1,10 +1,20 @@
 div.sourcelist
 { margin: auto;
   width: 90%;
+/* Make table scrollable.   Doesn't work really well.
+  display: grid;
+  grid-template-rows: min-content 1fr;
+  overflow: hidden;
+  height: 60vh;
+*/
 }
 
 div.sourcelist span.dropdown-icon
 { margin-left: 5px;
+}
+
+div.search-results {
+    overflow-y: auto;
 }
 
 div.search-footer > button > label

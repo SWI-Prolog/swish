@@ -11,10 +11,10 @@ classification of tokens.
   if (typeof exports == "object" && typeof module == "object") // CommonJS
     mod(require("../../lib/codemirror"));
   else if (typeof define == "function" && define.amd) // AMD
-    define(["../../lib/codemirror"], mod);
+    define(["../../lib/codemirror", "../../../backend"], mod);
   else // Plain browser env
     mod(CodeMirror);
-})(function(CodeMirror) {
+})(function(CodeMirror, backend) {
   "use strict";
 
   var DEFAULT_DELAY = 1000;
@@ -74,14 +74,15 @@ classification of tokens.
     var uuid = state.uuid;
     delete state.uuid;
 
-    $.ajax({ url: state.url.leave,
-	     async: false,  // otherwise it is killed before completion
-	     contentType: 'application/json',
-	     type: "POST",
-	     dataType: "json",
-	     data: JSON.stringify({ uuid: uuid
-				  })
-	   });
+    backend.ajax(
+      { url: state.url.leave,
+	async: false,  // otherwise it is killed before completion
+	contentType: 'application/json',
+	type: "POST",
+	dataType: "json",
+	data: JSON.stringify({ uuid: uuid
+			     })
+      });
   }
 
   /**
@@ -195,26 +196,27 @@ classification of tokens.
       msg.sourceID = state.sourceID();
 
     state.generationFromServer = cm.changeGeneration();
-    $.ajax({ url: state.url.tokens,
-	     dataType: "json",
-	     contentType: 'application/json',
-	     type: "POST",
-	     data: JSON.stringify(msg),
-	     success: function(data, status) {
-	       var opts = modeOptions();
-	       opts.metainfo = data.tokens;
-	       cm.setOption("mode", opts);
-	     },
-	     error: function(jqXHR) {
-	       if ( jqXHR.status == 409 ) {
-		 delete state.uuid;
-		 /* And refresh?  problem is this might get us into
-		  * a loop.  We'd need some info from the server that
-		  * this won't happen again
-		  */
-	       }
-	     }
-	   });
+    backend.ajax(
+      { url: state.url.tokens,
+	dataType: "json",
+	contentType: 'application/json',
+	type: "POST",
+	data: JSON.stringify(msg),
+	success: function(data, status) {
+	  var opts = modeOptions();
+	  opts.metainfo = data.tokens;
+	  cm.setOption("mode", opts);
+	},
+	error: function(jqXHR) {
+	  if ( jqXHR.status == 409 ) {
+	    delete state.uuid;
+	    /* And refresh?  problem is this might get us into
+	     * a loop.  We'd need some info from the server that
+	     * this won't happen again
+	     */
+	  }
+	}
+      });
   }
 
   CodeMirror.commands.refreshHighlight = function(cm) {
@@ -315,6 +317,9 @@ classification of tokens.
 		     "goal_local": "atom",
 		     "goal_constraint": "atom",
 		     "goal_not_callable": "atom",
+
+		     "function": "atom",
+		     "no_function": "atom",
 
 		     "xpce_method": "functor",
 		     "xpce_class_builtin":"atom",
@@ -549,9 +554,9 @@ classification of tokens.
 
 	if ( oos.skippedTerms <= 3 ) {
 	  oos.skippedTokens.push({ type:    type,
-			           style:   style,
+				   style:   style,
 				   content: content
-			         });
+				 });
 
 	  if ( (serverStyle=reSync()) ) {
 	    return serverStyle;			/* re-synchronized! */
@@ -616,12 +621,13 @@ classification of tokens.
     if ( !elem )
       elem = $($.el.span({class:"token-info"}, "..."));
 
-    $.ajax({ url: state.url.info,
-	     data: token,
-	     success: function(data) {
-	       elem.html(data);
-	     }
-           });
+    backend.ajax(
+      { url: state.url.info,
+	data: token,
+	success: function(data) {
+	  elem.html(data);
+	}
+      });
 
     return elem[0];
   }

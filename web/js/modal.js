@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2018, VU University Amsterdam
+    Copyright (C): 2014-2023, VU University Amsterdam
 			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,9 +43,9 @@
  * @requires jquery
  */
 
-define([ "jquery", "config", "preferences", "links", "form", "version",
-	 "laconic", "bootstrap" ],
-       function($, config, preferences, links, form) {
+define([ "jquery", "config", "preferences", "links", "form", "backend",
+	 "version", "laconic", "bootstrap" ],
+       function($, config, preferences, links, form, backend) {
 
 /* NOTE: form dependency is circular.  Form is initialized later. */
 
@@ -110,18 +111,19 @@ define([ "jquery", "config", "preferences", "links", "form", "version",
       if ( options.notagain && preferences.notagain(options.notagain) )
 	return;
 
-      $.ajax({ url: config.http.locations.help + "/" + options.file,
-	       dataType: "html",
-	       success: function(data) {
-		 var container = $("<div>");
-		 container.html(data);
-		 that.swishModal('show',
-				 $.extend(
-				   { title: container.find("title").text(),
-				     body:  container
-				   }, options));
-	       }
-             });
+      backend.ajax(
+	{ url: config.http.locations.help + "/" + options.file,
+	  dataType: "html",
+	  success: function(data) {
+	    var container = $("<div>");
+	    container.html(data);
+	    that.swishModal('show',
+			    $.extend(
+			      { title: container.find("title").text(),
+				body:  container
+			      }, options));
+	  }
+        });
     },
 
     /**
@@ -133,18 +135,19 @@ define([ "jquery", "config", "preferences", "links", "form", "version",
     showForm: function(options) {
       var that = this;
 
-      $.ajax({ url: config.http.locations.form + "/" + options.file,
-	       dataType: "html",
-	       success: function(data) {
-		 var container = $("<div>");
-		 container.html(data);
-		 that.swishModal('show',
-				 $.extend(
-				   { title: container.find("legend").text(),
-				     body:  container
-				   }, options));
-	       }
-             });
+      backend.ajax(
+	{ url: config.http.locations.form + "/" + options.file,
+	  dataType: "html",
+	  success: function(data) {
+	    var container = $("<div>");
+	    container.html(data);
+	    that.swishModal('show',
+			    $.extend(
+			      { title: container.find("legend").text(),
+				body:  container
+			      }, options));
+	  }
+        });
     },
 
     /** Show PlDoc manual page
@@ -223,12 +226,12 @@ define([ "jquery", "config", "preferences", "links", "form", "version",
       $(title).html(options.title);
       $(modalel).modal({show: true})
 		.on("click", "a", links.followLink)
-	        .on("shown.bs.modal", function() {
+		.on("shown.bs.modal", function() {
 		   initTagsManagers();
 		   // FIXME: should find a more structured way?
 		   $(this).find(".swish-versions").version();
 		 })
-	        .on("hidden.bs.modal", function() {
+		.on("hidden.bs.modal", function() {
 		  if ( options.onclose )
 		    options.onclose();
 		  saveNotagain($(this));
@@ -259,15 +262,16 @@ define([ "jquery", "config", "preferences", "links", "form", "version",
 	title: options.title,
 	body: function() {
 	  elem = $(this);
-	  $.ajax({ url: options.url,
-		   data: options.data,
-		   success: function(data) {
-		     elem.append(data);
-		   },
-		   error: function(jqXHDR) {
-		     modalel.swishModal('showAjaxError', jqXHDR);
-		   }
-	         });
+	  backend.ajax(
+	    { url: options.url,
+	      data: options.data,
+	      success: function(data) {
+		elem.append(data);
+	      },
+	      error: function(jqXHDR) {
+		modalel.swishModal('showAjaxError', jqXHDR);
+	      }
+	    });
 
 	  elem.on("click", "button[data-action]", function(ev) {
 	    var formel = $(ev.target).closest("form");
@@ -275,42 +279,44 @@ define([ "jquery", "config", "preferences", "links", "form", "version",
 	    var button = $(ev.target).closest("button");
 
 	    if ( button.data("form_data") == false ) {
-	      $.ajax({ url: button.data("action"),
-	               success: function(obj) {
-			 button.closest(".modal").modal('hide');
-			 if ( options.onreply )
-			   options.onreply.call(button[0], obj);
-			 ev.preventDefault();
-			 return false;
-		       },
-		       error: function(jqXHDR) {
-			 modalel.swishModal('showAjaxError', jqXHDR);
-		       }
-	      });
+	      backend.ajax(
+		{ url: button.data("action"),
+		  success: function(obj) {
+		    button.closest(".modal").modal('hide');
+		    if ( options.onreply )
+		      options.onreply.call(button[0], obj);
+		    ev.preventDefault();
+		    return false;
+		  },
+		  error: function(jqXHDR) {
+		    modalel.swishModal('showAjaxError', jqXHDR);
+		  }
+		});
 	    } else {
-	      $.ajax({ url: button.data("action"),
-		       data: JSON.stringify(data),
-		       dataType: "json",
-		       contentType: "application/json",
-		       type: "POST",
-		       success: function(obj) {
-			 if ( obj.status == "success" ) {
-			   button.closest(".modal").modal('hide');
-			   if ( options.onreply )
-			     options.onreply.call(button[0], obj);
-			   ev.preventDefault();
-			   return false;
-			 } else if ( obj.status == "error" ) {
-			   form.formError(formel, obj.error);
-			 } else {
-			   alert("Updated failed: " +
-				 JSON.serializeAsObject(obj));
-			 }
-		       },
-		       error: function(jqXHDR) {
-			 modalel.swishModal('showAjaxError', jqXHDR);
-		       }
-	      });
+	      backend.ajax(
+		{ url: button.data("action"),
+		  data: JSON.stringify(data),
+		  dataType: "json",
+		  contentType: "application/json",
+		  type: "POST",
+		  success: function(obj) {
+		    if ( obj.status == "success" ) {
+		      button.closest(".modal").modal('hide');
+		      if ( options.onreply )
+			options.onreply.call(button[0], obj);
+		      ev.preventDefault();
+		      return false;
+		    } else if ( obj.status == "error" ) {
+		      form.formError(formel, obj.error);
+		    } else {
+		      alert("Updated failed: " +
+			    JSON.serializeAsObject(obj));
+		    }
+		  },
+		  error: function(jqXHDR) {
+		    modalel.swishModal('showAjaxError', jqXHDR);
+		  }
+		});
 	    }
 
 	    ev.preventDefault();
@@ -525,4 +531,3 @@ define([ "jquery", "config", "preferences", "links", "form", "version",
     }
   };
 });
-

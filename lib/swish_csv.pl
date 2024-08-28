@@ -40,6 +40,8 @@
 :- use_module(library(pprint)).
 :- use_module(library(option)).
 :- use_module(library(http/http_cors)).
+:- use_module(library(debug)).
+:- use_module(library(lists)).
 
 /** <module> Support CSV output from a Pengines server
 
