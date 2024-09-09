@@ -129,7 +129,9 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	    sep(),
 	    glyphButton("erase", "clear_all", "Clear all query output", "warning"),
 	    glyphButton("play", "run_all", "Run all queries", "primary"),
-	    glyphButton("wrench", "settings", "Settings", "default"),
+      glyphButton("wrench", "settings", "Settings", "default"),
+      sep(),
+      glyphButton("download", "download_data", "Download program", "default"),
 	    glyphButton("fullscreen", "fullscreen", "Full screen", "default")
 	    ));
 	elem.append(notebookMenu());
@@ -905,6 +907,33 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	$(queries[0]).nbCell('run', {
 	  complete: complete
 	});
+      }
+    },
+
+    download_data: function() {
+      var data = [];
+      this.find(".nb-cell.program").each(function () {
+        console.log($(this)[0].innerText);
+        
+        if ($(this)[0].hidden == false) {
+          var str = $(this)[0].innerText.split("\n").filter(i => !i.match(/^\d/));
+          data.push(str);
+        }
+      });
+  
+      data = data.flat().join('\n');
+            
+      var pom = document.createElement('a');
+      pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data));
+      pom.setAttribute('download', "program.pl");
+
+      if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        pom.dispatchEvent(event);
+      }
+      else {
+        pom.click();
       }
     },
 
