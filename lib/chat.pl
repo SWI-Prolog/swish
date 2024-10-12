@@ -1444,6 +1444,7 @@ swish_chat(Room) :-
     swish_chat(Room).
 
 chat_exception('$aborted') :- !.
+chat_exception(unwind(_)) :- !.
 chat_exception(E) :-
     print_message(warning, E).
 
