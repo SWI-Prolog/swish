@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2015-2023, VU University Amsterdam
+    Copyright (C): 2015-2024, VU University Amsterdam
 			      CWI Amsterdam
 			      SWI-Prolog Solutions b.v.
     All rights reserved.
@@ -565,6 +565,8 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	function removeNotForQuery(elem) {
 	  elem.find(".nb-content .nb-cell.not-for-query")
 	      .removeClass("not-for-query");
+	  elem.find(".nb-content .nb-cell.for-query")
+	      .removeClass("for-query");
 	}
 
 	if ( cell.length == 1 )
@@ -1066,17 +1068,20 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	  elem.addClass("active");
 	  switch( data.type ) {
 	    case "program":
-	      elem.find(".editor").prologEditor('makeCurrent');
+	    { elem.find(".editor").prologEditor('makeCurrent');
 	      break;
+	    }
 	    case "query":
+	    { const used = elem.nbCell("program_cells");
+	      const programs = elem.closest(".notebook")
+				   .find(".nb-cell.program");
 	      var prevprog = elem.nbCell('prev', ".program");
 	      if ( prevprog )
 		prevprog.find(".editor").prologEditor('makeCurrent');
-	      elem.closest(".notebook")
-		  .find(".nb-cell.program")
-		  .not(elem.nbCell("program_cells"))
-		  .addClass("not-for-query");
+	      programs.not(used).addClass("not-for-query");
+	      used.addClass("for-query");
 	      break;
+	    }
 	  }
 	} else if ( elem.length > 0 ) {
 	  elem.removeClass("active");
@@ -1207,11 +1212,15 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 
     refresh: function() {
       if ( this.hasClass("program") ) {
+	const scope = this.nbCell('scope');
+	let title;
+	switch(scope)
+	{ case 'local': title = "Used for first query below this cell"; break;
+	  case 'below': title = "Used for all queries below this cell"; break;
+	  case 'global': title = "Used for all queries in this notebook"; break;
+	}
 	this.find("a[data-action='background']")
-            .attr('title', this.hasClass("background") ?
-			     "Used for all queries in this notebook" :
-			     "Used for queries below this cell");
-
+            .attr('title', title);
       }
       return this;
     },
@@ -1305,10 +1314,41 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
     },
 
     /**
+     * Set/get the scope of the cell
+     */
+    scope: function(scope) {
+      if ( scope )
+      { if ( scope != this.nbCell('scope') )
+	{ this.removeClass("background below");
+	  switch(scope)
+	  { case 'local': break;
+	    case 'below': this.addClass("background below"); break;
+	    case 'global': this.addClass("background"); break;
+	  }
+	}
+      } else
+      { if ( this.hasClass("background") )
+	  return this.hasClass("below") ? 'below' : 'global';
+	else
+	  return 'local';
+      }
+    },
+
+    next_scope: function(scope) {
+      scope = scope||this.nbCell('scope');
+      switch(scope)
+      { case 'local': return 'below';
+	case 'below': return 'global';
+	case 'global': return 'local';
+      }
+    },
+
+    /**
      * Toggle a program fragment to be background/non-background
      */
     background: function() {
-      this.toggleClass("background");
+      const next = this.nbCell('next_scope');
+      this.nbCell('scope', next);
       this.find("a[data-action=background]").blur();
       this.closest(".notebook").notebook('checkModified');
       this.nbCell('refresh');
@@ -1324,16 +1364,34 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
      * sources for the receiving query cell.
      */
     program_cells: function() {
-      var data = this.data(pluginName);
-      var programs = this.closest(".notebook")
-			 .find(".nb-cell.program.background");
-      if ( this.hasClass("program") ) {
-	if ( !this.hasClass("background") )
-	  programs = programs.add(this);
-      } else {
-	programs = programs.add(this.nbCell('prev', ".program"));
-      }
-      return programs;
+      const programs = [];
+      const elem = this;
+      let before = true;
+      let local;
+
+      this.closest(".notebook").find(".nb-cell").each(function() {
+	const c = $(this);
+	if ( c.hasClass("program") )
+	{ const scope = c.nbCell('scope');
+	  if ( scope == 'global' )
+	    programs.push(c[0]);
+	  else if ( scope == 'below' && before )
+	    programs.push(c[0]);
+	  else if ( scope == 'local' )
+	    local = c;
+	}
+	if ( c.is(elem) )
+	{ if ( local )
+	    programs.push(local[0]);
+	  before = false;
+	}
+	if ( c.hasClass("query") )
+	  local = undefined;
+      });
+
+      const jprograms = $(programs);
+      console.log(jprograms);
+      return jprograms;
     },
 
     programs: function() {
@@ -1450,6 +1508,9 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 		editor=$.el.div({class:"editor with-buttons"}));
     if ( options.background )
     { this.addClass("background");
+    }
+    if ( options.below )
+    { this.addClass("below");
     }
     if ( options.singleline )
     { this.nbCell('singleline');
@@ -1779,6 +1840,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
     }
 
     copyClassAttr("background");
+    copyClassAttr("below");
     copyClassAttr("singleline");
     copyAttr("name");
 
@@ -1866,6 +1928,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
     }
 
     getAttr("background");
+    getAttr("below");
     getAttr("singleline");
     copyAttr("name");
 
@@ -1925,6 +1988,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
     }
 
     addClassAttr("background", "B");
+    addClassAttr("below", "D");
     addClassAttr("singleline", "S");
 
     text += "V"+cellText(this).trim();

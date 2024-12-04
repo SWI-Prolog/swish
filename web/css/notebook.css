@@ -210,8 +210,18 @@ div.notebook-menu {
 { margin-left: 44px;		/* CodeMirror gutter width */
 }
 
+.nb-cell.for-query
+{ margin-left: 12px;
+  border-left: 3px solid blue !important;
+  padding-left: 5px;
+}
+
 .nb-cell.not-for-query
 { opacity: 0.5;
+}
+
+.nb-cell.not-for-query .CodeMirror
+{ background-color: #bbb;
 }
 
 .nb-placeholder
@@ -271,6 +281,10 @@ a.btn-image
 
 .nb-cell.program.background span.image-icon
 { background-image: url("../icons/global.png");
+}
+
+.nb-cell.program.background.below span.image-icon
+{ background-image: url("../icons/below.png");
 }
 
 span.menu-space
