@@ -1,0 +1,53 @@
+<div class="notebook">
+
+<div class="nb-cell markdown" name="md1">
+# Selecting and ordering program cells
+
+SWISH notebooks may contain several cell types.  For this tutorial we consider two: _program_ cells and _query_ cells.   A program cell contains a valid Prolog program, while a query cell contains a query, typically calling code defined in the Prolog cell.   SWISH defines three types of program cells:
+
+  - __global__ &lt;br&gt;
+    Such cells are identified by a globe.  They are used by all
+    query cells on the notebook.
+  - __below__ &lt;br&gt;
+    These are identified by a down arrow.  Only "below" cells 
+    that appear above the query are added.
+  - __local__ &lt;br&gt;
+    Finally, the __last local cell above the query is added__
+    if there is no other program cell in between.
+    
+The cells are loaded in the order in which they appear on the page.
+    
+The intend is that __global__ cells are used to provide background data and they are normally placed at the end of the notebook.  __Below__ cells are used to build up a program _incrementally_ and __local__ cells provides predicates to be called by the immediately following queries or predicates that _parameterize_ global or below cells.
+
+When a query is selected, a thin blue line is added to the left of all cells that are loaded before the query is executed.   You can experiment using the content below, changing the status of program cells (by clicking the icon) and selecting the query to see which cells are used for the query.   Running the query presents a table with answers.
+</div>
+
+<div class="nb-cell program" data-background="true" name="p1">
+p(1).
+</div>
+
+<div class="nb-cell program" name="p2">
+p(2).
+</div>
+
+<div class="nb-cell program" data-background="true" data-below="true" name="p3">
+p(3).
+</div>
+
+<div class="nb-cell program" name="p4">
+p(4).
+</div>
+
+<div class="nb-cell query" data-chunk="10" data-tabled="true" name="q1">
+p(X)
+</div>
+
+<div class="nb-cell program" data-background="true" data-below="true" name="p5">
+p(5).
+</div>
+
+<div class="nb-cell program" data-background="true" name="p6">
+p(6).
+</div>
+
+</div>

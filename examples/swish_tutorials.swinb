@@ -11,6 +11,7 @@ This notebook provides an overview of tutorials about using SWISH.
   - [Using __R__ in SWISH](example/Rserve.swinb) (statistics, charts, machine learning)
   - [Accessing external *data*](example/data_source.swinb) (CSV, SPARQL, etc.)
   - Advanced topics for *notebooks*
+    - [How is the program assembled for a specific query?](example/notebook.swinb)
     - [Parameterized queries in notebooks](example/query_parms.swinb)
     - Using HTML cells in notebooks
       - [The basics](example/htmlcell.swinb)
