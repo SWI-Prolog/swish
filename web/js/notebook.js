@@ -1357,9 +1357,15 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 
     /**
      * Returns all program cells in current notebook that are loaded
-     * for executing the current cell.  This always starts with the
-     * background programs.  If `this` is a program cell, it is added.
-     * Otherwise the program cell before `this` is added.
+     * for executing the current cell. These are
+     *
+     *   - All global cells (.nbcell.background:not(.below))
+     *   - All _below_ cells above current cell (.nbcell.background.below)
+     *   - The last local cell above the current cell if there
+     *     are no other program cells in between.
+     *
+     * The order of the set is defined by the order on the page.
+     *
      * @return {jQuery} set of nbCell elements that form the
      * sources for the receiving query cell.
      */
@@ -1373,24 +1379,28 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	const c = $(this);
 	if ( c.hasClass("program") )
 	{ const scope = c.nbCell('scope');
-	  if ( scope == 'global' )
-	    programs.push(c[0]);
-	  else if ( scope == 'below' && before )
-	    programs.push(c[0]);
-	  else if ( scope == 'local' )
-	    local = c;
+	  if ( scope == 'local' )
+	  { if ( before )
+	      local = c;
+	  } else
+	  { local = 'undefined';
+
+	    if ( scope == 'global' )
+	      programs.push(c[0]);
+	    else if ( scope == 'below' && before )
+	      programs.push(c[0]);
+	  }
 	}
 	if ( c.is(elem) )
 	{ if ( local )
-	    programs.push(local[0]);
+	  { programs.push(local[0]);
+	    local = undefined;
+	  }
 	  before = false;
 	}
-	if ( c.hasClass("query") )
-	  local = undefined;
       });
 
       const jprograms = $(programs);
-      console.log(jprograms);
       return jprograms;
     },
 
