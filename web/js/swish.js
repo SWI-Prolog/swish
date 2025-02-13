@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@cs.vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2014-2019, VU University Amsterdam
+    Copyright (C): 2014-2025, VU University Amsterdam
 			      CWI Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -107,7 +108,12 @@ require(["jquery", "config", "jswish", "plugin"],
 	function($, config, swish, plugin) {
   var deps = plugin.load();
 
-  deps.push(config.http.locations.pengines+"/pengines.js");
+  let url = config.http.locations.pengines;
+  if ( !url.endsWith("/") )
+    url += "/";
+  url += "pengines.js";
+
+  deps.push(url);
 
   require(deps, function() {
     $(function() {
