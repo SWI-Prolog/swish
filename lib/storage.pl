@@ -52,7 +52,8 @@
             storage_load_term/2,                % +Hash, -Term
 
             use_gitty_file/1,                   % +File
-            use_gitty_file/2                    % +File, +Options
+            use_gitty_file/2,                    % +File, +Options
+            open_gittystore/1
           ]).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
@@ -71,7 +72,7 @@
 :- use_module(library(dcg/basics)).
 :- use_module(library(pcre)).
 :- use_module(library(pengines_io)).
-
+:- use_module(upload).
 :- use_module(page).
 :- use_module(gitty).
 :- use_module(patch).
