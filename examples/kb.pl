@@ -10,7 +10,8 @@ loves(honey_bunny, pumpkin).
 
 jealous(X, Y) :-
     loves(X, Z),
-    loves(Y, Z).
+    loves(Y, Z),
+    X \= Y.
 
 
 /** <examples>
