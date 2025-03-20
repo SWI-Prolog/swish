@@ -51,7 +51,7 @@ Run
 
 swish_daemon :-
 	current_prolog_flag(argv, Argv),
-	argv_options(Argv, _RestArgv, Options0),
+	http_unix_daemon:argv_options(Argv, _RestArgv, Options0),
 	swish_options(Options0, Options),
 	(   option(https(_), Options)
 	->  use_module(swish(lib/ssl_certificate))
