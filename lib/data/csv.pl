@@ -82,7 +82,10 @@ import_csv(URL, Options, Hash) :-
                         header(etags, Etag)
                       ]),
             stream_pair(HTTPIO, In0, Out),
-            close(Out),
+            (   var(Out)
+            ->  true
+            ;   close(Out)
+            ),
             open_hash_stream(In0, In, [algorithm(sha1)]),
             input_filters(In, ContentType, Filters, In1, Options1)
         ),
