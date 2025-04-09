@@ -96,8 +96,13 @@ define([ "jquery", "config", "form", "preferences",
 	  }
 	}
 
+	let url = config.http.locations.pengines;
+	if ( !url.endsWith("/") )
+	  url += "/";
+	url += "create";
+
 	formel = $.el.form({ method:"POST",
-                             action:config.http.locations.pengines+"/create",
+                             action:url,
 			     target:"_blank"
 		           },
 			   attr("format", "csv"),

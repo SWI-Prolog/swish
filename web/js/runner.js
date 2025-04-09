@@ -193,8 +193,13 @@ define([ "jquery", "config", "preferences", "utils",
 	}
 
 	function refresh() {
+	  let url = config.http.locations.pengines;
+	  if ( !url.endsWith("/") )
+	    url += "/";
+	  url += "list?application=swish";
+
 	  backend.ajax(
-	    { url: config.http.locations.pengines + "/list?application=swish",
+	    { url: url,
 	      type: "GET",
 	      success: function(reply) {
 		content.empty();
@@ -248,9 +253,13 @@ define([ "jquery", "config", "preferences", "utils",
      */
     reattach: function() {
       var that = this;
+      let url = config.http.locations.pengines;
+	  if ( !url.endsWith("/") )
+	    url += "/";
+	  url += "list?application=swish";
 
       backend.ajax(
-	{ url: config.http.locations.pengines + "/list?application=swish",
+	{ url: url,
           type: "GET",
 	  success: function(reply) {
 	    if ( reply.pengines ) {
