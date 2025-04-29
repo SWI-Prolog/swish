@@ -37,6 +37,7 @@
 	  ]).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
+:- use_module(library(settings)).
 :- use_module('../render').
 
 :- register_renderer(mathjax, "Render mathematical formulas").

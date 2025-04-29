@@ -45,8 +45,8 @@
 
             swish_debug_sentinel/0
           ]).
+:- use_module(library(pengines), [pengine_self/1, pengine_output/1]).
 :- autoload(library(option), [option/3, option/2]).
-:- autoload(library(pengines), [pengine_self/1, pengine_output/1]).
 :- autoload(library(dcg/high_order), [sequence/5]).
 :- autoload(library(pengines_io), [pengine_format/2]).
 :- autoload(library(http/html_write), [html/3, print_html/1]).
