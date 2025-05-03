@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+ 
+
+  <script src="http://guidelines2.eculture.labs.vu.nl/pengine/pengines.js" type="text/javascript"></script>
+  <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script src="./js/answer.js" type="text/javascript"></script>
+  <script src="./js/swish.js" type="text/javascript"></script>
+	
+</head>
+<body>
+
+<h1>Extract results from a Pengine/SWISH server</h1>
+
+<p>
+The Graph below is filled by running a query against the Clinical Guideline Interactions
+server at <a
+href="http://guidelines2.eculture.labs.vu.nl">http://guidelines2.eculture.labs.vu.nl</a>,
+using the saved script <a
+href="http://guidelines2.eculture.labs.vu.nl/swish/p/interaction_graph.pl">interaction_graph.pl</a>.  Note that this
+example illustrates that you can write interactive web applications
+against Pengine and render graphs without direct access to Prolog.
+
+<table id="result">
+</table>
+
+
+<script type="text/x-prolog">
+% Include a script saved on the server, combine it with your code here.
+:- include(interaction_graph).
+</script>
+
+<script type="text/javascript">
+	      
+
+/*
+Create a Prolog engine running the code   from  the above script and the
+query specified in `ask`. Get the results in chunks of max 1,000 entries
+and ask for more results if there are more available.
+*/
+
+$(function() {
+  new Pengine({ server: "http://guidelines2.eculture.labs.vu.nl/pengine",		
+		chunk: 1000,		
+	    format: 'json-html',
+		application: "swish",
+		ask: "interaction_graph_SWAT4LScaseStudy(Guideline, Graph).",
+		ondata: function(result) {
+			//$.fn.prologAnswer._init(result);
+			console.log(result.variables);
+			for (let object of result.variables){				
+				$("#result").append(object.value);
+				$("#result").append($("#result").text());
+				console.log($.fn);
+				break;
+				}
+				
+		  }
+	      });
+		  
+});
+</script>
+
+
+
+</body>
+</html>
