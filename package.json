@@ -14,7 +14,10 @@
     "svg-pan-zoom": "ariutta/svg-pan-zoom#*",
     "tagmanager": "max-favilli/tagmanager#*",
     "typeahead.js": "https://github.com/twitter/typeahead.js.git#master",
-    "printthis": "https://github.com/jasonday/printThis.git#master"
+    "printthis": "https://github.com/jasonday/printThis.git#master",
+    "vega": "^6.2.0",
+    "vega-embed": "^7.0.2",
+    "vega-lite": "^6.4.1"
   },
   "engines": {
     "yarn": ">= 1.0.0"

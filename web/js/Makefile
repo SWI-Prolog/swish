@@ -20,7 +20,8 @@ doc::	$(CONF) $(JQ) $(JS)
 min:	swish-min.js swish-min.js.gz
 
 swish-min.js:	build.js $(JS) $(CM)
-	$(RJS) -o build.js
+	$(RJS) -o build.js paths.vega=empty: paths.vega-lite=empty: \
+	                   paths.vega-embed=empty:
 	uglifyjs swish-min-new.js -c --source-map --keep-fnames -o swish-min.js
 
 swish-min.js.gz: swish-min.js
