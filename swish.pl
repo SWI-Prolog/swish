@@ -264,6 +264,7 @@ pengines:prepare_module(Module, swish, _Options) :-
 :- use_module(swish(lib/render/svgtree),  []).
 :- use_module(swish(lib/render/graphviz), []).
 :- use_module(swish(lib/render/c3),	  []).
+:- use_module(swish(lib/render/vega),	  []).
 :- use_module(swish(lib/render/url),	  []).
 :- use_module(swish(lib/render/bdd),	  []).
 :- use_module(swish(lib/render/mathjax),  []).
