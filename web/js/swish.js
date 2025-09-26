@@ -62,6 +62,9 @@ require.config({
     printThis:   "../node_modules/printthis/printThis",
     "svg-pan-zoom": "../node_modules/svg-pan-zoom/dist/svg-pan-zoom.min",
     sparkline:	 "../node_modules/sparkline/dist/jquery.sparkline",
+    vega:        "../node_modules/vega/build/vega.min",
+    "vega-lite": "../node_modules/vega-lite/build/vega-lite.min",
+    "vega-embed":  "../node_modules/vega-embed/build/vega-embed.min",
 
 					/* CodeMirror extensions */
     "cm/mode/prolog": "codemirror/mode/prolog",
@@ -95,6 +98,12 @@ require.config({
     tagmanager:
     { deps:["jquery"]
     },
+    "vega-lite":
+    { deps:["vega"]
+    },
+    "vega-embed":
+    { deps:["vega-lite"]
+    }
   }
 }); //require.config
 
