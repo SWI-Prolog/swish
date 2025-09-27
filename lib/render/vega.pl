@@ -72,7 +72,13 @@ term_rendering(Vega, _Vars, _Options) -->
   if ( $.ajaxScript ) {
     var spec = Vega;
     require(["vega-embed"], function(vegaEmbed) {
-      vegaEmbed(RefId, spec, {"actions": true});
+      vegaEmbed(RefId, spec)
+        .catch(function(error) {
+	  $(RefId)
+	    .addClass("error")
+	    .css("color", "red")
+	    .text("Vega chart failed to render: " + error.toString());
+	});
     });
   }
 })();
