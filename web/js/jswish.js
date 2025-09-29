@@ -68,8 +68,7 @@ define([ "jquery",
 	 "version",
 	 "d3",
 	 "c3",
-	 "svg-pan-zoom",
-	 "vega-embed"
+	 "svg-pan-zoom"
        ], function($, config, preferences, history, modal, backend) {
 
 preferences.setDefault("semantic-highlighting", true);
