@@ -13,70 +13,45 @@ If the specification is incorrect, Vega-Lite may fail to render the chart. In th
 </div>
 
 <div class="nb-cell markdown">
-## From JSON to a Prolog dict
+## From JSON to a Prolog dict using quasi-quotation
 
-The SWISH Vega-Lite renderer expects a SWI-Prolog _dict_ with the tag `vega`. This structure is designed to map directly to the Vega-Lite JSON specification. A key difference is that Prolog dicts have a _tag_, whereas JSON objects do not. This means you cannot simply copy and paste a JSON object from the Vega-Lite documentation and expect it to work as a Prolog term.
+The SWISH Vega-Lite renderer expects a SWI-Prolog _dict_ with the tag `vega`. This structure is designed to map directly to the Vega-Lite JSON specification. While you can create these dicts using Prolog's native syntax, it can be more convenient to use the original JSON, especially for complex charts.
 
-To use an existing Vega-Lite JSON specification, you first need to parse it into a Prolog dict and then create a new dict with the required `vega` tag. The recommended way to do this is using `library(http/json)`.
-Unfortunately, SWISH doesn't support parsing JSON because of the sandbox, meaning that the following code can only be run locally by `swipl`.
+SWI-Prolog's **quasi-quotation** feature lets you embed JSON directly into your code. The syntax is `{ |json|| ... |}`. The content is parsed at compile time into a Prolog dict, which much more convenient than parsing a string at runtime.
+
+Because JSON objects don't have tags, the resulting Prolog dict will have a variable tag. We can use `is_dict(Dict, vega)` to unify this variable with the required `vega` tag.
+
+Quasi-quotations also support interpolating Prolog terms inside the JSON. A variable in the JSON is replaced by the value of the Prolog variable with the same name. This is useful for dynamically generating parts of the chart specification, such as the data.
 </div>
 
 <div class="nb-cell program">
 :- use_rendering(vega).
 :- use_module(library(http/json)).
 
-json_chart(Chart) :-
-    JSON = '{
-        "description": "A simple bar chart with embedded data.",
-        "data": {
-          "values": [
-            {"a": "A", "b": 28}, {"a": "B", "b": 55}, {"a": "C", "b": 43},
-            {"a": "D", "b": 91}, {"a": "E", "b": 81}, {"a": "F", "b": 53},
-            {"a": "G", "b": 19}, {"a": "H", "b": 87}, {"a": "I", "b": 52}
-          ]
-        },
-        "mark": "bar",
-        "encoding": {
-          "x": {"field": "a", "type": "ordinal"},
-          "y": {"field": "b", "type": "quantitative"}
-        }
-    }',
-    % Parse the JSON string into a generic Prolog dict
-    % won't work in SWISH
-    atom_json_dict(JSON, Chart, [default_tag(vega)]).
-</div>
-
-<div class="nb-cell query">
-% make sure to run this query in `swipl`.
-% SWISH will produce a `No permission to call sandboxed `open_string(_13642,_13644)'`
-json_chart(Chart).
-</div>
-
-<div class="nb-cell markdown">
-## Our first chart
-
-As a first example, we will create a simple bar chart. The data is provided directly inside the chart specification.
-</div>
-
-<div class="nb-cell program">
-:- use_rendering(vega).
-
 bar_chart(Chart) :-
-    Chart = vega{description: 'A simple bar chart with embedded data.',
-                 data: data{values: [a{a:'A',b:28},
-                                     a{a:'B',b:55},
-                                     a{a:'C',b:43},
-                                     a{a:'D',b:91},
-                                     a{a:'E',b:81},
-                                     a{a:'F',b:53},
-                                     a{a:'G',b:19},
-                                     a{a:'H',b:87},
-                                     a{a:'I',b:52}]},
-                 mark: bar,
-                 encoding: encoding{x: x{field:a, type:ordinal},
-                                    y: y{field:b, type:quantitative},
-                                    tooltip: tooltip{field: b, type: quantitative, aggregate: max}}
-                }.
+    Chart = {|json||
+        {
+            "description": "A simple bar chart with embedded data.",
+            "data": {
+                "values": [
+                    {"a": "A", "b": 28}, {"a": "B", "b": 55}, {"a": "C", "b": 43},
+                    {"a": "D", "b": 91}, {"a": "E", "b": 81}, {"a": "F", "b": 53},
+                    {"a": "G", "b": 19}, {"a": "H", "b": 87}, {"a": "I", "b": 52}
+                ]
+            },
+            "mark": "bar",
+            "encoding": {
+                "x": {"field": "a", "type": "ordinal"},
+                "y": {"field": "b", "type": "quantitative"},
+                "tooltip": {
+                    "field": "b",
+                    "type": "quantitative",
+                    "aggregate": "max"
+                }
+            }
+        }
+    |},
+    is_dict(Chart, vega).
 </div>
 
 <div class="nb-cell query">
@@ -91,8 +66,9 @@ This example creates a scatter plot from data generated by a Prolog predicate. W
 
 <div class="nb-cell program">
 :- use_rendering(vega).
+:- use_module(library(http/json)).
 
-point(I, r{x:X, y:Y, category:C}) :-
+point(I, _{x:X, y:Y, category:C}) :-
     between(0, 50, I),
     X is cos(I*pi/25) + random_float*0.2,
     Y is sin(I*pi/25) + random_float*0.2,
@@ -100,16 +76,19 @@ point(I, r{x:X, y:Y, category:C}) :-
 
 scatter_plot(Chart) :-
     findall(Point, point(_, Point), Points),
-    Chart = vega{
-        description: 'A scatterplot.',
-        data: data{values: Points},
-        mark: point,
-        encoding: encoding{
-            x: x{field:x, type:quantitative},
-            y: y{field:y, type:quantitative},
-            color: color{field:category, type:nominal}
+    Chart = {|json(Points)||
+        {
+            "description": "A scatterplot.",
+            "data": { "values": Points },
+            "mark": "point",
+            "encoding": {
+                "x": {"field": "x", "type": "quantitative"},
+                "y": {"field": "y", "type": "quantitative"},
+                "color": {"field": "category", "type": "nominal"}
+            }
         }
-    }.
+    |},
+    is_dict(Chart, vega).
 </div>
 
 <div class="nb-cell query">
