@@ -33,16 +33,9 @@
 :- module(swish_render_vega,
 	  [ term_rendering//3			% +Term, +Vars, +Options
 	  ]).
-:- use_module(library(apply)).
-:- use_module(library(lists)).
 :- use_module(library(gensym)).
-:- use_module(library(error)).
-:- use_module(library(dif)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/js_write)).
-:- if(exists_source(library(dicts))).
-:- use_module(library(dicts)).
-:- endif.
 :- use_module('../render').
 
 :- register_renderer(vega, "Render data using Vega-Lite").
