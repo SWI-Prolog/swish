@@ -104,6 +104,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 		"Move cell down":  function() { this.notebook('down'); },
 		"Insert cell":     function() { this.notebook('insertBelow'); },
 		"--":		   "Overall options",
+		"Table of Contents": function() { this.notebook('showTOC'); },
 		"Clear all":       function() { this.notebook('clear_all'); },
 		"Play":            function() { this.notebook('run_all'); },
 		"Settings":        function() { this.notebook('settings'); },
@@ -129,6 +130,7 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
 	    sep(),
 	    glyphButton("erase", "clear_all", "Clear all query output", "warning"),
 	    glyphButton("play", "run_all", "Run all queries", "primary"),
+	    glyphButton("list", "showTOC", "Table of Contents", "default"),
 	    glyphButton("wrench", "settings", "Settings", "default"),
 	    glyphButton("fullscreen", "fullscreen", "Full screen", "default")
 	    ));
@@ -469,6 +471,61 @@ CodeMirror.modes.eval = CodeMirror.modes.prolog;
       }
 
       return this;
+    },
+
+    showTOC: function() {
+      var elem = this;
+      var toc = [];
+      var idCounter = 0;
+
+      elem.find(".nb-cell.markdown").each(function() {
+        var cell = $(this);
+        cell.find("h1,h2,h3,h4,h5,h6").each(function() {
+          var header = $(this);
+          var id = header.attr('id');
+          if ( !id ) {
+            id = "toc-header-" + (idCounter++);
+            header.attr('id', id);
+          }
+          toc.push({
+            level: parseInt(this.tagName.substring(1)),
+            text: header.text(),
+            id: id,
+            element: header
+          });
+        });
+      });
+
+      function tocBody() {
+        var body = this;
+        if (toc.length === 0) {
+          body.append($.el.p("No headers found in the notebook."));
+          return;
+        }
+
+        var ul = $.el.ul({class: "toc-list", style:"list-style-type: none; padding-left: 0;"});
+        toc.forEach(function(entry) {
+          var a = $.el.a({href: "#" + entry.id}, entry.text);
+          var li = $.el.li({
+            class: "toc-level-" + entry.level,
+            style: "margin-left: " + (entry.level - 1) * 1.5 + "em;"}, a);
+
+          $(a).on('click', function(ev) {
+            ev.preventDefault();
+	    ev.stopPropagation();
+            var target = entry.element;
+            target[0].scrollIntoView({behavior: "smooth"});
+            body.closest(".modal").modal('hide');
+          });
+          $(ul).append(li);
+        });
+        body.append(ul);
+      }
+
+      form.showDialog({
+        title: "Table of Contents",
+        body: tocBody
+      });
     },
 
     cellType: function(cell, type) {
