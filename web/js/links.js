@@ -199,6 +199,14 @@ define(["jquery", "config", "modal"],
 	    ev.preventDefault();
 	    modal.animate({scrollTop: target.position().top}, 2000);
 	  }
+	} else if ( href.startsWith("#") && $(ev.target).closest(".notebook").length > 0 ) {
+	  var id = href.substring(1);
+	  var target = document.getElementById(id);
+	  if ( target ) {
+	    target.scrollIntoView({behavior: "smooth"});
+	    done = true;
+	    ev.preventDefault();
+	  }
 	}
 
 	if ( !done ) {
