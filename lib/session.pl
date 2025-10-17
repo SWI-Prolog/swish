@@ -58,6 +58,20 @@ setup_sessions :-
         [ create(noauto),
           timeout(7200),                        % 2 hours
           gc(active)
+        ]),
+    set_http_only.
+
+%!  set_http_only
+%
+%   Set session cookie ``HttpOnly`` if  this   is  supported  by Prolog.
+%   Requires SWI-Prolog 9.3.33 or later.
+
+set_http_only :-
+    http_session:session_setting(http_only(_)),
+    !,
+    http_set_session_options(
+        [ http_only(true)
         ]).
+set_http_only.
 
 :- endif.
