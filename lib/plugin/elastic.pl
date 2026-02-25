@@ -157,6 +157,8 @@ tls_verify(_SSL, _ProblemCert, _AllCerts, _FirstCert, verified) :-
     !.
 tls_verify(_SSL, _ProblemCert, _AllCerts, _FirstCert, hostname_mismatch) :-
     !.
+tls_verify(_SSL, _ProblemCert, _AllCerts, _FirstCert, expired) :-
+    !.
 tls_verify(_SSL, _ProblemCert, _AllCerts, _FirstCert, _Error) :-
     fail.
 
