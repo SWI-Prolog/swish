@@ -129,11 +129,6 @@ is_term_tree(Term, filtered_tree(QFilter, Options1), Options) :-
 	call(QFilter, Term, _Label, _Children), !,
 	browser_option(Options, Options1).
 is_term_tree(Term, compound_tree(Options1), Options) :-
-	compound(Term),
-	(   is_list(Term)
-	->  \+ option(list(false), Options)
-	;   true
-	), !,
 	browser_option(Options, Options1).
 
 :- public
@@ -145,14 +140,25 @@ is_term_tree(Term, compound_tree(Options1), Options) :-
 %	Render Term as a tree, considering every   compound term to be a
 %	node.  Renders leafs using term//1.
 
+compound_tree(Options, '$VAR'(Term), Tree) :-
+    !,
+    Tree = json{label:Label},
+    term_label('$VAR'(Term), Label, Options).
+compound_tree(Options, List, Tree) :-
+    is_list(List),
+    option(list(false), Options),
+    !,
+    Tree = json{label:Label},
+    term_string(List, Label, Options).
 compound_tree(Options, Term, Tree) :-
-	compound(Term), Term \= '$VAR'(_), !,
-	Tree = json{label:Label, children:Children},
-	compound_name_arguments(Term, Functor, Args),
-	term_string(Functor, Label),
-	maplist(compound_tree(Options), Args, Children).
+    compound(Term),
+    !,
+    Tree = json{label:Label, children:Children},
+    compound_name_arguments(Term, Functor, Args),
+    term_string(Functor, Label),
+    maplist(compound_tree(Options), Args, Children).
 compound_tree(Options, Term, json{label:Label}) :-
-	term_label(Term, Label, Options).
+    term_label(Term, Label, Options).
 
 %%	term_label(+Term, -Label, +Options) is det.
 %
