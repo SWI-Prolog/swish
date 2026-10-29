@@ -34,11 +34,19 @@
 */
 
 :- module(swish_config_scasp, []).
+% Uncomment for the old version
+:- set_prolog_flag(sscasp, true).
 :- use_module(library(scasp)).
 :- use_module(library(scasp/swish)).
 
 /** <module> Make s(CASP) available
 
+library(scasp) is either of the two implementations the s(CASP) pack
+ships: the SWI-Prolog port, or ssCASP when SWISH is started with
+`swipl -Dsscasp`.  Both give library(scasp/swish), the adapter that shows
+the model and the justification.  Their stylesheet and script are the
+same files under different names, `scasp.*` and `sscasp.*`, because both
+are found through the `js` and `css` search paths.
 */
 
 :- multifile
@@ -46,6 +54,12 @@
 
 swish_config:web_plugin(
     json{name: scasp,
-         js:   root('js/scasp.js'),
-         css:  root('css/scasp.css')
-        }).
+         js:   root(JS),
+         css:  root(CSS)
+        }) :-
+    web_files(JS, CSS).
+
+web_files('js/sscasp.js', 'css/sscasp.css') :-
+    predicate_property(scasp:scasp(_,_), imported_from(sscasp_dyncall)),
+    !.
+web_files('js/scasp.js', 'css/scasp.css').
