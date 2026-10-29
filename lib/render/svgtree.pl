@@ -128,7 +128,7 @@ is_term_tree(Term, filtered_tree(QFilter, Options1), Options) :-
 	catch(safe_filter(QFilter), _, fail),
 	call(QFilter, Term, _Label, _Children), !,
 	browser_option(Options, Options1).
-is_term_tree(Term, compound_tree(Options1), Options) :-
+is_term_tree(_Term, compound_tree(Options1), Options) :-
 	browser_option(Options, Options1).
 
 :- public
