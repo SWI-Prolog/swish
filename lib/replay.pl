@@ -151,6 +151,8 @@ replay_after(Time) :-
 %
 %	  - server(+URL)
 %	    Server to replay on.  Default http://localhost:3050/
+%	  - skip(+N)
+%	    Skip the first N pengines.
 %	  - limit(+Max)
 %	    Replay at most Max pengines.
 %	  - after(+Time)
@@ -174,7 +176,13 @@ concurrent_replay(Count) :-
 concurrent_replay(Count, Options) :-
 	option(server(URL), Options, 'http://localhost:3050/'),
 	option(progress(Every), Options, 1000),
-	findall(Pengine, replay_candidate(Pengine, Options), Pengines0),
+	findall(Pengine, replay_candidate(Pengine, Options), Pengines00),
+	option(skip(Skip), Options, 0),
+	length(Skipped, Skip),
+	(   append(Skipped, Pengines0, Pengines00)
+	->  true
+	;   Pengines0 = []
+	),
 	(   option(limit(Max), Options)
 	->  length(Pengines0, Len0),
 	    Keep is min(Max, Len0),
@@ -351,9 +359,18 @@ run(Messages, StartTime, Id, Options) :-
 %   All messages are sent.  Wait for the answer to the last one and
 %   destroy the pengine, unless the last message destroyed it.
 
+%   An output event means the pengine is still running.  Like the
+%   browser, we pull the remaining output.  If we only destroy the
+%   pengine, it keeps running: the destroy request is only handled
+%   when the query completes and, as no HTTP request waits for the
+%   pengine, the time limit is not enforced.
+
 finish(_, Options) :-
 	memberchk(destroyed, Options), !.
 finish(Id, _) :-
+	finish_events(Id, 20).
+
+finish_events(Id, Max) :-
 	pengine_event(Event, [listen(Id), timeout(10)]),
 	(   Event = destroy(_, _)
 	->  true
@@ -362,6 +379,12 @@ finish(Id, _) :-
 	;   Event == timeout
 	->  count(timeout),
 	    catch(pengine_destroy(Id), _, true)
+	;   Event = output(_, _),
+	    Max > 0
+	->  debug(playback(event), 'Final output ~p (pull_response)', [Event]),
+	    catch(pengine_pull_response(Id, []), _, true),
+	    Max1 is Max-1,
+	    finish_events(Id, Max1)
 	;   debug(playback(event), 'Final ~p', [Event]),
 	    catch(pengine_destroy(Id), _, true)
 	).
