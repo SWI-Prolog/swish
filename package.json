@@ -4,7 +4,7 @@
     "c3": "masayuki0812/c3#*",
     "codemirror": "components/codemirror#*",
     "d3": "mbostock-bower/d3-bower#^5.0.0",
-    "jquery": "jquery/jquery-dist#>= 1.0.0",
+    "jquery": "jquery/jquery-dist#>=1.0.0 <4.0.0",
     "jquery.splitter": "jcubic/jquery.splitter#0.15",
     "js-sha1": "emn178/js-sha1#*",
     "laconic": "joestelmach/laconic#*",
