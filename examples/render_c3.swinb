@@ -40,7 +40,7 @@ chart(Sine).
 </div>
 
 <div class="nb-cell markdown">
-## Alternatives for the the data
+## Alternatives for the data
 
 By nature, Prolog is a relational language and the set of solutions naturally form a table, where each solution is a row.  C3 wants to see a JSON array-of-arrays, where each sub-array is a row and the first row defines the column names, much as you are used to in a spreadsheet.  The above creates the data as follows:
 
