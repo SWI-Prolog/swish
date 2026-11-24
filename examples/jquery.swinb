@@ -13,7 +13,7 @@ This API is *speculative*.  Please consider the possibilities and make suggestio
 
 ## Get access to the tabs
 
-The jQuery interface was added to provide access to the tabs in the SWISH interface.  Our first example asks for for the available tabs.  It returns an list holding a _dict_ for each
+The jQuery interface was added to provide access to the tabs in the SWISH interface.  Our first example asks for the available tabs.  It returns an list holding a _dict_ for each
 tab.
 </div>
 
