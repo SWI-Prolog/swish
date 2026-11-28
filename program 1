@@ -1,0 +1,11 @@
+% Silsilah Keluarga
+
+pria(budi).
+pria(joko).
+wanita(ani).
+
+orangtua(budi, joko).
+orangtua(ani, joko).
+
+ayah(x, y) :- pria(X), orangtua(x,y). 
+ibu(x, y) :- wanita(x), orangtua(x,y).
